@@ -82,25 +82,25 @@
     <div class="p-3 rounded bg-lightblue">
         <div class="row g-2">
             <div class="col-md-3">
-                <select class="form-select fs-5">
+                <select class="form-select fs-5" style="height: 60px;">
                     <option>Area Kerja</option>
                 </select>
             </div>
             <div class="col-md-3">
-                <select class="form-select fs-5">
+                <select class="form-select fs-5" style="height: 60px;">
                     <option>Departemen</option>
                 </select>
             </div>
             <div class="col-md-3">
-                <select class="form-select fs-5">
+                <select class="form-select fs-5" style="height: 60px;">
                     <option>Jabatan</option>
                 </select>
             </div>
             <div class="col-md-2">
-                <input type="text" class="form-control fs-5" placeholder="Cari Posisi...">
+                <input type="text" class="form-control fs-5" style="height: 60px;" placeholder="Cari Posisi...">
             </div>
             <div class="col-md-1">
-                <button class="btn btn-dark w-100 fs-5">Cari</button>
+                <button class="btn btn-dark w-100 fs-5" style="height: 60px;">Cari</button>
             </div>
         </div>
     </div>
