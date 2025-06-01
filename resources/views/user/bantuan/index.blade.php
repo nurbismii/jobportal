@@ -18,42 +18,42 @@
                 <div class="h-100">
                     <div class="mb-5">
                         <h4 class="text-primary">Bantuan</h4>
-                        <h1 class="display-4 mb-0">Pertanyaan umum yang sering diajukan</h1>
+                        <h1 class="display-4 mb-0">Pertanyaan yang Sering Diajukan (FAQ)</h1>
                     </div>
                     <div class="accordion" id="accordionExample">
                         <div class="accordion-item">
                             <h2 class="accordion-header" id="headingOne">
                                 <button class="accordion-button border-0" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                                    Q: What happens during Freshers' Week?
+                                    Q: Bagaimana cara melamar kerja di PT VDNI?
                                 </button>
                             </h2>
                             <div id="collapseOne" class="accordion-collapse collapse show active" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
                                 <div class="accordion-body rounded">
-                                    A: Leverage agile frameworks to provide a robust synopsis for high level overviews. Iterative approaches to corporate strategy foster collaborative thinking to further the overall value proposition. Organically grow the holistic world view of disruptive innovation via workplace diversity and empowerment.
+                                    A: Anda dapat melamar melalui website resmi rekrutmen PT VDNI dengan membuat akun, melengkapi data diri, lalu memilih posisi yang tersedia dan sesuai dengan kualifikasi Anda.
                                 </div>
                             </div>
                         </div>
                         <div class="accordion-item">
                             <h2 class="accordion-header" id="headingTwo">
                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                                    Q: What is the transfer application process?
+                                    Q: Apa saja dokumen yang dibutuhkan untuk melamar?
                                 </button>
                             </h2>
                             <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
                                 <div class="accordion-body">
-                                    A: Leverage agile frameworks to provide a robust synopsis for high level overviews. Iterative approaches to corporate strategy foster collaborative thinking to further the overall value proposition. Organically grow the holistic world view of disruptive innovation via workplace diversity and empowerment.
+                                    A: Dokumen umum meliputi: CV/Daftar Riwayat Hidup, KTP, Ijazah dan Transkrip Nilai, Sertifikat pendukung (jika ada), Pas foto terbaru, dan dokumen lain sesuai dengan persyaratan posisi yang dilamar.
                                 </div>
                             </div>
                         </div>
                         <div class="accordion-item">
                             <h2 class="accordion-header" id="headingThree">
                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                                    Q: Why should I attend community college?
+                                    Q: Apakah semua pelamar akan mendapatkan pemberitahuan hasil seleksi?
                                 </button>
                             </h2>
                             <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accordionExample">
                                 <div class="accordion-body">
-                                    A: Leverage agile frameworks to provide a robust synopsis for high level overviews. Iterative approaches to corporate strategy foster collaborative thinking to further the overall value proposition. Organically grow the holistic world view of disruptive innovation via workplace diversity and empowerment.
+                                    A: Hanya pelamar yang lolos ke tahap selanjutnya yang akan dihubungi oleh tim rekrutmen melalui email atau WhatsApp resmi.
                                 </div>
                             </div>
                         </div>
