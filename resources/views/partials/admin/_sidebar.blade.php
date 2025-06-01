@@ -37,7 +37,7 @@
             <div class="bg-white py-2 collapse-inner rounded">
                 <h6 class="collapse-header">Kelola Data:</h6>
                 <a class="collapse-item" href="{{ route('pengguna.index') }}">Pengguna</a>
-                <a class="collapse-item" href="cards.html">Lowongan</a>
+                <a class="collapse-item" href="{{ route('lowongan.index') }}">Lowongan</a>
             </div>
         </div>
     </li>
@@ -54,13 +54,6 @@
         <a class="nav-link" href="charts.html">
             <i class="fas fa-fw fa-chart-area"></i>
             <span>Pengumuman</span>
-        </a>
-    </li>
-
-    <li class="nav-item">
-        <a class="nav-link" href="tables.html">
-            <i class="fas fa-fw fa-folder"></i>
-            <span>Lamaran</span>
         </a>
     </li>
 

@@ -39,4 +39,5 @@ Route::group(['prefix' => 'admin', 'middleware' => ['redirect.role']], function 
 
     Route::get('/dasbor', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
     Route::resource('/pengguna', 'App\Http\Controllers\Admin\PenggunaController');
+    Route::resource('/lowongan', 'App\Http\Controllers\Admin\LowonganController');
 });

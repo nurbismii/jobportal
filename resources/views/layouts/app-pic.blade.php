@@ -49,7 +49,7 @@
                     <!-- Content Row -->
                     @yield('content-admin')
                     <!-- Content Row -->
-
+                    @include('sweetalert::alert')
                 </div>
                 <!-- /.container-fluid -->
 

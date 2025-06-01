@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Biodata;
 use App\Models\Hris\Provinsi;
 use App\Models\User;
+use Illuminate\Http\Request;
+use RealRashid\SweetAlert\Facades\Alert;
 
 class PenggunaController extends Controller
 {
@@ -13,6 +15,9 @@ class PenggunaController extends Controller
     {
         // Logic to display the list of users
         $penggunas = User::where('role', '!=', 'admin')->get();
+        $title = 'Hapus Pengguna!';
+        $text = "Kamu yakin ingin menghapus pengguna ini?";
+        confirmDelete($title, $text);
 
         return view('admin.pengguna.index', compact('penggunas'))->with('no');
     }
@@ -28,17 +33,26 @@ class PenggunaController extends Controller
         return view('admin.pengguna.edit', compact('pengguna', 'biodata', 'provinsis'));
     }
 
-    public function update($id)
+    public function update(Request $request, $id)
     {
-        // Logic to update a user
-        $pengguna = User::findOrFail($id);
-        $pengguna->update(request()->all());
+        // Logic to update a biodata
+        $user = user::where('id', $id)->first();
 
-        // Update biodata if exists
-        if ($pengguna->biodata) {
-            $pengguna->biodata->update(request()->all());
-        }
+        $user->update([
+            'status_akun' => $request->status_akun
+        ]);
 
+        Alert::success('Berhasil', 'Pengguna berhasil diperbarui.');
         return redirect()->route('pengguna.index')->with('success', 'Pengguna berhasil diperbarui.');
+    }
+
+    public function destroy($id)
+    {
+        // Logic to delete a user
+        $user = User::findOrFail($id);
+        $user->delete();
+
+        Alert::success('Berhasil', 'Pengguna berhasil dihapus.');
+        return redirect()->route('pengguna.index')->with('success', 'Pengguna berhasil dihapus.');
     }
 }

@@ -122,13 +122,13 @@
                             <label>Nama
                                 <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="nama" class="form-control" value="{{ Auth::user()->name }}">
+                            <input type="text" name="nama" class="form-control" value="{{ Auth::user()->name }}" readonly>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label>No KTP
                                 <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="no_ktp" class="form-control" value="{{ Auth::user()->no_ktp }}">
+                            <input type="text" name="no_ktp" class="form-control" value="{{ Auth::user()->no_ktp }}" readonly>
                         </div>
                     </div>
                     <div class="row g-3">
@@ -492,9 +492,9 @@
                                 <span class="text-danger">*</span>
                             </label>
                             <select name="status_akun" id="status_akun" class="form-control" required>
-                               <option value="{{ $pengguna->status_akun }}">{{ $pengguna->status_akun == 0 ? 'Tidak aktif' : 'Aktif' }}</option>
-                               <option value="0">Tidak aktif</option>
-                               <option value="1">Aktif</option>
+                                <option value="{{ $pengguna->status_akun }}">{{ $pengguna->status_akun == 0 ? 'Tidak aktif' : 'Aktif' }}</option>
+                                <option value="0">Tidak aktif</option>
+                                <option value="1">Aktif</option>
                             </select>
                         </div>
                     </div>
@@ -508,7 +508,7 @@
                             <label class="form-label">CV</label>
                             <div class="file-upload-box">
                                 <div class="upload-label">
-                                    <i class="bi bi-file-earmark-text file-icon"></i>
+                                    <i class="fas fa-file p-2"></i>
                                     @if($biodata && $biodata->cv)
                                     <span id="file-name">{{ $biodata->cv }}</span>
                                     @else
@@ -524,7 +524,7 @@
                             <label class="form-label">Pas Foto 3x4</label>
                             <div class="file-upload-box">
                                 <div class="upload-label">
-                                    <i class="bi bi-file-earmark-text file-icon"></i>
+                                    <i class="fas fa-file p-2"></i>
                                     @if($biodata && $biodata->pas_foto)
                                     <span id="file-name">{{ $biodata->pas_foto }}</span>
                                     @else
@@ -540,7 +540,7 @@
                             <label class="form-label">Surat Lamaran Kerja</label>
                             <div class="file-upload-box">
                                 <div class="upload-label">
-                                    <i class="bi bi-file-earmark-text file-icon"></i>
+                                    <i class="fas fa-file p-2"></i>
                                     @if($biodata && $biodata->surat_lamaran)
                                     <span id="file-name">{{ $biodata->surat_lamaran }}</span>
                                     @else
@@ -556,7 +556,7 @@
                             <label class="form-label">Ijazah dan Transkrip nilai</label>
                             <div class="file-upload-box">
                                 <div class="upload-label">
-                                    <i class="bi bi-file-earmark-text file-icon"></i>
+                                    <i class="fas fa-file p-2"></i>
                                     @if($biodata && $biodata->ijazah)
                                     <span id="file-name">{{ $biodata->ijazah }}</span>
                                     @else
@@ -572,7 +572,7 @@
                             <label class="form-label">Kartu Tanda Penduduk (KTP)</label>
                             <div class="file-upload-box">
                                 <div class="upload-label">
-                                    <i class="bi bi-file-earmark-text file-icon"></i>
+                                    <i class="fas fa-file p-2"></i>
                                     @if($biodata && $biodata->ktp)
                                     <span id="file-name">{{ $biodata->ktp }}</span>
                                     @else
@@ -588,7 +588,7 @@
                             <label class="form-label">SIM B II Umum/SIO <sup>Opsional</sup></label>
                             <div class="file-upload-box">
                                 <div class="upload-label">
-                                    <i class="bi bi-file-earmark-text file-icon"></i>
+                                    <i class="fas fa-file p-2"></i>
                                     @if($biodata && $biodata->sim_b_2)
                                     <span id="file-name">{{ $biodata->sim_b_2 }}</span>
                                     @else
@@ -604,7 +604,7 @@
                             <label class="form-label">SKCK</label>
                             <div class="file-upload-box">
                                 <div class="upload-label">
-                                    <i class="bi bi-file-earmark-text file-icon"></i>
+                                    <i class="fas fa-file p-2"></i>
                                     @if($biodata && $biodata->skck)
                                     <span id="file-name">{{ $biodata->skck }}</span>
                                     @else
@@ -620,7 +620,7 @@
                             <label class="form-label">Sertifikat Vaksin</label>
                             <div class="file-upload-box">
                                 <div class="upload-label">
-                                    <i class="bi bi-file-earmark-text file-icon"></i>
+                                    <i class="fas fa-file p-2"></i>
                                     @if($biodata && $biodata->sertifikat_vaksin)
                                     <span id="file-name">{{ $biodata->sertifikat_vaksin }}</span>
                                     @else
@@ -636,7 +636,7 @@
                             <label class="form-label">Kartu Keluarga</label>
                             <div class="file-upload-box">
                                 <div class="upload-label">
-                                    <i class="bi bi-file-earmark-text file-icon"></i>
+                                    <i class="fas fa-file p-2"></i>
                                     @if($biodata && $biodata->kk)
                                     <span id="file-name">{{ $biodata->kk }}</span>
                                     @else
@@ -652,7 +652,7 @@
                             <label class="form-label">NPWP</label>
                             <div class="file-upload-box">
                                 <div class="upload-label">
-                                    <i class="bi bi-file-earmark-text file-icon"></i>
+                                    <i class="fas fa-file p-2"></i>
                                     @if($biodata && $biodata->npwp)
                                     <span id="file-name">{{ $biodata->npwp }}</span>
                                     @else
@@ -668,7 +668,7 @@
                             <label class="form-label">Kartu Pencari Kejra (AK1)</label>
                             <div class="file-upload-box">
                                 <div class="upload-label">
-                                    <i class="bi bi-file-earmark-text file-icon"></i>
+                                    <i class="fas fa-file p-2"></i>
                                     @if($biodata && $biodata->ak1)
                                     <span id="file-name">{{ $biodata->ak1 }}</span>
                                     @else
@@ -684,7 +684,7 @@
                             <label class="form-label">Sertifikat Pendukung</label>
                             <div class="file-upload-box">
                                 <div class="upload-label">
-                                    <i class="bi bi-file-earmark-text file-icon"></i>
+                                    <i class="fas fa-file p-2"></i>
                                     @if($biodata && $biodata->sertifikat_pendukung)
                                     <span id="file-name">{{ $biodata->sertifikat_pendukung }}</span>
                                     @else
