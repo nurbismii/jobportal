@@ -78,18 +78,37 @@ body, label, input, select, textarea, button {
     <div class="p-3 rounded bg-lightblue">
         <div class="row g-2">
             <div class="col-md-3">
-                <select class="form-select fs-6" style="height: 60px;">
-                    <option>Area Kerja</option>
+                <select name="area_kerja" id="area_kerja" class="form-select fs-6" style="height: 60px;" required>
+                    <option value="" disabled selected hidden>Pilih Area Kerja</option>
+                    <option value="VDNI">VDNI</option>
+                    <option value="VDNIP">VDNIP</option>
                 </select>
             </div>
             <div class="col-md-3">
                 <select class="form-select fs-6" style="height: 60px;">
-                    <option>Departemen</option>
+                    <option value="" disabled selected hidden>Pilih Departemen</option>
+                    <option value="Administration">Administration</option>
+                    <option value="Equipment">Equipment</option>
+                    <option value="Finance">Finance</option>
+                    <option value="General Affairs">General Affairs</option>
+                    <option value="HRD">HRD</option>
+                    <option value="IT">IT</option>
+                    <option value="Pengurus Lahan">Pengurus Lahan</option>
+                    <option value="PLTU">PLTU</option>
+                    <option value="PMS Jetty">PMS Jetty</option>
+                    <option value="Purchasing">Purchasing</option>
+                    <option value="Quality Control">Quality Control</option>
+                    <option value="Safety">Safety</option>
+                    <option value="Smelter">Smelter</option>
+                    <option value="Transportasi">Transportasi</option>
+                    <option value="Workshop Manufacture">Workshop Manufacture</option>
                 </select>
             </div>
             <div class="col-md-3">
                 <select class="form-select fs-6" style="height: 60px;">
-                    <option>Jabatan</option>
+                    <option value="" disabled selected hidden>Pilih Jabatan</option>
+                    <option value="Staf">Staf</option>
+                    <option value="Crew">Crew</option>
                 </select>
             </div>
             <div class="col-md-2">
