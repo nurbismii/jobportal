@@ -4,6 +4,12 @@
 
 @push('styles')
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
+
+    body, label, input, select, textarea, button {
+    font-family: 'Inter', sans-serif;
+    }
+
     .file-upload-box {
         display: flex;
         align-items: center;
@@ -132,7 +138,7 @@
             <div class="tab-content">
                 <!-- Step Biodata -->
                 <div class="tab-pane fade show active" id="step1">
-                    <h6 class="text-primary">Biodata</h6>
+                    <h6 class="text-primary mb-3">Biodata</h6>
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
                             <label>Nama
@@ -141,44 +147,12 @@
                             <input type="text" name="nama" class="form-control" value="{{ Auth::user()->name }}">
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label>No KTP
+                            <label>NIK KTP
                                 <span class="text-danger">*</span>
                             </label>
                             <input type="text" name="no_ktp" class="form-control" value="{{ Auth::user()->no_ktp }}">
                         </div>
                     </div>
-                    <div class="row g-3">
-                        <div class="col-md-6 mb-3">
-                            <label>No Telp
-                                <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" name="no_telp" class="form-control" value="{{ $biodata->no_telp ?? '' }}" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label>No Kartu Keluarga
-                                <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" name="no_kk" class="form-control" value="{{ $biodata->no_kk ?? '' }}" required>
-                        </div>
-                    </div>
-                    <div class="row g-3">
-                        <div class="col-md-6 mb-3">
-                            <label for="jenis_kelamin">Jenis Kelamin
-                                <span class="text-danger">*</span>
-                            </label>
-                            <select name="jenis_kelamin" id="jenis_kelamin" class="form-select" required>
-                                @if($biodata)
-                                <option value="{{ $biodata->jenis_kelamin }}">{{ $biodata->jenis_kelamin == 'L' ? 'Laki-Laki' : 'Perempuan' }}</option>
-                                @else
-                                <option value="">Pilih jenis kelamin</option>
-                                @endif
-                                <option value="L">Laki-laki</option>
-                                <option value="P">Perempuan</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <h6 class="text-primary">Alamat KTP</h6>
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
                             <label>Tempat Lahir
@@ -193,109 +167,95 @@
                             <input type="date" name="tanggal_lahir" class="form-control" value="{{ $biodata->tanggal_lahir ?? '' }}" required>
                         </div>
                     </div>
-                    <!-- Include jQuery -->
-                    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
                     <div class="row g-3">
-                        <!-- Provinsi -->
                         <div class="col-md-6 mb-3">
-                            <label>Provinsi <span class="text-danger">*</span></label>
+                            <label>Nomor Telepon
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" name="no_telp" class="form-control" value="{{ $biodata->no_telp ?? '' }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label>Nomor Kartu Keluarga
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" name="no_kk" class="form-control" value="{{ $biodata->no_kk ?? '' }}" required>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6 mb-3">
+                            <label for="jenis_kelamin">Jenis Kelamin
+                                <span class="text-danger">*</span>
+                            </label>
+                            <select name="jenis_kelamin" id="jenis_kelamin" class="form-select" required>
+                                @if($biodata)
+                                <option value="{{ $biodata->jenis_kelamin }}">{{ $biodata->jenis_kelamin == 'L' ? 'Laki-Laki' : 'Perempuan' }}</option>
+                                @else
+                                <option value="">Pilih Jenis Kelamin</option>
+                                @endif
+                                <option value="L">Laki-laki</option>
+                                <option value="P">Perempuan</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <h6 class="text-primary mb-3">Alamat Sesuai KTP</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6 mb-3">
+                            <label>Provinsi
+                                <span class="text-danger">*</span>
+                            </label>
                             <select name="provinsi" id="provinsi_id" class="form-select">
+                                @if($biodata)
+                                <option value="{{ $biodata->provinsi }}">{{ $biodata->getProvinsi->provinsi }}</option>
+                                @else
                                 <option value="">Pilih provinsi</option>
-                                @foreach ($provinsis as $prov)
-                                    <option value="{{ $prov->id }}" {{ (isset($biodata) && $biodata->provinsi == $prov->id) ? 'selected' : '' }}>
-                                        {{ $prov->name }}
-                                    </option>
+                                @endif
+                                @foreach ($provinsis as $item)
+                                <option value="{{ $item->id }}"
+                                >{{ $item->provinsi }}</option>
                                 @endforeach
                             </select>
                         </div>
-
-                        <!-- Kabupaten -->
                         <div class="col-md-6 mb-3">
-                            <label>Kabupaten <span class="text-danger">*</span></label>
+                            <label>Kabupaten
+                                <span class="text-danger">*</span>
+                            </label>
                             <select name="kabupaten" id="kabupaten_id" class="form-select">
+                                @if($biodata)
+                                <option value="{{ $biodata->kabupaten }}">{{ $biodata->getKabupaten->kabupaten }}</option>
+                                @else
                                 <option value="">Pilih kabupaten</option>
-                                @if(isset($biodata) && $biodata->kabupaten)
-                                    <option value="{{ $biodata->kabupaten }}" selected>{{ $biodata->getKabupaten->name }}</option>
                                 @endif
                             </select>
                         </div>
                     </div>
 
                     <div class="row g-3">
-                        <!-- Kecamatan -->
                         <div class="col-md-6 mb-3">
-                            <label>Kecamatan <span class="text-danger">*</span></label>
+                            <label>Kecamatan
+                                <span class="text-danger">*</span>
+                            </label>
                             <select name="kecamatan" id="kecamatan_id" class="form-select">
+                                @if($biodata)
+                                <option value="{{ $biodata->kecamatan }}">{{ $biodata->getKecamatan->kecamatan }}</option>
+                                @else
                                 <option value="">Pilih kecamatan</option>
-                                @if(isset($biodata) && $biodata->kecamatan)
-                                    <option value="{{ $biodata->kecamatan }}" selected>{{ $biodata->getKecamatan->name }}</option>
                                 @endif
                             </select>
                         </div>
-
-                        <!-- Kelurahan -->
                         <div class="col-md-6 mb-3">
-                            <label>Kelurahan/Desa <span class="text-danger">*</span></label>
+                            <label>Kelurahan/Desa
+                                <span class="text-danger">*</span>
+                            </label>
                             <select name="kelurahan" id="kelurahan_id" class="form-select">
+                                @if($biodata)
+                                <option value="{{ $biodata->kelurahan }}">{{ $biodata->getKelurahan->kelurahan }}</option>
+                                @else
                                 <option value="">Pilih kelurahan</option>
-                                @if(isset($biodata) && $biodata->kelurahan)
-                                    <option value="{{ $biodata->kelurahan }}" selected>{{ $biodata->getKelurahan->name }}</option>
                                 @endif
                             </select>
                         </div>
                     </div>
-
-                    <!-- AJAX script untuk dynamic dropdown -->
-                    <script>
-                        $(document).ready(function() {
-                            $('#provinsi_id').on('change', function() {
-                                let provinsiID = $(this).val();
-                                $('#kabupaten_id').html('<option value="">Memuat...</option>');
-                                $('#kecamatan_id').html('<option value="">Pilih kecamatan</option>');
-                                $('#kelurahan_id').html('<option value="">Pilih kelurahan</option>');
-
-                                if (provinsiID) {
-                                    $.get('/get-kabupaten/' + provinsiID, function(data) {
-                                        $('#kabupaten_id').empty().append('<option value="">Pilih kabupaten</option>');
-                                        $.each(data, function(i, item) {
-                                            $('#kabupaten_id').append('<option value="'+ item.id +'">'+ item.name +'</option>');
-                                        });
-                                    });
-                                }
-                            });
-
-                            $('#kabupaten_id').on('change', function() {
-                                let kabupatenID = $(this).val();
-                                $('#kecamatan_id').html('<option value="">Memuat...</option>');
-                                $('#kelurahan_id').html('<option value="">Pilih kelurahan</option>');
-
-                                if (kabupatenID) {
-                                    $.get('/get-kecamatan/' + kabupatenID, function(data) {
-                                        $('#kecamatan_id').empty().append('<option value="">Pilih kecamatan</option>');
-                                        $.each(data, function(i, item) {
-                                            $('#kecamatan_id').append('<option value="'+ item.id +'">'+ item.name +'</option>');
-                                        });
-                                    });
-                                }
-                            });
-
-                            $('#kecamatan_id').on('change', function() {
-                                let kecamatanID = $(this).val();
-                                $('#kelurahan_id').html('<option value="">Memuat...</option>');
-
-                                if (kecamatanID) {
-                                    $.get('/get-kelurahan/' + kecamatanID, function(data) {
-                                        $('#kelurahan_id').empty().append('<option value="">Pilih kelurahan</option>');
-                                        $.each(data, function(i, item) {
-                                            $('#kelurahan_id').append('<option value="'+ item.id +'">'+ item.name +'</option>');
-                                        });
-                                    });
-                                }
-                            });
-                        });
-                    </script>
-
 
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
@@ -346,7 +306,7 @@
                                 @if($biodata)
                                 <option value="{{ $biodata->golongan_darah }}">{{ $biodata->golongan_darah }}</option>
                                 @else
-                                <option value="">Pilih golongan darah</option>
+                                <option value="">Pilih Golongan Darah</option>
                                 @endif
                                 <option value="A">A</option>
                                 <option value="B">B</option>
@@ -357,13 +317,15 @@
                     </div>
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label>Tinggi badan<sup>(cm)</sup>
+                            <label>Tinggi Badan
+                                <span style="font-size: 0.85em; color: gray;">(tuliskan angka saja dalam cm)</span>
                                 <span class="text-danger">*</span>
                             </label>
                             <input type="text" name="tinggi_badan" value="{{ $biodata->tinggi_badan ?? '' }}" class="form-control">
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label>Berat badan<sup>(kg)</sup>
+                            <label>Berat Badan
+                                <span style="font-size: 0.85em; color: gray;">(tuliskan angka saja dalam kg)</span>
                                 <span class="text-danger">*</span>
                             </label>
                             <input type="text" name="berat_badan" value="{{ $biodata->berat_badan ?? '' }}" class="form-control">
@@ -373,20 +335,23 @@
 
                 <!-- Step Pendidikan -->
                 <div class="tab-pane fade" id="step2">
+                    <h6 class="text-primary mb-3">Data Pendidikan</h6>
                     <div class="col-md-6 mb-3">
-                        <label for="pendidikan_terakhir" class="form-label">Pendidikan Terakhir
+                        <label for="pendidikan_terakhir" class="form-label">Tingkat Pendidikan Terakhir
                             <span class="text-danger">*</span>
                         </label>
                         <select class="form-select" name="pendidikan_terakhir" required>
                             @if($biodata)
                             <option value="{{ $biodata->pendidikan_terakhir }}">{{ $biodata->pendidikan_terakhir }}</option>
                             @else
-                            <option value="">Pilih pendidikan terakhir</option>
+                            <option value="">Pilih Pendidikan Terakhir</option>
                             @endif
                             <option value="SD">SD</option>
                             <option value="SMP">SMP</option>
                             <option value="SMA">SMA</option>
                             <option value="SMK">SMK</option>
+                            <option value="D1">D1</option>
+                            <option value="D2">D2</option>
                             <option value="D3">D3</option>
                             <option value="D4">D4</option>
                             <option value="S1">S1</option>
@@ -395,7 +360,7 @@
                         </select>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label for="nama_instansi" class="form-label">Nama Sekolah/Kampus
+                        <label for="nama_instansi" class="form-label">Nama Sekolah/Universitas/Institut
                             <span class="text-danger">*</span>
                         </label>
                         <input type="text" class="form-control" name="nama_instansi" value="{{ $biodata->nama_instansi ?? '' }}" required>
@@ -407,7 +372,8 @@
                         <input type="text" class="form-control" name="jurusan" value="{{ $biodata->jurusan ?? '' }}" required>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label for="nilai_ipk" class="form-label">IPK/Nilai Ijazah
+                        <label for="nilai_ipk" class="form-label" style="margin: 0;">IPK/Nilai Ijazah</label>
+                            <span style="font-size: 0.85em; color: gray;">(Contoh: 3.89, gunakan titik untuk penulisan angka desimal, bukan koma)</span>
                             <span class="text-danger">*</span>
                         </label>
                         <input type="text" class="form-control" name="nilai_ipk" value="{{ $biodata->nilai_ipk ?? '' }}" required>
@@ -415,13 +381,13 @@
 
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label>Tahun masuk
+                            <label>Tahun Masuk
                                 <span class="text-danger">*</span>
                             </label>
                             <input type="date" name="tahun_masuk" class="form-control" value="{{ $biodata->tahun_masuk ?? '' }}">
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label>Tahun lulus
+                            <label>Tahun Lulus
                                 <span class="text-danger">*</span>
                             </label>
                             <input type="date" name="tahun_lulus" class="form-control" value="{{ $biodata->tahun_lulus ?? '' }}">
@@ -436,41 +402,42 @@
 
                 <!-- Step Keluarga -->
                 <div class="tab-pane fade" id="step3">
-                    <h6 class="text-primary">Nama orang tua</h6>
+                    <h6 class="text-primary mb-3">Nama Orang Tua</h6>
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label>Nama ibu
+                            <label>Nama Ibu
                                 <span class="text-danger">*</span>
                             </label>
                             <input type="text" name="nama_ibu" class="form-control" value="{{ $biodata->nama_ibu ?? '' }}" required>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label>Nama ayah
+                            <label>Nama Ayah
                                 <span class="text-danger">*</span>
                             </label>
                             <input type="text" name="nama_ayah" class="form-control" value="{{ $biodata->nama_ayah ?? '' }}" required>
                         </div>
                     </div>
-                    <h6 class="text-primary">Status pernikahan</h6>
+                    <h6 class="text-primary mt-2 mb-3">Status Pernikahan</h6>
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label for="status_pernikahan">Status pernikahan
+                            <label for="status_pernikahan">Status Pernikahan
                                 <span class="text-danger">*</span>
                             </label>
                             <select name="status_pernikahan" class="form-select" id="status_pernikahan" required>
                                 @if($biodata)
                                 <option value="{{ $biodata->status_pernikahan }}">{{ $biodata->status_pernikahan }}</option>
                                 @else
-                                <option value="">Pilih status pernikahan</option>
+                                <option value="">Pilih Status Pernikahan</option>
                                 @endif
-                                <option value="Belum Kawin">Belum Kawin</option>
-                                <option value="Kawin">Kawin</option>
+                                <option value="Belum Nikah">Belum Nikah</option>
+                                <option value="Nikah">Nikah</option>
                                 <option value="Cerai Hidup">Cerai Hidup</option>
                                 <option value="Cerai Mati">Cerai Mati</option>
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="tanggal_nikah">Tanggal pernikahan</label>
+                            <label for="tanggal_nikah">Tanggal Pernikahan</label>
+                            <span style="font-size: 0.85em; color: gray;">(Kosongkan jika belum pernah menikah/bercerai)</span>
                             <input type="date" name="tanggal_nikah" id="tanggal_nikah" value="{{ $biodata->tanggal_nikah ?? '' }}" class="form-control">
                         </div>
                     </div>
@@ -480,25 +447,29 @@
                     </div>
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label>Jumlah anak</label>
+                            <label>Jumlah Anak</label>
+                            <span style="font-size: 0.85em; color: gray;">(Kosongkan jika tidak memiliki)</span>
                             <input type="number" name="jumlah_anak" class="form-control" value="{{ $biodata->jumlah_anak ?? '' }}">
                         </div>
                     </div>
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label>Nama anak ke-1</label>
+                            <label>Nama Anak ke-1</label>
+                            <span style="font-size: 0.85em; color: gray;">(Kosongkan jika tidak memiliki)</span>
                             <input type="text" name="nama_anak_1" class="form-control" id="" value="{{ $biodata->nama_anak_1 ?? '' }}">
                         </div>
                     </div>
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label>Nama anak ke-2</label>
+                            <label>Nama Anak ke-2</label>
+                            <span style="font-size: 0.85em; color: gray;">(Kosongkan jika tidak memiliki)</span>
                             <input type="text" name="nama_anak_2" class="form-control" id="" value="{{ $biodata->nama_anak_2 ?? '' }}">
                         </div>
                     </div>
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label>Nama anak ke-3</label>
+                            <label>Nama Anak ke-3</label>
+                            <span style="font-size: 0.85em; color: gray;">(Kosongkan jika tidak memiliki)</span>
                             <input type="text" name="nama_anak_3" class="form-control" id="" value="{{ $biodata->nama_anak_3 ?? '' }}">
                         </div>
                     </div>
@@ -506,32 +477,40 @@
 
                 <!-- Step Kontak Darurat -->
                 <div class="tab-pane fade" id="step4">
+                    <h6 class="text-primary mb-3">Kontak Darurat</h6>
                     <div class="col-md-6 mb-3">
-                        <label>Nama kontak darurat
+                        <label>Nama Kontak Darurat
                             <span class="text-danger">*</span>
                         </label>
                         <input type="text" name="nama_kontak_darurat" class="form-control" value="{{ $biodata->nama_kontak_darurat ?? '' }}" required>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label>No telepon
+                        <label>Nomor Telepon
                             <span class="text-danger">*</span>
                         </label>
                         <input type="text" name="no_telp_darurat" class="form-control" value="{{ $biodata->no_telepon_darurat ?? '' }}" required>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label>Status hubungan
+                        <label>Status Hubungan
                             <span class="text-danger">*</span>
                         </label>
                         <select name="status_hubungan" id="status_hubungan" class="form-select" required>
                             @if($biodata)
                             <option value="{{ $biodata->status_hubungan }}">{{ $biodata->status_hubungan }}</option>
                             @else
-                            <option value="">Pilih status hubungan</option>
+                            <option value="">Pilih Status Hubungan</option>
                             @endif
-                            <option value="Orang Tua">Orang Tua</option>
-                            <option value="Saudara">Saudara</option>
+                            <option value="Ayah">Ayah</option>
+                            <option value="Ibu">Ibu</option>
                             <option value="Sepupu">Sepupu</option>
-                            <option value="Teman Dekat">Teman Dekat</option>
+                            <option value="Mertua">Mertua</option>
+                            <option value="Suami">Suami</option>
+                            <option value="Istri">Istri</option>
+                            <option value="Kakak">Kakak</option>
+                            <option value="Adik">Adik</option>
+                            <option value="Paman">Paman</option>
+                            <option value="Bibi">Bibi</option>
+                            <option value="Teman">Teman</option>
                         </select>
                     </div>
                 </div>
@@ -539,7 +518,6 @@
                 <!-- Step 5 -->
                 <div class="tab-pane fade" id="step5">
                     <div class="row g-3">
-
                         @if($biodata && $biodata->cv)
                             <div class="col-md-6 mb-2">
                                 <label class="form-label">CV</label>
@@ -556,16 +534,18 @@
                                     </div>
                                 </div>
                             </div>
-
                         @else
-
-                            <div class="upload-label">
-                                <i class="bi bi-file-earmark-text file-icon"></i>
-                                <span id="file-name-cv">Dokumen belum diunggah</span>
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label">CV</label>
+                                <div class="file-upload-box">
+                                    <div class="upload-label">
+                                        <i class="bi bi-file-earmark-text file-icon"></i>
+                                        <span id="file-name-pas-foto">Dokumen belum diunggah</span>
+                                    </div>
+                                    <label for="pas-foto-upload" class="btn btn-upload">Unggah</label>
+                                    <input type="file" name="cv" id="cv-upload" accept=".pdf,.doc,.docx">
+                                </div>
                             </div>
-                            <label for="cv-upload" class="btn btn-upload">Unggah</label>
-                            <input type="file" name="cv" id="cv-upload" accept=".pdf,.doc,.docx">
-
                         @endif
 
                         @if($biodata && $biodata->pas_foto)
@@ -596,7 +576,6 @@
                                     <input type="file" name="pas_foto" id="pas-foto-upload" accept=".png,.jpg,.jpeg">
                                 </div>
                             </div>
-
                         @endif
 
                         @if($biodata && $biodata->surat_lamaran_kerja)
@@ -660,26 +639,32 @@
                         @endif
 
                         @if($biodata && $biodata->ktp)
-                            <div class="file-box">
-                                <div class="file-info">
-                                    <i class="bi bi-file-earmark-text file-icon"></i>
-                                    <div class="file-meta">
-                                        <span class="filename">{{ $biodata->ktp }}</span>
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label">KTP</label>
+                                <div class="file-box">
+                                    <div class="file-info">
+                                        <i class="bi bi-file-earmark-text file-icon"></i>
+                                        <div class="file-meta">
+                                            <span class="filename">{{ $biodata->ktp }}</span>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="btn-group-custom">
-                                    <a href="{{ asset(Auth::user()->no_ktp . '/dokumen/' . $biodata->ktp) }}" target="_blank" class="btn btn-view">Lihat</a>
-                                    <button type="button" class="btn btn-delete">Hapus</button>
+                                    <div class="btn-group-custom">
+                                        <a href="{{ asset(Auth::user()->no_ktp . '/dokumen/' . $biodata->ktp) }}" target="_blank" class="btn btn-view">Lihat</a>
+                                        <button type="button" class="btn btn-delete">Hapus</button>
+                                    </div>
                                 </div>
                             </div>
                         @else
-                            <div class="file-upload-box">
-                                <div class="upload-label">
-                                    <i class="bi bi-file-earmark-text file-icon"></i>
-                                    <span id="file-name">Dokumen belum diunggah</span>
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label">KTP</label>
+                                <div class="file-upload-box">
+                                    <div class="upload-label">
+                                        <i class="bi bi-file-earmark-text file-icon"></i>
+                                        <span id="file-name-ktp">Dokumen belum diunggah</span>
+                                    </div>
+                                    <label for="ktp-upload" class="btn btn-upload">Unggah</label>
+                                    <input type="file" name="ktp" id="ktp-upload" accept=".png,.jpg,.jpeg">
                                 </div>
-                                <label for="ktp-upload" class="btn btn-upload">Unggah</label>
-                                <input type="file" id="ktp-upload" name="ktp" accept=".jpg,.jpeg,.png">
                             </div>
                         @endif
 
@@ -701,7 +686,8 @@
                             </div>
                             @else
                             <div class="col-md-6 mb-2">
-                                <label class="form-label">SIM B II Umum/SIO <sup>Opsional</sup></label>
+                                <label class="form-label">SIM B II Umum/SIO
+                                    <span style="font-size: 0.85em; color: gray;">(Opsional)</span></label>
                                 <div class="file-upload-box">
                                     <div class="upload-label">
                                         <i class="bi bi-file-earmark-text file-icon"></i>
@@ -759,7 +745,7 @@
                             </div>
                         </div>
                         <div class="col-md-6 mb-2">
-                            <label class="form-label">Kartu Pencari Kejra (AK1)</label>
+                            <label class="form-label">Kartu Pencari Kerja (AK1)</label>
                             <div class="file-upload-box">
                                 <div class="upload-label">
                                     <i class="bi bi-file-earmark-text file-icon"></i>
@@ -770,7 +756,8 @@
                             </div>
                         </div>
                         <div class="col-md-6 mb-2">
-                            <label class="form-label">Sertifikat Pendukung</label>
+                            <label class="form-label">Sertifikat Pendukung
+                                <span style="font-size: 0.85em; color: gray;">(Opsional)</span></label>
                             <div class="file-upload-box">
                                 <div class="upload-label">
                                     <i class="bi bi-file-earmark-text file-icon"></i>
@@ -785,7 +772,7 @@
 
                 <!-- Step 6 -->
                 <div class="tab-pane fade" id="step6">
-                    <h6 class="text-primary">Pernyataan Keaslian Data</h6>
+                    <h5 class="text-primary mb-3">Pernyataan Keaslian Data</h5>
                     <div class="row g-3">
                         <div class="col-md-12">
                             <div class="form-check form-check-inline">

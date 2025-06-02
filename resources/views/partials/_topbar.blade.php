@@ -7,8 +7,10 @@
         </button>
         <div class="text-center text-lg-start">
             <h6 class="text-danger fw-bold mb-1">Hati-Hati Penipuan!</h6>
-            <p class="mb-0 text-dark small">
-                PT Virtue Dragon Nickel Industry (PT VDNI) menyampaikan bahwa perusahaan tidak pernah meminta biaya apapun dalam proses perekrutan karyawan. 
+            <p class="mb-0 text-dark small" style="font-weight: normal;">
+                PT Virtue Dragon Nickel Industry (PT VDNI) menyampaikan bahwa perusahaan 
+                <strong>tidak pernah</strong> 
+                meminta biaya apapun dalam proses perekrutan karyawan. 
                 Harap waspada terhadap oknum yang menggunakan nama PT VDNI untuk meminta biaya dari para pencari kerja.
             </p>
         </div>
