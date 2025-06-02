@@ -193,62 +193,109 @@
                             <input type="date" name="tanggal_lahir" class="form-control" value="{{ $biodata->tanggal_lahir ?? '' }}" required>
                         </div>
                     </div>
+                    <!-- Include jQuery -->
+                    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
                     <div class="row g-3">
+                        <!-- Provinsi -->
                         <div class="col-md-6 mb-3">
-                            <label>Provinsi
-                                <span class="text-danger">*</span>
-                            </label>
+                            <label>Provinsi <span class="text-danger">*</span></label>
                             <select name="provinsi" id="provinsi_id" class="form-select">
-                                @if($biodata)
-                                <option value="{{ $biodata->provinsi }}">{{ $biodata->getProvinsi->provinsi }}</option>
-                                @else
                                 <option value="">Pilih provinsi</option>
-                                @endif
-                                @foreach ($provinsis as $item)
-                                <option value="{{ $item->id }}">{{ $item->provinsi }}</option>
+                                @foreach ($provinsis as $prov)
+                                    <option value="{{ $prov->id }}" {{ (isset($biodata) && $biodata->provinsi == $prov->id) ? 'selected' : '' }}>
+                                        {{ $prov->name }}
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
+
+                        <!-- Kabupaten -->
                         <div class="col-md-6 mb-3">
-                            <label>Kabupaten
-                                <span class="text-danger">*</span>
-                            </label>
+                            <label>Kabupaten <span class="text-danger">*</span></label>
                             <select name="kabupaten" id="kabupaten_id" class="form-select">
-                                @if($biodata)
-                                <option value="{{ $biodata->kabupaten }}">{{ $biodata->getKabupaten->kabupaten }}</option>
-                                @else
                                 <option value="">Pilih kabupaten</option>
+                                @if(isset($biodata) && $biodata->kabupaten)
+                                    <option value="{{ $biodata->kabupaten }}" selected>{{ $biodata->getKabupaten->name }}</option>
                                 @endif
                             </select>
                         </div>
                     </div>
 
                     <div class="row g-3">
+                        <!-- Kecamatan -->
                         <div class="col-md-6 mb-3">
-                            <label>Kecamatan
-                                <span class="text-danger">*</span>
-                            </label>
+                            <label>Kecamatan <span class="text-danger">*</span></label>
                             <select name="kecamatan" id="kecamatan_id" class="form-select">
-                                @if($biodata)
-                                <option value="{{ $biodata->kecamatan }}">{{ $biodata->getKecamatan->kecamatan }}</option>
-                                @else
                                 <option value="">Pilih kecamatan</option>
+                                @if(isset($biodata) && $biodata->kecamatan)
+                                    <option value="{{ $biodata->kecamatan }}" selected>{{ $biodata->getKecamatan->name }}</option>
                                 @endif
                             </select>
                         </div>
+
+                        <!-- Kelurahan -->
                         <div class="col-md-6 mb-3">
-                            <label>Kelurahan/Desa
-                                <span class="text-danger">*</span>
-                            </label>
+                            <label>Kelurahan/Desa <span class="text-danger">*</span></label>
                             <select name="kelurahan" id="kelurahan_id" class="form-select">
-                                @if($biodata)
-                                <option value="{{ $biodata->kelurahan }}">{{ $biodata->getKelurahan->kelurahan }}</option>
-                                @else
                                 <option value="">Pilih kelurahan</option>
+                                @if(isset($biodata) && $biodata->kelurahan)
+                                    <option value="{{ $biodata->kelurahan }}" selected>{{ $biodata->getKelurahan->name }}</option>
                                 @endif
                             </select>
                         </div>
                     </div>
+
+                    <!-- AJAX script untuk dynamic dropdown -->
+                    <script>
+                        $(document).ready(function() {
+                            $('#provinsi_id').on('change', function() {
+                                let provinsiID = $(this).val();
+                                $('#kabupaten_id').html('<option value="">Memuat...</option>');
+                                $('#kecamatan_id').html('<option value="">Pilih kecamatan</option>');
+                                $('#kelurahan_id').html('<option value="">Pilih kelurahan</option>');
+
+                                if (provinsiID) {
+                                    $.get('/get-kabupaten/' + provinsiID, function(data) {
+                                        $('#kabupaten_id').empty().append('<option value="">Pilih kabupaten</option>');
+                                        $.each(data, function(i, item) {
+                                            $('#kabupaten_id').append('<option value="'+ item.id +'">'+ item.name +'</option>');
+                                        });
+                                    });
+                                }
+                            });
+
+                            $('#kabupaten_id').on('change', function() {
+                                let kabupatenID = $(this).val();
+                                $('#kecamatan_id').html('<option value="">Memuat...</option>');
+                                $('#kelurahan_id').html('<option value="">Pilih kelurahan</option>');
+
+                                if (kabupatenID) {
+                                    $.get('/get-kecamatan/' + kabupatenID, function(data) {
+                                        $('#kecamatan_id').empty().append('<option value="">Pilih kecamatan</option>');
+                                        $.each(data, function(i, item) {
+                                            $('#kecamatan_id').append('<option value="'+ item.id +'">'+ item.name +'</option>');
+                                        });
+                                    });
+                                }
+                            });
+
+                            $('#kecamatan_id').on('change', function() {
+                                let kecamatanID = $(this).val();
+                                $('#kelurahan_id').html('<option value="">Memuat...</option>');
+
+                                if (kecamatanID) {
+                                    $.get('/get-kelurahan/' + kecamatanID, function(data) {
+                                        $('#kelurahan_id').empty().append('<option value="">Pilih kelurahan</option>');
+                                        $.each(data, function(i, item) {
+                                            $('#kelurahan_id').append('<option value="'+ item.id +'">'+ item.name +'</option>');
+                                        });
+                                    });
+                                }
+                            });
+                        });
+                    </script>
+
 
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
@@ -493,141 +540,126 @@
                 <div class="tab-pane fade" id="step5">
                     <div class="row g-3">
 
-                        @if($biodata && !$biodata->cv)
-                        <div class="col-md-6 mb-2">
-                            <label class="form-label">CV</label>
-                            <div class="file-upload-box">
-                                <div class="upload-label">
-                                    <i class="bi bi-file-earmark-text file-icon"></i>
-                                    <span id="file-name-cv">Dokumen belum diunggah</span>
-                                </div>
-                                <label for="cv-upload" class="btn btn-upload">Unggah</label>
-                                <input type="file" name="cv" id="cv-upload" accept=".pdf,.doc,.docx">
-                            </div>
-                        </div>
-                        @else
-                        <div class="col-md-6 mb-2">
-                            <label class="form-label">CV</label>
-                            <div class="file-box">
-                                <div class="file-info">
-                                    <i class="bi bi-file-earmark-text file-icon"></i>
-                                    <div class="file-meta">
-                                        <span class="filename">{{ $biodata->cv }}</span>
+                        @if($biodata && $biodata->cv)
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label">CV</label>
+                                <div class="file-box">
+                                    <div class="file-info">
+                                        <i class="bi bi-file-earmark-text file-icon"></i>
+                                        <div class="file-meta">
+                                            <span class="filename">{{ $biodata->cv }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="btn-group-custom">
+                                        <a href="{{ asset(Auth::user()->no_ktp . '/dokumen/' . $biodata->cv) }}" target="_blank" class="btn btn-view">Lihat</a>
+                                        <button type="button" class="btn btn-delete">Hapus</button>
                                     </div>
                                 </div>
-                                <div class="btn-group-custom">
-                                    <a href="{{ asset(Auth::user()->no_ktp . '/dokumen/' . $biodata->cv) }}" target="_blank" class="btn btn-view">Lihat</a>
-                                    <button type="button" class="btn btn-delete">Hapus</button>
-                                </div>
                             </div>
-                        </div>
+
+                        @else
+
+                            <div class="upload-label">
+                                <i class="bi bi-file-earmark-text file-icon"></i>
+                                <span id="file-name-cv">Dokumen belum diunggah</span>
+                            </div>
+                            <label for="cv-upload" class="btn btn-upload">Unggah</label>
+                            <input type="file" name="cv" id="cv-upload" accept=".pdf,.doc,.docx">
+
                         @endif
 
-                        @if($biodata && !$biodata->pas_foto)
-                        <div class="col-md-6 mb-2">
-                            <label class="form-label">Pas Foto 3x4</label>
-                            <div class="file-upload-box">
-                                <div class="upload-label">
-                                    <i class="bi bi-file-earmark-text file-icon"></i>
-                                    <span id="file-name-pas-foto">Dokumen belum diunggah</span>
-                                </div>
-                                <label for="pas-foto-upload" class="btn btn-upload">Unggah</label>
-                                <input type="file" name="pas_foto" id="pas-foto-upload" accept=".png,.jpg,.jpeg">
-                            </div>
-                        </div>
-                        @else
-                        <div class="col-md-6 mb-2">
-                            <label class="form-label">Pas Foto 3x4</label>
-                            <div class="file-box">
-                                <div class="file-info">
-                                    <i class="bi bi-file-earmark-text file-icon"></i>
-                                    <div class="file-meta">
-                                        <span class="filename">{{ $biodata->pas_foto }}</span>
+                        @if($biodata && $biodata->pas_foto)
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label">Pas Foto 3x4</label>
+                                <div class="file-box">
+                                    <div class="file-info">
+                                        <i class="bi bi-file-earmark-text file-icon"></i>
+                                        <div class="file-meta">
+                                            <span class="filename">{{ $biodata->pas_foto }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="btn-group-custom">
+                                        <a href="{{ asset(Auth::user()->no_ktp . '/dokumen/' . $biodata->pas_foto) }}" target="_blank" class="btn btn-view">Lihat</a>
+                                        <button type="button" class="btn btn-delete">Hapus</button>
                                     </div>
                                 </div>
-                                <div class="btn-group-custom">
-                                    <a href="{{ asset(Auth::user()->no_ktp . '/dokumen/' . $biodata->pas_foto) }}" target="_blank" class="btn btn-view">Lihat</a>
-                                    <button type="button" class="btn btn-delete">Hapus</button>
+                            </div>
+                        @else
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label">Pas Foto 3x4</label>
+                                <div class="file-upload-box">
+                                    <div class="upload-label">
+                                        <i class="bi bi-file-earmark-text file-icon"></i>
+                                        <span id="file-name-pas-foto">Dokumen belum diunggah</span>
+                                    </div>
+                                    <label for="pas-foto-upload" class="btn btn-upload">Unggah</label>
+                                    <input type="file" name="pas_foto" id="pas-foto-upload" accept=".png,.jpg,.jpeg">
                                 </div>
                             </div>
-                        </div>
+
                         @endif
 
-                        @if($biodata && !$biodata->surat_lamaran_kerja)
-                        <div class="col-md-6 mb-2">
-                            <label class="form-label">Surat Lamaran Kerja</label>
-                            <div class="file-upload-box">
-                                <div class="upload-label">
-                                    <i class="bi bi-file-earmark-text file-icon"></i>
-                                    <span id="file-name">Dokumen belum diunggah</span>
-                                </div>
-                                <label for="slk-upload" class="btn btn-upload">Unggah</label>
-                                <input type="file" id="slk-upload" name="surat_lamaran_kerja" accept=".pdf,.doc,.docx">
-                            </div>
-                        </div>
-                        @else
-                        <div class="col-md-6 mb-2">
-                            <label class="form-label">Surat Lamaran Kerja</label>
-                            <div class="file-box">
-                                <div class="file-info">
-                                    <i class="bi bi-file-earmark-text file-icon"></i>
-                                    <div class="file-meta">
-                                        <span class="filename">{{ $biodata->surat_lamaran }}</span>
+                        @if($biodata && $biodata->surat_lamaran_kerja)
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label">Surat Lamaran Kerja</label>
+                                <div class="file-box">
+                                    <div class="file-info">
+                                        <i class="bi bi-file-earmark-text file-icon"></i>
+                                        <div class="file-meta">
+                                            <span class="filename">{{ $biodata->surat_lamaran_kerja }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="btn-group-custom">
+                                        <a href="{{ asset(Auth::user()->no_ktp . '/dokumen/' . $biodata->surat_lamaran_kerja) }}" target="_blank" class="btn btn-view">Lihat</a>
+                                        <button type="button" class="btn btn-delete">Hapus</button>
                                     </div>
                                 </div>
-                                <div class="btn-group-custom">
-                                    <a href="{{ asset(Auth::user()->no_ktp . '/dokumen/' . $biodata->surat_lamaran) }}" target="_blank" class="btn btn-view">Lihat</a>
-                                    <button type="button" class="btn btn-delete">Hapus</button>
+                            </div>
+                        @else
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label">Surat Lamaran Kerja</label>
+                                <div class="file-upload-box">
+                                    <div class="upload-label">
+                                        <i class="bi bi-file-earmark-text file-icon"></i>
+                                        <span id="file-name">Dokumen belum diunggah</span>
+                                    </div>
+                                    <label for="slk-upload" class="btn btn-upload">Unggah</label>
+                                    <input type="file" id="slk-upload" name="surat_lamaran_kerja" accept=".pdf,.doc,.docx">
                                 </div>
                             </div>
-                        </div>
                         @endif
 
-                        @if($biodata && !$biodata->ijazah)
-                        <div class="col-md-6 mb-2">
-                            <label class="form-label">Ijazah dan Transkrip nilai</label>
-                            <div class="file-upload-box">
-                                <div class="upload-label">
-                                    <i class="bi bi-file-earmark-text file-icon"></i>
-                                    <span id="file-name">Dokumen belum diunggah</span>
-                                </div>
-                                <label for="ijazah-upload" class="btn btn-upload">Unggah</label>
-                                <input type="file" id="ijazah-upload" name="ijazah_transkrip" accept=".pdf,.doc,.docx">
-                            </div>
-                        </div>
-                        @else
-                        <div class="col-md-6 mb-2">
-                            <label class="form-label">Ijazah dan Transkrip nilai</label>
-                            <div class="file-box">
-                                <div class="file-info">
-                                    <i class="bi bi-file-earmark-text file-icon"></i>
-                                    <div class="file-meta">
-                                        <span class="filename">{{ $biodata->ijazah }}</span>
+                        @if($biodata && $biodata->ijazah_transkrip)
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label">Ijazah dan Transkrip Nilai</label>
+                                <div class="file-box">
+                                    <div class="file-info">
+                                        <i class="bi bi-file-earmark-text file-icon"></i>
+                                        <div class="file-meta">
+                                            <span class="filename">{{ $biodata->ijazah_transkrip }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="btn-group-custom">
+                                        <a href="{{ asset(Auth::user()->no_ktp . '/dokumen/' . $biodata->ijazah_transkrip) }}" target="_blank" class="btn btn-view">Lihat</a>
+                                        <button type="button" class="btn btn-delete">Hapus</button>
                                     </div>
                                 </div>
-                                <div class="btn-group-custom">
-                                    <a href="{{ asset(Auth::user()->no_ktp . '/dokumen/' . $biodata->ijazah) }}" target="_blank" class="btn btn-view">Lihat</a>
-                                    <button type="button" class="btn btn-delete">Hapus</button>
+                            </div>
+                            @else
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label">Ijazah dan Transkrip Nilai</label>
+                                <div class="file-upload-box">
+                                    <div class="upload-label">
+                                        <i class="bi bi-file-earmark-text file-icon"></i>
+                                        <span id="file-name">Dokumen belum diunggah</span>
+                                    </div>
+                                    <label for="ijazah-upload" class="btn btn-upload">Unggah</label>
+                                    <input type="file" id="ijazah-upload" name="ijazah_transkrip" accept=".pdf,.doc,.docx">
                                 </div>
                             </div>
-                        </div>
                         @endif
 
-                        @if($biodata && !$biodata->ktp)
-                        <div class="col-md-6 mb-2">
-                            <label class="form-label">Kartu Tanda Penduduk (KTP)</label>
-                            <div class="file-upload-box">
-                                <div class="upload-label">
-                                    <i class="bi bi-file-earmark-text file-icon"></i>
-                                    <span id="file-name">Dokumen belum diunggah</span>
-                                </div>
-                                <label for="ktp-upload" class="btn btn-upload">Unggah</label>
-                                <input type="file" id="ktp-upload" name="ktp" accept=".jpg,.jpeg,.png">
-                            </div>
-                        </div>
-                        @else
-                        <div class="col-md-6 mb-2">
-                            <label class="form-label">Kartu Tanda Penduduk (KTP)</label>
+                        @if($biodata && $biodata->ktp)
                             <div class="file-box">
                                 <div class="file-info">
                                     <i class="bi bi-file-earmark-text file-icon"></i>
@@ -640,38 +672,48 @@
                                     <button type="button" class="btn btn-delete">Hapus</button>
                                 </div>
                             </div>
-                        </div>
-                        @endif
-
-                        @if($biodata && !$biodata->sim_b_2)
-                        <div class="col-md-6 mb-2">
-                            <label class="form-label">SIM B II Umum/SIO <sup>Opsional</sup></label>
+                        @else
                             <div class="file-upload-box">
                                 <div class="upload-label">
                                     <i class="bi bi-file-earmark-text file-icon"></i>
                                     <span id="file-name">Dokumen belum diunggah</span>
                                 </div>
-                                <label for="sim-upload" class="btn btn-upload">Unggah</label>
-                                <input type="file" id="sim-upload" name="sim_b_2" accept=".jpg,.jpeg,.png">
+                                <label for="ktp-upload" class="btn btn-upload">Unggah</label>
+                                <input type="file" id="ktp-upload" name="ktp" accept=".jpg,.jpeg,.png">
                             </div>
-                        </div>
-                        @else
-                        <div class="col-md-6 mb-2">
-                            <label class="form-label">SIM B II Umum/SIO <sup>Opsional</sup></label>
-                            <div class="file-box">
-                                <div class="file-info">
-                                    <i class="bi bi-file-earmark-text file-icon"></i>
-                                    <div class="file-meta">
-                                        <span class="filename">{{ $biodata->sim_b_2 }}</span>
+                        @endif
+
+                        @if($biodata && $biodata->sim_b_2)
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label">SIM B II Umum/SIO <sup>Opsional</sup></label>
+                                <div class="file-box">
+                                    <div class="file-info">
+                                        <i class="bi bi-file-earmark-text file-icon"></i>
+                                        <div class="file-meta">
+                                            <span class="filename">{{ $biodata->sim_b_2 }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="btn-group-custom">
+                                        <a href="{{ asset(Auth::user()->no_ktp . '/dokumen/' . $biodata->sim_b_2) }}" target="_blank" class="btn btn-view">Lihat</a>
+                                        <button type="button" class="btn btn-delete">Hapus</button>
                                     </div>
                                 </div>
-                                <div class="btn-group-custom">
-                                    <a href="{{ asset(Auth::user()->no_ktp . '/dokumen/' . $biodata->sim_b_2) }}" target="_blank" class="btn btn-view">Lihat</a>
-                                    <button type="button" class="btn btn-delete">Hapus</button>
+                            </div>
+                            @else
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label">SIM B II Umum/SIO <sup>Opsional</sup></label>
+                                <div class="file-upload-box">
+                                    <div class="upload-label">
+                                        <i class="bi bi-file-earmark-text file-icon"></i>
+                                        <span id="file-name">Dokumen belum diunggah</span>
+                                    </div>
+                                    <label for="sim-upload" class="btn btn-upload">Unggah</label>
+                                    <input type="file" id="sim-upload" name="sim_b_2" accept=".pdf,.jpg,.jpeg,.png">
                                 </div>
                             </div>
-                        </div>
+
                         @endif
+
                         <div class="col-md-6 mb-2">
                             <label class="form-label">SKCK</label>
                             <div class="file-upload-box">

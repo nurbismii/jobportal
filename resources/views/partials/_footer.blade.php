@@ -11,9 +11,8 @@
                                     <!-- <img src="img/logo.png" alt="Logo"> -->
                                 </a>
                                 <h4>Kontak Kami</h4>
-                                <p class="text-white mb-2">Alamat: Kawasan Industri Morosi, Konawe, Sulawesi Tenggara</p>
-                                <p class="text-white mb-2">Email: <a href="mailto:vdnirekrutmen88@gmail.com">vdnirekrutmen88@gmail.com</a></p>
-                                <p class="text-white mb-4">Telepon: (0401) 1234567</p>
+                                <p class="text-white mb-2">Alamat: <a href="https://maps.app.goo.gl/4GznN2vF7Y8TUsoa9">Kawasan Industri Morosi, Konawe, Sulawesi Tenggara</a></p>
+                                <p class="text-white mb-4">Email: <a href="mailto:vdnirekrutmen88@gmail.com">vdnirekrutmen88@gmail.com</a></p>
                                 <div class="footer-btn d-flex">
                                 <a class="btn btn-md-square rounded-circle me-3" 
                                 href="https://www.instagram.com/hr_vdni" 
