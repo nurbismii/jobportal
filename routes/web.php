@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BiodataController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -15,9 +16,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 // User route
-Route::get('/', function () {
-    return view('beranda');
-});
+Route::get('/', [App\Http\Controllers\BerandaController::class, 'index'])->name('beranda');
 
 Route::resource('lowongan-kerja', 'App\Http\Controllers\LowonganController');
 Route::resource('pengumuman', 'App\Http\Controllers\PengumumanController');
@@ -27,6 +26,7 @@ Route::resource('pendaftaran', 'App\Http\Controllers\PendaftaranController');
 Auth::routes();
 
 Route::resource('biodata', 'App\Http\Controllers\BiodataController');
+Route::get('/biodata/delete-file/{field}', [BiodataController::class, 'deleteFile'])->name('biodata.deleteFile');
 
 Route::group(['prefix' => 'api'], function () {
     Route::get('kabupaten/{id}', [App\Http\Controllers\ApiController::class, 'fetchKabupaten']);

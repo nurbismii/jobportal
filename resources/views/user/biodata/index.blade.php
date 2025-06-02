@@ -124,7 +124,7 @@
                     <button class="nav-link" data-bs-toggle="tab" data-bs-target="#step5" type="button">Dokumen Pribadi</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#step6" type="button">Pernyataan</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#step6" type="button">Pernyataan dan Ajukan</button>
                 </li>
             </ul>
 
@@ -512,12 +512,19 @@
                                 <div class="file-info">
                                     <i class="bi bi-file-earmark-text file-icon"></i>
                                     <div class="file-meta">
-                                        <span class="filename">{{ $biodata->cv }}</span>
+                                        <span class="file-name-cv">{{ $biodata->cv }}</span>
+                                        <input type="hidden" name="cv" value="{{ $biodata->cv }}">
                                     </div>
                                 </div>
                                 <div class="btn-group-custom">
                                     <a href="{{ asset(Auth::user()->no_ktp . '/dokumen/' . $biodata->cv) }}" target="_blank" class="btn btn-view">Lihat</a>
-                                    <button type="button" class="btn btn-delete">Hapus</button>
+                                    <input type="file" name="cv" id="cv-upload" value="{{ $biodata->cv }}">
+                                    <button type="button"
+                                        class="btn btn-delete btn-confirm-delete"
+                                        data-url="{{ route('biodata.deleteFile', ['field' => 'cv']) }}"
+                                        data-field="cv">
+                                        Hapus
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -542,27 +549,33 @@
                                 <div class="file-info">
                                     <i class="bi bi-file-earmark-text file-icon"></i>
                                     <div class="file-meta">
-                                        <span class="filename">{{ $biodata->pas_foto }}</span>
+                                        <span class="file-name-pas-foto">{{ $biodata->pas_foto }}</span>
+                                        <input type="hidden" name="pas_foto" value="{{ $biodata->pas_foto }}">
                                     </div>
                                 </div>
                                 <div class="btn-group-custom">
                                     <a href="{{ asset(Auth::user()->no_ktp . '/dokumen/' . $biodata->pas_foto) }}" target="_blank" class="btn btn-view">Lihat</a>
-                                    <button type="button" class="btn btn-delete">Hapus</button>
+                                    <button type="button"
+                                        class="btn btn-delete btn-confirm-delete"
+                                        data-url="{{ route('biodata.deleteFile', ['field' => 'pas_foto']) }}"
+                                        data-field="pas_foto">
+                                        Hapus
+                                    </button>
                                 </div>
                             </div>
                         </div>
                         @endif
 
-                        @if($biodata && !$biodata->surat_lamaran_kerja)
+                        @if($biodata && !$biodata->surat_lamaran)
                         <div class="col-md-6 mb-2">
                             <label class="form-label">Surat Lamaran Kerja</label>
                             <div class="file-upload-box">
                                 <div class="upload-label">
                                     <i class="bi bi-file-earmark-text file-icon"></i>
-                                    <span id="file-name">Dokumen belum diunggah</span>
+                                    <span id="file-name-slk">Dokumen belum diunggah</span>
                                 </div>
                                 <label for="slk-upload" class="btn btn-upload">Unggah</label>
-                                <input type="file" id="slk-upload" name="surat_lamaran_kerja" accept=".pdf,.doc,.docx">
+                                <input type="file" id="slk-upload" name="surat_lamaran" accept=".pdf,.doc,.docx">
                             </div>
                         </div>
                         @else
@@ -572,12 +585,18 @@
                                 <div class="file-info">
                                     <i class="bi bi-file-earmark-text file-icon"></i>
                                     <div class="file-meta">
-                                        <span class="filename">{{ $biodata->surat_lamaran }}</span>
+                                        <span class="file-name-slk">{{ $biodata->surat_lamaran }}</span>
+                                        <input type="hidden" name="surat_lamaran" value="{{ $biodata->surat_lamaran }}">
                                     </div>
                                 </div>
                                 <div class="btn-group-custom">
                                     <a href="{{ asset(Auth::user()->no_ktp . '/dokumen/' . $biodata->surat_lamaran) }}" target="_blank" class="btn btn-view">Lihat</a>
-                                    <button type="button" class="btn btn-delete">Hapus</button>
+                                    <button type="button"
+                                        class="btn btn-delete btn-confirm-delete"
+                                        data-url="{{ route('biodata.deleteFile', ['field' => 'surat_lamaran']) }}"
+                                        data-field="surat_lamaran">
+                                        Hapus
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -589,10 +608,10 @@
                             <div class="file-upload-box">
                                 <div class="upload-label">
                                     <i class="bi bi-file-earmark-text file-icon"></i>
-                                    <span id="file-name">Dokumen belum diunggah</span>
+                                    <span id="file-name-ijazah">Dokumen belum diunggah</span>
                                 </div>
                                 <label for="ijazah-upload" class="btn btn-upload">Unggah</label>
-                                <input type="file" id="ijazah-upload" name="ijazah_transkrip" accept=".pdf,.doc,.docx">
+                                <input type="file" id="ijazah-upload" name="ijazah">
                             </div>
                         </div>
                         @else
@@ -602,12 +621,18 @@
                                 <div class="file-info">
                                     <i class="bi bi-file-earmark-text file-icon"></i>
                                     <div class="file-meta">
-                                        <span class="filename">{{ $biodata->ijazah }}</span>
+                                        <span class="file-name-ijazah">{{ $biodata->ijazah }}</span>
+                                        <input type="hidden" name="ijazah" value="{{ $biodata->ijazah }}">
                                     </div>
                                 </div>
                                 <div class="btn-group-custom">
                                     <a href="{{ asset(Auth::user()->no_ktp . '/dokumen/' . $biodata->ijazah) }}" target="_blank" class="btn btn-view">Lihat</a>
-                                    <button type="button" class="btn btn-delete">Hapus</button>
+                                    <button type="button"
+                                        class="btn btn-delete btn-confirm-delete"
+                                        data-url="{{ route('biodata.deleteFile', ['field' => 'ijazah']) }}"
+                                        data-field="ijazah">
+                                        Hapus
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -619,7 +644,7 @@
                             <div class="file-upload-box">
                                 <div class="upload-label">
                                     <i class="bi bi-file-earmark-text file-icon"></i>
-                                    <span id="file-name">Dokumen belum diunggah</span>
+                                    <span id="file-name-ktp">Dokumen belum diunggah</span>
                                 </div>
                                 <label for="ktp-upload" class="btn btn-upload">Unggah</label>
                                 <input type="file" id="ktp-upload" name="ktp" accept=".jpg,.jpeg,.png">
@@ -632,12 +657,18 @@
                                 <div class="file-info">
                                     <i class="bi bi-file-earmark-text file-icon"></i>
                                     <div class="file-meta">
-                                        <span class="filename">{{ $biodata->ktp }}</span>
+                                        <span class="file-name-ktp">{{ $biodata->ktp }}</span>
+                                        <input type="hidden" name="ktp" value="{{ $biodata->ktp }}">
                                     </div>
                                 </div>
                                 <div class="btn-group-custom">
                                     <a href="{{ asset(Auth::user()->no_ktp . '/dokumen/' . $biodata->ktp) }}" target="_blank" class="btn btn-view">Lihat</a>
-                                    <button type="button" class="btn btn-delete">Hapus</button>
+                                    <button type="button"
+                                        class="btn btn-delete btn-confirm-delete"
+                                        data-url="{{ route('biodata.deleteFile', ['field' => 'ktp']) }}"
+                                        data-field="ktp">
+                                        Hapus
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -649,7 +680,7 @@
                             <div class="file-upload-box">
                                 <div class="upload-label">
                                     <i class="bi bi-file-earmark-text file-icon"></i>
-                                    <span id="file-name">Dokumen belum diunggah</span>
+                                    <span id="file-name-sim">Dokumen belum diunggah</span>
                                 </div>
                                 <label for="sim-upload" class="btn btn-upload">Unggah</label>
                                 <input type="file" id="sim-upload" name="sim_b_2" accept=".jpg,.jpeg,.png">
@@ -662,82 +693,238 @@
                                 <div class="file-info">
                                     <i class="bi bi-file-earmark-text file-icon"></i>
                                     <div class="file-meta">
-                                        <span class="filename">{{ $biodata->sim_b_2 }}</span>
+                                        <span class="file-name-sim">{{ $biodata->sim_b_2 }}</span>
+                                        <input type="hidden" name="sim_b_2" value="{{ $biodata->sim_b_2 }}">
                                     </div>
                                 </div>
                                 <div class="btn-group-custom">
                                     <a href="{{ asset(Auth::user()->no_ktp . '/dokumen/' . $biodata->sim_b_2) }}" target="_blank" class="btn btn-view">Lihat</a>
-                                    <button type="button" class="btn btn-delete">Hapus</button>
+                                    <button type="button"
+                                        class="btn btn-delete btn-confirm-delete"
+                                        data-url="{{ route('biodata.deleteFile', ['field' => 'sim_b_2']) }}"
+                                        data-field="sim_b_2">
+                                        Hapus
+                                    </button>
                                 </div>
                             </div>
                         </div>
                         @endif
+
+                        @if($biodata && !$biodata->skck)
                         <div class="col-md-6 mb-2">
                             <label class="form-label">SKCK</label>
                             <div class="file-upload-box">
                                 <div class="upload-label">
                                     <i class="bi bi-file-earmark-text file-icon"></i>
-                                    <span id="file-name">Dokumen belum diunggah</span>
+                                    <span id="file-name-skck">Dokumen belum diunggah</span>
                                 </div>
                                 <label for="skck-upload" class="btn btn-upload">Unggah</label>
-                                <input type="file" name="skck" id="skck-upload" accept=".pdf,.doc,.docx">
+                                <input type="file" name="skck" id="skck-upload">
                             </div>
                         </div>
+                        @else
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label">SKCK</label>
+                            <div class="file-box">
+                                <div class="file-info">
+                                    <i class="bi bi-file-earmark-text file-icon"></i>
+                                    <div class="file-meta">
+                                        <span class="file-name-skck">{{ $biodata->skck }}</span>
+                                        <input type="hidden" name="skck" value="{{ $biodata->skck }}">
+                                    </div>
+                                </div>
+                                <div class="btn-group-custom">
+                                    <a href="{{ asset(Auth::user()->no_ktp . '/dokumen/' . $biodata->skck) }}" target="_blank" class="btn btn-view">Lihat</a>
+                                    <button type="button"
+                                        class="btn btn-delete btn-confirm-delete"
+                                        data-url="{{ route('biodata.deleteFile', ['field' => 'skck']) }}"
+                                        data-field="skck">
+                                        Hapus
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
+                        @if($biodata && !$biodata->sertifikat_vaksin)
                         <div class="col-md-6 mb-2">
                             <label class="form-label">Sertifikat Vaksin</label>
                             <div class="file-upload-box">
                                 <div class="upload-label">
                                     <i class="bi bi-file-earmark-text file-icon"></i>
-                                    <span id="file-name">Dokumen belum diunggah</span>
+                                    <span id="file-name-sertifikat">Dokumen belum diunggah</span>
                                 </div>
                                 <label for="sertifikat-upload" class="btn btn-upload">Unggah</label>
                                 <input type="file" name="sertifikat_vaksin" id="sertifikat-upload">
                             </div>
                         </div>
+                        @else
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label">SKCK</label>
+                            <div class="file-box">
+                                <div class="file-info">
+                                    <i class="bi bi-file-earmark-text file-icon"></i>
+                                    <div class="file-meta">
+                                        <span class="file-name-sertifikat">{{ $biodata->sertifikat_vaksin }}</span>
+                                        <input type="hidden" name="sertifikat_vaksin" value="{{ $biodata->sertifikat_vaksin }}">
+                                    </div>
+                                </div>
+                                <div class="btn-group-custom">
+                                    <a href="{{ asset(Auth::user()->no_ktp . '/dokumen/' . $biodata->sertifikat_vaksin) }}" target="_blank" class="btn btn-view">Lihat</a>
+                                    <button type="button"
+                                        class="btn btn-delete btn-confirm-delete"
+                                        data-url="{{ route('biodata.deleteFile', ['field' => 'sertifikat_vaksin']) }}"
+                                        data-field="sertifikat_vaksin">
+                                        Hapus
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
+                        @if($biodata && !$biodata->kartu_keluarga)
                         <div class="col-md-6 mb-2">
                             <label class="form-label">Kartu Keluarga</label>
                             <div class="file-upload-box">
                                 <div class="upload-label">
                                     <i class="bi bi-file-earmark-text file-icon"></i>
-                                    <span id="file-name">Dokumen belum diunggah</span>
+                                    <span id="file-name-kk">Dokumen belum diunggah</span>
                                 </div>
                                 <label for="kk-upload" class="btn btn-upload">Unggah</label>
                                 <input type="file" name="kartu_keluarga" id="kk-upload">
                             </div>
                         </div>
+                        @else
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label">Kartu Keluarga</label>
+                            <div class="file-box">
+                                <div class="file-info">
+                                    <i class="bi bi-file-earmark-text file-icon"></i>
+                                    <div class="file-meta">
+                                        <span class="file-name-kk">{{ $biodata->kartu_keluarga }}</span>
+                                        <input type="hidden" name="kartu_keluarga" value="{{ $biodata->kartu_keluarga }}">
+                                    </div>
+                                </div>
+                                <div class="btn-group-custom">
+                                    <a href="{{ asset(Auth::user()->no_ktp . '/dokumen/' . $biodata->kartu_keluarga) }}" target="_blank" class="btn btn-view">Lihat</a>
+                                    <button type="button"
+                                        class="btn btn-delete btn-confirm-delete"
+                                        data-url="{{ route('biodata.deleteFile', ['field' => 'kartu_keluarga']) }}"
+                                        data-field="kartu_keluarga">
+                                        Hapus
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
+                        @if($biodata && !$biodata->npwp)
                         <div class="col-md-6 mb-2">
                             <label class="form-label">NPWP</label>
                             <div class="file-upload-box">
                                 <div class="upload-label">
                                     <i class="bi bi-file-earmark-text file-icon"></i>
-                                    <span id="file-name">Dokumen belum diunggah</span>
+                                    <span id="file-name-npwp">Dokumen belum diunggah</span>
                                 </div>
                                 <label for="npwp-upload" class="btn btn-upload">Unggah</label>
                                 <input type="file" name="npwp" id="npwp-upload">
                             </div>
                         </div>
+                        @else
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label">NPWP</label>
+                            <div class="file-box">
+                                <div class="file-info">
+                                    <i class="bi bi-file-earmark-text file-icon"></i>
+                                    <div class="file-meta">
+                                        <span class="file-name-npwp">{{ $biodata->npwp }}</span>
+                                        <input type="hidden" name="npwp" value="{{ $biodata->npwp }}">
+                                    </div>
+                                </div>
+                                <div class="btn-group-custom">
+                                    <a href="{{ asset(Auth::user()->no_ktp . '/dokumen/' . $biodata->npwp) }}" target="_blank" class="btn btn-view">Lihat</a>
+                                    <button type="button"
+                                        class="btn btn-delete btn-confirm-delete"
+                                        data-url="{{ route('biodata.deleteFile', ['field' => 'npwp']) }}"
+                                        data-field="npwp">
+                                        Hapus
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
+                        @if($biodata && !$biodata->ak1)
                         <div class="col-md-6 mb-2">
                             <label class="form-label">Kartu Pencari Kejra (AK1)</label>
                             <div class="file-upload-box">
                                 <div class="upload-label">
                                     <i class="bi bi-file-earmark-text file-icon"></i>
-                                    <span id="file-name">Dokumen belum diunggah</span>
+                                    <span id="file-name-ak1">Dokumen belum diunggah</span>
                                 </div>
                                 <label for="ak1-upload" class="btn btn-upload">Unggah</label>
                                 <input type="file" name="ak1" id="ak1-upload">
                             </div>
                         </div>
+                        @else
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label">Kartu Pencari Kejra (AK1)</label>
+                            <div class="file-box">
+                                <div class="file-info">
+                                    <i class="bi bi-file-earmark-text file-icon"></i>
+                                    <div class="file-meta">
+                                        <span class="file-name-ak1">{{ $biodata->ak1 }}</span>
+                                        <input type="hidden" name="ak1" value="{{ $biodata->ak1 }}">
+                                    </div>
+                                </div>
+                                <div class="btn-group-custom">
+                                    <a href="{{ asset(Auth::user()->no_ktp . '/dokumen/' . $biodata->ak1) }}" target="_blank" class="btn btn-view">Lihat</a>
+                                    <button type="button"
+                                        class="btn btn-delete btn-confirm-delete"
+                                        data-url="{{ route('biodata.deleteFile', ['field' => 'ak1']) }}"
+                                        data-field="ak1">
+                                        Hapus
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
+                        @if($biodata && !$biodata->sertifikat_pendukung)
                         <div class="col-md-6 mb-2">
                             <label class="form-label">Sertifikat Pendukung</label>
                             <div class="file-upload-box">
                                 <div class="upload-label">
                                     <i class="bi bi-file-earmark-text file-icon"></i>
-                                    <span id="file-name">Dokumen belum diunggah</span>
+                                    <span id="file-name-serti-pendukung">Dokumen belum diunggah</span>
                                 </div>
                                 <label for="serti-pendukung-upload" class="btn btn-upload">Unggah</label>
-                                <input type="file" name="pendukung" id="serti-pendukung-upload">
+                                <input type="file" name="sertifikat_pendukung" id="serti-pendukung-upload">
                             </div>
                         </div>
+                        @else
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label">Sertifikat Pendukung</label>
+                            <div class="file-box">
+                                <div class="file-info">
+                                    <i class="bi bi-file-earmark-text file-icon"></i>
+                                    <div class="file-meta">
+                                        <span class="file-name-serti-pendukung">{{ $biodata->sertifikat_pendukung }}</span>
+                                        <input type="hidden" name="sertifikat_pendukung" value="{{ $biodata->sertifikat_pendukung }}">
+                                    </div>
+                                </div>
+                                <div class="btn-group-custom">
+                                    <a href="{{ asset(Auth::user()->no_ktp . '/dokumen/' . $biodata->sertifikat_pendukung) }}" target="_blank" class="btn btn-view">Lihat</a>
+                                    <button type="button"
+                                        class="btn btn-delete btn-confirm-delete"
+                                        data-url="{{ route('biodata.deleteFile', ['field' => 'sertifikat_pendukung']) }}"
+                                        data-field="sertifikat_pendukung">
+                                        Hapus
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
                     </div>
                 </div>
 
@@ -747,11 +934,11 @@
                     <div class="row g-3">
                         <div class="col-md-12">
                             <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" id="checkBox1" value="Dengan ini, Saya ( {{ Auth::user()->name}} ) menyatakan bahwa seluruh data dan dokumen yang saya input dan unggah adalah benar dan asli.">
+                                <input class="form-check-input" type="checkbox" id="checkBox1" name="pernyataan_1" value="Dengan ini, Saya ( {{ Auth::user()->name}} ) menyatakan bahwa seluruh data dan dokumen yang saya input dan unggah adalah benar dan asli.">
                                 <label class="form-check-label" for="checkBox1">Dengan ini, Saya ( {{ Auth::user()->name}} ) menyatakan bahwa seluruh data dan dokumen yang saya input dan unggah adalah benar dan asli.</label>
                             </div>
                             <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" id="checkBox2" value="Saya memahami bahwa apabila terbukti melakukan pemalsuan data, saya bersedia menerima konsekuensinya, termasuk tidak diluluskan dalam proses rekrutmen.">
+                                <input class="form-check-input" type="checkbox" id="checkBox2" name="pernyataan_2" value="Saya memahami bahwa apabila terbukti melakukan pemalsuan data, saya bersedia menerima konsekuensinya, termasuk tidak diluluskan dalam proses rekrutmen.">
                                 <label class="form-check-label" for="checkBox2">Saya memahami bahwa apabila terbukti melakukan pemalsuan data, saya bersedia menerima konsekuensinya, termasuk tidak diluluskan dalam proses rekrutmen.</label>
                             </div>
                         </div>
@@ -766,7 +953,7 @@
 
                 <!-- Tombol Selanjutnya dan Submit di kanan -->
                 <div class="d-flex gap-2 ms-auto">
-                    <button type="submit" class="btn btn-success" id="submitBtn">Simpan</button>
+                    <button type="submit" class="btn btn-success" id="submitBtn">Ajukan</button>
                     <button type="button" class="btn btn-primary" id="nextBtn">Selanjutnya</button>
                 </div>
             </div>
@@ -880,24 +1067,21 @@
         // Mencegah klik langsung pada tab selain currentStep
         tabs.forEach((tab, index) => {
             tab.addEventListener('show.bs.tab', function(e) {
-                if (index < currentStep) {
-                    e.preventDefault(); // ini yang benar-benar cegah Bootstrap pindah tab
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Belum Lengkap',
-                        text: 'Silakan lengkapi langkah sebelumnya terlebih dahulu, untuk melanjutkan.',
-                        confirmButtonText: 'OK'
-                    });
+                if (index > currentStep) {
+                    if (!validateStep(currentStep)) {
+                        e.preventDefault();
+                        return;
+                    }
                 }
+                currentStep = index;
+                updateNavButtons();
             });
         });
     });
 
     function showStep(index) {
-        tabs[index].click();
-        prevBtn.disabled = index === 0;
-        nextBtn.classList.toggle('d-none', index === tabs.length - 1);
-        submitBtn.classList.toggle('d-none', index !== tabs.length - 1);
+        tabs[index].click(); // Trigger tab change
+        updateNavButtons(); // Perbarui tombol
     }
 
     function validateStep(index) {
@@ -924,6 +1108,12 @@
         showStep(currentStep);
     });
 
+    function updateNavButtons() {
+        prevBtn.disabled = currentStep === 0;
+        nextBtn.classList.toggle('d-none', currentStep === tabs.length - 1);
+        submitBtn.classList.toggle('d-none', currentStep !== tabs.length - 1);
+    }
+
     document.addEventListener('DOMContentLoaded', () => showStep(currentStep));
 
     function checkCheckboxes() {
@@ -947,64 +1137,133 @@
         document.getElementById('checkBox2').addEventListener('change', checkCheckboxes);
     });
 
-    document.getElementById("cv-upload").addEventListener("change", function() {
-        const fileName = this.files[0]?.name || "Dokumen belum diunggah";
-        document.getElementById("file-name-cv").textContent = fileName;
-    });
+    const cvUpload = document.getElementById('cv-upload');
+    if (cvUpload) {
+        cvUpload.addEventListener('change', function() {
+            const fileName = cvUpload.files[0]?.name || 'Dokumen belum diunggah';
+            document.getElementById('file-name-cv').textContent = fileName;
+        });
+    }
 
-    document.getElementById("pas-foto-upload").addEventListener("change", function() {
-        const fileName = this.files[0]?.name || "Dokumen belum diunggah";
-        document.getElementById("file-name-pas-foto").textContent = fileName;
-    });
+    const pasFotoUpload = document.getElementById('pas-foto-upload');
+    if (pasFotoUpload) {
+        pasFotoUpload.addEventListener('change', function() {
+            const fileName = pasFotoUpload.files[0]?.name || 'Dokumen belum diunggah';
+            document.getElementById('file-name-pas-foto').textContent = fileName;
+        });
+    }
 
-    document.getElementById("slk-upload").addEventListener("change", function() {
-        const fileName = this.files[0]?.name || "Dokumen belum diunggah";
-        document.getElementById("file-name-").textContent = fileName;
-    });
+    const slkUpload = document.getElementById('slk-upload');
+    if (slkUpload) {
+        slkUpload.addEventListener('change', function() {
+            const fileName = slkUpload.files[0]?.name || 'Dokumen belum diunggah';
+            document.getElementById('file-name-slk').textContent = fileName;
+        });
+    }
 
-    document.getElementById("ijazah-upload").addEventListener("change", function() {
-        const fileName = this.files[0]?.name || "Dokumen belum diunggah";
-        document.getElementById("file-name").textContent = fileName;
-    });
+    const ijazahUpload = document.getElementById('ijazah-upload');
+    if (ijazahUpload) {
+        ijazahUpload.addEventListener('change', function() {
+            const fileName = ijazahUpload.files[0]?.name || 'Dokumen belum diunggah';
+            document.getElementById('file-name-ijazah').textContent = fileName;
+        });
+    }
 
-    document.getElementById("ktp-upload").addEventListener("change", function() {
-        const fileName = this.files[0]?.name || "Dokumen belum diunggah";
-        document.getElementById("file-name").textContent = fileName;
-    });
+    const ktpUpload = document.getElementById('ktp-upload');
+    if (ktpUpload) {
+        ktpUpload.addEventListener('change', function() {
+            const fileName = ktpUpload.files[0]?.name || 'Dokumen belum diunggah';
+            document.getElementById('file-name-ktp').textContent = fileName;
+        });
+    }
 
-    document.getElementById("sim-upload").addEventListener("change", function() {
-        const fileName = this.files[0]?.name || "Dokumen belum diunggah";
-        document.getElementById("file-name").textContent = fileName;
-    });
+    const simUpload = document.getElementById('sim-upload');
+    if (simUpload) {
+        simUpload.addEventListener('change', function() {
+            const fileName = simUpload.files[0]?.name || 'Dokumen belum diunggah';
+            document.getElementById('file-name-sim').textContent = fileName;
+        });
+    }
 
-    document.getElementById("skck-upload").addEventListener("change", function() {
-        const fileName = this.files[0]?.name || "Dokumen belum diunggah";
-        document.getElementById("file-name").textContent = fileName;
-    });
+    const skckUpload = document.getElementById('skck-upload');
+    if (skckUpload) {
+        skckUpload.addEventListener('change', function() {
+            const fileName = skckUpload.files[0]?.name || 'Dokumen belum diunggah';
+            document.getElementById('file-name-skck').textContent = fileName;
+        });
+    }
 
-    document.getElementById("sertifikat-upload").addEventListener("change", function() {
-        const fileName = this.files[0]?.name || "Dokumen belum diunggah";
-        document.getElementById("file-name").textContent = fileName;
-    });
+    const sertifikatUpload = document.getElementById('sertifikat-upload');
+    if (sertifikatUpload) {
+        sertifikatUpload.addEventListener('change', function() {
+            const fileName = sertifikatUpload.files[0]?.name || 'Dokumen belum diunggah';
+            document.getElementById('file-name-sertifikat').textContent = fileName;
+        });
+    }
 
-    document.getElementById("kk-upload").addEventListener("change", function() {
-        const fileName = this.files[0]?.name || "Dokumen belum diunggah";
-        document.getElementById("file-name").textContent = fileName;
-    });
+    const kkUpload = document.getElementById('kk-upload');
+    if (kkUpload) {
+        kkUpload.addEventListener('change', function() {
+            const fileName = kkUpload.files[0]?.name || 'Dokumen belum diunggah';
+            document.getElementById('file-name-kk').textContent = fileName;
+        });
+    }
 
-    document.getElementById("npwp-upload").addEventListener("change", function() {
-        const fileName = this.files[0]?.name || "Dokumen belum diunggah";
-        document.getElementById("file-name").textContent = fileName;
-    });
+    const npwpUpload = document.getElementById('npwp-upload');
+    if (npwpUpload) {
+        npwpUpload.addEventListener('change', function() {
+            const fileName = npwpUpload.files[0]?.name || 'Dokumen belum diunggah';
+            document.getElementById('file-name-npwp').textContent = fileName;
+        });
+    }
 
-    document.getElementById("ak1-upload").addEventListener("change", function() {
-        const fileName = this.files[0]?.name || "Dokumen belum diunggah";
-        document.getElementById("file-name").textContent = fileName;
-    });
+    const ak1Upload = document.getElementById('ak1-upload');
+    if (ak1Upload) {
+        ak1Upload.addEventListener('change', function() {
+            const fileName = ak1Upload.files[0]?.name || 'Dokumen belum diunggah';
+            document.getElementById('file-name-ak1').textContent = fileName;
+        });
+    }
 
-    document.getElementById("serti-pendukung-upload").addEventListener("change", function() {
-        const fileName = this.files[0]?.name || "Dokumen belum diunggah";
-        document.getElementById("file-name").textContent = fileName;
+    const sertiPendukungUpload = document.getElementById('serti-pendukung-upload');
+    if (sertiPendukungUpload) {
+        sertiPendukungUpload.addEventListener('change', function() {
+            const fileName = sertiPendukungUpload.files[0]?.name || 'Dokumen belum diunggah';
+            document.getElementById('file-name-serti-pendukung').textContent = fileName;
+        });
+    }
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.btn-confirm-delete').forEach(function(button) {
+            button.addEventListener('click', function() {
+                const url = this.getAttribute('data-url');
+                const field = this.getAttribute('data-field');
+
+                if (confirm(`Yakin ingin menghapus ${field}?`)) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = url;
+
+                    const csrf = document.createElement('input');
+                    csrf.type = 'hidden';
+                    csrf.name = '_token';
+                    csrf.value = '{{ csrf_token() }}';
+
+                    const method = document.createElement('input');
+                    method.type = 'hidden';
+                    method.name = '_method';
+                    method.value = 'DELETE';
+
+                    form.appendChild(csrf);
+                    form.appendChild(method);
+
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        });
     });
 </script>
 

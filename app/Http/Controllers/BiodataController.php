@@ -7,6 +7,7 @@ use App\Models\Hris\Provinsi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use RealRashid\SweetAlert\Facades\Alert;
+use Illuminate\Support\Facades\File;
 
 class BiodataController extends Controller
 {
@@ -20,6 +21,8 @@ class BiodataController extends Controller
 
     public function store(Request $request)
     {
+        $biodata = Biodata::where('user_id', auth()->id())->first();
+
         $dokumenFields = [
             'cv',
             'pas_foto',
@@ -28,17 +31,18 @@ class BiodataController extends Controller
             'ktp',
             'sim_b_2',
             'skck',
-            'vaksin',
-            'kk',
+            'sertifikat_vaksin',
+            'kartu_keluarga',
             'npwp',
             'ak1',
-            'pendukung'
+            'sertifikat_pendukung'
         ];
 
         $fileNames = [];
 
         $folderPath = public_path(Auth::user()->no_ktp . '/dokumen');
 
+        // Buat folder jika belum ada
         foreach ($dokumenFields as $field) {
             if ($request->hasFile($field)) {
                 $file = $request->file($field);
@@ -46,7 +50,8 @@ class BiodataController extends Controller
                 $file->move($folderPath, $fileName);
                 $fileNames[$field] = $fileName;
             } else {
-                $fileNames[$field] = null;
+                // Gunakan data lama jika tidak ada file baru
+                $fileNames[$field] = $biodata ? $biodata->{$field} : null;
             }
         }
 
@@ -109,15 +114,58 @@ class BiodataController extends Controller
                 'ktp' => $fileNames['ktp'],
                 'sim_b_2' => $fileNames['sim_b_2'],
                 'skck' => $fileNames['skck'],
-                'sertifikat_vaksin' => $fileNames['vaksin'],
-                'kk' => $fileNames['kk'],
+                'sertifikat_vaksin' => $fileNames['sertifikat_vaksin'],
+                'kartu_keluarga' => $fileNames['kartu_keluarga'],
                 'npwp' => $fileNames['npwp'],
                 'ak1' => $fileNames['ak1'],
-                'sertifikat_pendukung' => $fileNames['pendukung'],
+                'sertifikat_pendukung' => $fileNames['sertifikat_pendukung'],
+
+                // Tambahan
+                'status_pernyataan' => $request->pernyataan_1 . ', ' . $request->pernyataan_2,
             ]
         );
 
         Alert::success('success', 'Biodata diri berhasil ditambahkan.');
+        return redirect()->back();
+    }
+
+    public function deleteFile($field)
+    {
+        $allowedFields = [
+            'cv',
+            'pas_foto',
+            'surat_lamaran',
+            'ijazah',
+            'ktp',
+            'sim_b_2',
+            'skck',
+            'sertifikat_vaksin',
+            'kartu_keluarga',
+            'npwp',
+            'ak1',
+            'sertifikat_pendukung'
+        ];
+
+        if (!in_array($field, $allowedFields)) {
+            abort(403, 'Akses tidak diizinkan.');
+        }
+
+        $biodata = Biodata::where('user_id', auth()->id())->firstOrFail();
+
+        $fileName = $biodata->{$field};
+
+        if ($fileName) {
+            $filePath = public_path(Auth::user()->no_ktp . '/dokumen/' . $fileName);
+
+            if (File::exists($filePath)) {
+                File::delete($filePath);
+            }
+
+            $biodata->{$field} = null;
+            $biodata->save();
+        }
+
+        Alert::success('Berhasil', ucfirst(str_replace('_', ' ', $field)) . ' berhasil dihapus.');
         return redirect()->back();
     }
 }
