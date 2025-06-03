@@ -17,7 +17,7 @@
 
 <!-- Carousel Start -->
 <div class="header-carousel owl-carousel">
-    <div class="header-carousel-item" style="background-color: #6AA7D7;">
+    <div class="header-carousel-item bg-primary">
         <div class="carousel-caption">
             <div class="container">
                 <div class="row g-4 align-items-center">
@@ -42,7 +42,7 @@
             </div>
         </div>
     </div>
-    <div class="header-carousel-item" style="background-color: #6AA7D7;">
+    <div class="header-carousel-item bg-primary">
         <div class="carousel-caption">
             <div class="container">
                 <div class="row gy-4 gy-lg-0 gx-0 gx-lg-5 align-items-center">
@@ -301,5 +301,5 @@
         </div>
     </div>
     <!-- FAQs End -->
-
-    @endsection
+</div>
+@endsection

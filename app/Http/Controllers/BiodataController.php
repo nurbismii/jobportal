@@ -43,8 +43,21 @@ class BiodataController extends Controller
         $folderPath = public_path(Auth::user()->no_ktp . '/dokumen');
 
         // Buat folder jika belum ada
+        if (!file_exists($folderPath)) {
+            mkdir($folderPath, 0777, true);
+        }
+
         foreach ($dokumenFields as $field) {
             if ($request->hasFile($field)) {
+                // Hapus file lama jika ada
+                if ($biodata && $biodata->{$field}) {
+                    $oldFilePath = $folderPath . '/' . $biodata->{$field};
+                    if (file_exists($oldFilePath)) {
+                        unlink($oldFilePath);
+                    }
+                }
+
+                // Simpan file baru
                 $file = $request->file($field);
                 $fileName = $file->getClientOriginalName();
                 $file->move($folderPath, $fileName);
