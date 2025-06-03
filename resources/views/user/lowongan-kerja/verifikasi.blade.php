@@ -2,6 +2,30 @@
 
 @section('content')
 <div class="container py-5">
+    @if($msg_no_ktp || $msg_no_ktp_score)
+    <div class="alert alert-primary border-1 border-primary shadow-sm rounded-3 p-4">
+        <div class="d-flex align-items-start">
+            <div class="me-3">
+                <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
+            </div>
+            <div>
+                <h4 class="mb-2 text-dark fw-bold">Pemeriksaan OCR! (Optical Character Recognition)</h4>
+                <p class="mb-3 text-danger">
+                    Perbaiki dokumen KTP anda sebelum melamar. Pastikan KTP anda sudah sesuai dengan format yang ditentukan :
+                </p>
+                <ul class="mb-0 ps-3">
+                    @if($msg_no_ktp)
+                    <li class="mb-1">{{ $msg_no_ktp }}</li>
+                    @endif
+
+                    @if($msg_no_ktp_score)
+                    <li class="mb-1">{{ $msg_no_ktp_score }}</li>
+                    @endif
+                </ul>
+            </div>
+        </div>
+    </div>
+    @endif
     @if (!empty($emptyFields))
     <div class="alert alert-primary border-1 border-primary shadow-sm rounded-3 p-4">
         <div class="d-flex align-items-start">

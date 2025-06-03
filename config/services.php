@@ -30,4 +30,10 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'ocr' => [
+        'token' => env('OCR_API_TOKEN'),
+        'link' => env('OCR_API_LINK'),
+        'type' => env('OCR_API_TYPE'),
+    ],
+
 ];
