@@ -12,7 +12,9 @@
         "laravel/sanctum": "^2.11",
         "laravel/tinker": "^2.5",
         "laravel/ui": "^3.4",
-        "realrashid/sweet-alert": "^7.3"
+        "league/flysystem-cached-adapter": "1.0",
+        "realrashid/sweet-alert": "^7.3",
+        "thiagoalessio/tesseract_ocr": "^2.13"
     },
     "require-dev": {
         "facade/ignition": "^2.5",

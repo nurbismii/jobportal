@@ -12,4 +12,14 @@ class Lamaran extends Model
     protected $table = 'lamaran';
 
     protected $guarded = [];
+
+    public function lowongan()
+    {
+        return $this->hasOne(Lowongan::class, 'id', 'lowongan_id');
+    }
+
+    public function biodata()
+    {
+        return $this->hasOne(Biodata::class, 'id', 'biodata_id');
+    }
 }

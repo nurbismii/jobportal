@@ -43,7 +43,7 @@
                     <a href="/" class="nav-item nav-link">Beranda</a>
                     <a href="{{ route('biodata.index') }}" class="nav-item nav-link">Formulir Biodata</a>
                     <a href="{{ route('lowongan-kerja.index') }}" class="nav-item nav-link">Lowongan Kerja</a>
-                    <a href="" class="nav-item nav-link">Lamaran</a>
+                    <a href="{{ route('lamaran.index') }}" class="nav-item nav-link">Lamaran</a>
                     <a href="" class="nav-item nav-link">Pengumuman</a>
                 </div>
             </div>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Biodata;
 use App\Models\Hris\Provinsi;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use RealRashid\SweetAlert\Facades\Alert;
@@ -24,18 +25,18 @@ class BiodataController extends Controller
         $biodata = Biodata::where('user_id', auth()->id())->first();
 
         $dokumenFields = [
-            'cv',
-            'pas_foto',
-            'surat_lamaran',
-            'ijazah',
-            'ktp',
-            'sim_b_2',
-            'skck',
-            'sertifikat_vaksin',
-            'kartu_keluarga',
-            'npwp',
-            'ak1',
-            'sertifikat_pendukung'
+            'cv' => 'CV',
+            'pas_foto' => 'Pas Foto',
+            'surat_lamaran' => 'Surat Lamaran',
+            'ijazah' => 'Ijazah',
+            'ktp' => 'KTP',
+            'sim_b_2' => 'SIM B II Umum',
+            'skck' => 'SKCK',
+            'sertifikat_vaksin' => 'Sertifikat Vaksin',
+            'kartu_keluarga' => 'Kartu Keluarga',
+            'npwp' => 'NPWP',
+            'ak1' => 'Kartu AK1',
+            'sertifikat_pendukung' => 'Sertifikat Pendukung'
         ];
 
         $fileNames = [];
@@ -47,9 +48,9 @@ class BiodataController extends Controller
             mkdir($folderPath, 0777, true);
         }
 
-        foreach ($dokumenFields as $field) {
+        foreach ($dokumenFields as $field => $label) {
             if ($request->hasFile($field)) {
-                // Hapus file lama jika ada
+                // Hapus file lama
                 if ($biodata && $biodata->{$field}) {
                     $oldFilePath = $folderPath . '/' . $biodata->{$field};
                     if (file_exists($oldFilePath)) {
@@ -57,13 +58,13 @@ class BiodataController extends Controller
                     }
                 }
 
-                // Simpan file baru
                 $file = $request->file($field);
-                $fileName = $file->getClientOriginalName();
+                $slugName = Str::slug(Auth::user()->name, '_');
+                $timestamp = now()->format('mY');
+                $fileName = "{$slugName}-{$label}-{$timestamp}." . $file->getClientOriginalExtension();
                 $file->move($folderPath, $fileName);
                 $fileNames[$field] = $fileName;
             } else {
-                // Gunakan data lama jika tidak ada file baru
                 $fileNames[$field] = $biodata ? $biodata->{$field} : null;
             }
         }

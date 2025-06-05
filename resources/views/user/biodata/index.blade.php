@@ -138,13 +138,13 @@
                             <label>Nama
                                 <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="nama" class="form-control" value="{{ Auth::user()->name }}">
+                            <input type="text" name="nama" class="form-control" value="{{ Auth::user()->name }}" readonly>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label>No KTP
                                 <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="no_ktp" class="form-control" value="{{ Auth::user()->no_ktp }}">
+                            <input type="text" name="no_ktp" class="form-control" value="{{ Auth::user()->no_ktp }}" readonly>
                         </div>
                     </div>
                     <div class="row g-3">
@@ -491,7 +491,59 @@
 
                 <!-- Step 5 -->
                 <div class="tab-pane fade" id="step5">
-                    <div class="row g-3">
+
+                    <div class="accordion" id="alertAccordion">
+                        <div class="accordion-item rounded-3 shadow-sm mb-3">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button bg-opacity-25 text-dark fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#alertBody" aria-expanded="true" aria-controls="alertBody">
+                                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                                    Meningkatkan Hasil
+                                </button>
+                            </h2>
+                            <div id="alertBody" class="accordion-collapse collapse show" data-bs-parent="#alertAccordion">
+                                <div class="row g-5 align-items-center">
+                                    <div class="col-xl-6 wow fadeInLeft" data-wow-delay="0.2s" style="visibility: visible; animation-delay: 0.2s; animation-name: fadeInLeft;">
+                                        <div class="accordion-body">
+                                            <p class="mb-3 fw-bold">
+                                                Untuk menghasilkan hasil yang optimal berikut beberapa tips yang bisa di ikuti :
+                                            </p>
+                                            <ul class="mb-0 ps-3">
+                                                <li class="mb-1">Direkomendasikan posisi KTP dan SIM gambar tegak.</li>
+                                                <li class="mb-1">Hasil foto harus jelas, tidak blur, tidak pecah, dan dapat dibaca</li>
+                                                <li class="mb-1">Gambar diambil dengan pencahayaan yang bagus dan tidak terlalu jauh</li>
+                                                <li class="mb-1">Tidak mengandung tulisan lain selain dari dokumen.</li>
+                                            </ul>
+                                            <span>
+                                                <small class="text-danger mt-2 d-block">
+                                                    Apabila unggahan KTP dan SIM tidak sesuai dengan ketentuan di atas, proses lamaran pekerjaan kamu dapat mengalami kendala.
+                                                </small>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="col-xl-3 wow fadeInRight" data-wow-delay="0.4s" style="visibility: visible; animation-delay: 0.4s; animation-name: fadeInRight;">
+                                        <div class="rounded p-3 d-inline-block text-center">
+                                            <p class="mb-0 fw-bold">
+                                                Contoh letak foto KTP yang baik
+                                            </p>
+                                            <img src="{{ asset('img/example-ktp.jpg') }}" alt="foto contoh KTP" class="img-fluid w-100" style="height: 160px;">
+                                        </div>
+                                    </div>
+                                    <div class="col-xl-3 wow fadeInRight" data-wow-delay="0.4s" style="visibility: visible; animation-delay: 0.4s; animation-name: fadeInRight;">
+                                        <div class="rounded p-3 d-inline-block text-center">
+                                            <p class="mb-2 fw-bold">
+                                                Contoh letak foto SIM yang baik
+                                            </p>
+                                            <img src="{{ asset('img/example-sim_b2.png') }}" alt="foto contoh KTP" class="img-fluid w-100" style="height: 160px;">
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 wow fadeInDown" data-wow-delay="0.2s" style="visibility: visible; animation-delay: 0.4s; animation-name: fadeInDown;">
 
                         @if($biodata && !$biodata->cv)
                         <div class="col-md-6 mb-2">
@@ -964,6 +1016,23 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+    function toggleAlertContent(button) {
+        const content = document.getElementById('alertContent');
+        const icon = button.querySelector('i');
+
+        if (content.style.display === 'none') {
+            content.style.display = 'flex';
+            icon.classList.remove('fa-plus');
+            icon.classList.add('fa-minus');
+        } else {
+            content.style.display = 'none';
+            icon.classList.remove('fa-minus');
+            icon.classList.add('fa-plus');
+        }
+    }
+</script>
 
 <script>
     $(document).ready(function() {
