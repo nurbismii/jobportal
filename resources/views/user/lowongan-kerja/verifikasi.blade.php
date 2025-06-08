@@ -10,9 +10,9 @@
                 <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
             </div>
             <div>
-                <h4 class="mb-2 text-dark fw-bold">Pemeriksaan OCR! (Optical Character Recognition)</h4>
+                <h4 class="mb-2 text-dark fw-bold">Pemeriksaan Data!</h4>
                 <p class="mb-3 text-danger fw-bold">
-                    Oopps ! Terdapat kesalahan dalam pengenalan karakter pada KTP atau SIM B II Umum anda, Silahkan perbaiki data berikut sebelum melanjutkan proses verifikasi :
+                    Oopps ! Terdapat perbedaan pada KTP atau SIM B II Umum anda, Silahkan perbaiki data berikut sebelum melanjutkan proses verifikasi :
                 </p>
                 <ul class="mb-0 ps-3">
                     @if($msg_name_ktp_vs_sim_b2)
@@ -35,9 +35,9 @@
                 <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
             </div>
             <div>
-                <h4 class="mb-2 text-dark fw-bold">Skor kecocokan NIK hasil OCR terlalu rendah!</h4>
+                <h4 class="mb-2 text-dark fw-bold">Verifikasi kepemilikan KTP!</h4>
                 <p class="mb-3 text-danger fw-bold">
-                    Silahkan input NIK anda secara manual untuk melanjutkan proses verifikasi.
+                    Silahkan input NIK anda untuk melanjutkan proses verifikasi.
                 </p>
                 <form action="{{ route('lowongan-kerja.update', $biodata->id) }}" method="post">
                     @csrf
@@ -65,7 +65,7 @@
                 <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
             </div>
             <div>
-                <h4 class="mb-2 text-dark fw-bold">Pemeriksaan OCR! (Optical Character Recognition)</h4>
+                <h4 class="mb-2 text-dark fw-bold">Pemeriksaan KTP!</h4>
                 <p class="mb-3 text-danger fw-bold">
                     Perbaiki dokumen KTP anda sebelum melamar. Pastikan KTP anda sudah sesuai dengan format yang ditentukan :
                 </p>
@@ -90,7 +90,7 @@
                 <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
             </div>
             <div>
-                <h4 class="mb-2 text-dark fw-bold">Pemeriksaan Data! Lengkapi Data Sebelum Melamar</h4>
+                <h4 class="mb-2 text-dark fw-bold">Pemeriksaan Data! Lengkapi dokumen pribadi sebelum melamar</h4>
                 <p class="mb-3 text-danger fw-bold">
                     Beberapa informasi wajib belum lengkap. Mohon lengkapi data berikut terlebih dahulu:
                 </p>
@@ -110,26 +110,23 @@
                 <i class="fas fa-check-square fa-2x text-success"></i>
             </div>
             <div>
-                <h4 class="mb-2 text-dark fw-bold">Fungsi Reset OCR! (Optical Character Recognition)</h4>
+                <h4 class="mb-2 text-dark fw-bold">Fungsi Pengkinian Data!</h4>
                 <p class="mb-3 fw-bold text-success">
-                    Lakukan reset OCR jika hasil pengenalan karakter tidak sesuai atau ingin mencoba lagi.
+                    Lakukan pengkinian data jika hasil pengenalan karakter tidak sesuai atau ingin mencoba lagi.
                 </p>
                 <ul class="mb-0 ps-3">
                     <li class="mb-1">Setelah melakukan pengkinian data</li>
                     <li class="mb-1">Pastikan KTP sudah sesuai dengan format yang ditentukan</li>
-                    <li class="mb-1">Klik tombol "Reset OCR" untuk mengulangi proses pengenalan karakter</li>
+                    <li class="mb-1">Klik link "Pengkinian Data" untuk mengulangi proses pemeriksaan</li>
                     <li class="mb-1">Hasil OCR akan diperbarui sesuai dengan data terbaru</li>
+                    <li class="mb-1">Lakukan <a href="{{ url()->current() }}?refresh=true" id="btn-reset-ocr">Pengkinian Data! </a>
+                    </li>
                 </ul>
             </div>
         </div>
     </div>
     <div class="mt-3">
         <a href="{{ route('biodata.index') }}" class="btn btn-primary">Lengkapi Data</a>
-        <a href="{{ url()->current() }}?refresh=true"
-            class="btn btn-warning float-end"
-            id="btn-reset-ocr">
-            Reset OCR
-        </a>
     </div>
 </div>
 

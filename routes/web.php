@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\LamaranController;
 use App\Http\Controllers\BiodataController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -32,9 +33,14 @@ Route::delete('/biodata/delete-file/{field}', [BiodataController::class, 'delete
 // Admin route
 Route::group(['prefix' => 'admin', 'middleware' => ['redirect.role']], function () {
 
+    Route::get('/', [App\Http\Controllers\HomeController::class, 'index']);
     Route::get('/dasbor', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
     Route::resource('/pengguna', 'App\Http\Controllers\Admin\PenggunaController');
     Route::resource('/lowongan', 'App\Http\Controllers\Admin\LowonganController');
+    Route::resource('/lamarans', 'App\Http\Controllers\Admin\LamaranController');
+    Route::post('/lamaran/update-status-massal', [LamaranController::class, 'updateStatusMassal'])->name('lamaran.updateStatusMassal');
+
+    Route::get('/lowongan/pendaftar/{loker_id}', [App\Http\Controllers\Admin\LowonganController::class, 'directToLamaran'])->name('directToLamaran');
 });
 
 // API route

@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\File;
+use Intervention\Image\Facades\Image;
 
 class BiodataController extends Controller
 {
@@ -41,33 +42,7 @@ class BiodataController extends Controller
 
         $fileNames = [];
 
-        $folderPath = public_path(Auth::user()->no_ktp . '/dokumen');
-
-        // Buat folder jika belum ada
-        if (!file_exists($folderPath)) {
-            mkdir($folderPath, 0777, true);
-        }
-
-        foreach ($dokumenFields as $field => $label) {
-            if ($request->hasFile($field)) {
-                // Hapus file lama
-                if ($biodata && $biodata->{$field}) {
-                    $oldFilePath = $folderPath . '/' . $biodata->{$field};
-                    if (file_exists($oldFilePath)) {
-                        unlink($oldFilePath);
-                    }
-                }
-
-                $file = $request->file($field);
-                $slugName = Str::slug(Auth::user()->name, '_');
-                $timestamp = now()->format('mY');
-                $fileName = "{$slugName}-{$label}-{$timestamp}." . $file->getClientOriginalExtension();
-                $file->move($folderPath, $fileName);
-                $fileNames[$field] = $fileName;
-            } else {
-                $fileNames[$field] = $biodata ? $biodata->{$field} : null;
-            }
-        }
+        $fileNames = interventionImg($dokumenFields, $biodata, $request);
 
         Biodata::updateOrCreate(
             [
@@ -79,6 +54,7 @@ class BiodataController extends Controller
                 'no_ktp' => $request->no_ktp,
                 'no_telp' => $request->no_telp,
                 'no_kk' => $request->no_kk,
+                'no_npwp' => $request->no_npwp,
                 'jenis_kelamin' => $request->jenis_kelamin,
                 'tempat_lahir' => $request->tempat_lahir,
                 'tanggal_lahir' => $request->tanggal_lahir,

@@ -95,7 +95,7 @@
                             </p>
 
                             <p class="fw-bold mb-1">Tanggal aktif</p>
-                            <p class="mb-4">{{ date('d F Y H:i', strtotime($lowongan->tanggal_mulai)) }} – {{ date('d F Y H:i', strtotime($lowongan->tanggal_berakhir)) }}</p>
+                            <p class="mb-4">{{ tanggalIndo($lowongan->tanggal_mulai) }} – {{ tanggalIndo($lowongan->tanggal_berakhir) }}</p>
                             <!-- Isian deskripsi lowongan kerja end -->
 
                             <div class="d-flex justify-content-end gap-2">

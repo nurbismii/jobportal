@@ -11,7 +11,7 @@
                 <p class="mb-4">{!! $lowongan->kualifikasi !!}</p>
             </div>
             <div class="d-flex justify-content-end mt-3 mx-auto">
-                <p class="mb-4 text-primary">Aktif lamaran : {{ date('d F Y H:i', strtotime($lowongan->tanggal_mulai)) }} – {{ date('d F Y H:i', strtotime($lowongan->tanggal_berakhir)) }}</p>
+                <p class="mb-4 text-primary">Aktif lamaran : {{ tanggalIndo($lowongan->tanggal_mulai) }} – {{ tanggalIndo($lowongan->tanggal_berakhir) }}</p>
             </div>
             <div class="d-flex justify-content-end mt-3 mx-auto">
                 <a class="btn btn-light rounded-pill py-2 px-3 me-2" href="{{ route('lowongan-kerja.index') }}">Kembali</a>

@@ -56,32 +56,37 @@ class LowonganController extends Controller
 
         // Ambil data OCR dari cache, jika belum ada jalankan closure untuk panggil API dan simpan cache selama 12 jam
         $ocrData = Cache::remember($cacheKey, now()->addHours(12), function () use ($biodata) {
+
             $filePath = public_path($biodata->no_ktp . '/dokumen/' . $biodata->ktp);
 
             if (!file_exists($filePath)) {
                 abort(404, 'File KTP tidak ditemukan.');
             }
 
-            $url = config('services.ocr.link') . '/' . config('services.ocr.type');
+            if ($biodata->ktp) {
 
-            $response = Http::withToken(config('services.ocr.token'))
-                ->withHeaders([
-                    'Authentication' => 'bearer ' . config('services.ocr.token'),
-                ])
-                ->attach('file', file_get_contents($filePath), $biodata->ktp)
-                ->put($url);
 
-            if (!$response->successful()) {
-                abort(response()->json([
-                    'status' => 'error',
-                    'http_code' => $response->status(),
-                    'reason' => $response->reason(),
-                    'headers' => $response->headers(),
-                    'body' => $response->body(),
-                ], $response->status()));
+                $url = config('services.ocr.link') . '/' . config('services.ocr.type');
+
+                $response = Http::withToken(config('services.ocr.token'))
+                    ->withHeaders([
+                        'Authentication' => 'bearer ' . config('services.ocr.token'),
+                    ])
+                    ->attach('file', file_get_contents($filePath), $biodata->ktp)
+                    ->put($url);
+
+                if (!$response->successful()) {
+                    abort(response()->json([
+                        'status' => 'error',
+                        'http_code' => $response->status(),
+                        'reason' => $response->reason(),
+                        'headers' => $response->headers(),
+                        'body' => $response->body(),
+                    ], $response->status()));
+                }
+
+                return $response->json();
             }
-
-            return $response->json();
         });
 
         $ocrResult = [
@@ -122,15 +127,15 @@ class LowonganController extends Controller
         })->values()->all();
 
         $msg_no_ktp = $ocrResult['nik_ktp'] !== $biodata->no_ktp
-            ? 'No KTP yang diambil dari hasil OCR tidak sesuai dengan data biodata Anda.'
+            ? 'No KTP tidak sesuai dengan biodata anda.'
             : null;
 
         $msg_no_ktp_score = $ocrResult['nik_score_ktp'] < 70
-            ? 'Skor kecocokan NIK hasil OCR terlalu rendah. Silakan perbarui KTP pada dokumen biodata Anda.'
+            ? 'KTP tidak jelas, blur atau tidak dapat dibaca. Silakan perbarui KTP pada dokumen biodata anda.'
             : null;
 
         $nikScoreKtp = ($biodata->status_ktp == null && $ocrResult['nik_score_ktp'] < 69)
-            ? 'Skor kecocokan NIK hasil OCR terlalu rendah.'
+            ? 'Verifikasi kepemilikan KTP'
             : null;
 
         if (count($emptyFields) || $msg_no_ktp || $msg_no_ktp_score || $nikScoreKtp || $msg_name_ktp_vs_sim_b2 || $msg_date_ktp_vs_sim_b2) {
@@ -189,108 +194,114 @@ class LowonganController extends Controller
 
     public function extractSimB2($biodata)
     {
-        $fullPath = public_path($biodata->no_ktp . '/dokumen/' . $biodata->sim_b_2);
+        if ($biodata && $biodata->sim_b_2) {
+            $fullPath = public_path($biodata->no_ktp . '/dokumen/' . $biodata->sim_b_2);
 
-        $response = Http::attach(
-            'file',
-            file_get_contents($fullPath),
-            basename($fullPath)
-        )->post('https://api.ocr.space/parse/image', [
-            'apikey' => 'K82052672988957', // Ganti jika perlu
-            'language' => 'eng', // atau 'ind'
-        ]);
+            $response = Http::attach(
+                'file',
+                file_get_contents($fullPath),
+                basename($fullPath)
+            )->post('https://api.ocr.space/parse/image', [
+                'apikey' => 'K82052672988957', // Ganti jika perlu
+                'language' => 'eng', // atau 'ind'
+            ]);
 
-        $result = $response->json();
+            $result = $response->json();
 
-        $text = $result['ParsedResults'][0]['ParsedText'] ?? '';
-        $lines = array_values(array_filter(array_map('trim', explode("\n", $text))));
+            $text = $result['ParsedResults'][0]['ParsedText'] ?? '';
+            $lines = array_values(array_filter(array_map('trim', explode("\n", $text))));
 
-        $parsed = [
-            'nama' => '',
-            'tempat_lahir' => '',
-            'tanggal_lahir' => '',
-            'jenis_kelamin' => '',
-            'alamat' => '',
-            'pekerjaan' => '',
-            'wilayah' => '',
-            'berlaku_sampai' => '',
-        ];
+            $parsed = [
+                'nama' => '',
+                'tempat_lahir' => '',
+                'tanggal_lahir' => '',
+                'jenis_kelamin' => '',
+                'alamat' => '',
+                'pekerjaan' => '',
+                'wilayah' => '',
+                'berlaku_sampai' => '',
+            ];
 
-        $indexKelamin = null;
-        $indexTTL = null;
+            $indexKelamin = null;
+            $indexTTL = null;
 
-        foreach ($lines as $i => $line) {
-            $upper = strtoupper($line);
+            foreach ($lines as $i => $line) {
+                $upper = strtoupper($line);
 
-            // Nama setelah Narnamame
-            if ($upper === 'NARNAMAME' && isset($lines[$i + 1])) {
-                $parsed['nama'] = ucwords(strtolower($lines[$i + 1]));
-            }
+                // Nama setelah Narnamame
+                if ($upper === 'NARNAMAME' && isset($lines[$i + 1])) {
+                    $parsed['nama'] = ucwords(strtolower($lines[$i + 1]));
+                }
 
-            // Tempat dan Tanggal Lahir
-            if (preg_match('/([A-Z\s]+),\s*(\d{2}-\d{2}-\d{4})/', $line, $match)) {
-                $parsed['tempat_lahir'] = ucwords(strtolower($match[1]));
-                $parsed['tanggal_lahir'] = $match[2];
-                $indexTTL = $i;
-            }
+                // Tempat dan Tanggal Lahir
+                if (preg_match('/([A-Z\s]+),\s*(\d{2}-\d{2}-\d{4})/', $line, $match)) {
+                    $parsed['tempat_lahir'] = ucwords(strtolower($match[1]));
+                    $parsed['tanggal_lahir'] = $match[2];
+                    $indexTTL = $i;
+                }
 
-            // Jenis Kelamin
-            if (in_array($upper, ['PRIA', 'WANITA'])) {
-                $parsed['jenis_kelamin'] = $upper;
-                $indexKelamin = $i;
-            }
+                // Jenis Kelamin
+                if (in_array($upper, ['PRIA', 'WANITA'])) {
+                    $parsed['jenis_kelamin'] = $upper;
+                    $indexKelamin = $i;
+                }
 
-            // Pekerjaan
-            if (preg_match('/\b(SWASTA|PELAJAR|KARYAWAN|WIRASWASTA|PNS)\b/i', $line)) {
-                $parsed['pekerjaan'] = ucwords(strtolower($line));
-            }
+                // Pekerjaan
+                if (preg_match('/\b(SWASTA|PELAJAR|KARYAWAN|WIRASWASTA|PNS)\b/i', $line)) {
+                    $parsed['pekerjaan'] = ucwords(strtolower($line));
+                }
 
-            // Wilayah (POLRES ...)
-            if (
-                preg_match('/\bPOL(RES|DA|SEK)\b/i', $line) &&
-                strlen($line) <= 50
-            ) {
-                $parsed['wilayah'] = ucwords(strtolower($line));
-            }
-
-            // Berlaku sampai (tanggal terakhir dengan format valid)
-            if (preg_match('/\d{2}-\d{2}-\d{4}/', $line)) {
-                $parsed['berlaku_sampai'] = $line;
-            }
-        }
-
-        // PARSING ALAMAT: Ambil 3 baris sebelum dan sesudah 'PRIA' atau TTL
-        $alamatKandidat = [];
-
-        foreach ([$indexKelamin, $indexTTL] as $idx) {
-            if ($idx === null) continue;
-
-            $start = max(0, $idx - 3);
-            $end = min(count($lines) - 1, $idx + 3);
-
-            for ($j = $start; $j <= $end; $j++) {
-                $line = trim($lines[$j]);
-
-                $stopwords = ['indonesia', 'surat', 'izin', 'mengemudi', 'umum', 'pria', 'wanita', 'swasta', 'pelajar', 'driving license'];
-                $namaPattern = preg_replace('/\s+/', '\s*', preg_quote(strtolower($parsed['nama']), '/'));
-
+                // Wilayah (POLRES ...)
                 if (
-                    preg_match('/\b(DUSUN|JL\.|JALAN|DESA|KEL\.?|KELURAHAN|KEC\.?|KECAMATAN|KAB\.?|KABUPATEN|RT|RW|WUNDULAKO|KOTA|WUNDULAKO)\b/i', $line)
-                    && !in_array(strtolower($line), $stopwords)
-                    && !preg_match("/\d{2}-\d{2}-\d{4}/", $line) // hindari tanggal
-                    && !preg_match("/$namaPattern/", strtolower($line)) // hindari nama
-                    && strlen($line) >= 4 && strlen($line) <= 40
+                    preg_match('/\bPOL(RES|DA|SEK)\b/i', $line) &&
+                    strlen($line) <= 50
                 ) {
-                    $alamatKandidat[] = ucwords(strtolower($line));
+                    $parsed['wilayah'] = ucwords(strtolower($line));
+                }
+
+                // Berlaku sampai (tanggal terakhir dengan format valid)
+                if (preg_match('/\d{2}-\d{2}-\d{4}/', $line)) {
+                    $parsed['berlaku_sampai'] = $line;
                 }
             }
+
+            // PARSING ALAMAT: Ambil 3 baris sebelum dan sesudah 'PRIA' atau TTL
+            $alamatKandidat = [];
+
+            foreach ([$indexKelamin, $indexTTL] as $idx) {
+                if ($idx === null) continue;
+
+                $start = max(0, $idx - 3);
+                $end = min(count($lines) - 1, $idx + 3);
+
+                for ($j = $start; $j <= $end; $j++) {
+                    $line = trim($lines[$j]);
+
+                    $stopwords = ['indonesia', 'surat', 'izin', 'mengemudi', 'umum', 'pria', 'wanita', 'swasta', 'pelajar', 'driving license'];
+                    $namaPattern = preg_replace('/\s+/', '\s*', preg_quote(strtolower($parsed['nama']), '/'));
+
+                    if (
+                        preg_match('/\b(DUSUN|JL\.|JALAN|DESA|KEL\.?|KELURAHAN|KEC\.?|KECAMATAN|KAB\.?|KABUPATEN|RT|RW|WUNDULAKO|KOTA|WUNDULAKO)\b/i', $line)
+                        && !in_array(strtolower($line), $stopwords)
+                        && !preg_match("/\d{2}-\d{2}-\d{4}/", $line) // hindari tanggal
+                        && !preg_match("/$namaPattern/", strtolower($line)) // hindari nama
+                        && strlen($line) >= 4 && strlen($line) <= 40
+                    ) {
+                        $alamatKandidat[] = ucwords(strtolower($line));
+                    }
+                }
+            }
+
+            $parsed['alamat'] = implode(', ', array_unique($alamatKandidat));
+
+            return [
+                'ocr_text' => $text,
+                'data' => $parsed
+            ];
         }
-
-        $parsed['alamat'] = implode(', ', array_unique($alamatKandidat));
-
         return [
-            'ocr_text' => $text,
-            'data' => $parsed
+            'ocr_text' => null,
+            'data' => null
         ];
     }
 

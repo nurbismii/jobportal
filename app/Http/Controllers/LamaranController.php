@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Biodata;
 use App\Models\Lamaran;
 use Illuminate\Http\Request;
 
@@ -9,9 +10,11 @@ class LamaranController extends Controller
 {
     public function index()
     {
-        $lamaran = Lamaran::with('lowongan', 'biodata')->where('user_id', auth()->id())->orderBy('id', 'desc')->get();
+        $biodata = Biodata::where('user_id', auth()->id())->first();
 
-        return view('user.lamaran.index', compact('lamaran'));
+        $lamarans = Lamaran::with('lowongan', 'biodata')->where('biodata_id', $biodata->id)->orderBy('id', 'desc')->get();
+
+        return view('user.lamaran.index', compact('lamarans'));
     }
 
 }

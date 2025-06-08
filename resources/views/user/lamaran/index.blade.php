@@ -1,7 +1,19 @@
 @extends('layouts.app')
 
 @section('content')
-<!-- Carousel Start -->
+
+@push('styles')
+<style>
+    .card-text {
+        display: -webkit-box;
+        -webkit-line-clamp: 4;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>
+
+@endpush
+
 <!-- Header Start -->
 <div class="container-fluid bg-breadcrumb">
     <div class="container text-center py-5" style="max-width: 900px;">
@@ -10,46 +22,49 @@
 </div>
 <!-- Header End -->
 
-<div class="container-fluid blog py-5">
+<div class="container-fluid py-5 bg-light">
     <div class="container py-5">
-        <div class="mx-auto pb-5 wow fadeInUp" data-wow-delay="0.2s">
-            <h4 class="text-primary">Lamaran</h4>
-            <h1 class="display-4 mb-4">Riwayat Pelamaran</h1>
-            <p class="mb-0">
-                Lorem ipsum dolor, sit amet consectetur adipisicing elit. Tenetur adipisci facilis cupiditate recusandae aperiam temporibus corporis itaque quis facere, numquam, ad culpa deserunt sint dolorem autem obcaecati, ipsam mollitia hic.
+        <div class="text-center mx-auto pb-5 wow fadeInUp" data-wow-delay="0.2s">
+            <h4 class="text-primary fw-semibold">Lamaran</h4>
+            <h1 class="display-5 fw-bold mb-3">Riwayat Pelamaran</h1>
+            <p class="text-muted mb-0">
+                Berikut adalah daftar riwayat lamaran kerja Anda di perusahaan kami.
             </p>
         </div>
         <div class="row g-4 justify-content-center">
-            <!-- Kolom 1 -->
+            @foreach ($lamarans as $lamaran)
             <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
-                <div class="blog-item">
-                    <div class="blog-content p-4">
-                        <div class="blog-comment d-flex justify-content-between mb-3">
-                            <div class="small"><span class="fa fa-user text-primary"></span>PT VDNI</div>
-                            <div class="small"><span class="fa fa-calendar text-primary"></span>{{ $lamaran->created_at }}</div>
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body p-4 d-flex flex-column">
+                        <div class="d-flex justify-content-between mb-2 text-muted small">
+                            <div><i class="fa fa-building text-primary me-1"></i>PT VDNI</div>
+                            <div><i class="fa fa-calendar-alt text-primary me-1"></i>{{ tanggalIndo(date('Y-m-d', strtotime($lamaran->created_at))) }}</div>
                         </div>
-                        <a href="#" class="h4 d-inline-block mb-3">{{ $lamaran->lowongan->nama_lowongan }}</a>
-                        <p class="mb-3">{!! $lamaran->lowongan->kualifikas  !!}</p>
-                        <a href="#" class="btn p-0">Baca Detail <i class="fa fa-arrow-right"></i></a>
+                        <h3 class="card-title text-dark fw-bold mb-0">{{ $lamaran->lowongan->nama_lowongan }}</h3>
+                        <p class="card-text text-muted flex-grow-1" style="max-height: 90px; overflow: hidden;">
+                            {!! $lamaran->lowongan->kualifikasi !!}
+                        </p>
+                        <div class="mt-3">
+                            <p class="mb-1 small">
+                                <strong>Status Lamaran : </strong>
+                                @if ($lamaran->status_lamaran == '1')
+                                <span class="badge bg-success"><i class="fa fa-check-circle me-1"></i>Aktif</span>
+                                @else
+                                <span class="badge bg-secondary"><i class="fa fa-times-circle me-1"></i>Tidak Aktif</span>
+                                @endif
+                            </p>
+                            <p class="mb-0 small">
+                                <strong>Status Proses : </strong>
+                                <span class="badge bg-primary">{{ $lamaran->status_proses }}</span>
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            <!-- Kolom 2 -->
-            <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.2s">
-                <div class="blog-item">
-                    <!-- Isi seperti kolom 1, ganti gambar & konten -->
-                </div>
-            </div>
-
-            <!-- Kolom 3 -->
-            <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.3s">
-                <div class="blog-item">
-                    <!-- Isi seperti kolom 1, ganti gambar & konten -->
-                </div>
-            </div>
+            @endforeach
         </div>
     </div>
 </div>
+
 
 @endsection

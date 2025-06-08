@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Lamaran;
 use App\Models\Lowongan;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -10,14 +11,21 @@ use RealRashid\SweetAlert\Facades\Alert;
 
 class LowonganController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $lowongans = Lowongan::select('*')->orderBy('id', 'desc')->get();
+        $query = Lowongan::query();
+
         $title = 'Hapus Lowongan!';
         $text = "Kamu yakin ingin menghapus lowongan ini?";
         confirmDelete($title, $text);
 
-        return view('admin.lowongan-kerja.index', compact('lowongans'))->with('no');
+        if ($request->has('search') && $request->search != '') {
+            $query->where('nama_lowongan', 'like', '%' . $request->search . '%');
+        }
+
+        $lowongans = $query->orderBy('created_at', 'desc')->paginate(6);
+
+        return view('admin.lowongan-kerja.index', compact('lowongans'));
     }
 
     public function create()
@@ -71,5 +79,25 @@ class LowonganController extends Controller
 
         Alert::success('Berhasil', 'Lowongan kerja berhasil dihapus!');
         return redirect()->back();
+    }
+
+    public function directToLamaran($loker_id)
+    {
+        $lowongan = Lowongan::select('nama_lowongan')->where('id', $loker_id)->first();
+
+        $lamarans = Lamaran::with(
+            'lowongan',
+            'biodata.user',
+            'biodata.getProvinsi',
+            'biodata.getKabupaten',
+            'biodata.getKecamatan',
+            'biodata.getKelurahan'
+        )->where('loker_id', $loker_id)->get();
+
+        $title = 'Hapus Lowongan!';
+        $text = "Kamu yakin ingin menghapus lowongan ini?";
+        confirmDelete($title, $text);
+
+        return view('admin.lamaran.index', compact('lamarans', 'lowongan'))->with('no');
     }
 }

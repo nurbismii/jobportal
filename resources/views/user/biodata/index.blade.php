@@ -158,7 +158,7 @@
                             <label>No Kartu Keluarga
                                 <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="no_kk" class="form-control" value="{{ $biodata->no_kk ?? '' }}" required>
+                            <input type="text" name="no_kk" class="form-control" maxlength="16" value="{{ $biodata->no_kk ?? '' }}" required>
                         </div>
                     </div>
                     <div class="row g-3">
@@ -175,6 +175,10 @@
                                 <option value="L">Laki-laki</option>
                                 <option value="P">Perempuan</option>
                             </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label>NPWP <span class="text-danger">*</span></label>
+                            <input type="text" id="npwp" name="no_npwp" class="form-control" value="{{ $biodata->no_npwp ?? '' }}" required maxlength="20">
                         </div>
                     </div>
 
@@ -261,19 +265,19 @@
                             <label>Kode Pos
                                 <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="kode_pos" class="form-control" value="{{ $biodata->kode_pos ?? '' }}" required>
+                            <input type="text" name="kode_pos" class="form-control" maxlength="5" value="{{ $biodata->kode_pos ?? '' }}" required>
                         </div>
                         <div class="col-md-2 mb-3">
                             <label>RT
                                 <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="rt" class="form-control" value="{{ $biodata->rt ?? '' }}" required>
+                            <input type="text" name="rt" class="form-control" maxlength="3" value="{{ $biodata->rt ?? '' }}" required>
                         </div>
                         <div class="col-md-2 mb-3">
                             <label>RW
                                 <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="rw" class="form-control" value="{{ $biodata->rw ?? '' }}" required>
+                            <input type="text" name="rw" class="form-control" maxlength="3" value="{{ $biodata->rw ?? '' }}" required>
                         </div>
                     </div>
 
@@ -313,13 +317,13 @@
                             <label>Tinggi badan<sup>(cm)</sup>
                                 <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="tinggi_badan" value="{{ $biodata->tinggi_badan ?? '' }}" class="form-control">
+                            <input type="text" name="tinggi_badan" maxlength="3" value="{{ $biodata->tinggi_badan ?? '' }}" class="form-control">
                         </div>
                         <div class="col-md-6 mb-3">
                             <label>Berat badan<sup>(kg)</sup>
                                 <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="berat_badan" value="{{ $biodata->berat_badan ?? '' }}" class="form-control">
+                            <input type="text" name="berat_badan" maxlength="3" value="{{ $biodata->berat_badan ?? '' }}" class="form-control">
                         </div>
                     </div>
                 </div>
@@ -434,7 +438,7 @@
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
                             <label>Jumlah anak</label>
-                            <input type="number" name="jumlah_anak" class="form-control" value="{{ $biodata->jumlah_anak ?? '' }}">
+                            <input type="number" name="jumlah_anak" maxlength="1" max="3" class="form-control" value="{{ $biodata->jumlah_anak ?? '' }}">
                         </div>
                     </div>
                     <div class="row g-3">
@@ -547,14 +551,14 @@
 
                         @if($biodata && !$biodata->cv)
                         <div class="col-md-6 mb-2">
-                            <label class="form-label">CV</label>
+                            <label class="form-label">CV (pdf)</label>
                             <div class="file-upload-box">
                                 <div class="upload-label">
                                     <i class="bi bi-file-earmark-text file-icon"></i>
                                     <span id="file-name-cv">Dokumen belum diunggah</span>
                                 </div>
                                 <label for="cv-upload" class="btn btn-upload">Unggah</label>
-                                <input type="file" name="cv" id="cv-upload" accept=".pdf,.doc,.docx">
+                                <input type="file" name="cv" id="cv-upload" accept=".pdf">
                             </div>
                         </div>
                         @else
@@ -584,7 +588,7 @@
 
                         @if($biodata && !$biodata->pas_foto)
                         <div class="col-md-6 mb-2">
-                            <label class="form-label">Pas Foto 3x4</label>
+                            <label class="form-label">Pas Foto 3x4 (jpeg, jpg, png)</label>
                             <div class="file-upload-box">
                                 <div class="upload-label">
                                     <i class="bi bi-file-earmark-text file-icon"></i>
@@ -620,14 +624,14 @@
 
                         @if($biodata && !$biodata->surat_lamaran)
                         <div class="col-md-6 mb-2">
-                            <label class="form-label">Surat Lamaran Kerja</label>
+                            <label class="form-label">Surat Lamaran Kerja (pdf)</label>
                             <div class="file-upload-box">
                                 <div class="upload-label">
                                     <i class="bi bi-file-earmark-text file-icon"></i>
                                     <span id="file-name-slk">Dokumen belum diunggah</span>
                                 </div>
                                 <label for="slk-upload" class="btn btn-upload">Unggah</label>
-                                <input type="file" id="slk-upload" name="surat_lamaran" accept=".pdf,.doc,.docx">
+                                <input type="file" id="slk-upload" name="surat_lamaran" accept=".pdf">
                             </div>
                         </div>
                         @else
@@ -656,14 +660,14 @@
 
                         @if($biodata && !$biodata->ijazah)
                         <div class="col-md-6 mb-2">
-                            <label class="form-label">Ijazah dan Transkrip nilai</label>
+                            <label class="form-label">Ijazah dan Transkrip nilai (pdf)</label>
                             <div class="file-upload-box">
                                 <div class="upload-label">
                                     <i class="bi bi-file-earmark-text file-icon"></i>
                                     <span id="file-name-ijazah">Dokumen belum diunggah</span>
                                 </div>
                                 <label for="ijazah-upload" class="btn btn-upload">Unggah</label>
-                                <input type="file" id="ijazah-upload" name="ijazah">
+                                <input type="file" id="ijazah-upload" name="ijazah" accept=".pdf">
                             </div>
                         </div>
                         @else
@@ -692,7 +696,7 @@
 
                         @if($biodata && !$biodata->ktp)
                         <div class="col-md-6 mb-2">
-                            <label class="form-label">Kartu Tanda Penduduk (KTP)</label>
+                            <label class="form-label">Kartu Tanda Penduduk (KTP) (jpg, jpeg, png)</label>
                             <div class="file-upload-box">
                                 <div class="upload-label">
                                     <i class="bi bi-file-earmark-text file-icon"></i>
@@ -728,7 +732,7 @@
 
                         @if($biodata && !$biodata->sim_b_2)
                         <div class="col-md-6 mb-2">
-                            <label class="form-label">SIM B II Umum/SIO <sup>Opsional</sup></label>
+                            <label class="form-label">SIM B II Umum/SIO (jpg, jpeg, png)<sup>Opsional</sup></label>
                             <div class="file-upload-box">
                                 <div class="upload-label">
                                     <i class="bi bi-file-earmark-text file-icon"></i>
@@ -764,14 +768,14 @@
 
                         @if($biodata && !$biodata->skck)
                         <div class="col-md-6 mb-2">
-                            <label class="form-label">SKCK</label>
+                            <label class="form-label">SKCK (pdf)</label>
                             <div class="file-upload-box">
                                 <div class="upload-label">
                                     <i class="bi bi-file-earmark-text file-icon"></i>
                                     <span id="file-name-skck">Dokumen belum diunggah</span>
                                 </div>
                                 <label for="skck-upload" class="btn btn-upload">Unggah</label>
-                                <input type="file" name="skck" id="skck-upload">
+                                <input type="file" name="skck" id="skck-upload" accept=".pdf">
                             </div>
                         </div>
                         @else
@@ -800,19 +804,19 @@
 
                         @if($biodata && !$biodata->sertifikat_vaksin)
                         <div class="col-md-6 mb-2">
-                            <label class="form-label">Sertifikat Vaksin</label>
+                            <label class="form-label">Sertifikat Vaksin (pdf)</label>
                             <div class="file-upload-box">
                                 <div class="upload-label">
                                     <i class="bi bi-file-earmark-text file-icon"></i>
                                     <span id="file-name-sertifikat">Dokumen belum diunggah</span>
                                 </div>
                                 <label for="sertifikat-upload" class="btn btn-upload">Unggah</label>
-                                <input type="file" name="sertifikat_vaksin" id="sertifikat-upload">
+                                <input type="file" name="sertifikat_vaksin" id="sertifikat-upload" accept=".pdf">
                             </div>
                         </div>
                         @else
                         <div class="col-md-6 mb-2">
-                            <label class="form-label">SKCK</label>
+                            <label class="form-label">Sertifikat Vaksin</label>
                             <div class="file-box">
                                 <div class="file-info">
                                     <i class="bi bi-file-earmark-text file-icon"></i>
@@ -836,14 +840,14 @@
 
                         @if($biodata && !$biodata->kartu_keluarga)
                         <div class="col-md-6 mb-2">
-                            <label class="form-label">Kartu Keluarga</label>
+                            <label class="form-label">Kartu Keluarga (pdf)</label>
                             <div class="file-upload-box">
                                 <div class="upload-label">
                                     <i class="bi bi-file-earmark-text file-icon"></i>
                                     <span id="file-name-kk">Dokumen belum diunggah</span>
                                 </div>
                                 <label for="kk-upload" class="btn btn-upload">Unggah</label>
-                                <input type="file" name="kartu_keluarga" id="kk-upload">
+                                <input type="file" name="kartu_keluarga" id="kk-upload" accept=".pdf">
                             </div>
                         </div>
                         @else
@@ -872,14 +876,14 @@
 
                         @if($biodata && !$biodata->npwp)
                         <div class="col-md-6 mb-2">
-                            <label class="form-label">NPWP</label>
+                            <label class="form-label">NPWP (pdf)</label>
                             <div class="file-upload-box">
                                 <div class="upload-label">
                                     <i class="bi bi-file-earmark-text file-icon"></i>
                                     <span id="file-name-npwp">Dokumen belum diunggah</span>
                                 </div>
                                 <label for="npwp-upload" class="btn btn-upload">Unggah</label>
-                                <input type="file" name="npwp" id="npwp-upload">
+                                <input type="file" name="npwp" id="npwp-upload" accept=".pdf">
                             </div>
                         </div>
                         @else
@@ -908,14 +912,14 @@
 
                         @if($biodata && !$biodata->ak1)
                         <div class="col-md-6 mb-2">
-                            <label class="form-label">Kartu Pencari Kejra (AK1)</label>
+                            <label class="form-label">Kartu Pencari Kejra (AK1) (pdf)</label>
                             <div class="file-upload-box">
                                 <div class="upload-label">
                                     <i class="bi bi-file-earmark-text file-icon"></i>
                                     <span id="file-name-ak1">Dokumen belum diunggah</span>
                                 </div>
                                 <label for="ak1-upload" class="btn btn-upload">Unggah</label>
-                                <input type="file" name="ak1" id="ak1-upload">
+                                <input type="file" name="ak1" id="ak1-upload" accept=".pdf">
                             </div>
                         </div>
                         @else
@@ -944,14 +948,14 @@
 
                         @if($biodata && !$biodata->sertifikat_pendukung)
                         <div class="col-md-6 mb-2">
-                            <label class="form-label">Sertifikat Pendukung</label>
+                            <label class="form-label">Sertifikat Pendukung (pdf)</label>
                             <div class="file-upload-box">
                                 <div class="upload-label">
                                     <i class="bi bi-file-earmark-text file-icon"></i>
                                     <span id="file-name-serti-pendukung">Dokumen belum diunggah</span>
                                 </div>
                                 <label for="serti-pendukung-upload" class="btn btn-upload">Unggah</label>
-                                <input type="file" name="sertifikat_pendukung" id="serti-pendukung-upload">
+                                <input type="file" name="sertifikat_pendukung" id="serti-pendukung-upload" accept=".pdf">
                             </div>
                         </div>
                         @else
@@ -1301,6 +1305,20 @@
             document.getElementById('file-name-serti-pendukung').textContent = fileName;
         });
     }
+
+    document.getElementById('npwp').addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, ''); // Hanya angka
+        let formatted = '';
+
+        if (value.length > 0) formatted += value.substr(0, 2);
+        if (value.length >= 3) formatted += '.' + value.substr(2, 3);
+        if (value.length >= 6) formatted += '.' + value.substr(5, 3);
+        if (value.length >= 9) formatted += '.' + value.substr(8, 1);
+        if (value.length >= 10) formatted += '-' + value.substr(9, 3);
+        if (value.length >= 13) formatted += '.' + value.substr(12, 3);
+
+        e.target.value = formatted;
+    });
 </script>
 
 <script>
