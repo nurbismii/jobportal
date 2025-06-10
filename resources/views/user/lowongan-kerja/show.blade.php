@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-
 <!-- Lowongan Kerja Start -->
 <div class="container-fluid service py-5">
     <div class="container">

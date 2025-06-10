@@ -13,13 +13,50 @@
 @endpush
 
 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-    <h4 class="m-0 font-weight-bold text-primary">{{ $lowongan->nama_lowongan }}</h4>
+    <h2 class="m-0 font-weight-bold text-primary">{{ $lowongan->nama_lowongan }}</h2>
     <a href="{{ route('lowongan.index') }}" class="btn btn-danger btn-sm btn-icon-split">
         <span class="icon text-white-50">
             <i class="fas fa-arrow-left"></i>
         </span>
         <span class="text">Kembali</span>
     </a>
+</div>
+
+<!-- Filter data pelamar -->
+<div class="card shadow mb-3">
+    <div class="card-body">
+        <form method="GET" class="row">
+            <div class="col-md-3">
+                <select name="status" class="form-control" onchange="this.form.submit()">
+                    <option value="">-- Filter Status --</option>
+                    <option value="Tidak dapat lanjut ke tahap selanjutya" {{ request('status') == 'Tidak dapat lanjut ke tahap selanjutya' ? 'selected' : '' }}>Tidak dapat lanjut ke tahap selanjutya</option>
+                    <option value="Verifikasi Online" {{ request('status') == 'Verifikasi Online' ? 'selected' : '' }}>Verifikasi Online</option>
+                    <option value="Verifikasi Berkas" {{ request('status') == 'Verifikasi Berkas' ? 'selected' : '' }}>Verifikasi Berkas</option>
+                    <option value="Tes Kesehatan" {{ request('status') == 'Tes Kesehatan' ? 'selected' : '' }}>Tes Kesehatan</option>
+                    <option value="Tes Lapangan" {{ request('status') == 'Tes Lapangan' ? 'selected' : '' }}>Tes Lapangan</option>
+                    <option value="Medical Check-Up" {{ request('status') == 'Medical Check-Up' ? 'selected' : '' }}>Medical Check-Up</option>
+                    <option value="Induksi Safety" {{ request('status') == 'Induksi Safety' ? 'selected' : '' }}>Induksi Safety</option>
+                    <option value="Tanda Tangan Kontrak" {{ request('status') == 'Tanda Tangan Kontrak' ? 'selected' : '' }}>Tanda Tangan Kontrak</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <input type="number" name="umur_min" class="form-control" placeholder="Umur Minimal" value="{{ request('umur_min') }}" onchange="this.form.submit()">
+            </div>
+            <div class="col-md-3">
+                <input type="number" name="umur_max" class="form-control" placeholder="Umur Maksimal" value="{{ request('umur_max') }}" onchange="this.form.submit()">
+            </div>
+
+            <div class="col-md-3">
+                <select name="pendidikan" class="form-control" onchange="this.form.submit()">
+                    <option value="">-- Filter Pendidikan --</option>
+                    <option value="SMA" {{ request('pendidikan') == 'SMA' ? 'selected' : '' }}>SMA</option>
+                    <option value="D3" {{ request('pendidikan') == 'D3' ? 'selected' : '' }}>D3</option>
+                    <option value="S1" {{ request('pendidikan') == 'S1' ? 'selected' : '' }}>S1</option>
+                </select>
+            </div>
+        </form>
+    </div>
 </div>
 
 <form action="{{ route('lamaran.updateStatusMassal') }}" method="POST">

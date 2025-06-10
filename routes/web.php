@@ -33,14 +33,18 @@ Route::delete('/biodata/delete-file/{field}', [BiodataController::class, 'delete
 // Admin route
 Route::group(['prefix' => 'admin', 'middleware' => ['redirect.role']], function () {
 
-    Route::get('/', [App\Http\Controllers\HomeController::class, 'index']);
-    Route::get('/dasbor', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+    Route::get('/', [App\Http\Controllers\Admin\DasborController::class, 'index']);
+    Route::get('/dasbor', [App\Http\Controllers\Admin\DasborController::class, 'index'])->name('home');
     Route::resource('/pengguna', 'App\Http\Controllers\Admin\PenggunaController');
+
     Route::resource('/lowongan', 'App\Http\Controllers\Admin\LowonganController');
+    Route::get('/lowongan/pendaftar/{loker_id}', [App\Http\Controllers\Admin\LowonganController::class, 'directToLamaran'])->name('directToLamaran');
+
     Route::resource('/lamarans', 'App\Http\Controllers\Admin\LamaranController');
     Route::post('/lamaran/update-status-massal', [LamaranController::class, 'updateStatusMassal'])->name('lamaran.updateStatusMassal');
+    Route::get('/lamaran-data', [LamaranController::class, 'getLamaranData'])->name('lamaran.data');
 
-    Route::get('/lowongan/pendaftar/{loker_id}', [App\Http\Controllers\Admin\LowonganController::class, 'directToLamaran'])->name('directToLamaran');
+    Route::resource('/pengumumans', 'App\Http\Controllers\Admin\PengumumanController');
 });
 
 // API route

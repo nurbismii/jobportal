@@ -13,7 +13,7 @@
 @endpush
 
 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-    <h6 class="m-0 font-weight-bold text-primary">Daftar Lowongan</h6>
+    <h2 class="m-0 font-weight-bold text-primary">Daftar Lowongan</h2>
     <a href="{{ route('lowongan.create') }}" class="btn btn-primary btn-sm btn-icon-split">
         <span class="icon text-white-50"><i class="fas fa-plus"></i></span>
         <span class="text">Lowongan</span>

@@ -44,7 +44,7 @@
                         <p class="card-text text-muted flex-grow-1" style="max-height: 90px; overflow: hidden;">
                             {!! $lamaran->lowongan->kualifikasi !!}
                         </p>
-                        <div class="mt-3">
+                        <div class="mt-2 mb-3">
                             <p class="mb-1 small">
                                 <strong>Status Lamaran : </strong>
                                 @if ($lamaran->status_lamaran == '1')
@@ -55,8 +55,11 @@
                             </p>
                             <p class="mb-0 small">
                                 <strong>Status Proses : </strong>
-                                <span class="badge bg-primary">{{ $lamaran->status_proses }}</span>
+                                <span class="fw-bold">{{ $lamaran->status_proses }}</span>
                             </p>
+                        </div>
+                        <div>
+                            <a href="{{ route('lamaran.show', $lamaran->id) }}" class="btn p-0 mt-3 float-left">Baca Detail <i class="fa fa-arrow-right"></i></a>
                         </div>
                     </div>
                 </div>
@@ -65,6 +68,4 @@
         </div>
     </div>
 </div>
-
-
 @endsection

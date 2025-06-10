@@ -185,7 +185,7 @@ class LowonganController extends Controller
     {
         $biodata = Biodata::findOrFail($id);
         $biodata->update([
-            'status_ktp' => 'No KTP diinput secara manual diakibatkan OCR tidak valid' . ' : ' . $request->status_ktp,
+            'status_ktp' => 'Verifikasi ulang' . ' : ' . $request->status_ktp,
         ]);
 
         Alert::success('Berhasil', 'No KTP berhasil berhasil diinput secara manual.');

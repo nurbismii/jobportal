@@ -81,22 +81,44 @@ class LowonganController extends Controller
         return redirect()->back();
     }
 
-    public function directToLamaran($loker_id)
+    public function directToLamaran(Request $request, $loker_id)
     {
         $lowongan = Lowongan::select('nama_lowongan')->where('id', $loker_id)->first();
 
-        $lamarans = Lamaran::with(
+        $query = Lamaran::with(
             'lowongan',
             'biodata.user',
             'biodata.getProvinsi',
             'biodata.getKabupaten',
             'biodata.getKecamatan',
             'biodata.getKelurahan'
-        )->where('loker_id', $loker_id)->get();
+        )->where('loker_id', $loker_id);
 
-        $title = 'Hapus Lowongan!';
-        $text = "Kamu yakin ingin menghapus lowongan ini?";
-        confirmDelete($title, $text);
+        // Filter status proses
+        if ($request->filled('status')) {
+            $query->where('status_proses', $request->status);
+        }
+
+        // Filter pendidikan
+        if ($request->filled('pendidikan')) {
+            $query->whereHas('biodata', function ($q) use ($request) {
+                $q->where('pendidikan_terakhir', $request->pendidikan);
+            });
+        }
+
+        // Filter umur
+        if ($request->filled('umur_min') || $request->filled('umur_max')) {
+            $query->whereHas('biodata', function ($q) use ($request) {
+                if ($request->filled('umur_min')) {
+                    $q->whereRaw('TIMESTAMPDIFF(YEAR, tanggal_lahir, CURDATE()) >= ?', [$request->umur_min]);
+                }
+                if ($request->filled('umur_max')) {
+                    $q->whereRaw('TIMESTAMPDIFF(YEAR, tanggal_lahir, CURDATE()) <= ?', [$request->umur_max]);
+                }
+            });
+        }
+
+        $lamarans = $query->get();
 
         return view('admin.lamaran.index', compact('lamarans', 'lowongan'))->with('no');
     }

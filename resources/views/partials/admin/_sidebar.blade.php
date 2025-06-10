@@ -12,8 +12,8 @@
     <hr class="sidebar-divider my-0">
 
     <!-- Nav Item - Dashboard -->
-    <li class="nav-item active">
-        <a class="nav-link" href="index.html">
+    <li class="nav-item {{ request()->routeIs('home') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('home') }}">
             <i class="fas fa-fw fa-tachometer-alt"></i>
             <span>Dashboard</span></a>
     </li>
@@ -27,17 +27,17 @@
     </div>
 
     <!-- Nav Item - Pages Collapse Menu -->
-    <li class="nav-item">
-        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
-            aria-expanded="true" aria-controls="collapseTwo">
+    <li class="nav-item {{ request()->routeIs('pengguna.*', 'lowongan.*') ? 'active' : '' }}">
+        <a class="nav-link {{ request()->routeIs('pengguna.*', 'lowongan.*') ? '' : 'collapsed' }}" href="#" data-toggle="collapse" data-target="#collapseTwo"
+            aria-expanded="{{ request()->routeIs('pengguna.*', 'lowongan.*') ? 'true' : 'false' }}" aria-controls="collapseTwo">
             <i class="fas fa-fw fa-cog"></i>
             <span>Master Data</span>
         </a>
-        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+        <div id="collapseTwo" class="collapse {{ request()->routeIs('pengguna.*', 'lowongan.*') ? 'show' : '' }}" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
                 <h6 class="collapse-header">Kelola Data:</h6>
-                <a class="collapse-item" href="{{ route('pengguna.index') }}">Pengguna</a>
-                <a class="collapse-item" href="{{ route('lowongan.index') }}">Lowongan</a>
+                <a class="collapse-item {{ request()->routeIs('pengguna.*') ? 'active' : '' }}" href="{{ route('pengguna.index') }}">Pengguna</a>
+                <a class="collapse-item {{ request()->routeIs('lowongan.*') ? 'active' : '' }}" href="{{ route('lowongan.index') }}">Lowongan</a>
             </div>
         </div>
     </li>
@@ -50,8 +50,8 @@
         Addons
     </div>
 
-    <li class="nav-item">
-        <a class="nav-link" href="charts.html">
+    <li class="nav-item {{ request()->routeIs('pengumumans.*') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('pengumumans.index') }}">
             <i class="fas fa-fw fa-chart-area"></i>
             <span>Pengumuman</span>
         </a>

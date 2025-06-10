@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Lamaran;
+use App\Models\RiwayatProsesLamaran;
 use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
 
@@ -16,6 +17,15 @@ class LamaranController extends Controller
             'status_proses' => 'required|string'
         ]);
 
+        $lamaran = Lamaran::with('biodata')->whereIn('id', $request->selected_ids)->get();
+
+        foreach ($lamaran as $data) {
+            RiwayatProsesLamaran::create([
+                'user_id' => $data->biodata->user_id,
+                'lamaran_id' => $data->id,
+                'status_proses' => $request->status_proses
+            ]);
+        }
         // Update semua yang dipilih
         Lamaran::whereIn('id', $request->selected_ids)
             ->update(['status_proses' => $request->status_proses]);
@@ -33,4 +43,5 @@ class LamaranController extends Controller
         Alert::success('Berhasil', 'Nama perekomendasi berhasil ditambahkan');
         return back()->with('success', 'Status berhasil diperbarui.');
     }
+    
 }

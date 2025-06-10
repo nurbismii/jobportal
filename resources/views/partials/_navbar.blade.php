@@ -12,11 +12,12 @@
 
             <div class="collapse navbar-collapse" id="navbarCollapse">
                 <div class="navbar-nav mx-0 mx-lg-auto">
-                    <a href="/" class="nav-item nav-link">Beranda</a>
-                    <a href="{{ route('lowongan-kerja.index') }}" class="nav-item nav-link">Lowongan Kerja</a>
-                    <a href="{{ route('pengumuman.index') }}" class="nav-item nav-link">Pengumuman</a>
-                    <a href="{{ route('bantuan.index') }}" class="nav-item nav-link">Bantuan</a>
-                    <!-- Tambahkan tombol di bawah ini untuk mobile -->
+                    <a href="/" class="nav-item nav-link {{ request()->is('/') ? 'active' : '' }}">Beranda</a>
+                    <a href="{{ route('lowongan-kerja.index') }}" class="nav-item nav-link {{ request()->routeIs('lowongan-kerja.*') ? 'active' : '' }}">Lowongan Kerja</a>
+                    <a href="{{ route('pengumuman.index') }}" class="nav-item nav-link {{ request()->routeIs('pengumuman.*') ? 'active' : '' }}">Pengumuman</a>
+                    <a href="{{ route('bantuan.index') }}" class="nav-item nav-link {{ request()->routeIs('bantuan.*') ? 'active' : '' }}">Bantuan</a>
+
+                    <!-- Tombol login dan daftar untuk mobile -->
                     <a href="{{ route('login') }}" class="btn btn-primary rounded-pill px-md-5 my-2 d-xl-none">
                         Masuk
                     </a>
@@ -38,13 +39,14 @@
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
                 <span class="fa fa-bars"></span>
             </button>
+
             <div class="collapse navbar-collapse" id="navbarCollapse">
                 <div class="navbar-nav mx-0 mx-lg-auto">
-                    <a href="/" class="nav-item nav-link">Beranda</a>
-                    <a href="{{ route('biodata.index') }}" class="nav-item nav-link">Formulir Biodata</a>
-                    <a href="{{ route('lowongan-kerja.index') }}" class="nav-item nav-link">Lowongan Kerja</a>
-                    <a href="{{ route('lamaran.index') }}" class="nav-item nav-link">Lamaran</a>
-                    <a href="" class="nav-item nav-link">Pengumuman</a>
+                    <a href="/" class="nav-item nav-link {{ request()->is('/') ? 'active' : '' }}">Beranda</a>
+                    <a href="{{ route('biodata.index') }}" class="nav-item nav-link {{ request()->routeIs('biodata.*') ? 'active' : '' }}">Formulir Biodata</a>
+                    <a href="{{ route('lowongan-kerja.index') }}" class="nav-item nav-link {{ request()->routeIs('lowongan-kerja.*') ? 'active' : '' }}">Lowongan Kerja</a>
+                    <a href="{{ route('lamaran.index') }}" class="nav-item nav-link {{ request()->routeIs('lamaran.*') ? 'active' : '' }}">Lamaran</a>
+                    <a href="{{ route('pengumuman.index') }}" class="nav-item nav-link {{ request()->routeIs('pengumuman.*') ? 'active' : '' }}">Pengumuman</a>
                 </div>
             </div>
 

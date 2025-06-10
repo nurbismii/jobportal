@@ -75,7 +75,7 @@
     <div class="container py-5">
         <h1 class="display-4 mb-4">Informasi</h1>
         <h4 class="text-primary">Lowongan Tersedia</h4>
-        <div class="row g-4"> <!-- g-4: jarak antar kolom & baris -->
+        <div class="row g-4 justify-content-center">
 
             @foreach ($lowongans as $lowongan)
             <div class="col-md-6 col-lg-4">
@@ -195,14 +195,12 @@
     <!-- Tentang End -->
 
     <!-- Pengumumam Start -->
+    @foreach($pengumumans as $pengumuman)
     <div class="container-fluid blog py-5">
         <div class="container py-5">
             <div class="mx-auto pb-5 wow fadeInUp" data-wow-delay="0.2s">
                 <h4 class="text-primary">Pengumuman</h4>
                 <h1 class="display-4 mb-4">Berita terbaru</h1>
-                <p class="mb-0">
-                    Lorem ipsum dolor, sit amet consectetur adipisicing elit. Tenetur adipisci facilis cupiditate recusandae aperiam temporibus corporis itaque quis facere, numquam, ad culpa deserunt sint dolorem autem obcaecati, ipsam mollitia hic.
-                </p>
             </div>
             <div class="row g-4 justify-content-center">
                 <!-- Kolom 1 -->
@@ -211,17 +209,17 @@
                         <div class="blog-img">
                             <img src="{{ asset('img/megapone-loker.jpg') }}" class="img-fluid rounded-top w-100" alt="">
                             <div class="blog-categiry py-2 px-4">
-                                <span>Business</span>
+                                <span>Pengumuman</span>
                             </div>
                         </div>
                         <div class="blog-content p-4">
                             <div class="blog-comment d-flex justify-content-between mb-3">
-                                <div class="small"><span class="fa fa-user text-primary"></span> Martin.C</div>
-                                <div class="small"><span class="fa fa-calendar text-primary"></span> 30 Dec 2025</div>
+                                <div class="small"><span class="fa fa-user text-primary me-2"></span>PT VDNI</div>
+                                <div class="small"><span class="fa fa-calendar text-primary me-2"></span>{{ tanggalIndo($pengumuman->created_at) }}</div>
                             </div>
-                            <a href="#" class="h4 d-inline-block mb-3">Klaim JKP</a>
-                            <p class="mb-3">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
-                            <a href="#" class="btn p-0">Baca Detail <i class="fa fa-arrow-right"></i></a>
+                            <a href="{{ route('pengumuman.show', $pengumuman->id) }}" class="h4 d-inline-block mb-3">{{ $pengumuman->pengumuman }}</a>
+                            <p class="mb-3">{!! substr($pengumuman->keterangan, 0, 140) !!}...</p>
+                            <a href="{{ route('pengumuman.show', $pengumuman->id) }}" class="btn p-0 mt-3">Baca Detail <i class="fa fa-arrow-right"></i></a>
                         </div>
                     </div>
                 </div>
@@ -242,6 +240,7 @@
             </div>
         </div>
     </div>
+    @endforeach
     <!-- Pengumumam End -->
 
     <!-- FAQs Start -->

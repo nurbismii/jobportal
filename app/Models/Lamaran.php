@@ -26,4 +26,9 @@ class Lamaran extends Model
     {
         return $this->hasOne(Biodata::class, 'id', 'biodata_id');
     }
+
+    public function riwayatProses()
+    {
+        return $this->hasOne(RiwayatProsesLamaran::class, 'id, lamaran_id');
+    }
 }
