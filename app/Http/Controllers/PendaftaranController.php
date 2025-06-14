@@ -32,7 +32,7 @@ class PendaftaranController extends Controller
         ]);
 
         // Check if the user already exists
-        if (User::where('no_ktp', $request->no_ktp)->first()) {
+        if (User::where('no_ktp', $validatedData['no_ktp'])->first()) {
 
             Alert::error('Gagal', 'Nomor KTP sudah terdaftar!');
             return redirect()->back();
@@ -53,6 +53,7 @@ class PendaftaranController extends Controller
                 'tanggal_resign' => $employee ? $employee->tgl_resign : null,
                 'ket_resign' => $employee ? $employee->alasan_resign : null,
                 'role' => "user",
+                'area_kerja' => $employee ? $employee->area_kerja : null,
             ]);
 
             // Check if the employee exists

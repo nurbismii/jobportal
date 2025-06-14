@@ -18,7 +18,7 @@
             <form method="POST" action="{{ route('pendaftaran.store') }}">
                 @csrf
                 <div class="mb-3">
-                    <input type="number" maxlength="16" name="no_ktp" class="form-control @error('nik') is-invalid @enderror" placeholder="No KTP" value="{{ old('nik') }}" required>
+                    <input type="text" maxlength="16" name="no_ktp" class="form-control @error('nik') is-invalid @enderror" placeholder="No KTP" value="{{ old('nik') }}" required>
                     @error('no_ktp')
                     <div class="invalid-feedback d-block">{{ $message }}</div>
                     @enderror

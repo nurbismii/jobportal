@@ -27,6 +27,7 @@ class User extends Authenticatable
         'tanggal_resign',
         'ket_resign',
         'password',
+        'area_kerja'
     ];
 
     /**

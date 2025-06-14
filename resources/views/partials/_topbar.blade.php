@@ -4,11 +4,8 @@
         <div class="row gx-0 align-items-center">
             <div class="col-lg-8 text-center text-lg-start mb-lg-0">
                 <div class="d-flex flex-wrap">
-                    <div class="border-end border-primary pe-3">
-                        <a href="#" class="text-muted small"><i class="fas fa-map-marker-alt text-primary me-2"></i>Find A Location</a>
-                    </div>
                     <div class="ps-3">
-                        <a href="mailto:example@gmail.com" class="text-muted small"><i class="fas fa-envelope text-primary me-2"></i>example@gmail.com</a>
+                        <a href="mailto:vdnirekrutmen88@gmail.com" class="text-muted small"><i class="fas fa-envelope text-primary me-2"></i>vdnirekrutmen88@gmail.com</a>
                     </div>
                 </div>
             </div>

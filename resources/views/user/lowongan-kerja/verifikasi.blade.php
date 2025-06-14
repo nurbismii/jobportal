@@ -10,7 +10,7 @@
                 <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
             </div>
             <div>
-                <h4 class="mb-2 text-dark fw-bold">Pemeriksaan Data!</h4>
+                <h4 class="mb-2 text-dark fw-bold">Perbandingan Data Pribadi!</h4>
                 <p class="mb-3 text-danger fw-bold">
                     Oopps ! Terdapat perbedaan pada KTP atau SIM B II Umum anda, Silahkan perbaiki data berikut sebelum melanjutkan proses verifikasi :
                 </p>
@@ -118,7 +118,7 @@
                     <li class="mb-1">Setelah melakukan pengkinian data</li>
                     <li class="mb-1">Pastikan KTP sudah sesuai dengan format yang ditentukan</li>
                     <li class="mb-1">Klik link "Pengkinian Data" untuk mengulangi proses pemeriksaan</li>
-                    <li class="mb-1">Hasil OCR akan diperbarui sesuai dengan data terbaru</li>
+                    <li class="mb-1">Hasil akan diperbarui sesuai dengan data terbaru</li>
                     <li class="mb-1">Lakukan <a href="{{ url()->current() }}?refresh=true" id="btn-reset-ocr">Pengkinian Data! </a>
                     </li>
                 </ul>

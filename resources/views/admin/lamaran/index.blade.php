@@ -66,6 +66,7 @@
             <div class="mb-3">
                 <select name="status_proses" class="form-control" required>
                     <option value="">-- Pilih Status Baru --</option>
+                    <option value="Tidak dapat lanjut ke tahap selanjutya">Tidak dapat lanjut ke tahap selanjutya</option>
                     <option value="Verifikasi Online">Verifikasi Online</option>
                     <option value="Verifikasi Berkas">Verifikasi Berkas</option>
                     <option value="Tes Kesehatan">Tes Kesehatan</option>
@@ -87,15 +88,15 @@
                 <table class="table table-hover nowrap" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                         <tr>
+                            <th>No</th>
                             <th><input type="checkbox" id="checkAll"></th>
                             <th>Status</th>
-                            <th>No</th>
                             <th>Email</th>
                             <th>No KTP</th>
                             <th>No KK</th>
                             <th>Nama</th>
-                            <th>Status Pelamar</th>
-                            <th>Area</th>
+                            <th class="bg-warning">Status Pelamar</th>
+                            <th class="bg-warning">Ex Area</th>
                             <th>Jenis Kelamin</th>
                             <th>Tempat Lahir</th>
                             <th>Tanggal Lahir</th>
@@ -151,15 +152,23 @@
                     <tbody>
                         @foreach($lamarans as $data)
                         <tr>
-                            <td><input type="checkbox" name="selected_ids[]" value="{{ $data->id }}" required></td>
-                            <td>{{ $data->status_proses }}</td>
                             <td>{{ ++$no }}</td>
+                            <td><input type="checkbox" name="selected_ids[]" value="{{ $data->id }}"></td>
+                            <td>{{ $data->status_proses }}</td>
                             <td>{{ $data->biodata->user->email }}</td>
                             <td>{{ $data->biodata->no_ktp }}</td>
                             <td>{{ $data->biodata->no_kk }}</td>
                             <td>{{ $data->biodata->user->name }}</td>
+                            @if($data->biodata->user->status_pelamar)
+                            <td class="bg-warning">{{ strtoupper($data->biodata->user->status_pelamar) }}</td>
+                            @else
                             <td>{{ strtoupper($data->biodata->user->status_pelamar) }}</td>
+                            @endif
+                            @if($data->biodata->user->area_kerja)
+                            <td class="bg-warning">{{ $data->biodata->user->area_kerja }}</td>
+                            @else
                             <td>{{ $data->biodata->user->area_kerja }}</td>
+                            @endif
                             <td>{{ $data->biodata->jenis_kelamin == 'L' ? 'Laki-Laki' : 'Perempuan' }}</td>
                             <td>{{ $data->biodata->tempat_lahir }}</td>
                             <td>{{ $data->biodata->tanggal_lahir }}</td>
@@ -178,7 +187,7 @@
                             <td>{{ $data->biodata->getKelurahan->kelurahan }}</td>
                             <td>{{ $data->biodata->alamat }}</td>
                             <td>{{ $data->biodata->no_telp }}</td>
-                            <td>{{ $data->biodata->npwp }}</td>
+                            <td>{{ $data->biodata->no_npwp }}</td>
                             <td>{{ $data->biodata->golongan_darah }}</td>
                             <td>{{ $data->biodata->nama_instansi }}</td>
                             <td>{{ $data->biodata->pendidikan_terakhir }}</td>
