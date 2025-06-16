@@ -91,7 +91,8 @@ class LowonganController extends Controller
             'biodata.getProvinsi',
             'biodata.getKabupaten',
             'biodata.getKecamatan',
-            'biodata.getKelurahan'
+            'biodata.getKelurahan',
+            'biodata.user.suratPeringatan',
         )->where('loker_id', $loker_id);
 
         // Filter status proses

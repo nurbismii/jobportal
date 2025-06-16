@@ -53,4 +53,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(Biodata::class, 'user_id', 'id');
     }
+
+    public function suratPeringatan()
+    {
+        return $this->hasMany(SuratPeringatan::class);
+    }
 }

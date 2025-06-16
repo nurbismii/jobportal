@@ -132,11 +132,9 @@ class LowonganController extends Controller
 
         $msg_expired_sim = $expiredSim < $today ? 'EXPIRED' : null;
 
-        if ($msg_expired_sim) {
-            $biodata->update([
-                'status_sim_b2' => $msg_expired_sim
-            ]);
-        }
+        $biodata->update([
+            'status_sim_b2' => $msg_expired_sim
+        ]);
 
         // Compare OCR data
         if ($lowongan->status_sim_b2) {

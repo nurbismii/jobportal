@@ -177,12 +177,13 @@
                     <thead>
                         <tr>
                             <th>No</th>
+                            <th>Riwayat</th> <!-- tombol expand -->
                             <th><input type="checkbox" id="checkAll"></th>
                             <th>Status</th>
-                            <th>Email</th>
+                            <th>Nama</th>
                             <th>No KTP</th>
                             <th>No KK</th>
-                            <th>Nama</th>
+                            <th>Email</th>
                             <th class="bg-warning">Status Pelamar</th>
                             <th class="bg-warning">Ex Area</th>
                             <th>Jenis Kelamin</th>
@@ -242,12 +243,21 @@
                         @foreach($lamarans as $data)
                         <tr>
                             <td>{{ ++$no }}</td>
+                            <td>
+                                @if($data->biodata->user->suratPeringatan->isNotEmpty())
+                                <a data-toggle="modal" data-target="#modalSP{{ $data->id }}" class="text-link">
+                                    Lihat SP
+                                </a>
+                                @else
+                                <span class="text-muted">-</span>
+                                @endif
+                            </td>
                             <td><input type="checkbox" name="selected_ids[]" value="{{ $data->id }}"></td>
                             <td>{{ $data->status_proses }}</td>
-                            <td>{{ $data->biodata->user->email }}</td>
+                            <td>{{ $data->biodata->user->name }}</td>
                             <td>{{ $data->biodata->no_ktp }}</td>
                             <td>{{ $data->biodata->no_kk }}</td>
-                            <td>{{ $data->biodata->user->name }}</td>
+                            <td>{{ $data->biodata->user->email }}</td>
                             @if($data->biodata->user->status_pelamar)
                             <td class="bg-warning">{{ strtoupper($data->biodata->user->status_pelamar) }}</td>
                             @else
@@ -391,7 +401,47 @@
     </div>
 </form>
 
-
+@foreach($lamarans as $data)
+@if($data->biodata->user->suratPeringatan->isNotEmpty())
+<div class="modal fade" id="modalSP{{ $data->id }}" tabindex="-1" role="dialog" aria-labelledby="modalSPLabel{{ $data->id }}" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalSPLabel{{ $data->id }}">Surat Peringatan - {{ $data->biodata->user->name }}</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Tutup">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered mb-0">
+                        <thead>
+                            <tr>
+                                <th>Level</th>
+                                <th>Keterangan</th>
+                                <th>Tanggal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($data->biodata->user->suratPeringatan as $sp)
+                            <tr>
+                                <td>{{ $sp->level_sp }}</td>
+                                <td>{{ $sp->ket_sp }}</td>
+                                <td>{{ \Carbon\Carbon::parse($sp->created_at)->format('d-m-Y') }}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+@endforeach
 
 @push('scripts')
 <!-- Page level plugins -->
@@ -466,7 +516,7 @@
                 }
             ],
             fixedColumns: {
-                leftColumns: 4
+                leftColumns: 6
             }
         });
 
@@ -552,6 +602,8 @@
                 $(this).blur();
             }
         });
+
+
     });
 </script>
 
