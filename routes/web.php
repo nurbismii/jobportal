@@ -45,6 +45,8 @@ Route::group(['prefix' => 'admin', 'middleware' => ['redirect.role']], function 
     Route::get('/lamaran-data', [LamaranController::class, 'getLamaranData'])->name('lamaran.data');
 
     Route::resource('/pengumumans', 'App\Http\Controllers\Admin\PengumumanController');
+
+    Route::post('/auto-update-field', [LamaranController::class, 'autoUpdate'])->name('data.autoUpdate');
 });
 
 // API route

@@ -283,10 +283,16 @@
 
                     <div class="col-md-12 mb-3">
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="sesuaiAlamatKtp" checked>
-                            <label for="sesuaiAlamatKtp" class="form-check-label">Alamat Domisili sesuai dengan Alamat KTP</label>
+                            <input class="form-check-input" type="checkbox" id="sesuaiAlamatKtp">
+                            <label for="sesuaiAlamatKtp" class="form-check-label">Alamat KTP sesuai dengan domisili</label>
                         </div>
                     </div>
+
+                    <div class="col-md-6 mb-3" id="alamatDomisiliField" style="display: none;">
+                        <label for="alamat">Alamat Domisili <span class="text-danger">*</span></label>
+                        <textarea name="alamat_domisili" class="form-control" id="alamat_domisili">{{ $biodata->alamat_domisili ?? '' }}</textarea>
+                    </div>
+
                     <h6 class="text-primary">Lain-lain</h6>
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
@@ -364,10 +370,10 @@
                         <input type="text" class="form-control" name="jurusan" value="{{ $biodata->jurusan ?? '' }}" required>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label for="nilai_ipk" class="form-label">IPK/Nilai Ijazah
+                        <label for="nilai_ipk" class="form-label">Nilai Akhir
                             <span class="text-danger">*</span>
                         </label>
-                        <input type="text" class="form-control" name="nilai_ipk" value="{{ $biodata->nilai_ipk ?? '' }}" required>
+                        <input type="text" class="form-control" maxlength="3" name="nilai_ipk" id="nilai_ipk" value="{{ $biodata->nilai_ipk ?? '' }}" required>
                     </div>
 
                     <div class="row g-3">
@@ -486,6 +492,7 @@
                             <option value="">Pilih status hubungan</option>
                             @endif
                             <option value="Orang Tua">Orang Tua</option>
+                            <option value="Pasangan">Pasangan</option>
                             <option value="Saudara">Saudara</option>
                             <option value="Sepupu">Sepupu</option>
                             <option value="Teman Dekat">Teman Dekat</option>
@@ -512,10 +519,11 @@
                                                 Untuk menghasilkan hasil yang optimal berikut beberapa tips yang bisa di ikuti :
                                             </p>
                                             <ul class="mb-0 ps-3">
-                                                <li class="mb-1">Direkomendasikan posisi KTP dan SIM gambar tegak.</li>
+                                                <li class="mb-1">Direkomendasikan posisi KTP dan SIM gambar tegak</li>
                                                 <li class="mb-1">Hasil foto harus jelas, tidak blur, tidak pecah, dan dapat dibaca</li>
                                                 <li class="mb-1">Gambar diambil dengan pencahayaan yang bagus dan tidak terlalu jauh</li>
-                                                <li class="mb-1">Tidak mengandung tulisan lain selain dari dokumen.</li>
+                                                <li class="mb-1">Pastikan teks pada SIM B2 tidak tertutup oleh hologram saat diunggah</li>
+                                                <li class="mb-1">Tidak mengandung tulisan lain selain dari dokumen</li>
                                             </ul>
                                             <span>
                                                 <small class="text-danger mt-2 d-block">
@@ -541,8 +549,6 @@
                                         </div>
                                     </div>
                                 </div>
-
-
                             </div>
                         </div>
                     </div>
@@ -655,6 +661,35 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkbox = document.getElementById('sesuaiAlamatKtp');
+        const alamatDomisili = document.getElementById('alamatDomisiliField');
+
+        function toggleAlamatDomisili() {
+            alamatDomisili.style.display = checkbox.checked ? 'none' : 'block';
+        }
+
+        // Initial toggle
+        toggleAlamatDomisili();
+
+        // Event listener on checkbox
+        checkbox.addEventListener('change', toggleAlamatDomisili);
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const nilaiInput = document.getElementById('nilai_ipk');
+
+        nilaiInput.addEventListener('blur', function() {
+            let val = nilaiInput.value.replace(',', '.'); // Ganti koma dengan titik jika ada
+            let number = parseFloat(val);
+
+            if (!isNaN(number)) {
+                let formatted = number.toFixed(2).replace('.', ','); // Format jadi 2 desimal, ubah titik ke koma
+                nilaiInput.value = formatted;
+            }
+        });
+    });
+
     function toggleAlertContent(button) {
         const content = document.getElementById('alertContent');
         const icon = button.querySelector('i');
@@ -843,101 +878,24 @@
         document.getElementById('checkBox2').addEventListener('change', checkCheckboxes);
     });
 
-    const cvUpload = document.getElementById('cv-upload');
-    if (cvUpload) {
-        cvUpload.addEventListener('change', function() {
-            const fileName = cvUpload.files[0]?.name || 'Dokumen belum diunggah';
-            document.getElementById('file-name-cv').textContent = fileName;
-        });
-    }
+    document.addEventListener('DOMContentLoaded', function() {
+        const dokumenFields = @json(array_keys($dokumenFields));
 
-    const pasFotoUpload = document.getElementById('pas-foto-upload');
-    if (pasFotoUpload) {
-        pasFotoUpload.addEventListener('change', function() {
-            const fileName = pasFotoUpload.files[0]?.name || 'Dokumen belum diunggah';
-            document.getElementById('file-name-pas-foto').textContent = fileName;
-        });
-    }
+        dokumenFields.forEach(field => {
+            const inputId = `${field}-upload`;
+            const spanId = `file-name-${field.replace(/_/g, '-')}`;
 
-    const slkUpload = document.getElementById('slk-upload');
-    if (slkUpload) {
-        slkUpload.addEventListener('change', function() {
-            const fileName = slkUpload.files[0]?.name || 'Dokumen belum diunggah';
-            document.getElementById('file-name-slk').textContent = fileName;
-        });
-    }
+            const input = document.getElementById(inputId);
+            const span = document.getElementById(spanId);
 
-    const ijazahUpload = document.getElementById('ijazah-upload');
-    if (ijazahUpload) {
-        ijazahUpload.addEventListener('change', function() {
-            const fileName = ijazahUpload.files[0]?.name || 'Dokumen belum diunggah';
-            document.getElementById('file-name-ijazah').textContent = fileName;
+            if (input && span) {
+                input.addEventListener('change', function() {
+                    const fileName = input.files[0]?.name || 'Dokumen belum diunggah';
+                    span.textContent = fileName;
+                });
+            }
         });
-    }
-
-    const ktpUpload = document.getElementById('ktp-upload');
-    if (ktpUpload) {
-        ktpUpload.addEventListener('change', function() {
-            const fileName = ktpUpload.files[0]?.name || 'Dokumen belum diunggah';
-            document.getElementById('file-name-ktp').textContent = fileName;
-        });
-    }
-
-    const simUpload = document.getElementById('sim-upload');
-    if (simUpload) {
-        simUpload.addEventListener('change', function() {
-            const fileName = simUpload.files[0]?.name || 'Dokumen belum diunggah';
-            document.getElementById('file-name-sim').textContent = fileName;
-        });
-    }
-
-    const skckUpload = document.getElementById('skck-upload');
-    if (skckUpload) {
-        skckUpload.addEventListener('change', function() {
-            const fileName = skckUpload.files[0]?.name || 'Dokumen belum diunggah';
-            document.getElementById('file-name-skck').textContent = fileName;
-        });
-    }
-
-    const sertifikatUpload = document.getElementById('sertifikat-upload');
-    if (sertifikatUpload) {
-        sertifikatUpload.addEventListener('change', function() {
-            const fileName = sertifikatUpload.files[0]?.name || 'Dokumen belum diunggah';
-            document.getElementById('file-name-sertifikat').textContent = fileName;
-        });
-    }
-
-    const kkUpload = document.getElementById('kk-upload');
-    if (kkUpload) {
-        kkUpload.addEventListener('change', function() {
-            const fileName = kkUpload.files[0]?.name || 'Dokumen belum diunggah';
-            document.getElementById('file-name-kk').textContent = fileName;
-        });
-    }
-
-    const npwpUpload = document.getElementById('npwp-upload');
-    if (npwpUpload) {
-        npwpUpload.addEventListener('change', function() {
-            const fileName = npwpUpload.files[0]?.name || 'Dokumen belum diunggah';
-            document.getElementById('file-name-npwp').textContent = fileName;
-        });
-    }
-
-    const ak1Upload = document.getElementById('ak1-upload');
-    if (ak1Upload) {
-        ak1Upload.addEventListener('change', function() {
-            const fileName = ak1Upload.files[0]?.name || 'Dokumen belum diunggah';
-            document.getElementById('file-name-ak1').textContent = fileName;
-        });
-    }
-
-    const sertiPendukungUpload = document.getElementById('serti-pendukung-upload');
-    if (sertiPendukungUpload) {
-        sertiPendukungUpload.addEventListener('change', function() {
-            const fileName = sertiPendukungUpload.files[0]?.name || 'Dokumen belum diunggah';
-            document.getElementById('file-name-serti-pendukung').textContent = fileName;
-        });
-    }
+    });
 
     document.getElementById('npwp').addEventListener('input', function(e) {
         let value = e.target.value.replace(/\D/g, ''); // Hanya angka

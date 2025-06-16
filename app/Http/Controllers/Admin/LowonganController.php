@@ -13,7 +13,7 @@ class LowonganController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Lowongan::query();
+        $query = Lowongan::withCount('lamarans');
 
         $title = 'Hapus Lowongan!';
         $text = "Kamu yakin ingin menghapus lowongan ini?";

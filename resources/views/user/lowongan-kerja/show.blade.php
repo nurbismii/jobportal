@@ -35,8 +35,8 @@
                 @csrf
                 <div class="modal-body">
                     <p class="text-primary fw-bold">Kamu yakin ingin melamar posisi {{$lowongan->nama_lowongan}}?</p>
-                    <input type="hidden" name="loker_id" value="{{ $lowongan->id }}">
-                    <input type="hidden" name="biodata_id" value="{{ $biodata->id }}">
+                    <input type="text" name="loker_id" value="{{ $lowongan->id }}">
+                    <input type="text" name="biodata_id" value="{{ $biodata->id }}">
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>

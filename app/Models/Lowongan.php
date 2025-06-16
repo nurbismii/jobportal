@@ -12,4 +12,9 @@ class Lowongan extends Model
     protected $table = 'lowongan';
 
     protected $guarded = [];
+
+    public function lamarans()
+    {
+        return $this->hasMany(Lamaran::class, 'loker_id');
+    }
 }

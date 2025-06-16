@@ -2,6 +2,57 @@
 
 @section('content')
 <div class="container py-5">
+    @if($msg_name_ktp_vs_sim_b2 || $msg_date_ktp_vs_sim_b2)
+    <div class="accordion" id="alertAccordion">
+        <div class="accordion-item rounded-3 shadow-sm mb-3">
+            <h2 class="accordion-header">
+                <button class="accordion-button bg-opacity-25 text-dark fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#alertBody" aria-expanded="true" aria-controls="alertBody">
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                    Cara Meningkatkan Keberhasil Pemeriksaan
+                </button>
+            </h2>
+            <div id="alertBody" class="accordion-collapse collapse show" data-bs-parent="#alertAccordion">
+                <div class="row g-5 align-items-center">
+                    <div class="col-xl-6 wow fadeInLeft" data-wow-delay="0.2s" style="visibility: visible; animation-delay: 0.2s; animation-name: fadeInLeft;">
+                        <div class="accordion-body">
+                            <p class="mb-3 fw-bold">
+                                Untuk menghasilkan hasil yang optimal berikut beberapa tips yang bisa di ikuti :
+                            </p>
+                            <ul class="mb-0 ps-3">
+                                <li class="mb-1">Direkomendasikan posisi KTP dan SIM gambar tegak.</li>
+                                <li class="mb-1">Hasil foto harus jelas, tidak blur, tidak pecah, dan dapat dibaca</li>
+                                <li class="mb-1">Gambar diambil dengan pencahayaan yang bagus dan tidak terlalu jauh</li>
+                                <li class="mb-1">Pastikan teks pada SIM B2 tidak tertutup oleh hologram saat diunggah</li>
+                                <li class="mb-1">Tidak mengandung tulisan lain selain dari dokumen.</li>
+                            </ul>
+                            <span>
+                                <small class="text-danger mt-2 d-block">
+                                    Apabila unggahan KTP dan SIM tidak sesuai dengan ketentuan di atas, proses lamaran pekerjaan kamu dapat mengalami kendala.
+                                </small>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 wow fadeInRight" data-wow-delay="0.4s" style="visibility: visible; animation-delay: 0.4s; animation-name: fadeInRight;">
+                        <div class="rounded p-3 d-inline-block text-center">
+                            <p class="mb-0 fw-bold">
+                                Contoh letak foto KTP yang baik
+                            </p>
+                            <img src="{{ asset('img/example-ktp.jpg') }}" alt="foto contoh KTP" class="img-fluid w-100" style="height: 160px;">
+                        </div>
+                    </div>
+                    <div class="col-xl-3 wow fadeInRight" data-wow-delay="0.4s" style="visibility: visible; animation-delay: 0.4s; animation-name: fadeInRight;">
+                        <div class="rounded p-3 d-inline-block text-center">
+                            <p class="mb-2 fw-bold">
+                                Contoh letak foto SIM yang baik
+                            </p>
+                            <img src="{{ asset('img/example-sim_b2.png') }}" alt="foto contoh KTP" class="img-fluid w-100" style="height: 160px;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 
     @if($msg_name_ktp_vs_sim_b2 || $msg_date_ktp_vs_sim_b2)
     <div class="alert border-1 border-danger shadow-sm rounded-3 p-4">
@@ -10,9 +61,9 @@
                 <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
             </div>
             <div>
-                <h4 class="mb-2 text-dark fw-bold">Perbandingan Data Pribadi!</h4>
+                <h4 class="mb-2 text-dark fw-bold">Pemeriksaan Dokumen KTP dan SIM B II Umum!</h4>
                 <p class="mb-3 text-danger fw-bold">
-                    Oopps ! Terdapat perbedaan pada KTP atau SIM B II Umum anda, Silahkan perbaiki data berikut sebelum melanjutkan proses verifikasi :
+                    Oopss! Data tidak sesuai, Silahkan perbaiki data berikut sebelum melanjutkan proses verifikasi :
                 </p>
                 <ul class="mb-0 ps-3">
                     @if($msg_name_ktp_vs_sim_b2)

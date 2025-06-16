@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Biodata;
 use App\Models\Lamaran;
 use App\Models\Lowongan;
+use DateTime;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Str;
@@ -26,6 +28,15 @@ class LowonganController extends Controller
         $cacheKey = 'ocr_result_user_' . $userId;
         $resetCooldownKey = 'ocr_reset_cooldown_user_' . $userId;
 
+        $nama_sim = null;
+        $tanggl_lahir_sim = null;
+        $berlaku_sim = null;
+
+        $aktif = 1;
+        $tidak_aktif = 0;
+
+        $lowongan = Lowongan::findOrFail($id);
+
         // Batasi reset OCR hanya 1x tiap 5 menit (300 detik)
         if (request()->query('refresh') === 'true') {
             if (Cache::has($resetCooldownKey)) {
@@ -40,15 +51,31 @@ class LowonganController extends Controller
             Cache::put($resetCooldownKey, time() + 300, 300); // cache 5 menit
         }
 
-        $biodata = Biodata::where('user_id', auth()->id())->first();
-
-        if (!$biodata) {
+        if (!Auth::user()) {
             Alert::info('Login dulu yuk!', 'Silahkan login untuk melihat lowongan kerja.');
             return redirect()->route('login');
         }
 
+        $biodata = Biodata::where('user_id', auth()->id())->first();
+
+        if (!$biodata) {
+            Alert::info('Oopss!', 'Lengkapi formulir biodata dulu yuks');
+            return redirect()->route('biodata.index');
+        }
+
         // Dapatkan data SIM B2 dari OCR
-        $res_ocr_simb2 = $this->extractSimB2($biodata);
+        if ($lowongan->status_sim_b2 == $aktif) {
+            $res_ocr_simb2 = $this->extractSimB2($biodata);
+
+            if ($res_ocr_simb2['data'] == null) {
+                Alert::info('Oopss!', 'Untuk lamar pekerjaan ini silakan upload sim B2 Umum kamu dulu ya');
+                return redirect()->route('biodata.index');
+            }
+
+            $nama_sim = strtoupper($res_ocr_simb2['data']['nama']);
+            $tanggl_lahir_sim = $res_ocr_simb2['data']['tanggal_lahir'];
+            $berlaku_sim = $res_ocr_simb2['data']['berlaku_sampai'];
+        }
 
         // Jika ada query ?refresh=true, hapus cache manual
         if (request()->query('refresh') === 'true') {
@@ -65,7 +92,6 @@ class LowonganController extends Controller
             }
 
             if ($biodata->ktp) {
-
 
                 $url = config('services.ocr.link') . '/' . config('services.ocr.type');
 
@@ -90,19 +116,21 @@ class LowonganController extends Controller
             }
         });
 
+        // Simpan dalam array data hasil ocr sim dan ktp
         $ocrResult = [
             'nama_ktp' => strtoupper($ocrData['result']['nama']['value']) ?? null,
             'nik_ktp' => $ocrData['result']['nik']['value'] ?? null,
             'tgl_lahir_ktp' => $ocrData['result']['tanggalLahir']['value'] ?? null,
             'nik_score_ktp' => $ocrData['result']['nik']['score'] ?? null,
-            'nama_sim' => strtoupper($res_ocr_simb2['data']['nama']) ?? null,
-            'tgl_lahir_sim' => $res_ocr_simb2['data']['tanggal_lahir'] ?? null,
-            'expired_sim' => $res_ocr_simb2['data']['berlaku_sampai'] ?? null,
+            'nama_sim' => $nama_sim,
+            'tgl_lahir_sim' => $tanggl_lahir_sim,
+            'expired_sim' => $berlaku_sim,
         ];
 
-        $msg_expired_sim = $ocrResult['expired_sim'] < date('Y-m-d')
-            ? 'EXPIRED'
-            : null;
+        $expiredSim = DateTime::createFromFormat('d-m-Y', $berlaku_sim);
+        $today = new DateTime(); // otomatis tanggal hari ini
+
+        $msg_expired_sim = $expiredSim < $today ? 'EXPIRED' : null;
 
         if ($msg_expired_sim) {
             $biodata->update([
@@ -111,33 +139,37 @@ class LowonganController extends Controller
         }
 
         // Compare OCR data
-        $msg_name_ktp_vs_sim_b2 = $ocrResult['nama_sim'] != $ocrResult['nama_ktp']
-            ? 'Nama pada KTP tidak sesuai dengan nama pada SIM B2.'
-            : null;
+        if ($lowongan->status_sim_b2) {
 
-        $msg_date_ktp_vs_sim_b2 = $ocrResult['tgl_lahir_ktp'] != $ocrResult['tgl_lahir_sim']
-            ? 'Tanggal lahir pada KTP tidak sesuai dengan tanggal lahir pada SIM B2.'
-            : null;
+            if ($nama_sim == null) {
+                $msg_name_ktp_vs_sim_b2 = 'Nama pada SIM B II Umum tidak terbaca';
+            } else {
+                $msg_name_ktp_vs_sim_b2 = $ocrResult['nama_sim'] != $ocrResult['nama_ktp'] ? 'Nama pada KTP dan SIM tidak sesuai.' : null;
+            }
 
-        $lowongan = Lowongan::findOrFail($id);
+            if ($tanggl_lahir_sim == null) {
+                $msg_date_ktp_vs_sim_b2 = 'Tanggal lahir pada SIM B II Umum tidak terbaca';
+            } else {
+                $msg_date_ktp_vs_sim_b2 = $ocrResult['tgl_lahir_ktp'] != $ocrResult['tgl_lahir_sim'] ? 'Tanggal lahir pada KTP dan SIM B II Umum tidak sesuai.' : null;
+            }
+        } else {
 
+            $msg_name_ktp_vs_sim_b2 = null;
+            $msg_date_ktp_vs_sim_b2 = null;
+        }
+
+        // Dapatkan formulir biodata yang belum terinput
         $fieldLabels = $this->getFieldLabels($lowongan->status_sim_b2);
 
         $emptyFields = collect($fieldLabels)->filter(function ($label, $field) use ($biodata) {
             return empty($biodata->$field);
         })->values()->all();
 
-        $msg_no_ktp = $ocrResult['nik_ktp'] !== $biodata->no_ktp
-            ? 'No KTP tidak sesuai dengan biodata anda.'
-            : null;
+        $msg_no_ktp = $ocrResult['nik_ktp'] !== $biodata->no_ktp ? 'No KTP tidak sesuai dengan biodata anda.' : null;
 
-        $msg_no_ktp_score = $ocrResult['nik_score_ktp'] < 70
-            ? 'KTP tidak jelas, blur atau tidak dapat dibaca. Silakan perbarui KTP pada dokumen biodata anda.'
-            : null;
+        $msg_no_ktp_score = $ocrResult['nik_score_ktp'] < 80 ? 'KTP tidak jelas, blur atau tidak dapat dibaca. Silakan perbarui KTP pada dokumen biodata anda.' : null;
 
-        $nikScoreKtp = ($biodata->status_ktp == null && $ocrResult['nik_score_ktp'] < 69)
-            ? 'Verifikasi kepemilikan KTP'
-            : null;
+        $nikScoreKtp = ($biodata->status_ktp == null && $ocrResult['nik_score_ktp'] < 70) ? 'Verifikasi kepemilikan KTP' : null;
 
         if (count($emptyFields) || $msg_no_ktp || $msg_no_ktp_score || $nikScoreKtp || $msg_name_ktp_vs_sim_b2 || $msg_date_ktp_vs_sim_b2) {
             return view('user.lowongan-kerja.verifikasi', [
@@ -154,21 +186,13 @@ class LowonganController extends Controller
         return view('user.lowongan-kerja.show', compact('lowongan', 'biodata'));
     }
 
-
     public function store(Request $request)
     {
-        $lamaran = Lamaran::where('biodata_id', $request->biodata_id)
-            ->where('loker_id', $request->loker_id)
-            ->first();
+        $lamaran = Lamaran::where('biodata_id', $request->biodata_id)->first();
 
-        if ($lamaran) {
-            Alert::warning('Peringatan', 'Anda sudah melamar pekerjaan ini sebelumnya.');
+        if ($lamaran && $lamaran->status_lamaran == '1') {
+            Alert::warning('Peringatan', 'Saat ini kamu dalam proses lamaran, tidak dapat melamar lebih dari satu lowongan.');
             return redirect()->back();
-
-            if ($lamaran->status_lamaran == '1') {
-                Alert::warning('Peringatan', 'Saat ini Anda dalam proses lamaran, tidak dapat melamar lebih dari satu lowongan.');
-                return redirect()->back();
-            }
         }
 
         Lamaran::create([
@@ -204,17 +228,19 @@ class LowonganController extends Controller
                 basename($fullPath)
             )->post('https://api.ocr.space/parse/image', [
                 'apikey' => 'K82052672988957',
-                'language' => 'eng', // Gunakan juga 'ind' jika perlu
+                'language' => 'eng',
+                'OCREngine' => '2',
+                'scale' => 'true',
+                'detectOrientation' => 'true',
+                'isOverlayRequired' => 'false',
             ]);
 
             $result = $response->json();
             $text = $result['ParsedResults'][0]['ParsedText'] ?? '';
             $lines = array_values(array_filter(array_map('trim', explode("\n", $text))));
 
-            // Normalisasi huruf besar untuk pendeteksian pola
             $normalizedText = strtoupper(implode(' ', $lines));
 
-            // Tentukan apakah ini format baru atau lama
             $isFormatBaru = Str::contains($normalizedText, 'NAMA/NAME') || Str::contains($normalizedText, 'PLACE, DATE OF BIRTH');
 
             $parsed = [
@@ -232,7 +258,6 @@ class LowonganController extends Controller
             $afterAlamat = false;
 
             if ($isFormatBaru) {
-                // FORMAT BARU
                 foreach ($lines as $i => $line) {
                     $upper = strtoupper($line);
 
@@ -246,7 +271,7 @@ class LowonganController extends Controller
                     }
 
                     if (Str::contains($upper, 'JENIS KELAMIN') || in_array($upper, ['PRIA', 'WANITA'])) {
-                        $parsed['jenis_kelamin'] = 'PRIA';
+                        $parsed['jenis_kelamin'] = $upper;
                     }
 
                     if (Str::contains($upper, 'ALAMAT') && isset($lines[$i + 1])) {
@@ -270,18 +295,15 @@ class LowonganController extends Controller
                     }
                 }
             } else {
-                // FORMAT LAMA
                 foreach ($lines as $line) {
                     $line = trim($line);
                     $upper = strtoupper($line);
 
-                    // 1. Nama
                     if (preg_match('/1\.\s*(.+)/', $line, $match)) {
                         $parsed['nama'] = ucwords(strtolower($match[1]));
                         continue;
                     }
 
-                    // 2. Tempat, Tanggal Lahir
                     if (preg_match('/2\.\s*\.?([A-Z\s]+),\s*(\d{2}-\d{2}-\d{4})/i', $line, $match)) {
                         $parsed['tempat_lahir'] = ucwords(strtolower($match[1]));
                         $parsed['tanggal_lahir'] = $match[2];
@@ -289,7 +311,6 @@ class LowonganController extends Controller
                         continue;
                     }
 
-                    // 3. Jenis Kelamin
                     if (preg_match('/3\.\s*(PRIA|WANITA)/i', $line, $match)) {
                         $parsed['jenis_kelamin'] = strtoupper($match[1]);
                         continue;
@@ -298,7 +319,6 @@ class LowonganController extends Controller
                         continue;
                     }
 
-                    // 4. Alamat
                     if (preg_match('/4\.\s*(.+)/', $line, $match)) {
                         $parsed['alamat'] = ucwords(strtolower($match[1]));
                         $afterAlamat = true;
@@ -307,28 +327,24 @@ class LowonganController extends Controller
                         $parsed['alamat'] .= ', ' . ucwords(strtolower($line));
                         continue;
                     } elseif (preg_match('/5\./', $line)) {
-                        $afterAlamat = false; // stop parsing alamat
+                        $afterAlamat = false;
                     }
 
-                    // 5. Pekerjaan
                     if (preg_match('/5\.\s*(.+)/', $line, $match)) {
                         $parsed['pekerjaan'] = ucwords(strtolower($match[1]));
                         continue;
                     }
 
-                    // 6. Wilayah
                     if (preg_match('/6\.\s*(.+)/', $line, $match)) {
                         $parsed['wilayah'] = ucwords(strtolower($match[1]));
                         continue;
                     }
 
-                    // Wilayah alternatif: POLRES...
-                    if (preg_match('/\bPOL(RES|DA|SEK)\b/i', $line)) {
+                    if (preg_match('/\bPOL(RES|DA|RESTA|SEK|RI)\b/i', $line)) {
                         $parsed['wilayah'] = ucwords(strtolower($line));
                         continue;
                     }
 
-                    // Berlaku Sampai
                     if (
                         preg_match('/\d{2}-\d{2}-\d{4}/', $line, $match) &&
                         $match[0] !== $parsed['tanggal_lahir']
@@ -337,8 +353,54 @@ class LowonganController extends Controller
                     }
                 }
 
-                // Rapikan alamat
                 $parsed['alamat'] = rtrim($parsed['alamat'], ', ');
+            }
+
+            // Fallback Parsing untuk format tidak terstruktur
+            if (empty($parsed['nama']) || empty($parsed['tanggal_lahir'])) {
+                foreach ($lines as $i => $line) {
+                    $cleanLine = preg_replace('/[^A-Za-z0-9\s.,-]/', '', $line);
+                    $upper = strtoupper($cleanLine);
+
+                    if (preg_match('/^[A-Z]\.?\s+[A-Z]+$/', $cleanLine)) {
+                        $parsed['nama'] = ucwords(strtolower($cleanLine));
+                    }
+
+                    if (preg_match('/([A-Z\s]+),\s*(\d{2}-\d{2}-\d{4})/', $cleanLine, $match)) {
+                        $parsed['tempat_lahir'] = ucwords(strtolower($match[1]));
+                        $parsed['tanggal_lahir'] = $match[2];
+                    }
+
+                    if (in_array($upper, ['PRIA', 'WANITA'])) {
+                        $parsed['jenis_kelamin'] = $upper;
+                    }
+
+                    if (empty($parsed['alamat']) && isset($lines[$i + 1], $lines[$i + 2])) {
+                        if (preg_match('/JEMBATAN|DUSUN|KAB|DESA|RT|RW/i', $cleanLine)) {
+                            $alamat = [$cleanLine];
+                            $j = $i + 1;
+                            while (isset($lines[$j]) && !preg_match('/POL(RES|DA|RESTA|SEK|RI)|\d{2}-\d{2}-\d{4}/', $lines[$j])) {
+                                $alamat[] = preg_replace('/[^A-Za-z0-9\s.,-]/', '', $lines[$j]);
+                                $j++;
+                            }
+                            $parsed['alamat'] = ucwords(strtolower(implode(', ', $alamat)));
+                        }
+                    }
+
+                    if (preg_match('/(SWASTA|WIRASWASTA|PEGAWAI|SISWA|MAHASISWA)/i', $cleanLine, $match)) {
+                        $parsed['pekerjaan'] = ucfirst(strtolower($match[1]));
+                    }
+
+                    if (preg_match('/POL(RES|DA|RESTA|SEK|RI)/i', $cleanLine)) {
+                        $parsed['wilayah'] = ucwords(strtolower($cleanLine));
+                    }
+
+                    if (preg_match('/\d{2}-\d{2}-\d{4}/', $cleanLine, $match)) {
+                        if ($match[0] !== $parsed['tanggal_lahir']) {
+                            $parsed['berlaku_sampai'] = $match[0];
+                        }
+                    }
+                }
             }
 
             return [
@@ -352,6 +414,7 @@ class LowonganController extends Controller
             'data' => null,
         ];
     }
+
 
     public function getFieldLabels($status_sim_b2)
     {

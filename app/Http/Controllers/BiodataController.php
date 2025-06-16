@@ -63,6 +63,7 @@ class BiodataController extends Controller
                 'kecamatan' => $request->kecamatan,
                 'kelurahan' => $request->kelurahan,
                 'alamat' => $request->alamat,
+                'alamat_domisili' => $request->alamat_domisili,
                 'kode_pos' => $request->kode_pos,
                 'rt' => $request->rt,
                 'rw' => $request->rw,

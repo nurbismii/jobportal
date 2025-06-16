@@ -10,7 +10,95 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
 
 <link rel="stylesheet" href="https://cdn.datatables.net/fixedcolumns/4.3.0/css/fixedColumns.dataTables.min.css">
+
+<style>
+    td.editable {
+        cursor: text;
+        background-color: #f9f9f9;
+        border: 1px solid #ccc;
+        padding: 6px 8px;
+        border-radius: 4px;
+        font-family: inherit;
+        font-size: 14px;
+        transition: all 0.2s ease-in-out;
+    }
+
+    td.editable:focus,
+    td.editable[contenteditable="true"]:focus {
+        outline: none;
+        border: 1px solid #007bff;
+        background-color: #fff;
+        box-shadow: 0 0 3px rgba(0, 123, 255, 0.5);
+    }
+
+    td.editable[contenteditable="true"] {
+        background-color: #f9f9f9;
+    }
+
+    td.editable.editing {
+        background-color: #fffbe6;
+        /* kuning soft saat sedang diedit */
+    }
+
+    /* Gaya tombol DataTables */
+    .dt-button {
+        margin-right: 5px;
+        border-radius: 0.25rem;
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+    }
+
+    /* Dropdown Show entries */
+    .dataTables_length select {
+        width: auto;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        border: 1px solid #ced4da;
+    }
+
+    /* Search box styling */
+    .dataTables_filter input {
+        border-radius: 0.25rem;
+        padding: 0.25rem 0.5rem;
+        border: 1px solid #ced4da;
+    }
+
+    /* Pagination */
+    .dataTables_paginate .pagination .page-item .page-link {
+        border-radius: 0.25rem;
+        margin: 0 2px;
+        color: #007bff;
+    }
+
+    .dataTables_paginate .pagination .page-item.active .page-link {
+        background-color: #007bff;
+        border-color: #007bff;
+        color: #fff;
+    }
+
+    /* Hover row effect */
+    #dataTable tbody tr:hover {
+        background-color: #f1f3f5;
+        cursor: pointer;
+    }
+
+    div.dataTables_wrapper div.dataTables_length {
+        margin-right: 1rem;
+        /* atau 16px, bisa ditambah sesuai kebutuhan */
+    }
+</style>
 @endpush
+<div class="position-absolute top-0 end-0 p-3" style="z-index: 1050;">
+    <div id="toast-update-success" c class="toast align-items-center text-white bg-success border-0 fs-5 px-4 py-3 rounded shadow"
+        role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                Data berhasil diperbarui.
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
 
 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
     <h2 class="m-0 font-weight-bold text-primary">{{ $lowongan->nama_lowongan }}</h2>
@@ -135,12 +223,13 @@
                             <th>Surat Lamaran</th>
                             <th>CV</th>
                             <th>KTP</th>
-                            <th>Status KTP</th>
+                            <th>KTP Status</th>
                             <th>SIM B2</th>
-                            <th>Status SIM</th>
+                            <th>SIM B2 Status</th>
                             <th>KK</th>
                             <th>Ijazah</th>
                             <th>SKCK</th>
+                            <th>SKCK Status</th>
                             <th>AK1</th>
                             <th>Vaksin</th>
                             <th>NPWP</th>
@@ -224,13 +313,23 @@
                                     {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->ktp) }}
                                 </a>
                             </td>
-                            <td>{{ $data->biodata->status_ktp }}</td>
+                            <td class="editable"
+                                data-id="{{ $data->biodata_id }}"
+                                data-model="biodata"
+                                data-field="status_ktp">
+                                {{ $data->biodata->status_ktp }}
+                            </td>
                             <td>
                                 <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sim_b_2) }}" target="_blank">
                                     {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sim_b_2) }}
                                 </a>
                             </td>
-                            <td>{{ $data->biodata->status_sim_b2 }}</td>
+                            <td class="editable"
+                                data-id="{{ $data->biodata_id }}"
+                                data-model="biodata"
+                                data-field="status_sim_b2">
+                                {{ $data->biodata->status_sim_b2 }}
+                            </td>
                             <td>
                                 <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->kartu_keluarga) }}" target="_blank">
                                     {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->kartu_keluarga) }}
@@ -245,6 +344,12 @@
                                 <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->skck) }}" target="_blank">
                                     {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->skck) }}
                                 </a>
+                            </td>
+                            <td class="editable"
+                                data-id="{{ $data->biodata_id }}"
+                                data-model="biodata"
+                                data-field="status_skck">
+                                {{ $data->biodata->status_skck }}
                             </td>
                             <td>
                                 <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->ak1) }}" target="_blank">
@@ -271,17 +376,11 @@
                                     {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sertifikat_pendukung) }}
                                 </a>
                             </td>
-                            <td>
-                                @if($data->rekomendasi != null)
+                            <td class="editable"
+                                data-id="{{ $data->id }}"
+                                data-model="lamaran"
+                                data-field="rekomendasi">
                                 {{ $data->rekomendasi }}
-                                @else
-                                <a class="btn btn-primary btn-sm btn-icon-split" data-toggle="modal" data-target="#rekomendasi{{$data->id}}">
-                                    <span class="icon text-white-50">
-                                        <i class="fas fa-plus"></i>
-                                    </span>
-                                    <span class="text">Rekomendasi</span>
-                                </a>
-                                @endif
                             </td>
                         </tr>
                         @endforeach
@@ -292,34 +391,7 @@
     </div>
 </form>
 
-@foreach($lamarans as $data)
-<div class="modal fade" id="rekomendasi{{$data->id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Rekomendasi</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <form action="{{ route('lamarans.update', $data->id) }}" method="post">
-                @csrf
-                {{ method_field('PUT') }}
-                <div class="modal-body">
-                    <div class="col-md-12 mb-3">
-                        <label for="perekomendasi">Perekomendasi</label>
-                        <input type="input" name="rekomendasi" id="perekomendasi" class="form-control" required>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
-                    <button type="submit" class="btn btn-primary">Simpan</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-@endforeach
+
 
 @push('scripts')
 <!-- Page level plugins -->
@@ -333,36 +405,46 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
 <script src="https://cdn.datatables.net/fixedcolumns/4.3.0/js/dataTables.fixedColumns.min.js"></script>
-<script>
-    document.getElementById('checkAll').addEventListener('change', function() {
-        const checkboxes = document.querySelectorAll('input[name="selected_ids[]"]');
-        checkboxes.forEach(cb => cb.checked = this.checked);
-    });
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+<script>
     $(document).ready(function() {
-        $('#dataTable').DataTable({
+        // Inisialisasi DataTable
+        const table = $('#dataTable').DataTable({
             scrollX: true,
             responsive: false,
             autoWidth: false,
             fixedHeader: true,
-            dom: 'Bfrtip',
+            dom: 'lBfrtip',
+            lengthMenu: [
+                [10, 50, 100, -1], // Nilai jumlah baris
+                [10, 50, 100, 'Semua'] // Label yang tampil di dropdown
+            ],
             buttons: [{
                     extend: 'colvis',
-                    text: 'Visibility',
-                    className: 'btn btn-primary btn-sm'
+                    text: '<i class="fas fa-eye"></i> Visibility',
+                    className: 'btn btn-outline-primary btn-sm'
                 },
                 {
                     extend: 'excelHtml5',
-                    text: 'Export Excel',
-                    className: 'btn btn-success btn-sm',
+                    text: '<i class="fas fa-file-excel"></i> Export Excel',
+                    className: 'btn btn-outline-success btn-sm',
                     title: 'Data Pelamar',
                     exportOptions: {
                         columns: ':visible',
                         format: {
                             body: function(data, row, column, node) {
-                                let html = $('<div>').html(data);
-                                let link = html.find('a').attr('href');
-                                return link ? link : html.text(); // ambil text biasa kalau bukan link
+                                let $node = $(node);
+                                if ($node.find('input').length > 0) {
+                                    return $node.find('input').val();
+                                }
+                                if ($node.find('select').length > 0) {
+                                    return $node.find('select option:selected').text();
+                                }
+                                if ($node.find('a').length > 0) {
+                                    return $node.find('a').attr('href');
+                                }
+                                return $node.text().trim();
                             }
                         }
                     },
@@ -374,13 +456,9 @@
                             $('c[r^="' + colRef + '"]', sheet).each(function() {
                                 let cell = $(this);
                                 let value = cell.text();
-
                                 if (value.startsWith('http')) {
-                                    let cellRef = cell.attr('r'); // Contoh: P5
                                     cell.attr('t', 'str');
-                                    cell.empty().append(
-                                        `<f>HYPERLINK("${value}", "${value}")</f>`
-                                    );
+                                    cell.empty().append(`<f>HYPERLINK("${value}", "${value}")</f>`);
                                 }
                             });
                         });
@@ -388,9 +466,104 @@
                 }
             ],
             fixedColumns: {
-                leftColumns: 4 // Freeze sampai kolom No KTP (kolom ke-4)
+                leftColumns: 4
             }
         });
+
+        // Editable logic
+        const debounceTimers = {};
+        let originalContent = '';
+
+        // Simpan nilai awal saat mulai edit
+        $('#dataTable').on('focus', 'td.editable', function() {
+            originalContent = $(this).text().trim();
+        });
+
+        // Aktifkan editable saat klik
+        $('#dataTable').on('click', 'td.editable', function() {
+            let $td = $(this);
+            if (!$td.is('[contenteditable="true"]')) {
+                $td.attr('contenteditable', 'true').focus();
+            }
+        });
+
+        // Saat selesai edit
+        $('#dataTable').on('blur', 'td.editable', function() {
+            let $td = $(this);
+            $td.attr('contenteditable', 'false');
+
+            const newValue = $td.text().trim();
+
+            // ⛔ Jika tidak ada perubahan, tidak perlu update
+            if (newValue === originalContent) {
+                return;
+            }
+
+            const id = $td.data('id');
+            const field = $td.data('field');
+            const model = $td.data('model');
+            const key = `${model}-${id}-${field}`;
+
+            if (debounceTimers[key]) {
+                clearTimeout(debounceTimers[key]);
+            }
+
+            debounceTimers[key] = setTimeout(() => {
+                $.ajax({
+                    url: '{{ route("data.autoUpdate") }}',
+                    method: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        id: id,
+                        model: model,
+                        field: field,
+                        value: newValue
+                    },
+                    success: function(res) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: res.message || 'Data berhasil diperbarui.',
+                            timer: 2500,
+                            toast: true,
+                            showConfirmButton: false,
+                            position: 'bottom-end'
+                        });
+                    },
+                    error: function(xhr) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal!',
+                            text: xhr.responseJSON?.message || 'Terjadi kesalahan.',
+                            timer: 3000,
+                            toast: true,
+                            showConfirmButton: false,
+                            position: 'bottom-end'
+                        });
+                    }
+                });
+            }, 1000);
+        });
+
+        // Tekan Enter untuk simpan cepat
+        $('#dataTable').on('keydown', 'td.editable', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                $(this).blur();
+            }
+        });
+    });
+</script>
+
+<script>
+    document.getElementById('checkAll').addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('input[name="selected_ids[]"]');
+        checkboxes.forEach(cb => cb.checked = this.checked);
+    });
+
+    document.querySelectorAll('td.editable').forEach(td => {
+        td.addEventListener('focus', () => td.classList.add('editing'));
+        td.addEventListener('blur', () => td.classList.remove('editing'));
     });
 </script>
 @endpush

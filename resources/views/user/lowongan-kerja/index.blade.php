@@ -19,15 +19,15 @@
 
             @foreach ($lowongans as $lowongan)
             <div class="col-md-6 col-lg-4">
-                <div class="service-item h-100"> <!-- h-100: biar tinggi seragam -->
+                <div class="service-item h-100 d-flex flex-column"> <!-- h-100: biar tinggi seragam -->
                     <div class="service-img">
                         <img src="{{ asset('img/megapone-loker.jpg') }}" class="img-fluid rounded-top w-100" alt="">
                         <div class="service-icon p-3">
                             <i class="fa fa-users fa-2x"></i>
                         </div>
                     </div>
-                    <div class="service-content p-4">
-                        <div class="service-content-inner">
+                    <div class="service-content p-4 d-flex flex-column flex-grow-1">
+                        <div class="service-content-inner flex-grow-1 d-flex flex-column justify-content-between">
                             <a href="{{ route('lowongan-kerja.show', $lowongan->id) }}" class="d-inline-block h4 mb-4">{{ $lowongan->nama_lowongan }}</a>
                             <!-- Isian deskripsi lowongan kerja -->
                             <p class="mb-4">
@@ -38,7 +38,7 @@
                             <p class="mb-4">{{ tanggalIndo($lowongan->tanggal_mulai) }} – {{ tanggalIndo($lowongan->tanggal_berakhir) }}</p>
                             <!-- Isian deskripsi lowongan kerja end -->
 
-                            <div class="d-flex justify-content-end gap-2">
+                            <div class="d-flex justify-content-end gap-2 mt-auto pt-3">
                                 <a class="btn btn-primary rounded-pill py-2 px-3" href="{{ route('lowongan-kerja.show', $lowongan->id) }}">Lamar</a>
                                 <a class="btn btn-primary rounded-pill py-2 px-3" href="#">Bagikan</a>
                             </div>
