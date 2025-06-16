@@ -30,6 +30,8 @@ Auth::routes();
 Route::resource('biodata', 'App\Http\Controllers\BiodataController');
 Route::delete('/biodata/delete-file/{field}', [BiodataController::class, 'deleteFile'])->name('biodata.deleteFile');
 
+Route::resource('profil', 'App\Http\Controllers\ProfilController');
+
 // Admin route
 Route::group(['prefix' => 'admin', 'middleware' => ['redirect.role']], function () {
 

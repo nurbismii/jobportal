@@ -48,6 +48,16 @@
                     <a href="{{ route('lamaran.index') }}" class="nav-item nav-link {{ request()->routeIs('lamaran.*') ? 'active' : '' }}">Lamaran</a>
                     <a href="{{ route('pengumuman.index') }}" class="nav-item nav-link {{ request()->routeIs('pengumuman.*') ? 'active' : '' }}">Pengumuman</a>
                 </div>
+
+                <!-- Tambahan Mobile -->
+                <div class="d-xl-none d-flex flex-column mt-3">
+                    <a href="{{ route('profil.index') }}" class="btn btn-outline-primary rounded-pill mb-2">Profil</a>
+                    <a href="#" class="btn btn-outline-danger rounded-pill mb-2"
+                        onclick="event.preventDefault(); document.getElementById('logout-form-mobile').submit();">Keluar</a>
+                    <form id="logout-form-mobile" action="{{ route('logout') }}" method="POST" style="display: none;">
+                        @csrf
+                    </form>
+                </div>
             </div>
 
             <div class="d-none d-xl-flex flex-shrink-0 ps-4 dropdown">
@@ -55,7 +65,7 @@
                     <i class="fa fa-user dropdown-toogle fa-2x"></i>
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                    <li><a class="dropdown-item" href="#">Profil</a></li>
+                    <li><a class="dropdown-item" href="{{ route('profil.index') }}">Profil</a></li>
                     <li><a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Keluar</a></li>
                     <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                         {{ csrf_field() }}

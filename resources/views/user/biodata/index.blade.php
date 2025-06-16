@@ -373,7 +373,7 @@
                         <label for="nilai_ipk" class="form-label">Nilai Akhir
                             <span class="text-danger">*</span>
                         </label>
-                        <input type="text" class="form-control" maxlength="3" name="nilai_ipk" id="nilai_ipk" value="{{ $biodata->nilai_ipk ?? '' }}" required>
+                        <input type="text" class="form-control"  name="nilai_ipk" id="nilai_ipk" value="{{ $biodata->nilai_ipk ?? '' }}" required>
                     </div>
 
                     <div class="row g-3">
@@ -680,12 +680,20 @@
         const nilaiInput = document.getElementById('nilai_ipk');
 
         nilaiInput.addEventListener('blur', function() {
-            let val = nilaiInput.value.replace(',', '.'); // Ganti koma dengan titik jika ada
-            let number = parseFloat(val);
+            let rawVal = nilaiInput.value.replace(',', '').replace('.', ''); // Hilangkan koma/titik
 
-            if (!isNaN(number)) {
-                let formatted = number.toFixed(2).replace('.', ','); // Format jadi 2 desimal, ubah titik ke koma
-                nilaiInput.value = formatted;
+            // Hanya ambil digit angka
+            let numericOnly = rawVal.replace(/\D/g, '');
+
+            if (numericOnly.length >= 2) {
+                // Sisipkan koma setelah digit pertama, contoh: 396 -> 3,96
+                let result = numericOnly.slice(0, 1) + ',' + numericOnly.slice(1, 3);
+                nilaiInput.value = result;
+            } else if (numericOnly.length === 1) {
+                // Contoh: 3 -> 3,00
+                nilaiInput.value = numericOnly + ',00';
+            } else {
+                nilaiInput.value = '';
             }
         });
     });
