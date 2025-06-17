@@ -31,6 +31,7 @@ class LowonganController extends Controller
         $nama_sim = null;
         $tanggl_lahir_sim = null;
         $berlaku_sim = null;
+        $keterangan_sim = null;
 
         $aktif = 1;
         $tidak_aktif = 0;
@@ -75,6 +76,7 @@ class LowonganController extends Controller
             $nama_sim = strtoupper($res_ocr_simb2['data']['nama']);
             $tanggl_lahir_sim = $res_ocr_simb2['data']['tanggal_lahir'];
             $berlaku_sim = $res_ocr_simb2['data']['berlaku_sampai'];
+            $keterangan_sim = $res_ocr_simb2['data']['keterangan_sim'];
         }
 
         $ocrData = null; // Inisialisasi default
@@ -143,6 +145,7 @@ class LowonganController extends Controller
             'nama_sim' => $nama_sim,
             'tgl_lahir_sim' => $tanggl_lahir_sim,
             'expired_sim' => $berlaku_sim,
+            'keterangan_sim' => $keterangan_sim
         ];
 
         $expiredSim = DateTime::createFromFormat('d-m-Y', $berlaku_sim);
@@ -151,7 +154,7 @@ class LowonganController extends Controller
         $msg_expired_sim = $expiredSim < $today ? 'EXPIRED' : null;
 
         $biodata->update([
-            'status_sim_b2' => $msg_expired_sim
+            'status_sim_b2' => $msg_expired_sim . ' ' . $keterangan_sim
         ]);
 
         // Compare OCR data
@@ -372,8 +375,57 @@ class LowonganController extends Controller
                 $parsed['alamat'] = rtrim($parsed['alamat'], ', ');
             }
 
-            // Fallback Parsing untuk format tidak terstruktur
+            // Fallback Parsing untuk format berlabel
             if (empty($parsed['nama']) || empty($parsed['tanggal_lahir'])) {
+                foreach ($lines as $i => $line) {
+                    $cleanLine = preg_replace('/[^A-Za-z0-9\s:.,-]/u', '', $line);
+                    $upper = strtoupper($cleanLine);
+
+                    // Nama
+                    if (Str::startsWith($upper, 'NAMA')) {
+                        $parsed['nama'] = trim(preg_replace('/^NAMA\s*:\s*/i', '', $cleanLine));
+                    }
+
+                    // Alamat (kumpulkan beberapa baris setelah "Alamat")
+                    if (Str::startsWith($upper, 'ALAMAT') && empty($parsed['alamat'])) {
+                        $alamat = [];
+                        $j = $i + 1;
+                        while (isset($lines[$j]) && !Str::contains(strtoupper($lines[$j]), ['TEMPAT', 'TGL', 'PEKER', 'NO. SIM', 'BERLAKU'])) {
+                            $alamat[] = trim($lines[$j]);
+                            $j++;
+                        }
+                        $parsed['alamat'] = ucwords(strtolower(implode(', ', $alamat)));
+                    }
+
+                    // Tempat Lahir
+                    if (Str::contains($upper, 'TEMPAT') && empty($parsed['tempat_lahir'])) {
+                        $parsed['tempat_lahir'] = trim(preg_replace('/^TEMPAT\s*&\s*:?/i', '', $cleanLine));
+                    }
+
+                    // Tanggal Lahir
+                    if (Str::contains($upper, 'TGL') && preg_match('/\d{2}-\d{2}-\d{4}/', $lines[$i + 1] ?? '', $match)) {
+                        $parsed['tanggal_lahir'] = $match[0];
+                    }
+
+                    // Pekerjaan
+                    if (Str::contains($upper, 'PEKER') && empty($parsed['pekerjaan'])) {
+                        $parsed['pekerjaan'] = trim(preg_replace('/^PEKERJAAN\s*:\s*/i', '', $cleanLine));
+                    }
+
+                    // Jenis kelamin
+                    if (in_array($upper, ['PRIA', 'WANITA']) && empty($parsed['jenis_kelamin'])) {
+                        $parsed['jenis_kelamin'] = $upper;
+                    }
+
+                    // Berlaku s/d
+                    if (Str::contains($upper, 'BERLAKU') && preg_match('/\d{2}-\d{2}-\d{4}/', $cleanLine, $match)) {
+                        $parsed['berlaku_sampai'] = $match[0];
+                    }
+
+                    $parsed['keterangan_sim'] = 'CEK FOTO SIM [L]';
+                }
+            } else {
+                // Fallback Parsing untuk format tidak terstruktur
                 foreach ($lines as $i => $line) {
                     $cleanLine = preg_replace('/[^A-Za-z0-9\s.,-]/', '', $line);
                     $upper = strtoupper($cleanLine);
@@ -416,6 +468,8 @@ class LowonganController extends Controller
                             $parsed['berlaku_sampai'] = $match[0];
                         }
                     }
+
+                    $parsed['keterangan_sim'] = 'CEK FOTO SIM [T]';
                 }
             }
 

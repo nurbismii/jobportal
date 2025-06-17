@@ -94,6 +94,17 @@
         display: flex;
         gap: 10px;
     }
+
+    .sticky-tabs {
+        position: sticky;
+        top: 96px;
+        /* Atur sesuai tinggi navbar/header Anda */
+        z-index: 1030;
+        /* Pastikan di atas konten lain */
+        background: #fff;
+        /* Agar tidak transparan */
+        border-radius: 0.5rem 0.5rem 0 0;
+    }
 </style>
 
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -102,12 +113,12 @@
 <div class="container-fluid service py-2">
     <div class="container py-5">
         <div class="mx-auto pb-5 wow fadeInUp" data-wow-delay="0.2s">
-            <h4 class="text-primary">Formulir Biodata</h4>
+            <h4 class="text-primary" id="start">Formulir Biodata</h4>
         </div>
         <form id="formWizard" method="POST" action="{{ route('biodata.store') }}" enctype="multipart/form-data">
             @csrf
             <!-- Step Indicators -->
-            <ul class="nav nav-tabs mb-4" id="formTabs" role="tablist">
+            <ul class="nav nav-tabs mb-4 sticky-tabs bg-white z-3" id="formTabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#step1" type="button">Data Pribadi</button>
                 </li>
@@ -830,6 +841,18 @@
     function showStep(index) {
         tabs[index].click(); // Trigger tab change
         updateNavButtons(); // Perbarui tombol
+
+        // Scroll ke field/input/form teratas pada tab-pane aktif
+        setTimeout(() => {
+            const startElement = document.getElementById('start');
+            // Atau jika ingin scroll ke elemen tersebut:
+            if (startElement) {
+                startElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        }, 200);
     }
 
     function validateStep(index) {

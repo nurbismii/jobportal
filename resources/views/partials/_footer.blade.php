@@ -3,12 +3,12 @@
         <div class="row g-5">
             <div class="col-xl-6">
                 <div class="footer-item">
-                    <a href="index.html" class="p-0">
+                    <a href="javascript:void(0)" class="p-0">
                         <h3 class="text-white"></i>PT Virtue Dragon Nickel Industry</h3>
                         <!-- <img src="img/logo.png" alt="Logo"> -->
                     </a>
                     <p class="text-white mb-4">SITE OFFICE Kawasan Industri VDNIP Desa Morosi, Kab. Konawe Sulawesi Tenggara, Indonesia</p>
-                    <p class="text-white mb-4">PT VDNI memiliki berbagai platform media sosial yang dapat Anda ikuti untuk mendapatkan informasi terbaru mengenai lowongan kerja dan perkembangan perusahaan.</p>
+                    <p class="text-white mb-4">PT VDNI memiliki berbagai platform media sosial yang dapat kamu ikuti.</p>
                     <p class="text-white mb-2">Salam hangat, HR PT VDNI</p>
 
                     <div class="footer-btn d-flex">
@@ -19,7 +19,7 @@
             </div>
             <div class="col-xl-6 ">
                 <div class="footer-item">
-                    <div id="map" style="height: 350px;"></div>
+                    <div id="map" style="height: 250px;"></div>
                 </div>
             </div>
         </div>

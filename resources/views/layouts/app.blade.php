@@ -83,13 +83,7 @@
         <div class="container">
             <div class="row g-4 align-items-center">
                 <div class="col-md-6 text-center text-md-end mb-md-0">
-                    <span class="text-body"><a href="#" class="border-bottom text-white"><i class="fas fa-copyright text-light me-2"></i>Rekrutmen Online VDNI</a>, All right reserved.</span>
-                </div>
-                <div class="col-md-6 text-center text-md-start text-body">
-                    <!--/*** This template is free as long as you keep the below author’s credit link/attribution link/backlink. ***/-->
-                    <!--/*** If you'd like to use the template without the below author’s credit link/attribution link/backlink, ***/-->
-                    <!--/*** you can purchase the Credit Removal License from "https://htmlcodex.com/credit-removal". ***/-->
-                    Designed By <a class="border-bottom text-white" href="https://htmlcodex.com">HR SITE</a> Distributed By <a class="border-bottom text-white" href="https://themewagon.com">HR SITE</a>
+                    <span class="text-body"><a href="javascript:void(0)" class="border-bottom text-white"><i class="fas fa-copyright text-light me-2"></i>Rekrutmen Online VDNI</a>, All right reserved.</span>
                 </div>
             </div>
         </div>
@@ -121,7 +115,7 @@
 
         // Tambahkan tampilan satelit dari Esri
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            attribution: 'Tiles &copy; Esri'
+            attribution: 'Lokasi VDNI'
         }).addTo(map);
 
         // Tambahkan marker + popup dengan link ke Google Maps
