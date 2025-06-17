@@ -77,23 +77,22 @@ class LowonganController extends Controller
             $berlaku_sim = $res_ocr_simb2['data']['berlaku_sampai'];
         }
 
+        $ocrData = null; // Inisialisasi default
+
         // Jika ada query ?refresh=true, hapus cache manual
         if (request()->query('refresh') === 'true') {
             Cache::forget($cacheKey);
         }
 
-        // Ambil data OCR dari cache, jika belum ada jalankan closure untuk panggil API dan simpan cache selama 12 jam
-        $ocrData = Cache::remember($cacheKey, now()->addHours(12), function () use ($biodata) {
-
+        if (!Cache::has($cacheKey)) {
             $filePath = public_path($biodata->no_ktp . '/dokumen/' . $biodata->ktp);
 
             if (!file_exists($filePath)) {
                 Alert::warning('Gagal', 'File KTP tidak ditemukan, silakan upload KTP terlebih dahulu');
-                return back();
+                return redirect()->route('biodata.index');
             }
 
             if ($biodata->ktp) {
-
                 $url = config('services.ocr.link') . '/' . config('services.ocr.type');
 
                 $response = Http::withToken(config('services.ocr.token'))
@@ -113,9 +112,12 @@ class LowonganController extends Controller
                     ], $response->status()));
                 }
 
-                return $response->json();
+                $ocrData = $response->json();
+                Cache::put($cacheKey, $ocrData, now()->addHours(12)); // simpan cache selama 12 jam
             }
-        });
+        } else {
+            $ocrData = Cache::get($cacheKey);
+        }
 
         if (!$ocrData) {
             Alert::info('Opss!', 'Silakan lengkapi dokumen pribadi yang dibutuhkan terlebih dahulu');
