@@ -312,6 +312,8 @@ class LowonganController extends Controller
                     if (preg_match('/\d{2}-\d{2}-\d{4}/', $line)) {
                         $parsed['berlaku_sampai'] = $line;
                     }
+
+                    $parsed['keterangan_sim'] = '';
                 }
             } else {
                 foreach ($lines as $line) {
@@ -371,7 +373,7 @@ class LowonganController extends Controller
                         $parsed['berlaku_sampai'] = $match[0];
                     }
                 }
-
+                $parsed['keterangan_sim'] = '';
                 $parsed['alamat'] = rtrim($parsed['alamat'], ', ');
             }
 
