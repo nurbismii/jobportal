@@ -87,34 +87,44 @@ class LowonganController extends Controller
         if (!Cache::has($cacheKey)) {
             $filePath = public_path($biodata->no_ktp . '/dokumen/' . $biodata->ktp);
 
-            if (!file_exists($filePath)) {
+            if (!$biodata->ktp || !file_exists($filePath)) {
                 Alert::warning('Gagal', 'File KTP tidak ditemukan, silakan upload KTP terlebih dahulu');
                 return redirect()->route('biodata.index');
             }
 
-            if ($biodata->ktp) {
-                $url = config('services.ocr.link') . '/' . config('services.ocr.type');
+            $url = rtrim(config('services.ocr.link'), '/') . '/' . ltrim(config('services.ocr.type'), '/');
 
-                $response = Http::withToken(config('services.ocr.token'))
-                    ->withHeaders([
-                        'Authentication' => 'bearer ' . config('services.ocr.token'),
-                    ])
-                    ->attach('file', file_get_contents($filePath), $biodata->ktp)
-                    ->put($url);
-
-                if (!$response->successful()) {
-                    abort(response()->json([
-                        'status' => 'error',
-                        'http_code' => $response->status(),
-                        'reason' => $response->reason(),
-                        'headers' => $response->headers(),
-                        'body' => $response->body(),
-                    ], $response->status()));
-                }
-
-                $ocrData = $response->json();
-                Cache::put($cacheKey, $ocrData, now()->addHours(12)); // simpan cache selama 12 jam
+            if (empty($url) || !filter_var($url, FILTER_VALIDATE_URL)) {
+                Alert::error('Gagal', 'URL OCR tidak valid. Silakan periksa konfigurasi.');
+                return back();
             }
+
+            $fileContent = @file_get_contents($filePath); // gunakan @ untuk suppress warning
+
+            if ($fileContent === false) {
+                Alert::error('Gagal', 'Gagal membaca file KTP. Pastikan file tersedia dan tidak rusak.');
+                return redirect()->route('biodata.index');
+            }
+
+            $response = Http::withToken(config('services.ocr.token'))
+                ->withHeaders([
+                    'Authentication' => 'bearer ' . config('services.ocr.token'),
+                ])
+                ->attach('file', $fileContent, $biodata->ktp)
+                ->put($url);
+
+            if (!$response->successful()) {
+                abort(response()->json([
+                    'status' => 'error',
+                    'http_code' => $response->status(),
+                    'reason' => $response->reason(),
+                    'headers' => $response->headers(),
+                    'body' => $response->body(),
+                ], $response->status()));
+            }
+
+            $ocrData = $response->json();
+            Cache::put($cacheKey, $ocrData, now()->addHours(12));
         } else {
             $ocrData = Cache::get($cacheKey);
         }

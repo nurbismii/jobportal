@@ -336,58 +336,57 @@
 
                 <!-- Step Pendidikan -->
                 <div class="tab-pane fade" id="step2">
-                    <div class="col-md-6 mb-3">
-                        <label for="pendidikan_terakhir" class="form-label">Pendidikan Terakhir
-                            <span class="text-danger">*</span>
-                        </label>
-                        <select class="form-select" name="pendidikan_terakhir" required>
-                            @if($biodata)
-                            <option value="{{ $biodata->pendidikan_terakhir }}">{{ $biodata->pendidikan_terakhir }}</option>
-                            @else
-                            <option value="">Pilih pendidikan terakhir</option>
-                            @endif
-                            <option value="SD">SD</option>
-                            <option value="SMP">SMP</option>
-                            <option value="SMA">SMA</option>
-                            <option value="SMK">SMK</option>
-                            <option value="D3">D3</option>
-                            <option value="D4">D4</option>
-                            <option value="S1">S1</option>
-                            <option value="S2">S2</option>
-                            <option value="S3">S3</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="nama_instansi" class="form-label">Nama Sekolah/Kampus
-                            <span class="text-danger">*</span>
-                        </label>
-                        <input type="text" class="form-control" name="nama_instansi" value="{{ $biodata->nama_instansi ?? '' }}" required>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="jurusan" class="form-label">Jurusan
-                            <span class="text-danger">*</span>
-                        </label>
-                        <input type="text" class="form-control" name="jurusan" value="{{ $biodata->jurusan ?? '' }}" required>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="nilai_ipk" class="form-label">Nilai Akhir
-                            <span class="text-danger">*</span>
-                        </label>
-                        <input type="text" class="form-control"  name="nilai_ipk" id="nilai_ipk" value="{{ $biodata->nilai_ipk ?? '' }}" required>
-                    </div>
-
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label>Tahun masuk
+                            <label for="pendidikan_terakhir" class="form-label">Pendidikan Terakhir
                                 <span class="text-danger">*</span>
                             </label>
-                            <input type="date" name="tahun_masuk" class="form-control" value="{{ $biodata->tahun_masuk ?? '' }}">
+                            <select class="form-select" name="pendidikan_terakhir" required>
+                                @if($biodata)
+                                <option value="{{ $biodata->pendidikan_terakhir }}">{{ $biodata->pendidikan_terakhir }}</option>
+                                @else
+                                <option value="">Pilih pendidikan terakhir</option>
+                                @endif
+                                <option value="SD">SD</option>
+                                <option value="SMP">SMP</option>
+                                <option value="SMA">SMA</option>
+                                <option value="SMK">SMK</option>
+                                <option value="D3">D3</option>
+                                <option value="D4">D4</option>
+                                <option value="S1">S1</option>
+                                <option value="S2">S2</option>
+                                <option value="S3">S3</option>
+                            </select>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label>Tahun lulus
+                            <label for="nama_instansi" class="form-label">Nama Sekolah/Kampus
                                 <span class="text-danger">*</span>
                             </label>
-                            <input type="date" name="tahun_lulus" class="form-control" value="{{ $biodata->tahun_lulus ?? '' }}">
+                            <input type="text" class="form-control" name="nama_instansi" value="{{ $biodata->nama_instansi ?? '' }}" required>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6 mb-3">
+                            <label for="jurusan" class="form-label">Jurusan
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" name="jurusan" value="{{ $biodata->jurusan ?? '' }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="nilai_ipk" class="form-label">Nilai Akhir
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" name="nilai_ipk" id="nilai_ipk" value="{{ $biodata->nilai_ipk ?? '' }}" required>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="row g-3">
+                            <div class="col-md-6 mb-3">
+                                <label>Tahun lulus
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <input type="date" name="tahun_lulus" class="form-control" value="{{ $biodata->tahun_lulus ?? '' }}">
+                            </div>
                         </div>
                     </div>
 
