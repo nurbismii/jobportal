@@ -28,6 +28,8 @@
     <!-- Template Stylesheet -->
     <link href="{{ asset('user/css/style.css') }}" rel="stylesheet">
 
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
     @stack('styles')
 </head>
 
@@ -97,7 +99,7 @@
     <!-- Back to Top -->
     <a href="#" class="btn btn-primary btn-lg-square rounded-circle back-to-top"><i class="fa fa-arrow-up"></i></a>
 
-    
+
     <!-- JavaScript Libraries -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -107,9 +109,26 @@
     <script src="{{ asset('user/lib/counterup/counterup.min.js') }}"></script>
     <script src="{{ asset('user/lib/lightbox/js/lightbox.min.js') }}"></script>
     <script src="{{ asset('user/lib/owlcarousel/owl.carousel.min.js') }}"></script>
-    
+
     <!-- Template Javascript -->
     <script src="{{ asset('user/js/main.js') }}"></script>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <script>
+        var morosiCoords = [-3.903640038866699, 122.42485963890647];
+        var map = L.map('map').setView(morosiCoords, 15);
+
+        // Tambahkan tampilan satelit dari Esri
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri'
+        }).addTo(map);
+
+        // Tambahkan marker + popup dengan link ke Google Maps
+        L.marker(morosiCoords).addTo(map)
+            .bindPopup('<b>Site: PT VDNI</b><br><a href="https://www.google.com/maps?q=' + morosiCoords[0] + ',' + morosiCoords[1] + '" target="_blank">Lihat di Google Maps</a>')
+            .openPopup();
+    </script>
     @stack('scripts')
 </body>
 

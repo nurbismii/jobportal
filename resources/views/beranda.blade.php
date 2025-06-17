@@ -153,8 +153,7 @@
                             <div class="col-sm-6">
                                 <div class="counter-item bg-light rounded p-3 h-100">
                                     <div class="counter-counting">
-                                        <span class="text-primary fs-2 fw-bold" data-toggle="counter-up">129</span>
-                                        <span class="h1 fw-bold text-primary">+</span>
+                                        <span class="text-primary fs-2 fw-bold" data-toggle="counter-up">{{ $count_karyawan }}</span>
                                     </div>
                                     <h4 class="mb-0 text-dark">Karyawan</h4>
                                 </div>
@@ -162,8 +161,7 @@
                             <div class="col-sm-6">
                                 <div class="counter-item bg-light rounded p-3 h-100">
                                     <div class="counter-counting">
-                                        <span class="text-primary fs-2 fw-bold" data-toggle="counter-up">99</span>
-                                        <span class="h1 fw-bold text-primary">+</span>
+                                        <span class="text-primary fs-2 fw-bold" data-toggle="counter-up">49</span>
                                     </div>
                                     <h4 class="mb-0 text-dark">Penghargaan</h4>
                                 </div>
@@ -171,8 +169,7 @@
                             <div class="col-sm-6">
                                 <div class="counter-item bg-light rounded p-3 h-100">
                                     <div class="counter-counting">
-                                        <span class="text-primary fs-2 fw-bold" data-toggle="counter-up">556</span>
-                                        <span class="h1 fw-bold text-primary">+</span>
+                                        <span class="text-primary fs-2 fw-bold" data-toggle="counter-up">{{ $count_departemen }}</span>
                                     </div>
                                     <h4 class="mb-0 text-dark">Departemen</h4>
                                 </div>
@@ -180,8 +177,7 @@
                             <div class="col-sm-6">
                                 <div class="counter-item bg-light rounded p-3 h-100">
                                     <div class="counter-counting">
-                                        <span class="text-primary fs-2 fw-bold" data-toggle="counter-up">967</span>
-                                        <span class="h1 fw-bold text-primary">+</span>
+                                        <span class="text-primary fs-2 fw-bold" data-toggle="counter-up">{{ $count_user }}</span>
                                     </div>
                                     <h4 class="mb-0 text-dark">Pengguna</h4>
                                 </div>
@@ -223,20 +219,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Kolom 2 -->
-                <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.2s">
-                    <div class="blog-item">
-                        <!-- Isi seperti kolom 1, ganti gambar & konten -->
-                    </div>
-                </div>
-
-                <!-- Kolom 3 -->
-                <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.3s">
-                    <div class="blog-item">
-                        <!-- Isi seperti kolom 1, ganti gambar & konten -->
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -250,8 +232,8 @@
                 <div class="col-xl-6 wow fadeInLeft" data-wow-delay="0.2s">
                     <div class="h-100">
                         <div class="mb-5">
-                            <h4 class="text-primary">Some Important FAQ's</h4>
-                            <h1 class="display-4 mb-0">Common Frequently Asked Questions</h1>
+                            <h4 class="text-primary">Beberapa Pertanyaan yang Sering Diajukan</h4>
+                            <h3 class="display-4 mb-0">Pertanyaan Umum yang Sering Diajukan</h3>
                         </div>
                         <div class="accordion" id="accordionExample">
                             <div class="accordion-item">
@@ -294,7 +276,7 @@
                     </div>
                 </div>
                 <div class="col-xl-6 wow fadeInRight" data-wow-delay="0.4s">
-                    <img src="{{ asset('user/img/carousel-2.png') }}" class="img-fluid w-100" alt="">
+                    <img src="{{ asset('img/faq-1.png') }}" class="img-fluid w-100" alt="">
                 </div>
             </div>
         </div>
