@@ -59,7 +59,7 @@ class LowonganController extends Controller
         $biodata = Biodata::where('user_id', auth()->id())->first();
 
         if (!$biodata) {
-            Alert::info('Oopss!', 'Lengkapi formulir biodata dulu yuks');
+            Alert::info('Opss!', 'Lengkapi formulir biodata dulu yuks');
             return redirect()->route('biodata.index');
         }
 
@@ -68,7 +68,7 @@ class LowonganController extends Controller
             $res_ocr_simb2 = $this->extractSimB2($biodata);
 
             if ($res_ocr_simb2['data'] == null) {
-                Alert::info('Oopss!', 'Untuk lamar pekerjaan ini silakan upload sim B2 Umum kamu dulu ya');
+                Alert::info('Opss!', 'Untuk lamar pekerjaan ini silakan upload sim B2 Umum kamu dulu ya');
                 return redirect()->route('biodata.index');
             }
 
@@ -88,7 +88,8 @@ class LowonganController extends Controller
             $filePath = public_path($biodata->no_ktp . '/dokumen/' . $biodata->ktp);
 
             if (!file_exists($filePath)) {
-                abort(404, 'File KTP tidak ditemukan.');
+                Alert::warning('Gagal', 'File KTP tidak ditemukan, silakan upload KTP terlebih dahulu');
+                return back();
             }
 
             if ($biodata->ktp) {
@@ -115,6 +116,11 @@ class LowonganController extends Controller
                 return $response->json();
             }
         });
+
+        if (!$ocrData) {
+            Alert::info('Opss!', 'Silakan lengkapi dokumen pribadi yang dibutuhkan terlebih dahulu');
+            return redirect()->route('biodata.index');
+        }
 
         // Simpan dalam array data hasil ocr sim dan ktp
         $ocrResult = [
