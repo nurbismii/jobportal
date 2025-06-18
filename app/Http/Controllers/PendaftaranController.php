@@ -3,12 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Hris\Employee;
-use App\Models\Hris\Kelurahan;
 use App\Models\Hris\Peringatan;
 use App\Models\SuratPeringatan;
 use App\Models\User;
+use Exception;
 use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PendaftaranController extends Controller
 {
@@ -21,6 +24,7 @@ class PendaftaranController extends Controller
         return view('user.pendaftaran.index');
     }
 
+
     public function store(Request $request)
     {
         $tidak_aktif = 0;
@@ -31,18 +35,26 @@ class PendaftaranController extends Controller
             'email' => 'required|email|max:255',
         ]);
 
-        // Check if the user already exists
-        if (User::where('no_ktp', $validatedData['no_ktp'])->first()) {
-
+        // Cek KTP sudah terdaftar
+        if (User::where('no_ktp', $validatedData['no_ktp'])->exists()) {
             Alert::error('Gagal', 'Nomor KTP sudah terdaftar!');
             return redirect()->back();
         }
 
-        // Check password confirmation
-        if ($request->password === $request->password_confirmation) {
+        // Cek konfirmasi password
+        if ($request->password !== $request->password_confirmation) {
+            Alert::error('Gagal', 'Konfirmasi password tidak sesuai!');
+            return redirect()->back();
+        }
 
-            $employee = Employee::where('no_ktp', $validatedData['no_ktp'])->first();
+        // Ambil data karyawan jika ada
+        $employee = Employee::where('no_ktp', $validatedData['no_ktp'])->first();
 
+        // Gunakan transaksi untuk menjamin konsistensi data
+        DB::beginTransaction();
+
+        try {
+            // Buat akun user baru
             $user_baru = User::create([
                 'no_ktp' => $validatedData['no_ktp'],
                 'name' => strtoupper($request->first_name) . ' ' . strtoupper($request->last_name),
@@ -56,31 +68,39 @@ class PendaftaranController extends Controller
                 'area_kerja' => $employee ? $employee->area_kerja : null,
             ]);
 
-            // Check if the employee exists
+            // Kirim email verifikasi
+            event(new Registered($user_baru));
+
+            // Buat SP jika ada
             if ($employee) {
+                $peringatan = Peringatan::where('nik_karyawan', $employee->nik)->get();
 
-                // Create a new biodata entry
-                $peringatan = Peringatan::where('nik_karyawan', $employee->nik)
-                    ->get();
-
-                if ($peringatan->count() > 0) {
-                    foreach ($peringatan as $data) {
-                        SuratPeringatan::create([
-                            'user_id' => $user_baru->id,
-                            'level_sp' => $data->level_sp,
-                            'ket_sp' => $data->keterangan,
-                            'tanggal_mulai_sp' => $data->tgl_mulai,
-                            'tanggal_berakhir_sp' => $data->tgl_berakhir,
-                        ]);
-                    }
+                foreach ($peringatan as $data) {
+                    SuratPeringatan::create([
+                        'user_id' => $user_baru->id,
+                        'level_sp' => $data->level_sp,
+                        'ket_sp' => $data->keterangan,
+                        'tanggal_mulai_sp' => $data->tgl_mulai,
+                        'tanggal_berakhir_sp' => $data->tgl_berakhir,
+                    ]);
                 }
             }
 
-            Alert::success('Berhasil', 'Pendaftaran berhasil! Silakan vefikasi email kamu.');
-            return redirect()->route('login');
-        } else {
+            DB::commit();
 
-            Alert::error('Gagal', 'Konfirmasi password tidak sesuai!');
+            Alert::success('Berhasil', 'Pendaftaran berhasil! Silakan verifikasi email kamu.');
+            return redirect()->route('login');
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            // Jika user sudah dibuat sebelum error, hapus
+            if (isset($user_baru)) {
+                $user_baru->delete();
+            }
+
+            Log::error('Gagal kirim email verifikasi: ' . $e->getMessage());
+
+            Alert::error('Gagal', 'Terjadi kesalahan saat mengirim email verifikasi. Silakan coba lagi.');
             return redirect()->back();
         }
     }

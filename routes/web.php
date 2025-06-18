@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\LamaranController;
+use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\BiodataController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -25,7 +26,9 @@ Route::resource('bantuan', 'App\Http\Controllers\BantuanController');
 Route::resource('pendaftaran', 'App\Http\Controllers\PendaftaranController');
 Route::resource('lamaran', 'App\Http\Controllers\LamaranController');
 
-Auth::routes();
+Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])->middleware(['auth', 'signed'])->name('verification.verify');
+
+Auth::routes(['verify' => true]);
 
 Route::resource('biodata', 'App\Http\Controllers\BiodataController');
 Route::delete('/biodata/delete-file/{field}', [BiodataController::class, 'deleteFile'])->name('biodata.deleteFile');
