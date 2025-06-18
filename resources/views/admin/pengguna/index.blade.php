@@ -38,19 +38,21 @@
                         <td>{{ $pengguna->status_pelamar ?? '-' }}</td>
                         <td>{{ $pengguna->tanggal_resign ?? '-' }}</td>
                         <td>
-                            <a href="{{ route('pengguna.edit', $pengguna->id) }}" class="btn btn-success btn-sm btn-icon-split">
-                                <span class="icon text-white-50">
-                                    <i class="fas fa-pen"></i>
-                                </span>
-                                <span class="text">Edit</span>
-                            </a>
-                            <div class="my-2"></div>
-                            <a href="{{ route('pengguna.destroy', $pengguna->id) }}" class="btn btn-danger btn-sm btn-icon-split" data-confirm-delete="true">
-                                <span class="icon text-white-50">
-                                    <i class="fas fa-trash"></i>
-                                </span>
-                                <span class="text">Hapus</span>
-                            </a>
+                            <div class="d-flex">
+                                <a href="{{ route('pengguna.edit', $pengguna->id) }}" class="btn btn-success btn-sm btn-icon-split mr-2">
+                                    <span class="icon text-white-50">
+                                        <i class="fas fa-pen"></i>
+                                    </span>
+                                    <span class="text">Edit</span>
+                                </a>
+                                <a href="{{ route('pengguna.destroy', $pengguna->id) }}" class="btn btn-danger btn-sm btn-icon-split" data-confirm-delete="true">
+                                    <span class="icon text-white-50">
+                                        <i class="fas fa-trash"></i>
+                                    </span>
+                                    <span class="text">Hapus</span>
+                                </a>
+                            </div>
+
                         </td>
                     </tr>
                     @endforeach

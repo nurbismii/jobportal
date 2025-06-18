@@ -65,7 +65,12 @@
                     <i class="fa fa-user dropdown-toogle fa-2x"></i>
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                    @if(Auth::user()->role == 'user')
                     <li><a class="dropdown-item" href="{{ route('profil.index') }}">Profil</a></li>
+                    @else
+                    <li><a class="dropdown-item" href="{{ route('home') }}">Kelola job portal</a></li>
+                    @endif
+                    <div class="dropdown-divider"></div>
                     <li><a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Keluar</a></li>
                     <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                         {{ csrf_field() }}

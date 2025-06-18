@@ -1,0 +1,126 @@
+@extends('layouts.app-pic')
+
+@section('content-admin')
+
+@push('styles')
+<link href="{{ asset('admin/vendor/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
+@endpush
+
+<div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+    <h2 class="m-0 font-weight-bold text-primary">Personal File</h2>
+    <a href="" class="btn btn-primary btn-sm btn-icon-split">
+        <span class="icon text-white-50"><i class="fas fa-plus"></i></span>
+        <span class="text">Personal File</span>
+    </a>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Data Personal File</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover nowrap" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Nama</th>
+                        <th>No KTP</th>
+                        <th>Surat Lamaran</th>
+                        <th>CV</th>
+                        <th>KTP</th>
+                        <th>SIM B2</th>
+                        <th>KK</th>
+                        <th>Ijazah</th>
+                        <th>SKCK</th>
+                        <th>AK1</th>
+                        <th>Vaksin</th>
+                        <th>NPWP</th>
+                        <th>Pas Foto</th>
+                        <th>Pendukung</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($biodata as $bio)
+                    <tr>
+                        <td>{{ ++$no }}</td>
+                        <td>{{ $bio->user->name ?? '-' }}</td>
+                        <td>{{ $bio->no_ktp }}</td>
+                        <td>
+                            <a href="{{ asset($bio->no_ktp . '/dokumen/' . $bio->surat_lamaran) }}" target="_blank">
+                                {{ $bio->surat_lamaran }}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{{ asset($bio->no_ktp . '/dokumen/' . $bio->cv) }}" target="_blank">
+                                {{ $bio->cv }}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{{ asset($bio->no_ktp . '/dokumen/' . $bio->ktp) }}" target="_blank">
+                                {{ $bio->ktp }}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{{ asset($bio->no_ktp . '/dokumen/' . $bio->sim_b_2) }}" target="_blank">
+                                {{ $bio->sim_b_2 }}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{{ asset($bio->no_ktp . '/dokumen/' . $bio->kk) }}" target="_blank">
+                                {{ $bio->kartu_keluarga }}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{{ asset($bio->no_ktp . '/dokumen/' . $bio->ijazah) }}" target="_blank">
+                                {{ $bio->ijazah }}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{{ asset($bio->no_ktp . '/dokumen/' . $bio->skck) }}" target="_blank">
+                                {{ $bio->skck }}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{{ asset($bio->no_ktp . '/dokumen/' . $bio->ak1) }}" target="_blank">
+                                {{ $bio->ak1 }}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{{ asset($bio->no_ktp . '/dokumen/' . $bio->vaksin) }}" target="_blank">
+                                {{ $bio->sertifikat_vaksin }}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{{ asset($bio->no_ktp . '/dokumen/' . $bio->ijazah) }}" target="_blank">
+                                {{ $bio->npwp }}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{{ asset($bio->no_ktp . '/dokumen/' . $bio->pas_foto) }}" target="_blank">
+                                {{ $bio->pas_foto }}
+                            </a>
+                        </td>   
+                        <td>
+                            <a href="{{ asset($bio->no_ktp . '/dokumen/' . $bio->sertifikat_pendukung) }}" target="_blank">
+                                {{ $bio->sertifikat_pendukung }}
+                            </a>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<!-- Page level plugins -->
+<script src="{{ asset('admin/vendor/datatables/jquery.dataTables.min.js') }}"></script>
+<script src="{{ asset('admin/vendor/datatables/dataTables.bootstrap4.min.js') }}"></script>
+
+<!-- Page level custom scripts -->
+<script src="{{ asset('admin/js/demo/datatables-demo.js') }}"></script>
+@endpush
+
+@endsection

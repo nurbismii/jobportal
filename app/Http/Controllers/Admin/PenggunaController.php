@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Biodata;
 use App\Models\Hris\Provinsi;
+use App\Models\Lamaran;
+use App\Models\SuratPeringatan;
 use App\Models\User;
 use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
@@ -50,6 +52,13 @@ class PenggunaController extends Controller
     {
         // Logic to delete a user
         $user = User::findOrFail($id);
+
+        $biodata = Biodata::where('user_id', $user->id)->first();
+
+        Lamaran::where('biodata_id', $biodata->id)->delete();
+
+        SuratPeringatan::where('user_id', $user->id)->delete();
+
         $user->delete();
 
         Alert::success('Berhasil', 'Pengguna berhasil dihapus.');

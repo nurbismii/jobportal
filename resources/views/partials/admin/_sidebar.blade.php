@@ -50,9 +50,16 @@
         Addons
     </div>
 
+    <li class="nav-item {{ request()->routeIs('personal-file.*') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('personal-file.index') }}">
+            <i class="fas fa-fw fa-folder"></i>
+            <span>Personal File</span>
+        </a>
+    </li>
+
     <li class="nav-item {{ request()->routeIs('pengumumans.*') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('pengumumans.index') }}">
-            <i class="fas fa-fw fa-chart-area"></i>
+            <i class="fas fa-fw fa-pen"></i>
             <span>Pengumuman</span>
         </a>
     </li>
