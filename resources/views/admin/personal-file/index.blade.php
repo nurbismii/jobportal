@@ -4,6 +4,18 @@
 
 @push('styles')
 <link href="{{ asset('admin/vendor/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
+
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/fixedcolumns/4.3.0/css/fixedColumns.dataTables.min.css">
+
+<style>
+    div.dataTables_wrapper div.dataTables_length {
+        margin-right: 1rem;
+        /* atau 16px, bisa ditambah sesuai kebutuhan */
+    }
+</style>
 @endpush
 
 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
@@ -100,7 +112,7 @@
                             <a href="{{ asset($bio->no_ktp . '/dokumen/' . $bio->pas_foto) }}" target="_blank">
                                 {{ $bio->pas_foto }}
                             </a>
-                        </td>   
+                        </td>
                         <td>
                             <a href="{{ asset($bio->no_ktp . '/dokumen/' . $bio->sertifikat_pendukung) }}" target="_blank">
                                 {{ $bio->sertifikat_pendukung }}
@@ -119,8 +131,37 @@
 <script src="{{ asset('admin/vendor/datatables/jquery.dataTables.min.js') }}"></script>
 <script src="{{ asset('admin/vendor/datatables/dataTables.bootstrap4.min.js') }}"></script>
 
-<!-- Page level custom scripts -->
-<script src="{{ asset('admin/js/demo/datatables-demo.js') }}"></script>
+<!-- Buttons + Export + ColVis -->
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.colVis.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+<script src="https://cdn.datatables.net/fixedcolumns/4.3.0/js/dataTables.fixedColumns.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    $(document).ready(function() {
+        // Inisialisasi DataTable
+        const table = $('#dataTable').DataTable({
+            scrollX: true,
+            responsive: false,
+            autoWidth: false,
+            fixedHeader: true,
+            dom: 'lBfrtip',
+            lengthMenu: [
+                [10, 50, 100, -1], // Nilai jumlah baris
+                [10, 50, 100, 'Semua'] // Label yang tampil di dropdown
+            ],
+            buttons: [{
+                    extend: 'colvis',
+                    text: '<i class="fas fa-eye"></i> Visibility',
+                    className: 'btn btn-outline-primary btn-sm'
+                },
+            ],
+        });
+    });
+</script>
 @endpush
 
 @endsection

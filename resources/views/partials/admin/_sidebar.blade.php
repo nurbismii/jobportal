@@ -26,20 +26,18 @@
         Master
     </div>
 
-    <!-- Nav Item - Pages Collapse Menu -->
-    <li class="nav-item {{ request()->routeIs('pengguna.*', 'lowongan.*') ? 'active' : '' }}">
-        <a class="nav-link {{ request()->routeIs('pengguna.*', 'lowongan.*') ? '' : 'collapsed' }}" href="#" data-toggle="collapse" data-target="#collapseTwo"
-            aria-expanded="{{ request()->routeIs('pengguna.*', 'lowongan.*') ? 'true' : 'false' }}" aria-controls="collapseTwo">
-            <i class="fas fa-fw fa-cog"></i>
-            <span>Master Data</span>
+    <li class="nav-item {{ request()->routeIs('pengguna.*') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('pengguna.index') }}">
+            <i class="fas fa-fw fa-users"></i>
+            <span>Pengguna</span>
         </a>
-        <div id="collapseTwo" class="collapse {{ request()->routeIs('pengguna.*', 'lowongan.*') ? 'show' : '' }}" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-            <div class="bg-white py-2 collapse-inner rounded">
-                <h6 class="collapse-header">Kelola Data:</h6>
-                <a class="collapse-item {{ request()->routeIs('pengguna.*') ? 'active' : '' }}" href="{{ route('pengguna.index') }}">Pengguna</a>
-                <a class="collapse-item {{ request()->routeIs('lowongan.*') ? 'active' : '' }}" href="{{ route('lowongan.index') }}">Lowongan</a>
-            </div>
-        </div>
+    </li>
+
+    <li class="nav-item {{ request()->routeIs('lowongan.**') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('lowongan.index') }}">
+            <i class="fas fa-fw fa-street-view"></i>
+            <span>Lowongan</span>
+        </a>
     </li>
 
     <!-- Divider -->
@@ -52,7 +50,7 @@
 
     <li class="nav-item {{ request()->routeIs('personal-file.*') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('personal-file.index') }}">
-            <i class="fas fa-fw fa-folder"></i>
+            <i class="fas fa-fw fa-folder-open"></i>
             <span>Personal File</span>
         </a>
     </li>

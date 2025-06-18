@@ -18,8 +18,6 @@
                         <th>Nama</th>
                         <th>Email</th>
                         <th>Akun</th>
-                        <th>Status</th>
-                        <th>Tanggal Resign</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -35,8 +33,6 @@
                             <span class="badge badge-danger">Non-Aktif</span>
                             @endif
                         </td>
-                        <td>{{ $pengguna->status_pelamar ?? '-' }}</td>
-                        <td>{{ $pengguna->tanggal_resign ?? '-' }}</td>
                         <td>
                             <div class="d-flex">
                                 <a href="{{ route('pengguna.edit', $pengguna->id) }}" class="btn btn-success btn-sm btn-icon-split mr-2">
