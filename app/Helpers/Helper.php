@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
 
@@ -109,4 +110,35 @@ function interventionImg($dokumenFields, $biodata, $request)
     }
 
     return $fileNames;
+}
+
+if (!function_exists('extractSimB2OnlyOCR')) {
+    function extractSimB2OnlyOCR($biodata)
+    {
+        if ($biodata && $biodata->sim_b_2) {
+            $fullPath = public_path($biodata->no_ktp . '/dokumen/' . $biodata->sim_b_2);
+
+            $response = Http::attach(
+                'file',
+                file_get_contents($fullPath),
+                basename($fullPath)
+            )->post('https://api.ocr.space/parse/image', [
+                'apikey' => 'K82052672988957',
+                'language' => 'eng',
+                'OCREngine' => '2',
+                'scale' => 'true',
+                'detectOrientation' => 'true',
+                'isOverlayRequired' => 'false',
+            ]);
+
+            $text = $response->json()['ParsedResults'][0]['ParsedText'] ?? null;
+
+            $biodata->ocr_sim_b2 = $text;
+            $biodata->save();
+
+            return ['message' => 'OCR berhasil, silakan lanjutkan parsing.'];
+        }
+
+        return ['message' => 'Gagal menemukan file SIM B2'];
+    }
 }

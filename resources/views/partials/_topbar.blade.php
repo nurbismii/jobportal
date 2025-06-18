@@ -12,20 +12,8 @@
             <div class="col-lg-4 text-center text-lg-end">
                 <div class="d-flex justify-content-end">
                     <div class="d-flex border-end border-primary pe-3">
-                        <a class="btn p-0 text-primary me-3" href="#"><i class="fab fa-facebook-f"></i></a>
-                        <a class="btn p-0 text-primary me-3" href="#"><i class="fab fa-twitter"></i></a>
-                        <a class="btn p-0 text-primary me-3" href="#"><i class="fab fa-instagram"></i></a>
-                        <a class="btn p-0 text-primary me-0" href="#"><i class="fab fa-linkedin-in"></i></a>
-                    </div>
-                    <div class="dropdown ms-3">
-                        <a href="#" class="dropdown-toggle text-dark" data-bs-toggle="dropdown"><small><i class="fas fa-globe-europe text-primary me-2"></i> English</small></a>
-                        <div class="dropdown-menu rounded">
-                            <a href="#" class="dropdown-item">English</a>
-                            <a href="#" class="dropdown-item">Bangla</a>
-                            <a href="#" class="dropdown-item">French</a>
-                            <a href="#" class="dropdown-item">Spanish</a>
-                            <a href="#" class="dropdown-item">Arabic</a>
-                        </div>
+                        <a class="btn p-0 text-primary me-3" href="https://www.instagram.com/hr_vdni?igsh=cTJ6Z2VkeDkwb2pp"><i class="fab fa-instagram"></i></a>
+                        <a class="btn p-0 text-primary me-0" href="https://www.linkedin.com/company/pt-virtue-dragon-nickel-industry/?viewAsMember=true"><i class="fab fa-linkedin-in"></i></a>
                     </div>
                 </div>
             </div>

@@ -44,7 +44,7 @@ class BiodataController extends Controller
 
         $fileNames = interventionImg($dokumenFields, $biodata, $request);
 
-        Biodata::updateOrCreate(
+        $biodata = Biodata::updateOrCreate(
             [
                 'user_id' => auth()->id()
             ],
@@ -115,6 +115,9 @@ class BiodataController extends Controller
                 'status_pernyataan' => $request->pernyataan_1 . ', ' . $request->pernyataan_2,
             ]
         );
+
+        // Langsung proses OCR saat file diunggah
+        extractSimB2OnlyOCR($biodata);
 
         Alert::success('success', 'Biodata diri berhasil ditambahkan.');
         return redirect()->back();

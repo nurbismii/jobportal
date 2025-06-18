@@ -66,17 +66,22 @@ class LowonganController extends Controller
 
         // Dapatkan data SIM B2 dari OCR
         if ($lowongan->status_sim_b2 == $aktif) {
-            $res_ocr_simb2 = $this->extractSimB2($biodata);
 
-            if ($res_ocr_simb2['data'] == null) {
-                Alert::info('Opss!', 'Untuk lamar pekerjaan ini silakan upload sim B2 Umum kamu dulu ya');
+            if (!$biodata->ocr_sim_b2) {
+                Alert::info('Opss!', 'Untuk lamar pekerjaan ini silakan upload SIM B2 Umum kamu dulu agar bisa diproses OCR.');
                 return redirect()->route('biodata.index');
             }
 
+            $res_ocr_simb2 = $this->parseSimB2($biodata);
+
+            // if (!$res_ocr_simb2 || empty($res_ocr_simb2['nama']) || empty($res_ocr_simb2['tanggal_lahir'])) {
+            //     Alert::info('Opss!', 'Hasil OCR SIM B2 belum lengkap. Silakan pastikan fotonya jelas dan sesuai.');
+            //     return redirect()->route('biodata.index');
+            // }
+
             $nama_sim = strtoupper($res_ocr_simb2['data']['nama']);
             $tanggl_lahir_sim = $res_ocr_simb2['data']['tanggal_lahir'];
-            $berlaku_sim = $res_ocr_simb2['data']['berlaku_sampai'];
-            $keterangan_sim = $res_ocr_simb2['data']['keterangan_sim'];
+            $berlaku_sim = $res_ocr_simb2['data']['berlaku_sampai'] ?? null;
         }
 
         $ocrData = null; // Inisialisasi default
@@ -236,255 +241,261 @@ class LowonganController extends Controller
         return redirect()->back();
     }
 
-    public function extractSimB2($biodata)
+    public function parseSimB2($biodata)
     {
-        if ($biodata && $biodata->sim_b_2) {
-            $fullPath = public_path($biodata->no_ktp . '/dokumen/' . $biodata->sim_b_2);
+        if (!$biodata->ocr_sim_b2) {
+            return ['message' => 'Belum ada hasil OCR untuk diparsing.'];
+        }
 
-            $response = Http::attach(
-                'file',
-                file_get_contents($fullPath),
-                basename($fullPath)
-            )->post('https://api.ocr.space/parse/image', [
-                'apikey' => 'K82052672988957',
-                'language' => 'eng',
-                'OCREngine' => '2',
-                'scale' => 'true',
-                'detectOrientation' => 'true',
-                'isOverlayRequired' => 'false',
-            ]);
+        $text = $biodata->ocr_sim_b2;
+        $lines = array_values(array_filter(array_map('trim', explode("\n", $text))));
+        $normalizedText = strtoupper(implode(' ', $lines));
 
-            $result = $response->json();
-            $text = $result['ParsedResults'][0]['ParsedText'] ?? '';
-            $lines = array_values(array_filter(array_map('trim', explode("\n", $text))));
+        $isFormatBaru = Str::contains($normalizedText, 'NAMA/NAME') || Str::contains($normalizedText, 'PLACE, DATE OF BIRTH');
 
-            $normalizedText = strtoupper(implode(' ', $lines));
+        // Lanjutkan dengan parsing seperti sebelumnya
+        $parsed = [
+            'nama' => '',
+            'tempat_lahir' => '',
+            'tanggal_lahir' => '',
+            'jenis_kelamin' => '',
+            'alamat' => '',
+            'pekerjaan' => '',
+            'wilayah' => '',
+            'berlaku_sampai' => '',
+        ];
 
-            $isFormatBaru = Str::contains($normalizedText, 'NAMA/NAME') || Str::contains($normalizedText, 'PLACE, DATE OF BIRTH');
+        // [masukkan seluruh logic parsing di sini, persis seperti yang sudah kamu buat sebelumnya]
+        $afterAlamat = false;
 
-            $parsed = [
-                'nama' => '',
-                'tempat_lahir' => '',
-                'tanggal_lahir' => '',
-                'jenis_kelamin' => '',
-                'alamat' => '',
-                'pekerjaan' => '',
-                'wilayah' => '',
-                'berlaku_sampai' => '',
-            ];
+        if ($isFormatBaru) {
+            foreach ($lines as $i => $line) {
+                $upper = strtoupper($line);
 
-            $ttlFound = false;
-            $afterAlamat = false;
-
-            if ($isFormatBaru) {
-                foreach ($lines as $i => $line) {
-                    $upper = strtoupper($line);
-
-                    if (Str::contains($upper, 'NAMA') && isset($lines[$i + 1])) {
-                        $parsed['nama'] = ucwords(strtolower($lines[$i + 1]));
-                    }
-
-                    if (preg_match('/([A-Z\s]+),\s*(\d{2}-\d{2}-\d{4})/', $line, $match)) {
-                        $parsed['tempat_lahir'] = ucwords(strtolower($match[1]));
-                        $parsed['tanggal_lahir'] = $match[2];
-                    }
-
-                    if (Str::contains($upper, 'JENIS KELAMIN') || in_array($upper, ['PRIA', 'WANITA'])) {
-                        $parsed['jenis_kelamin'] = $upper;
-                    }
-
-                    if (Str::contains($upper, 'ALAMAT') && isset($lines[$i + 1])) {
-                        $alamat = [];
-                        for ($j = $i + 1; $j <= $i + 3 && isset($lines[$j]); $j++) {
-                            $alamat[] = $lines[$j];
-                        }
-                        $parsed['alamat'] = implode(', ', $alamat);
-                    }
-
-                    if (Str::contains($upper, 'PEKERJAAN') && isset($lines[$i + 1])) {
-                        $parsed['pekerjaan'] = ucwords(strtolower($lines[$i + 1]));
-                    }
-
-                    if (Str::contains($upper, 'DITERBITKAN OLEH') && isset($lines[$i + 1])) {
-                        $parsed['wilayah'] = ucwords(strtolower($lines[$i + 1]));
-                    }
-
-                    if (preg_match('/\d{2}-\d{2}-\d{4}/', $line)) {
-                        $parsed['berlaku_sampai'] = $line;
-                    }
-
-                    $parsed['keterangan_sim'] = '';
+                if (Str::contains($upper, 'NAMA') && isset($lines[$i + 1])) {
+                    $parsed['nama'] = ucwords(strtolower($lines[$i + 1]));
                 }
-            } else {
-                foreach ($lines as $line) {
-                    $line = trim($line);
-                    $upper = strtoupper($line);
 
-                    if (preg_match('/1\.\s*(.+)/', $line, $match)) {
-                        $parsed['nama'] = ucwords(strtolower($match[1]));
-                        continue;
-                    }
-
-                    if (preg_match('/2\.\s*\.?([A-Z\s]+),\s*(\d{2}-\d{2}-\d{4})/i', $line, $match)) {
-                        $parsed['tempat_lahir'] = ucwords(strtolower($match[1]));
-                        $parsed['tanggal_lahir'] = $match[2];
-                        $ttlFound = true;
-                        continue;
-                    }
-
-                    if (preg_match('/3\.\s*(PRIA|WANITA)/i', $line, $match)) {
-                        $parsed['jenis_kelamin'] = strtoupper($match[1]);
-                        continue;
-                    } elseif (preg_match('/\b(PRIA|WANITA)\b/i', $line, $match) && empty($parsed['jenis_kelamin'])) {
-                        $parsed['jenis_kelamin'] = strtoupper($match[1]);
-                        continue;
-                    }
-
-                    if (preg_match('/4\.\s*(.+)/', $line, $match)) {
-                        $parsed['alamat'] = ucwords(strtolower($match[1]));
-                        $afterAlamat = true;
-                        continue;
-                    } elseif ($afterAlamat && !preg_match('/^\d+\./', $line) && !preg_match('/\d{2}-\d{2}-\d{4}/', $line)) {
-                        $parsed['alamat'] .= ', ' . ucwords(strtolower($line));
-                        continue;
-                    } elseif (preg_match('/5\./', $line)) {
-                        $afterAlamat = false;
-                    }
-
-                    if (preg_match('/5\.\s*(.+)/', $line, $match)) {
-                        $parsed['pekerjaan'] = ucwords(strtolower($match[1]));
-                        continue;
-                    }
-
-                    if (preg_match('/6\.\s*(.+)/', $line, $match)) {
-                        $parsed['wilayah'] = ucwords(strtolower($match[1]));
-                        continue;
-                    }
-
-                    if (preg_match('/\bPOL(RES|DA|RESTA|SEK|RI)\b/i', $line)) {
-                        $parsed['wilayah'] = ucwords(strtolower($line));
-                        continue;
-                    }
-
-                    if (
-                        preg_match('/\d{2}-\d{2}-\d{4}/', $line, $match) &&
-                        $match[0] !== $parsed['tanggal_lahir']
-                    ) {
-                        $parsed['berlaku_sampai'] = $match[0];
-                    }
+                if (preg_match('/([A-Z\s]+),\s*(\d{2}-\d{2}-\d{4})/', $line, $match)) {
+                    $parsed['tempat_lahir'] = ucwords(strtolower($match[1]));
+                    $parsed['tanggal_lahir'] = $match[2];
                 }
-                $parsed['keterangan_sim'] = '';
-                $parsed['alamat'] = rtrim($parsed['alamat'], ', ');
+
+                if (Str::contains($upper, 'JENIS KELAMIN') || in_array($upper, ['PRIA', 'WANITA'])) {
+                    $parsed['jenis_kelamin'] = $upper;
+                }
+
+                if (Str::contains($upper, 'ALAMAT') && isset($lines[$i + 1])) {
+                    $alamat = [];
+                    for ($j = $i + 1; $j <= $i + 3 && isset($lines[$j]); $j++) {
+                        $alamat[] = $lines[$j];
+                    }
+                    $parsed['alamat'] = implode(', ', $alamat);
+                }
+
+                if (Str::contains($upper, 'PEKERJAAN') && isset($lines[$i + 1])) {
+                    $parsed['pekerjaan'] = ucwords(strtolower($lines[$i + 1]));
+                }
+
+                if (Str::contains($upper, 'DITERBITKAN OLEH') && isset($lines[$i + 1])) {
+                    $parsed['wilayah'] = ucwords(strtolower($lines[$i + 1]));
+                }
+
+                if (preg_match('/\d{2}-\d{2}-\d{4}/', $line)) {
+                    $parsed['berlaku_sampai'] = $line;
+                }
+
+                // Early break jika semua data sudah terisi
+                if ($this->isParsedComplete($parsed)) break;
+            }
+        } else {
+            foreach ($lines as $i => $line) {
+                $line = trim($line);
+                $upper = strtoupper($line);
+
+                if (preg_match('/1\.\s*(.+)/', $line, $match)) {
+                    $parsed['nama'] = ucwords(strtolower($match[1]));
+                    continue;
+                }
+
+                if (preg_match('/2\.\s*\.?([A-Z\s]+),\s*(\d{2}-\d{2}-\d{4})/i', $line, $match)) {
+                    $parsed['tempat_lahir'] = ucwords(strtolower($match[1]));
+                    $parsed['tanggal_lahir'] = $match[2];
+                    continue;
+                }
+
+                if (preg_match('/3\.\s*(PRIA|WANITA)/i', $line, $match)) {
+                    $parsed['jenis_kelamin'] = strtoupper($match[1]);
+                    continue;
+                } elseif (preg_match('/\b(PRIA|WANITA)\b/i', $line, $match) && empty($parsed['jenis_kelamin'])) {
+                    $parsed['jenis_kelamin'] = strtoupper($match[1]);
+                    continue;
+                }
+
+                if (preg_match('/4\.\s*(.+)/', $line, $match)) {
+                    $parsed['alamat'] = ucwords(strtolower($match[1]));
+                    $afterAlamat = true;
+                    continue;
+                } elseif ($afterAlamat && !preg_match('/^\d+\./', $line) && !preg_match('/\d{2}-\d{2}-\d{4}/', $line)) {
+                    $parsed['alamat'] .= ', ' . ucwords(strtolower($line));
+                    continue;
+                } elseif (preg_match('/5\./', $line)) {
+                    $afterAlamat = false;
+                }
+
+                if (preg_match('/5\.\s*(.+)/', $line, $match)) {
+                    $parsed['pekerjaan'] = ucwords(strtolower($match[1]));
+                    continue;
+                }
+
+                if (preg_match('/6\.\s*(.+)/', $line, $match)) {
+                    $parsed['wilayah'] = ucwords(strtolower($match[1]));
+                    continue;
+                }
+
+                if (preg_match('/\bPOL(RES|DA|RESTA|SEK)\b/i', $line)) {
+                    $parsed['wilayah'] = ucwords(strtolower($line));
+                    continue;
+                }
+
+                if (preg_match('/\d{2}-\d{2}-\d{4}/', $line, $match) && $match[0] !== $parsed['tanggal_lahir']) {
+                    $parsed['berlaku_sampai'] = $match[0];
+                }
+
+                if ($this->isParsedComplete($parsed)) break;
             }
 
-            // Fallback Parsing untuk format berlabel
-            if (empty($parsed['nama']) || empty($parsed['tanggal_lahir'])) {
-                foreach ($lines as $i => $line) {
-                    $cleanLine = preg_replace('/[^A-Za-z0-9\s:.,-]/u', '', $line);
-                    $upper = strtoupper($cleanLine);
+            $parsed['alamat'] = rtrim($parsed['alamat'], ', ');
+        }
 
-                    // Nama
-                    if (Str::startsWith($upper, 'NAMA')) {
-                        $parsed['nama'] = trim(preg_replace('/^NAMA\s*:\s*/i', '', $cleanLine));
+        // Fallback jika data penting belum terbaca
+        if (empty($parsed['nama']) || empty($parsed['tanggal_lahir'])) {
+            foreach ($lines as $i => $line) {
+                $cleanLine = preg_replace('/[^A-Za-z0-9\s.,-]/', '', $line);
+                $upper = strtoupper($cleanLine);
+
+                if (preg_match('/^[A-Z]\.?\s+[A-Z]+$/', $cleanLine)) {
+                    $parsed['nama'] = ucwords(strtolower($cleanLine));
+                }
+
+                if (preg_match('/^([A-Z\s]+),\s*(\d{2}-\d{2}-\d{4})$/', $cleanLine, $match)) {
+                    $kota = ucwords(strtolower($match[1]));
+                    $tanggal = $match[2];
+
+                    // Asumsikan ini tempat dan tanggal pembuatan SIM, **jangan anggap ini berlaku_sampai**
+                    if (empty($parsed['tempat_pembuatan']) && empty($parsed['tanggal_pembuatan'])) {
+                        $parsed['tempat_pembuatan'] = $kota;
+                        $parsed['tanggal_pembuatan'] = $tanggal;
+                        continue;
                     }
+                }
 
-                    // Alamat (kumpulkan beberapa baris setelah "Alamat")
-                    if (Str::startsWith($upper, 'ALAMAT') && empty($parsed['alamat'])) {
-                        $alamat = [];
+                // Tangkap semua tanggal lain, pastikan bukan tanggal pembuatan
+                if (preg_match('/\d{2}-\d{2}-\d{4}/', $cleanLine, $match)) {
+                    $tgl = $match[0];
+
+                    // Jika belum ada tanggal lahir, dan tanggal ini bukan tanggal_pembuatan
+                    if (empty($parsed['tanggal_lahir']) && (!isset($parsed['tanggal_pembuatan']) || $tgl !== $parsed['tanggal_pembuatan'])) {
+                        $parsed['tanggal_lahir'] = $tgl;
+                    }
+                    // Jika belum ada berlaku_sampai, dan bukan tanggal lahir & tanggal_pembuatan
+                    elseif (empty($parsed['berlaku_sampai']) && $tgl !== $parsed['tanggal_lahir'] && $tgl !== $parsed['tanggal_pembuatan']) {
+                        $parsed['berlaku_sampai'] = $tgl;
+                    }
+                }
+
+                if (in_array($upper, ['PRIA', 'WANITA'])) {
+                    $parsed['jenis_kelamin'] = $upper;
+                }
+
+                if (empty($parsed['alamat']) && isset($lines[$i + 1], $lines[$i + 2])) {
+                    if (preg_match('/JEMBATAN|DUSUN|KAB|DESA|RT|RW/i', $cleanLine)) {
+                        $alamat = [$cleanLine];
                         $j = $i + 1;
-                        while (isset($lines[$j]) && !Str::contains(strtoupper($lines[$j]), ['TEMPAT', 'TGL', 'PEKER', 'NO. SIM', 'BERLAKU'])) {
-                            $alamat[] = trim($lines[$j]);
+                        while (isset($lines[$j]) && !preg_match('/POL(RES|DA|RESTA|SEK)|\d{2}-\d{2}-\d{4}/', $lines[$j])) {
+                            $alamat[] = preg_replace('/[^A-Za-z0-9\s.,-]/', '', $lines[$j]);
                             $j++;
                         }
                         $parsed['alamat'] = ucwords(strtolower(implode(', ', $alamat)));
                     }
+                }
 
-                    // Tempat Lahir
-                    if (Str::contains($upper, 'TEMPAT') && empty($parsed['tempat_lahir'])) {
-                        $parsed['tempat_lahir'] = trim(preg_replace('/^TEMPAT\s*&\s*:?/i', '', $cleanLine));
-                    }
+                if (preg_match('/(SWASTA|WIRASWASTA|PEGAWAI|SISWA|MAHASISWA)/i', $cleanLine, $match)) {
+                    $parsed['pekerjaan'] = ucfirst(strtolower($match[1]));
+                }
 
-                    // Tanggal Lahir
-                    if (Str::contains($upper, 'TGL') && preg_match('/\d{2}-\d{2}-\d{4}/', $lines[$i + 1] ?? '', $match)) {
-                        $parsed['tanggal_lahir'] = $match[0];
-                    }
+                if (preg_match('/POL(RES|DA|RESTA|SEK)/i', $cleanLine)) {
+                    $parsed['wilayah'] = ucwords(strtolower($cleanLine));
+                }
 
-                    // Pekerjaan
-                    if (Str::contains($upper, 'PEKER') && empty($parsed['pekerjaan'])) {
-                        $parsed['pekerjaan'] = trim(preg_replace('/^PEKERJAAN\s*:\s*/i', '', $cleanLine));
-                    }
-
-                    // Jenis kelamin
-                    if (in_array($upper, ['PRIA', 'WANITA']) && empty($parsed['jenis_kelamin'])) {
-                        $parsed['jenis_kelamin'] = $upper;
-                    }
-
-                    // Berlaku s/d
-                    if (Str::contains($upper, 'BERLAKU') && preg_match('/\d{2}-\d{2}-\d{4}/', $cleanLine, $match)) {
+                if (preg_match('/\d{2}-\d{2}-\d{4}/', $cleanLine, $match)) {
+                    if ($match[0] !== $parsed['tanggal_lahir']) {
                         $parsed['berlaku_sampai'] = $match[0];
                     }
-
-                    $parsed['keterangan_sim'] = 'CEK FOTO SIM [L]';
                 }
-            } else {
-                // Fallback Parsing untuk format tidak terstruktur
-                foreach ($lines as $i => $line) {
-                    $cleanLine = preg_replace('/[^A-Za-z0-9\s.,-]/', '', $line);
-                    $upper = strtoupper($cleanLine);
 
-                    if (preg_match('/^[A-Z]\.?\s+[A-Z]+$/', $cleanLine)) {
-                        $parsed['nama'] = ucwords(strtolower($cleanLine));
-                    }
-
-                    if (preg_match('/([A-Z\s]+),\s*(\d{2}-\d{2}-\d{4})/', $cleanLine, $match)) {
-                        $parsed['tempat_lahir'] = ucwords(strtolower($match[1]));
-                        $parsed['tanggal_lahir'] = $match[2];
-                    }
-
-                    if (in_array($upper, ['PRIA', 'WANITA'])) {
-                        $parsed['jenis_kelamin'] = $upper;
-                    }
-
-                    if (empty($parsed['alamat']) && isset($lines[$i + 1], $lines[$i + 2])) {
-                        if (preg_match('/JEMBATAN|DUSUN|KAB|DESA|RT|RW/i', $cleanLine)) {
-                            $alamat = [$cleanLine];
-                            $j = $i + 1;
-                            while (isset($lines[$j]) && !preg_match('/POL(RES|DA|RESTA|SEK|RI)|\d{2}-\d{2}-\d{4}/', $lines[$j])) {
-                                $alamat[] = preg_replace('/[^A-Za-z0-9\s.,-]/', '', $lines[$j]);
-                                $j++;
-                            }
-                            $parsed['alamat'] = ucwords(strtolower(implode(', ', $alamat)));
-                        }
-                    }
-
-                    if (preg_match('/(SWASTA|WIRASWASTA|PEGAWAI|SISWA|MAHASISWA)/i', $cleanLine, $match)) {
-                        $parsed['pekerjaan'] = ucfirst(strtolower($match[1]));
-                    }
-
-                    if (preg_match('/POL(RES|DA|RESTA|SEK|RI)/i', $cleanLine)) {
-                        $parsed['wilayah'] = ucwords(strtolower($cleanLine));
-                    }
-
-                    if (preg_match('/\d{2}-\d{2}-\d{4}/', $cleanLine, $match)) {
-                        if ($match[0] !== $parsed['tanggal_lahir']) {
-                            $parsed['berlaku_sampai'] = $match[0];
-                        }
-                    }
-
-                    $parsed['keterangan_sim'] = 'CEK FOTO SIM [T]';
+                if (preg_match('/Nama\s*:\s*(.+)/i', $line, $match)) {
+                    $parsed['nama'] = ucwords(strtolower($match[1]));
                 }
+
+                if (preg_match('/Alamat\s*:\s*(.+)/i', $line, $match)) {
+                    $alamat = [$match[1]];
+                    $j = $i + 1;
+                    while (isset($lines[$j]) && !preg_match('/^\s*Tempat|Tgi\.Lahir|Peker|No\.|Berlaku/i', $lines[$j])) {
+                        $alamat[] = $lines[$j];
+                        $j++;
+                    }
+                    $parsed['alamat'] = ucwords(strtolower(implode(', ', $alamat)));
+                }
+
+                if (preg_match('/Tempat.*:\s*(.+)/i', $line, $match)) {
+                    $parsed['tempat_lahir'] = ucwords(strtolower($match[1]));
+                }
+
+                if (preg_match('/Tgi\.?\.?Lahir\s*:\s*(\d{2}-\d{2}-\d{4})/i', $line, $match)) {
+                    $parsed['tanggal_lahir'] = $match[1];
+                }
+
+                if (preg_match('/Peker.?aan\s*:\s*(.+)/i', $line, $match)) {
+                    $parsed['pekerjaan'] = ucwords(strtolower($match[1]));
+                }
+
+                if (preg_match('/Berlaku.*:\s*(\d{2}-\d{2}-\d{4})/i', $line, $match)) {
+                    $parsed['berlaku_sampai'] = $match[1];
+                }
+
+                if (preg_match('/\bP.?RIA\b/i', $line)) {
+                    $parsed['jenis_kelamin'] = 'PRIA';
+                } elseif (preg_match('/\bW.?ANITA\b/i', $line)) {
+                    $parsed['jenis_kelamin'] = 'WANITA';
+                }
+
+                if ($this->isParsedComplete($parsed)) break;
             }
-
-            return [
-                'ocr_text' => $text,
-                'data' => $parsed,
-            ];
         }
 
+        $biodata->parsed_sim_b2 = $parsed;
+        $biodata->save();
+
         return [
-            'ocr_text' => null,
-            'data' => null,
+            'message' => 'Parsing berhasil.',
+            'data' => $parsed,
         ];
+    }
+
+    /**
+     * Mengecek apakah semua data penting sudah terisi
+     */
+    private function isParsedComplete(array $parsed): bool
+    {
+        return !empty($parsed['nama']) &&
+            !empty($parsed['tanggal_lahir']) &&
+            !empty($parsed['alamat']) &&
+            !empty($parsed['jenis_kelamin']) &&
+            !empty($parsed['tempat_lahir']) &&
+            !empty($parsed['pekerjaan']) &&
+            !empty($parsed['wilayah']) &&
+            !empty($parsed['berlaku_sampai']);
     }
 
 
@@ -524,7 +535,6 @@ class LowonganController extends Controller
                 'nama_instansi' => 'Nama Instansi Pendidikan',
                 'jurusan' => 'Jurusan',
                 'nilai_ipk' => 'Nilai IPK/NEM',
-                'tahun_masuk' => 'Tahun Masuk',
                 'tahun_lulus' => 'Tahun Lulus',
 
                 // Data Keluarga
@@ -583,7 +593,6 @@ class LowonganController extends Controller
                 'nama_instansi' => 'Nama Instansi Pendidikan',
                 'jurusan' => 'Jurusan',
                 'nilai_ipk' => 'Nilai IPK/NEM',
-                'tahun_masuk' => 'Tahun Masuk',
                 'tahun_lulus' => 'Tahun Lulus',
 
                 // Data Keluarga
