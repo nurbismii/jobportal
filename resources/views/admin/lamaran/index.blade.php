@@ -276,7 +276,7 @@
                             <td>
                                 {{ is_null($data->biodata->jumlah_anak) || $data->biodata->jumlah_anak == 0 
                                     ? 'TK' 
-                                    : 'TK' . $data->biodata->jumlah_anak }}
+                                    : 'K' . $data->biodata->jumlah_anak }}
                             </td>
                             <td>{{ $data->biodata->rt }}/{{ $data->biodata->rt }}</td>
                             <td>{{ $data->biodata->kode_pos }}</td>
@@ -304,7 +304,7 @@
                             <td>{{ $data->biodata->hobi }}</td>
                             <td>{{ $data->biodata->no_telepon_darurat }}</td>
                             <td>{{ $data->biodata->nama_kontak_darurat }}</td>
-                            <td>{{ $data->biodata->hubungan }}</td>
+                            <td>{{ $data->biodata->status_hubungan }}</td>
                             <td>{{ $data->biodata->tinggi_badan  }}</td>
                             <td>{{ $data->biodata->berat_badan  }}</td>
 
@@ -401,47 +401,59 @@
     </div>
 </form>
 
+@php
+    $orderedSP = $data->biodata->user->suratPeringatan->sortBy(function ($item) {
+        $order = ['SP1' => 1, 'SP2' => 2, 'SP3' => 3];
+        return $order[$item->level_sp] ?? 99;
+    });
+@endphp
+
 @foreach($lamarans as $data)
 @if($data->biodata->user->suratPeringatan->isNotEmpty())
 <div class="modal fade" id="modalSP{{ $data->id }}" tabindex="-1" role="dialog" aria-labelledby="modalSPLabel{{ $data->id }}" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalSPLabel{{ $data->id }}">Surat Peringatan - {{ $data->biodata->user->name }}</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Tutup">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content shadow-lg">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title font-weight-bold" id="modalSPLabel{{ $data->id }}">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>Surat Peringatan - {{ $data->biodata->user->name }}
+                </h5>
+                <button type="button" class="close text-dark" data-dismiss="modal" aria-label="Tutup">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body bg-light">
                 <div class="table-responsive">
-                    <table class="table table-sm table-bordered mb-0">
-                        <thead>
+                    <table class="table table-hover table-bordered table-sm">
+                        <thead class="thead-dark text-center">
                             <tr>
-                                <th>Level</th>
-                                <th>Keterangan</th>
-                                <th>Tanggal</th>
+                                <th style="width: 10%;">Level</th>
+                                <th style="width: 70%;">Keterangan</th>
+                                <th style="width: 20%;">Tanggal</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($data->biodata->user->suratPeringatan as $sp)
+                            @foreach($orderedSP as $sp)
                             <tr>
-                                <td>{{ $sp->level_sp }}</td>
+                                <td class="text-center"><span class="badge badge-{{ $sp->level_sp == 'SP1' ? 'dark' : ($sp->level_sp == 'SP2' ? 'warning' : 'danger') }}">{{ $sp->level_sp }}</span></td>
                                 <td>{{ $sp->ket_sp }}</td>
-                                <td>{{ \Carbon\Carbon::parse($sp->created_at)->format('d-m-Y') }}</td>
+                                <td class="text-center">{{ tanggalIndo($sp->tanggal_mulai_sp) }}</td>
                             </tr>
                             @endforeach
                         </tbody>
                     </table>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+            <div class="modal-footer bg-white">
+                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">
+                    <i class="fas fa-times"></i> Tutup
+                </button>
             </div>
         </div>
     </div>
 </div>
 @endif
 @endforeach
+
 
 @push('scripts')
 <!-- Page level plugins -->
