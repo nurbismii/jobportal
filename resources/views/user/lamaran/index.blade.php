@@ -28,7 +28,7 @@
             <h4 class="text-primary fw-semibold">Lamaran</h4>
             <h1 class="display-5 fw-bold mb-3">Riwayat Pelamaran</h1>
             <p class="text-muted mb-0">
-                Berikut adalah daftar riwayat lamaran kerja Anda di perusahaan kami.
+                Berikut adalah daftar riwayat lamaran kerja kamu di perusahaan kami.
             </p>
         </div>
         <div class="row g-4 justify-content-center">
