@@ -75,6 +75,9 @@ class LowonganController extends Controller
     {
         // Hapus data lowongan kerja
         $lowongan = Lowongan::findOrFail($id);
+
+        Lamaran::where('loker_id', $lowongan->id)->delete();
+
         $lowongan->delete();
 
         Alert::success('Berhasil', 'Lowongan kerja berhasil dihapus!');
