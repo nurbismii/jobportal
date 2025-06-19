@@ -472,8 +472,100 @@ class LowonganController extends Controller
                     $parsed['jenis_kelamin'] = 'WANITA';
                 }
 
+                // Tangkap nama satu baris di atas baris yang memuat tempat, tanggal lahir
+                // Jika nama dan tempat/tanggal lahir masih kosong, coba deteksi pola fallback format baru
+                if (empty($parsed['nama']) && empty($parsed['tempat_lahir'])) {
+                    foreach ($lines as $i => $line) {
+                        $cleanLine = preg_replace('/[^A-Za-z0-9\s.,-]/', '', $line);
+                        $upperLine = strtoupper(trim($cleanLine));
+
+                        // Cari baris yang merupakan tempat dan tanggal lahir
+                        if (preg_match('/([A-Z\s]+),\s*(\d{2}-\d{2}-\d{4})/', $upperLine, $match)) {
+                            $kota = ucwords(strtolower(trim($match[1])));
+                            $tanggal = $match[2];
+
+                            // Validasi tahun masuk akal sebagai tanggal lahir
+                            $year = (int)substr($tanggal, -4);
+                            if ($year < 2010) {
+                                $parsed['tempat_lahir'] = $kota;
+                                $parsed['tanggal_lahir'] = $tanggal;
+
+                                // Cari nama di baris sebelumnya, jika huruf kapital semua
+                                if ($i > 0) {
+                                    $namaLine = trim($lines[$i - 1]);
+                                    $namaClean = preg_replace('/[^A-Za-z\s]/', '', $namaLine);
+                                    if (preg_match('/^[A-Z\s]{3,}$/', strtoupper($namaClean))) {
+                                        $parsed['nama'] = ucwords(strtolower($namaClean));
+                                    }
+                                }
+
+                                break; // selesai parsing nama dan TTL
+                            }
+                        }
+
+                        if (empty($parsed['nama'])) {
+                            foreach ($lines as $i => $line) {
+                                $cleanLine = preg_replace('/[^A-Za-z\s]/', '', $line);
+                                $upper = strtoupper($cleanLine);
+
+                                // Abaikan baris yang terlalu umum
+                                $nonNamePatterns = [
+                                    'INDONESIA',
+                                    'SURAT IZIN MENGEMUDI',
+                                    'SURAT IZIN MENOL',
+                                    'DRIVING LICENSE',
+                                    'SIM',
+                                    'POLRI',
+                                    'REPUBLIK INDONESIA',
+                                    'JENIS KELAMIN',
+                                    'GOL DARAH',
+                                    'ALAMAT',
+                                    'PEKERJAAN',
+                                    'DITERBITKAN OLEH',
+                                    'KENDARAAN',
+                                    'BILUMUM',
+                                    'IA MAINA NE'
+                                ];
+
+                                if (in_array($upper, $nonNamePatterns) || strlen($cleanLine) < 4) {
+                                    continue;
+                                }
+
+                                // Coba ambil baris sebelum tempat lahir
+                                if (!empty($parsed['tanggal_lahir']) && isset($lines[$i + 1])) {
+                                    if (preg_match('/\d{2}-\d{2}-\d{4}/', $lines[$i + 1])) {
+                                        // Baris ini kemungkinan besar adalah nama
+                                        $parsed['nama'] = ucwords(strtolower($cleanLine));
+                                        break;
+                                    }
+                                }
+
+                                // Atau baris yang huruf besar semua dan terdiri dari 2 kata
+                                if (preg_match('/^[A-Z\s]{4,}$/', $upper) && substr_count($upper, ' ') <= 2) {
+                                    $parsed['nama'] = ucwords(strtolower($cleanLine));
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
                 if ($this->isParsedComplete($parsed)) break;
             }
+        }
+
+        if (
+            !empty($parsed['tanggal_pembuatan']) &&
+            !empty($parsed['tanggal_lahir']) &&
+            $parsed['tanggal_lahir'] === $parsed['berlaku_sampai']
+        ) {
+            // Asumsikan tanggal_pembuatan adalah tanggal lahir
+            $parsed['tanggal_lahir'] = $parsed['tanggal_pembuatan'];
+            $parsed['tempat_lahir'] = $parsed['tempat_pembuatan'];
+
+            // Reset tanggal_pembuatan karena ternyata salah
+            $parsed['tanggal_pembuatan'] = '';
+            $parsed['tempat_pembuatan'] = '';
         }
 
         $biodata->parsed_sim_b2 = $parsed;
