@@ -121,7 +121,7 @@
                         <p class="text-dark"><i class="fa fa-check text-primary me-3"></i>Perfect For All</p>
                         <p class="text-dark"><i class="fa fa-check text-primary me-3"></i>Who We Are</p>
                         <p class="text-dark mb-4"><i class="fa fa-check text-primary me-3"></i>Powerful Skill</p>
-                        <a class="btn btn-primary rounded-pill py-3 px-5" href="https://vdni.co.id/">Informasi Lebih Lanjut</a>
+                        <a class="btn btn-primary rounded-pill py-3 px-5" href="https://vdni.co.id/" target="_blank">Informasi Lebih Lanjut</a>
                     </div>
                 </div>
                 <div class="col-xl-6 wow fadeInRight" data-wow-delay="0.2s">
@@ -280,7 +280,7 @@
                                 </h2>
                                 <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#accordionExample">
                                     <div class="accordion-body">
-                                        Hasil seleksi akan diumumkan di halaman pengumuman pada website rekrutmen VDNI dan akan diberitahukan secara personal melalui sarana komunikasi tercepat yang didaftarkan.
+                                        Hasil seleksi akan diumumkan di halaman lamaran pada website rekrutmen VDNI dan akan diberitahukan secara personal melalui sarana komunikasi tercepat yang didaftarkan.
                                     </div>
                                 </div>
                             </div>

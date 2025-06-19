@@ -58,6 +58,7 @@ class BiodataController extends Controller
                 'jenis_kelamin' => $request->jenis_kelamin,
                 'tempat_lahir' => $request->tempat_lahir,
                 'tanggal_lahir' => $request->tanggal_lahir,
+                'agama' => $request->agama,
                 'provinsi' => $request->provinsi,
                 'kabupaten' => $request->kabupaten,
                 'kecamatan' => $request->kecamatan,
@@ -74,26 +75,26 @@ class BiodataController extends Controller
 
                 // Pendidikan
                 'pendidikan_terakhir' => $request->pendidikan_terakhir,
-                'nama_instansi' => $request->nama_instansi,
-                'jurusan' => $request->jurusan,
+                'nama_instansi' => ucwords($request->nama_instansi),
+                'jurusan' => ucwords($request->jurusan),
                 'nilai_ipk' => $request->nilai_ipk,
                 'tahun_masuk' => $request->tahun_masuk,
                 'tahun_lulus' => $request->tahun_lulus,
                 'prestasi' => $request->prestasi,
 
                 // Keluarga
-                'nama_ayah' => $request->nama_ayah,
-                'nama_ibu' => $request->nama_ibu,
+                'nama_ayah' => ucwords($request->nama_ayah),
+                'nama_ibu' => ucwords($request->nama_ibu),
                 'status_pernikahan' => $request->status_pernikahan,
                 'tanggal_nikah' => $request->tanggal_nikah,
-                'nama_pasangan' => $request->nama_pasangan,
+                'nama_pasangan' => ucwords($request->nama_pasangan),
                 'jumlah_anak' => $request->jumlah_anak,
                 'nama_anak_1' => $request->nama_anak_1,
                 'nama_anak_2' => $request->nama_anak_2,
                 'nama_anak_3' => $request->nama_anak_3,
 
                 // Kontak darurat
-                'nama_kontak_darurat' => $request->nama_kontak_darurat,
+                'nama_kontak_darurat' => ucwords($request->nama_kontak_darurat),
                 'no_telepon_darurat' => $request->no_telp_darurat,
                 'status_hubungan' => $request->status_hubungan,
 

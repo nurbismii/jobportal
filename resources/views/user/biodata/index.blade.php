@@ -183,13 +183,38 @@
                                 @else
                                 <option value="">Pilih jenis kelamin</option>
                                 @endif
-                                <option value="L">Laki-laki</option>
-                                <option value="P">Perempuan</option>
+                                <option value="M 男">Laki-laki</option>
+                                <option value="F 女">Perempuan</option>
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label>NPWP <span class="text-danger">*</span></label>
                             <input type="text" id="npwp" name="no_npwp" class="form-control" value="{{ $biodata->no_npwp ?? '' }}" required maxlength="20">
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6 mb-3">
+                            <label for="agama">Agama
+                                <span class="text-danger">*</span>
+                            </label>
+                            <select name="agama" id="agama" class="form-select" required>
+                                @php
+                                    $agamaOptions = [
+                                        'ISLAM 伊斯兰教',
+                                        'KRISTEN PROTESTAN 基督教新教',
+                                        'KRISTEN KATHOLIK 天主教徒',
+                                        'BUDHA 佛教',
+                                        'HINDU 印度教',
+                                        'KHONGHUCU 儒教',
+                                    ];
+                                    $selectedAgama = $biodata->agama ?? '';
+                                @endphp
+                                <option value="">Pilih agama</option>
+                                @foreach($agamaOptions as $agama)
+                                    <option value="{{ $agama }}" {{ $selectedAgama === $agama ? 'selected' : '' }}>{{ $agama }}</option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
 
@@ -317,15 +342,19 @@
                                 <span class="text-danger">*</span>
                             </label>
                             <select name="golongan_darah" id="" class="form-select" required>
-                                @if($biodata)
-                                <option value="{{ $biodata->golongan_darah }}">{{ $biodata->golongan_darah }}</option>
-                                @else
+                                @php
+                                    $golonganOptions = ['A 型', 'B 型', 'O 型', 'AB 型'];
+                                    $selectedGolongan = $biodata->golongan_darah ?? '';
+                                @endphp
                                 <option value="">Pilih golongan darah</option>
+                                @if($selectedGolongan && in_array($selectedGolongan, $golonganOptions))
+                                    <option value="{{ $selectedGolongan }}" selected>{{ $selectedGolongan }}</option>
                                 @endif
-                                <option value="A">A</option>
-                                <option value="B">B</option>
-                                <option value="O">O</option>
-                                <option value="AB">AB</option>
+                                @foreach($golonganOptions as $golongan)
+                                    @if($golongan !== $selectedGolongan)
+                                        <option value="{{ $golongan }}">{{ $golongan }}</option>
+                                    @endif
+                                @endforeach
                             </select>
                         </div>
                     </div>
@@ -352,21 +381,24 @@
                             <label for="pendidikan_terakhir" class="form-label">Pendidikan Terakhir
                                 <span class="text-danger">*</span>
                             </label>
+                            @php
+                                $pendidikanOptions = [
+                                    'SD 小学' => 'SD 小学',
+                                    'SMP 初中' => 'SMP 初中',
+                                    'SMA 高中' => 'SMA 高中',
+                                    'SMK 高中' => 'SMK 高中',
+                                    'D3 大专三年' => 'D3 大专三年',
+                                    'D4 大专三年' => 'D4 大专三年',
+                                    'S1 本科' => 'S1 本科',
+                                    'S2 研究生' => 'S2 研究生',
+                                ];
+                                $selectedPendidikan = $biodata->pendidikan_terakhir ?? '';
+                            @endphp
                             <select class="form-select" name="pendidikan_terakhir" required>
-                                @if($biodata)
-                                <option value="{{ $biodata->pendidikan_terakhir }}">{{ $biodata->pendidikan_terakhir }}</option>
-                                @else
                                 <option value="">Pilih pendidikan terakhir</option>
-                                @endif
-                                <option value="SD">SD</option>
-                                <option value="SMP">SMP</option>
-                                <option value="SMA">SMA</option>
-                                <option value="SMK">SMK</option>
-                                <option value="D3">D3</option>
-                                <option value="D4">D4</option>
-                                <option value="S1">S1</option>
-                                <option value="S2">S2</option>
-                                <option value="S3">S3</option>
+                                @foreach($pendidikanOptions as $value => $label)
+                                    <option value="{{ $value }}" {{ $selectedPendidikan === $value ? 'selected' : '' }}>{{ $label }}</option>
+                                @endforeach
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
@@ -505,7 +537,7 @@
                             <option value="Pasangan">Pasangan</option>
                             <option value="Saudara">Saudara</option>
                             <option value="Sepupu">Sepupu</option>
-                            <option value="Teman Dekat">Teman Dekat</option>
+                            <option value="Teman Dekat">Teman</option>
                         </select>
                     </div>
                 </div>
