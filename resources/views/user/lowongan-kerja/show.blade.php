@@ -10,12 +10,21 @@
                 <p class="mb-4">{!! $lowongan->kualifikasi !!}</p>
             </div>
             <div class="d-flex justify-content-end mt-3 mx-auto">
-                <p class="mb-4 text-primary">Aktif lamaran : {{ tanggalIndo($lowongan->tanggal_mulai) }} – {{ tanggalIndo($lowongan->tanggal_berakhir) }}</p>
+                <p class="mb-1 text-primary">Aktif lamaran : {{ tanggalIndo($lowongan->tanggal_mulai) }} – {{ tanggalIndo($lowongan->tanggal_berakhir) }}</p>
+            </div>
+            <div class="d-flex justify-content-end mx-auto">
+                @if(strtolower($lowongan->status_lowongan) == 'aktif')
+                <span class="mb-4 badge bg-success">{{ $lowongan->status_lowongan }}</span>
+                @else
+                <span class="mb-4 badge bg-danger">{{ $lowongan->status_lowongan }}</span>
+                @endif
             </div>
             <div class="d-flex justify-content-end mt-3 mx-auto">
                 <a class="btn btn-light rounded-pill py-2 px-3 me-2" href="{{ route('lowongan-kerja.index') }}">Kembali</a>
+                @if(strtolower($lowongan->status_lowongan) == 'aktif')
                 <a class="btn btn-primary rounded-pill py-2 px-3 me-2" data-bs-toggle="modal" data-bs-target="#konfirmasi-lamaran">Lamar</a>
                 <a class="btn btn-light py-2 px-3 me-2 fas fa-link" href="#"></a>
+                @endif
                 <!-- Lowongan lihat semua end -->
             </div>
         </div>

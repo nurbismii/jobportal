@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Biodata;
 use App\Models\Lamaran;
 use App\Models\Lowongan;
+use Carbon\Carbon;
 use DateTime;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
@@ -36,7 +37,8 @@ class LowonganController extends Controller
         $aktif = 1;
         $tidak_aktif = 0;
 
-        $lowongan = Lowongan::findOrFail($id);
+        $today = Carbon::today()->toDateString();
+        $lowongan = Lowongan::selectRaw("*, IF(tanggal_berakhir < '$today', 'Kadaluwarsa', 'Aktif') as status_lowongan")->findOrFail($id);
 
         // Batasi reset OCR hanya 1x tiap 5 menit (300 detik)
         if (request()->query('refresh') === 'true') {

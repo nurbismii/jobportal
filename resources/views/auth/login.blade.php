@@ -58,15 +58,6 @@
                     </button>
                 </div>
 
-                <div class="text-center mb-3">atau</div>
-
-                <div class="d-grid mb-3">
-                    <a href="" class="btn btn-outline-primary">
-                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style="width: 20px; margin-right: 8px;">
-                        Log in dengan Google
-                    </a>
-                </div>
-
                 <div class="text-center">
                     Belum memiliki akun? <a href="{{ route('register') }}" class="text-decoration-none fw-bold">Daftar</a>
                 </div>

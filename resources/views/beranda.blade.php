@@ -28,39 +28,14 @@
                             <p class="mb-5 fs-5">Selamat Datang di Website Resmi PT VDNI
                             </p>
                             <div class="d-flex justify-content-center justify-content-md-start flex-shrink-0 mb-4">
-                                <a class="btn btn-light rounded-pill py-3 px-4 px-md-5 me-2" href="#"></i> Daftar</a>
-                                <a class="btn btn-dark rounded-pill py-3 px-4 px-md-5 ms-2" href="#">Masuk</a>
+                                <a class="btn btn-light rounded-pill py-3 px-4 px-md-5 me-2" href="#"><i class="fas fa-play-circle me-2"></i> Cara penggunaan</a>
+                                <a class="btn btn-dark rounded-pill py-3 px-4 px-md-5 ms-2" href="#"> Buku Panduan</a>
                             </div>
                         </div>
                     </div>
                     <div class="col-lg-5 animated fadeInRight">
                         <div class="calrousel-img" style="object-fit: cover;">
                             <img src="{{ asset('user/img/carousel-2.png') }}" class="img-fluid w-100" alt="">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="header-carousel-item bg-primary">
-        <div class="carousel-caption">
-            <div class="container">
-                <div class="row gy-4 gy-lg-0 gx-0 gx-lg-5 align-items-center">
-                    <div class="col-lg-5 animated fadeInLeft">
-                        <div class="calrousel-img">
-                            <img src="{{ asset('user/img/carousel-2.png') }}" class="img-fluid w-100" alt="">
-                        </div>
-                    </div>
-                    <div class="col-lg-7 animated fadeInRight">
-                        <div class="text-sm-center text-md-end">
-                            <h4 class="text-white text-uppercase fw-bold mb-4">PT Virtue Dragon Nickel Industry</h4>
-                            <h1 class="display-1 text-white mb-4">Rekrutmen Online</h1>
-                            <p class="mb-5 fs-5">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy...
-                            </p>
-                            <div class="d-flex justify-content-center justify-content-md-end flex-shrink-0 mb-4">
-                                <a class="btn btn-light rounded-pill py-3 px-4 px-md-5 me-2" href="#"></i> Daftar</a>
-                                <a class="btn btn-dark rounded-pill py-3 px-4 px-md-5 ms-2" href="#">Masuk</a>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -95,8 +70,15 @@
                             </p>
 
                             <p class="fw-bold mb-1">Tanggal aktif</p>
-                            <p class="mb-4">{{ tanggalIndo($lowongan->tanggal_mulai) }} – {{ tanggalIndo($lowongan->tanggal_berakhir) }}</p>
+                            <p class="mb-1">{{ tanggalIndo($lowongan->tanggal_mulai) }} – {{ tanggalIndo($lowongan->tanggal_berakhir) }}</p>
                             <!-- Isian deskripsi lowongan kerja end -->
+                            <div>
+                                @if(strtolower($lowongan->status_lowongan) == 'aktif')
+                                <span class="mb-1 badge bg-success">{{ $lowongan->status_lowongan }}</span>
+                                @else
+                                <span class="mb-1 badge bg-danger">{{ $lowongan->status_lowongan }}</span>
+                                @endif
+                            </div>
 
                             <div class="d-flex justify-content-end gap-2 mt-auto pt-3">
                                 <a class="btn btn-primary rounded-pill py-2 px-3" href="{{ route('lowongan-kerja.show', $lowongan->id) }}">Lamar</a>
@@ -139,7 +121,7 @@
                         <p class="text-dark"><i class="fa fa-check text-primary me-3"></i>Perfect For All</p>
                         <p class="text-dark"><i class="fa fa-check text-primary me-3"></i>Who We Are</p>
                         <p class="text-dark mb-4"><i class="fa fa-check text-primary me-3"></i>Powerful Skill</p>
-                        <a class="btn btn-primary rounded-pill py-3 px-5" href="#">Informasi Lebih Lanjut</a>
+                        <a class="btn btn-primary rounded-pill py-3 px-5" href="https://vdni.co.id/">Informasi Lebih Lanjut</a>
                     </div>
                 </div>
                 <div class="col-xl-6 wow fadeInRight" data-wow-delay="0.2s">
@@ -287,6 +269,30 @@
                                             <li>NPWP</li>
                                             <li>SIM B2 Umum (Jika dibutuhkan)</li>
                                         </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingFour">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                                        Di manakah hasil seleksi akan diumumkan?
+                                    </button>
+                                </h2>
+                                <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#accordionExample">
+                                    <div class="accordion-body">
+                                        Hasil seleksi akan diumumkan di halaman pengumuman pada website rekrutmen VDNI dan akan diberitahukan secara personal melalui sarana komunikasi tercepat yang didaftarkan.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingFive">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+                                        Berapa lama waktu seleksi di setiap tahapan?
+                                    </button>
+                                </h2>
+                                <div id="collapseFive" class="accordion-collapse collapse" aria-labelledby="headingFive" data-bs-parent="#accordionExample">
+                                    <div class="accordion-body">
+                                        Waktu dan pengumuman seleksi setiap tahapan berbeda. Pemberitahuan lebih lanjut terkait hal ini akan disampaikan langsung kepada Peserta yang dinyatakan lolos di setiap tahapannya melalui sarana komunikasi tercepat.
                                     </div>
                                 </div>
                             </div>

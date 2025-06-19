@@ -7,6 +7,7 @@ use App\Models\Hris\Employee;
 use App\Models\Lowongan;
 use App\Models\Pengumuman;
 use App\Models\User;
+use Carbon\Carbon;
 
 class BerandaController extends Controller
 {
@@ -15,7 +16,9 @@ class BerandaController extends Controller
         $VDNI = 1;
         $VDNIP = 2;
 
-        $lowongans = Lowongan::orderBy('created_at', 'desc')
+        $lowongans = Lowongan::select('*')
+            ->selectRaw("IF(tanggal_berakhir < ?, 'Kadaluwarsa', 'Aktif') as status_lowongan", [Carbon::today()->toDateString()])
+            ->orderBy('created_at', 'desc')
             ->take(5)
             ->get();
 
