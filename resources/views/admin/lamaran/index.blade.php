@@ -117,7 +117,8 @@
             <div class="col-md-3">
                 <select name="status" class="form-control" onchange="this.form.submit()">
                     <option value="">-- Filter Status --</option>
-                    <option value="Tidak dapat lanjut ke tahap selanjutya" {{ request('status') == 'Tidak dapat lanjut ke tahap selanjutya' ? 'selected' : '' }}>Tidak dapat lanjut ke tahap selanjutya</option>
+                    <option value="Belum Sesuai Kriteria" {{ request('status') == 'Belum Sesuai Kriteria' ? 'selected' : '' }}>Belum Sesuai Kriteria</option>
+                    <option value="Verifikasi Online" {{ request('status') == 'Lamaran Dikirim' ? 'selected' : '' }}>Lamaran Dikirim</option>
                     <option value="Verifikasi Online" {{ request('status') == 'Verifikasi Online' ? 'selected' : '' }}>Verifikasi Online</option>
                     <option value="Verifikasi Berkas" {{ request('status') == 'Verifikasi Berkas' ? 'selected' : '' }}>Verifikasi Berkas</option>
                     <option value="Tes Kesehatan" {{ request('status') == 'Tes Kesehatan' ? 'selected' : '' }}>Tes Kesehatan</option>
@@ -138,9 +139,14 @@
             <div class="col-md-3">
                 <select name="pendidikan" class="form-control" onchange="this.form.submit()">
                     <option value="">-- Filter Pendidikan --</option>
-                    <option value="SMA" {{ request('pendidikan') == 'SMA' ? 'selected' : '' }}>SMA</option>
-                    <option value="D3" {{ request('pendidikan') == 'D3' ? 'selected' : '' }}>D3</option>
-                    <option value="S1" {{ request('pendidikan') == 'S1' ? 'selected' : '' }}>S1</option>
+                    <option value="SD 小学" {{ request('pendidikan') == 'SD 小学' ? 'selected' : '' }}>SD 小学</option>
+                    <option value="SMP 初中" {{ request('pendidikan') == 'SMP 初中' ? 'selected' : '' }}>SMP 初中</option>
+                    <option value="SMA 高中" {{ request('pendidikan') == 'SMA 高中' ? 'selected' : '' }}>SMA 高中</option>
+                    <option value="SMK 高中" {{ request('pendidikan') == 'SMK 高中' ? 'selected' : '' }}>SMK 高中</option>
+                    <option value="D3 大专三年" {{ request('pendidikan') == 'D3 大专三年' ? 'selected' : '' }}>D3 大专三年</option>
+                    <option value="D4 大专三年" {{ request('pendidikan') == 'D4 大专三年' ? 'selected' : '' }}>D4 大专三年</option>
+                    <option value="S1 本科" {{ request('pendidikan') == 'S1 本科' ? 'selected' : '' }}>S1 本科</option>
+                    <option value="S2 研究生" {{ request('pendidikan') == 'S2 研究生' ? 'selected' : '' }}>S2 研究生</option>
                 </select>
             </div>
         </form>
@@ -154,7 +160,7 @@
             <div class="mb-3">
                 <select name="status_proses" class="form-control" required>
                     <option value="">-- Pilih Status Baru --</option>
-                    <option value="Tidak dapat lanjut ke tahap selanjutya">Tidak dapat lanjut ke tahap selanjutya</option>
+                    <option value="Belum Sesuai Kriteria">Belum Sesuai Kriteria</option>
                     <option value="Verifikasi Online">Verifikasi Online</option>
                     <option value="Verifikasi Berkas">Verifikasi Berkas</option>
                     <option value="Tes Kesehatan">Tes Kesehatan</option>
