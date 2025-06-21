@@ -78,7 +78,7 @@ class LowonganController extends Controller
                 return redirect()->route('biodata.index');
             }
 
-            return $res_ocr_simb2 = $this->parseSimB2($biodata);
+            $res_ocr_simb2 = $this->parseSimB2($biodata);
 
             // if (!$res_ocr_simb2 || empty($res_ocr_simb2['nama']) || empty($res_ocr_simb2['tanggal_lahir'])) {
             //     Alert::info('Opss!', 'Hasil OCR SIM B2 belum lengkap. Silakan pastikan fotonya jelas dan sesuai.');
