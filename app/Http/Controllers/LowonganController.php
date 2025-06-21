@@ -18,7 +18,11 @@ class LowonganController extends Controller
 {
     public function index()
     {
-        $lowongans = Lowongan::orderBy('id', 'desc')->get();
+        $lowongans = Lowongan::select('*')
+            ->selectRaw("IF(tanggal_berakhir < ?, 'Kadaluwarsa', 'Aktif') as status_lowongan", [Carbon::today()->toDateString()])
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
 
         return view('user.lowongan-kerja.index', compact('lowongans'));
     }

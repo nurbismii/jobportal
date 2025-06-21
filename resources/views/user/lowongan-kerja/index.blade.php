@@ -35,8 +35,15 @@
                             </p>
 
                             <p class="fw-bold mb-1">Tanggal aktif</p>
-                            <p class="mb-4">{{ tanggalIndo($lowongan->tanggal_mulai) }} – {{ tanggalIndo($lowongan->tanggal_berakhir) }}</p>
+                            <p class="mb-1">{{ tanggalIndo($lowongan->tanggal_mulai) }} – {{ tanggalIndo($lowongan->tanggal_berakhir) }}</p>
                             <!-- Isian deskripsi lowongan kerja end -->
+                            <div>
+                                @if(strtolower($lowongan->status_lowongan) == 'aktif')
+                                <span class="mb-1 badge bg-success">{{ $lowongan->status_lowongan }}</span>
+                                @else
+                                <span class="mb-1 badge bg-danger">{{ $lowongan->status_lowongan }}</span>
+                                @endif
+                            </div>
 
                             <div class="d-flex justify-content-end gap-2 mt-auto pt-3">
                                 <a class="btn btn-primary rounded-pill py-2 px-3" href="{{ route('lowongan-kerja.show', $lowongan->id) }}">Lamar</a>
