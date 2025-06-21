@@ -20,12 +20,24 @@ class LamaranController extends Controller
         $lamaran = Lamaran::with('biodata')->whereIn('id', $request->selected_ids)->get();
 
         foreach ($lamaran as $data) {
-            RiwayatProsesLamaran::create([
-                'user_id' => $data->biodata->user_id,
-                'lamaran_id' => $data->id,
-                'status_proses' => $request->status_proses
-            ]);
+            $userId = $data->biodata->user_id;
+            $lamaranId = $data->id;
+            $status = $request->status_proses;
+
+            $sudahAda = RiwayatProsesLamaran::where('user_id', $userId)
+                ->where('lamaran_id', $lamaranId)
+                ->where('status_proses', $status)
+                ->exists();
+
+            if (!$sudahAda) {
+                RiwayatProsesLamaran::create([
+                    'user_id' => $userId,
+                    'lamaran_id' => $lamaranId,
+                    'status_proses' => $status
+                ]);
+            }
         }
+
         // Update semua yang dipilih
         Lamaran::whereIn('id', $request->selected_ids)
             ->update(['status_proses' => $request->status_proses]);
