@@ -78,7 +78,7 @@ class LowonganController extends Controller
                 return redirect()->route('biodata.index');
             }
 
-            $res_ocr_simb2 = $this->parseSimB2($biodata);
+            return $res_ocr_simb2 = $this->parseSimB2($biodata);
 
             // if (!$res_ocr_simb2 || empty($res_ocr_simb2['nama']) || empty($res_ocr_simb2['tanggal_lahir'])) {
             //     Alert::info('Opss!', 'Hasil OCR SIM B2 belum lengkap. Silakan pastikan fotonya jelas dan sesuai.');
@@ -307,10 +307,31 @@ class LowonganController extends Controller
                     $parsed['wilayah'] = ucwords(strtolower($lines[$i + 1]));
                 }
 
-                if (preg_match('/\d{2}-\d{2}-\d{4}/', $line)) {
-                    $parsed['berlaku_sampai'] = $line;
-                }
+                if (empty($parsed['berlaku_sampai'])) {
+                    $allDates = [];
 
+                    foreach ($lines as $line) {
+                        // Tangkap semua format tanggal: dd-mm-yyyy atau dd/mm/yyyy
+                        if (preg_match_all('/\b(\d{2})[\/\-](\d{2})[\/\-](\d{4})\b/', $line, $matches, PREG_SET_ORDER)) {
+                            foreach ($matches as $match) {
+                                $tanggal = "{$match[1]}-{$match[2]}-{$match[3]}";
+                                $timestamp = strtotime(str_replace('/', '-', $tanggal));
+                                if ($timestamp !== false) {
+                                    $allDates[] = [
+                                        'raw' => date('d-m-Y', $timestamp),
+                                        'timestamp' => $timestamp
+                                    ];
+                                }
+                            }
+                        }
+                    }
+
+                    if (!empty($allDates)) {
+                        // Ambil tanggal dengan timestamp terbesar
+                        usort($allDates, fn($a, $b) => $a['timestamp'] <=> $b['timestamp']);
+                        $parsed['berlaku_sampai'] = end($allDates)['raw']; // hasil: "25-03-2030"
+                    }
+                }
                 // Early break jika semua data sudah terisi
                 if ($this->isParsedComplete($parsed)) break;
             }
