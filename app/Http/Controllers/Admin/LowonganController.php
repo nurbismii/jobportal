@@ -91,6 +91,7 @@ class LowonganController extends Controller
         $query = Lamaran::with(
             'lowongan',
             'biodata.user',
+            'biodata.getRiwayatInHris',
             'biodata.getProvinsi',
             'biodata.getKabupaten',
             'biodata.getKecamatan',

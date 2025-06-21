@@ -246,7 +246,7 @@
                             <td>
                                 @if($data->biodata->user->suratPeringatan->isNotEmpty())
                                 <a data-toggle="modal" data-target="#modalSP{{ $data->id }}" class="text-link">
-                                    Lihat SP
+                                    Lihat
                                 </a>
                                 @else
                                 <span class="text-muted">-</span>
@@ -261,12 +261,12 @@
                             @if($data->biodata->user->status_pelamar)
                             <td class="bg-warning">{{ strtoupper($data->biodata->user->status_pelamar) }}</td>
                             @else
-                            <td>{{ strtoupper($data->biodata->user->status_pelamar) }}</td>
+                            <td>{{ strtoupper($data->biodata->user->status_pelamar ?? '---') }}</td>
                             @endif
                             @if($data->biodata->user->area_kerja)
                             <td class="bg-warning">{{ $data->biodata->user->area_kerja }}</td>
                             @else
-                            <td>{{ $data->biodata->user->area_kerja }}</td>
+                            <td>{{ $data->biodata->user->area_kerja ?? '---' }}</td>
                             @endif
                             <td>{{ $data->biodata->jenis_kelamin == 'L' ? 'Laki-Laki' : 'Perempuan' }}</td>
                             <td>{{ $data->biodata->tempat_lahir }}</td>
@@ -401,40 +401,79 @@
     </div>
 </form>
 
-@php
-    $orderedSP = $data->biodata->user->suratPeringatan->sortBy(function ($item) {
-        $order = ['SP1' => 1, 'SP2' => 2, 'SP3' => 3];
-        return $order[$item->level_sp] ?? 99;
-    });
-@endphp
-
 @foreach($lamarans as $data)
 @if($data->biodata->user->suratPeringatan->isNotEmpty())
+@php
+$orderedSP = $data->biodata->user->suratPeringatan->sortBy(function ($item) {
+$order = ['SP1' => 1, 'SP2' => 2, 'SP3' => 3];
+return $order[$item->level_sp] ?? 99;
+});
+@endphp
+
 <div class="modal fade" id="modalSP{{ $data->id }}" tabindex="-1" role="dialog" aria-labelledby="modalSPLabel{{ $data->id }}" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
         <div class="modal-content shadow-lg">
             <div class="modal-header bg-warning text-dark">
                 <h5 class="modal-title font-weight-bold" id="modalSPLabel{{ $data->id }}">
-                    <i class="fas fa-exclamation-triangle mr-2"></i>Surat Peringatan - {{ $data->biodata->user->name }}
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    Riwayat Bekerja - {{ $data->biodata->user->name }}
                 </h5>
                 <button type="button" class="close text-dark" data-dismiss="modal" aria-label="Tutup">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body bg-light">
-                <div class="table-responsive">
-                    <table class="table table-hover table-bordered table-sm">
+                {{-- Section: Riwayat Resign --}}
+                <h6 class="text-primary font-weight-bold mb-3">📄 Riwayat Resign</h6>
+                <div class="table-responsive mb-4">
+                    <table class="table table-sm table-bordered table-hover">
                         <thead class="thead-dark text-center">
                             <tr>
-                                <th style="width: 10%;">Level</th>
-                                <th style="width: 70%;">Keterangan</th>
-                                <th style="width: 20%;">Tanggal</th>
+                                <th>Nama</th>
+                                <th>Tanggal Resign</th>
+                                <th>Alasan Resign</th>
+                                <th>Posisi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($data->biodata->getRiwayatInHris as $riwayat)
+                            <tr>
+                                <td>{{ $riwayat->nama_karyawan }}</td>
+                                <td class="text-center">{{ tanggalIndo($riwayat->tgl_resign) }}</td>
+                                <td>{{ $riwayat->alasan_resign }}</td>
+                                <td>{{ $riwayat->posisi }}</td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">Tidak ada data resign.</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
+                {{-- Section: Surat Peringatan --}}
+                <h6 class="text-danger font-weight-bold mb-3">⚠️ Surat Peringatan</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered table-hover">
+                        <thead class="thead-dark text-center">
+                            <tr>
+                                <th style="width: 15%;">Level</th>
+                                <th style="width: 60%;">Keterangan</th>
+                                <th style="width: 25%;">Tanggal</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($orderedSP as $sp)
                             <tr>
-                                <td class="text-center"><span class="badge badge-{{ $sp->level_sp == 'SP1' ? 'dark' : ($sp->level_sp == 'SP2' ? 'warning' : 'danger') }}">{{ $sp->level_sp }}</span></td>
+                                <td class="text-center">
+                                    <span class="badge badge-pill 
+                                        {{ $sp->level_sp == 'SP1' ? 'badge-dark' : 
+                                           ($sp->level_sp == 'SP2' ? 'badge-warning text-dark' : 
+                                           'badge-danger') }}">
+                                        {{ $sp->level_sp }}
+                                    </span>
+                                </td>
                                 <td>{{ $sp->ket_sp }}</td>
                                 <td class="text-center">{{ tanggalIndo($sp->tanggal_mulai_sp) }}</td>
                             </tr>
@@ -453,6 +492,7 @@
 </div>
 @endif
 @endforeach
+
 
 
 @push('scripts')

@@ -20,6 +20,7 @@
     <!-- Custom styles for this template-->
     <link href="{{ asset('admin/css/sb-admin-2.min.css') }}" rel="stylesheet">
 
+    <link rel="icon" type="image/x-icon" href="{{ asset('img/logo-title.png') }}">
     @stack('styles')
 
 </head>

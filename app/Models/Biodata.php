@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Hris\Employee;
 use App\Models\Hris\Kabupaten;
 use App\Models\Hris\Kecamatan;
 use App\Models\Hris\Kelurahan;
@@ -40,5 +41,11 @@ class Biodata extends Model
     public function getKelurahan()
     {
         return $this->hasOne(Kelurahan::class, 'id', 'kelurahan');
+    }
+
+    public function getRiwayatInHris()
+    {
+        return $this->hasMany(Employee::class, 'no_ktp', 'no_ktp')
+            ->select(['no_ktp', 'no_ktp as no_ktp_hris', 'nama_karyawan', 'tgl_resign', 'alasan_resign', 'posisi']);
     }
 }
