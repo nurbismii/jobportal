@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Support\Facades\Auth;
+use RealRashid\SweetAlert\Facades\Alert;
 
 class LoginController extends Controller
 {
@@ -36,5 +38,19 @@ class LoginController extends Controller
     public function __construct()
     {
         $this->middleware('guest')->except('logout');
+    }
+
+    /**
+     * Override: after user is authenticated
+     */
+    protected function authenticated($request, $user)
+    {
+        if ($user->status_akun == 0) {
+            Auth::logout();
+            Alert::error('Verifikasi', 'Akun Anda belum diverifikasi. Silakan cek email kamu untuk verifikasi.');
+            return redirect('/login');
+        }
+
+        return redirect()->intended($this->redirectPath());
     }
 }

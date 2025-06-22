@@ -24,16 +24,20 @@ Route::resource('lowongan-kerja', 'App\Http\Controllers\LowonganController');
 Route::resource('pengumuman', 'App\Http\Controllers\PengumumanController');
 Route::resource('bantuan', 'App\Http\Controllers\BantuanController');
 Route::resource('pendaftaran', 'App\Http\Controllers\PendaftaranController');
-Route::resource('lamaran', 'App\Http\Controllers\LamaranController');
+
+// User harus login dan sudah verifikasi email untuk akses biodata dan profil
+Route::middleware(['verified.email'])->group(function () {
+
+    Route::resource('lamaran', 'App\Http\Controllers\LamaranController');
+    Route::resource('profil', 'App\Http\Controllers\ProfilController');
+
+    Route::resource('biodata', 'App\Http\Controllers\BiodataController');
+    Route::delete('/biodata/delete-file/{field}', [BiodataController::class, 'deleteFile'])->name('biodata.deleteFile');
+});
 
 Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])->middleware(['auth', 'signed'])->name('verification.verify');
 
 Auth::routes(['verify' => true]);
-
-Route::resource('biodata', 'App\Http\Controllers\BiodataController');
-Route::delete('/biodata/delete-file/{field}', [BiodataController::class, 'deleteFile'])->name('biodata.deleteFile');
-
-Route::resource('profil', 'App\Http\Controllers\ProfilController');
 
 // Admin route
 Route::group(['prefix' => 'admin', 'middleware' => ['redirect.role']], function () {
