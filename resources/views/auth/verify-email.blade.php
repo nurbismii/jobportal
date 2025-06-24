@@ -35,7 +35,7 @@
                     <!-- CTA -->
                     <tr>
                         <td align="center" style="padding:20px;">
-                            <a href="{{ url('konfirmasi-email/' . Crypt::encryptString($data['id'])) }}"
+                            <a href="{{ url('konfirmasi-email-token/' . $data['email_verifikasi_token']) }}"
                                style="background-color:#015fc8;color:#ffffff;padding:14px 28px;border-radius:50px;text-decoration:none;font-weight:600;text-transform:uppercase;display:inline-block;font-size:14px;">
                                Verifikasi Email
                             </a>

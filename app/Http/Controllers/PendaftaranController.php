@@ -133,7 +133,7 @@ class PendaftaranController extends Controller
             return redirect('login');
         }
 
-        User::where('email_verifikasi_token', $token)->update([
+        User::where('id', $token)->update([
             'email_verified_at' => Carbon::now(),
             'status_akun' => 1
         ]);
