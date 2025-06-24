@@ -34,6 +34,7 @@ class ResetPasswordController extends Controller
         }
 
         $existingReset = DB::table('password_resets')
+            ->orderBy('created_at', 'desc')
             ->where('email', $user->email)
             ->first();
 
