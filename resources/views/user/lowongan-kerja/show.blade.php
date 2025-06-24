@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+
 <!-- Lowongan Kerja Start -->
 <div class="container-fluid service py-5">
     <div class="container">
@@ -23,7 +24,6 @@
                 <a class="btn btn-light rounded-pill py-2 px-3 me-2" href="{{ route('lowongan-kerja.index') }}">Kembali</a>
                 @if(strtolower($lowongan->status_lowongan) == 'aktif')
                 <a class="btn btn-primary rounded-pill py-2 px-3 me-2" data-bs-toggle="modal" data-bs-target="#konfirmasi-lamaran">Lamar</a>
-                <a class="btn btn-light py-2 px-3 me-2 fas fa-link" href="#"></a>
                 @endif
                 <!-- Lowongan lihat semua end -->
             </div>
@@ -55,6 +55,4 @@
         </div>
     </div>
 </div>
-
-
 @endsection

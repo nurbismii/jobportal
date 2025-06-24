@@ -17,6 +17,10 @@
         <h4 class="text-primary">Lowongan Tersedia</h4>
         <div class="row g-4 justify-content-center">
 
+            @php
+            $shareUrl = route('lowongan-kerja.index');
+            @endphp
+
             @foreach ($lowongans as $lowongan)
             <div class="col-md-6 col-lg-4">
                 <div class="service-item h-100 d-flex flex-column"> <!-- h-100: biar tinggi seragam -->
@@ -28,10 +32,10 @@
                     </div>
                     <div class="service-content p-4 d-flex flex-column flex-grow-1">
                         <div class="service-content-inner flex-grow-1 d-flex flex-column justify-content-between">
-                            <a href="{{ route('lowongan-kerja.show', $lowongan->id) }}" class="d-inline-block h4 mb-4">{{ $lowongan->nama_lowongan }}</a>
+                            <a href="{{ route('lowongan-kerja.show', $lowongan->id) }}" class="d-inline-block h4 mb-0">{{ $lowongan->nama_lowongan }}</a>
                             <!-- Isian deskripsi lowongan kerja -->
                             <p class="mb-4">
-                                {!! $lowongan->kualifikasi !!}
+                                {!! substr($lowongan->kualifikasi, 0, 409) !!}
                             </p>
 
                             <p class="fw-bold mb-1">Tanggal aktif</p>
@@ -47,7 +51,7 @@
 
                             <div class="d-flex justify-content-end gap-2 mt-auto pt-3">
                                 <a class="btn btn-primary rounded-pill py-2 px-3" href="{{ route('lowongan-kerja.show', $lowongan->id) }}">Lamar</a>
-                                <a class="btn btn-primary rounded-pill py-2 px-3" href="#">Bagikan</a>
+                                <a class="btn btn-primary rounded-pill py-2 px-3" href="javascript:void(0)" onclick="copyToClipboard('{{ $shareUrl }}')">Bagikan</a>
                             </div>
                         </div>
                     </div>
@@ -58,5 +62,27 @@
     </div>
 </div>
 <!-- Lowongan Kerja End -->
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(function() {
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: 'Link telah disalin',
+                confirmButtonText: 'OK'
+            });
+        }, function(err) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal',
+                text: 'Gagal menyalin link',
+                confirmButtonText: 'OK'
+            });
+        });
+    }
+</script>
+@endpush
 
 @endsection

@@ -28,7 +28,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'tanggal_resign',
         'ket_resign',
         'password',
-        'area_kerja'
+        'area_kerja',
+        'email_verifikasi_token'
     ];
 
     /**
@@ -58,10 +59,5 @@ class User extends Authenticatable implements MustVerifyEmail
     public function suratPeringatan()
     {
         return $this->hasMany(SuratPeringatan::class);
-    }
-
-    public function sendEmailVerificationNotification()
-    {
-        $this->notify(new VerifikasiEmailNotification());
     }
 }
