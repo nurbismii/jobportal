@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\SendEmailVerification;
+use App\Mail\EmailVerification;
 use App\Models\Hris\Employee;
 use App\Models\Hris\Peringatan;
 use App\Models\SuratPeringatan;
@@ -11,7 +11,6 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
-use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -73,7 +72,7 @@ class PendaftaranController extends Controller
             ]);
 
             // Kirim email verifikasi
-            Mail::to($request->email)->send(new SendEmailVerification($user_baru));
+            Mail::to($request->email)->send(new EmailVerification($user_baru));
 
             // Buat SP jika ada
             if ($employee) {
@@ -133,7 +132,7 @@ class PendaftaranController extends Controller
             return redirect('login');
         }
 
-        User::where('id', $token)->update([
+        User::where('email_verifikasi_token', $token)->update([
             'email_verified_at' => Carbon::now(),
             'status_akun' => 1
         ]);

@@ -5,7 +5,7 @@
     <div class="row w-100 shadow" style="max-width: 1000px;">
         <!-- Left Side -->
         <div class="col-md-6 d-flex flex-column justify-content-center align-items-center text-white" style="background-color: #cce6f7; padding: 60px 30px;">
-            <h4 class="fw-bold text-primary text-center">Selamat Datang di Rekrutmen Online</h4>
+            <h4 class="fw-bold text-primary text-center">Halaman Log in V-HIRE</h4>
             <h3 class="fw-bold text-primary text-center mt-2">PT VDNI</h3>
         </div>
 
@@ -49,7 +49,7 @@
                             Ingat Saya
                         </label>
                     </div>
-                    <a href="{{ route('password.request') }}" class="text-decoration-none">Lupa Kata Sandi?</a>
+                    <a href="{{ route('reset-password.index') }}" class="text-decoration-none">Lupa Kata Sandi?</a>
                 </div>
 
                 <div class="d-grid mb-3">

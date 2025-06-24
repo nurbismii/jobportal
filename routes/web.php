@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\LamaranController;
 use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\BiodataController;
 use App\Http\Controllers\PendaftaranController;
+use App\Http\Controllers\ResetPasswordController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -27,6 +28,9 @@ Route::resource('bantuan', 'App\Http\Controllers\BantuanController');
 Route::resource('pendaftaran', 'App\Http\Controllers\PendaftaranController');
 
 Route::get('konfirmasi-email-token/{token}', [PendaftaranController::class, 'konfirmasiEmailToken']);
+
+Route::resource('reset-password', 'App\Http\Controllers\ResetPasswordController');
+Route::get('reset-password-token/{token}', [ResetPasswordController::class, 'resetPassword']);
 
 // User harus login dan sudah verifikasi email untuk akses biodata dan profil
 Route::middleware(['verified.email'])->group(function () {
