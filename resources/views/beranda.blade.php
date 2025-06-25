@@ -28,7 +28,7 @@
                             <p class="mb-5 fs-5">Selamat Datang di Website Rekrutmen Resmi PT VDNI</p>
                             <div class="d-flex justify-content-center justify-content-md-start flex-shrink-0 mb-4">
                                 <a class="btn btn-light rounded-pill py-3 px-4 px-md-5 me-2" href="#"><i class="fas fa-play-circle me-2"></i> Cara penggunaan</a>
-                                <a class="btn btn-dark rounded-pill py-3 px-4 px-md-5 ms-2" href="#">Panduan Pengguna</a>
+                                <a class="btn btn-dark rounded-pill py-3 px-4 px-md-5 ms-2" href="{{ asset('pdf/MANUAL BOOK V-HIRE (1).pdf') }}" target="_blank">Panduan Pengguna</a>
                             </div>
                         </div>
                     </div>
@@ -311,8 +311,127 @@
     <!-- FAQs End -->
 </div>
 
+<!-- Modal Scrollable + TOC -->
+<div class="modal fade" id="pdfScrollModal" tabindex="-1" aria-labelledby="pdfScrollModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title me-2">PDF Viewer Lengkap</h5>
+                <button type="button" class="btn btn-sm btn-outline-secondary me-2" id="btnPrint">🖨️ Print</button>
+                <a id="btnDownload" class="btn btn-sm btn-outline-secondary me-auto" href="#" download target="_blank">⬇️ Download</a>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+            </div>
+            <div class="modal-body d-flex">
+                <!-- Sidebar TOC -->
+                <div id="pdf-toc" style="width: 250px; max-height: 80vh; overflow-y: auto;" class="pe-3 border-end"></div>
+
+                <!-- Kontainer halaman PDF -->
+                <div id="pdf-scroll-container" style="flex: 1; overflow-y: auto; max-height: 80vh;" class="ps-3">
+                    <p class="text-muted">Memuat PDF...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<!-- PDF.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<script>
+    const pdfjsLib = window['pdfjs-dist/build/pdf'];
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    function openScrollablePdfViewer(pdfUrl) {
+        const container = document.getElementById('pdf-scroll-container');
+        const tocContainer = document.getElementById('pdf-toc');
+        container.innerHTML = '<p class="text-muted">Memuat dokumen...</p>';
+        tocContainer.innerHTML = '<p class="text-muted">Memuat TOC...</p>';
+
+        // Set tombol print & download
+        document.getElementById('btnPrint').onclick = () => window.open(pdfUrl, '_blank').print();
+        document.getElementById('btnDownload').href = pdfUrl;
+
+        // Load dokumen
+        pdfjsLib.getDocument({
+            url: pdfUrl
+        }).promise.then(pdfDoc => {
+            container.innerHTML = '';
+            tocContainer.innerHTML = '';
+
+            // Render semua halaman
+            for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+                pdfDoc.getPage(pageNum).then(page => {
+                    const viewport = page.getViewport({
+                        scale: 1.2
+                    });
+
+                    const canvas = document.createElement('canvas');
+                    canvas.style.marginBottom = '20px';
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+
+                    const ctx = canvas.getContext('2d');
+                    page.render({
+                        canvasContext: ctx,
+                        viewport: viewport
+                    });
+
+                    // Tandai halaman untuk TOC scroll
+                    canvas.setAttribute('id', `page-${page.pageNumber}`);
+                    container.appendChild(canvas);
+                });
+            }
+
+            // Tampilkan TOC (outline)
+            pdfDoc.getOutline().then(outline => {
+                if (!outline) {
+                    tocContainer.innerHTML = '<p class="text-muted">Tidak ada daftar isi.</p>';
+                    return;
+                }
+
+                tocContainer.innerHTML = '<ul class="list-group list-group-flush w-100"></ul>';
+                const list = tocContainer.querySelector('ul');
+
+                outline.forEach(item => {
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item py-1 px-2';
+                    li.innerText = item.title;
+
+                    li.style.cursor = 'pointer';
+                    li.onclick = () => {
+                        if (item.dest) {
+                            pdfDoc.getDestination(item.dest).then(dest => {
+                                if (!dest) return;
+                                pdfDoc.getPageIndex(dest[0]).then(pageIndex => {
+                                    const targetCanvas = document.getElementById(`page-${pageIndex + 1}`);
+                                    if (targetCanvas) {
+                                        targetCanvas.scrollIntoView({
+                                            behavior: 'smooth'
+                                        });
+                                    }
+                                });
+                            });
+                        }
+                    };
+
+                    list.appendChild(li);
+                });
+            });
+
+        }).catch(error => {
+            container.innerHTML = `<p class="text-danger">Gagal memuat PDF: ${error.message}</p>`;
+            tocContainer.innerHTML = '';
+        });
+
+        new bootstrap.Modal(document.getElementById('pdfScrollModal')).show();
+    }
+</script>
+
+
 <script>
     function copyToClipboard(text) {
         navigator.clipboard.writeText(text).then(function() {

@@ -3,15 +3,22 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SendProsesLamaranEmail;
+use App\Models\EmailBlastLog;
 use App\Models\Lamaran;
 use App\Models\RiwayatProsesLamaran;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use RealRashid\SweetAlert\Facades\Alert;
 
 class LamaranController extends Controller
 {
     public function updateStatusMassal(Request $request)
     {
+        $limitPerJam = 50;
+        $counter = 0;
+
         $request->validate([
             'selected_ids' => 'required|array',
             'status_proses' => 'required|string'
@@ -24,6 +31,27 @@ class LamaranController extends Controller
             $lamaranId = $data->id;
             $status = $request->status_proses;
 
+            // Hitung delay berdasarkan akumulasi kirim
+            $delayJam = $this->getBatchDelayJam($counter, $limitPerJam);
+            $batchKe = $delayJam + 1;
+
+            // DB::beginTransaction();
+
+            // Simpan log email blast
+            $log = EmailBlastLog::create([
+                'user_id' => $userId,
+                'lamaran_id' => $lamaranId,
+                'status_proses' => $status,
+                'batch_ke' => $batchKe,
+                'delay_jam' => $delayJam,
+            ]);
+
+            // Kirim job dengan delay sesuai batch
+            SendProsesLamaranEmail::dispatch($userId, $status, $lamaranId, $log->id)
+                ->delay(now()->addHours($delayJam));
+
+            $counter++;
+
             $sudahAda = RiwayatProsesLamaran::where('user_id', $userId)
                 ->where('lamaran_id', $lamaranId)
                 ->where('status_proses', $status)
@@ -33,9 +61,12 @@ class LamaranController extends Controller
                 RiwayatProsesLamaran::create([
                     'user_id' => $userId,
                     'lamaran_id' => $lamaranId,
-                    'status_proses' => $status
+                    'status_proses' => $status,
+                    'tanggal_proses' => $request->tanggal_proses
                 ]);
             }
+
+            // DB::commit();
         }
 
         // Update semua yang dipilih
@@ -44,6 +75,13 @@ class LamaranController extends Controller
 
         Alert::success('Berhasil', 'Status proses berhasil diperbarui menjadi [ ' . $request->status_proses . ' ]');
         return back()->with('success', 'Status berhasil diperbarui.');
+
+        // try {
+        // } catch (Exception $e) {
+        //     DB::rollBack();
+        //     Alert::error('Gagal', 'Terjadi kesalahan');
+        //     return back();
+        // }
     }
 
     public function update(Request $request, $id)
@@ -105,5 +143,10 @@ class LamaranController extends Controller
         return response()->json([
             'message' => "Berhasil memperbarui {$label}.",
         ]);
+    }
+
+    function getBatchDelayJam($counter, $limitPerJam = 50)
+    {
+        return intdiv($counter, $limitPerJam);
     }
 }

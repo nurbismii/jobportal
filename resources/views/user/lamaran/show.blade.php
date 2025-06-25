@@ -101,13 +101,13 @@
             <!-- Timeline Proses -->
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <h4 class="fw-bold mb-4">Riwayat Proses Lamaran</h4>
+                    <h4 class="fw-bold mb-4">Status Lamaran</h4>
                     <div class="timeline">
                         @forelse($riwayat_proses as $proses)
                         <div class="timeline-item">
                             <div class="timeline-content">
                                 <div class="timeline-title">{{ $proses->status_proses }}</div>
-                                <div class="timeline-date">{{ tanggalIndo($proses->created_at->format('Y-m-d')) }}</div>
+                                <div class="timeline-date">{{ tanggalIndo($proses->tanggal_proses) }}</div>
                             </div>
                         </div>
                         @empty

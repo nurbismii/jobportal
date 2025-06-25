@@ -154,22 +154,35 @@
 </div>
 
 <form action="{{ route('lamaran.updateStatusMassal') }}" method="POST">
-    <div class="card shadow mb-3">
+    <div class="card shadow border-primary mb-3">
         <div class="card-body">
             @csrf
-            <div class="mb-3">
-                <select name="status_proses" class="form-control" required>
-                    <option value="">-- Pilih Status Baru --</option>
-                    <option value="Belum Sesuai Kriteria">Belum Sesuai Kriteria</option>
-                    <option value="Verifikasi Online">Verifikasi Online</option>
-                    <option value="Verifikasi Berkas">Verifikasi Berkas</option>
-                    <option value="Tes Kesehatan">Tes Kesehatan</option>
-                    <option value="Tes Lapangan">Tes Lapangan</option>
-                    <option value="Medical Check-Up">Medical Check-Up (MCU)</option>
-                    <option value="Induksi Safety">Induksi Safety</option>
-                    <option value="Tanda Tangan Kontrak">Tanda Tangan Kontrak</option>
-                </select>
+            <div class="row">
+                <div class="col-6">
+                    <div class="mb-3">
+                        <label for="pilih-status">Pilih Status Baru</label>
+                        <select name="status_proses" class="form-control" id="pilih-status" required>
+                            <option value="">-- Pilih Status Baru --</option>
+                            <option value="Belum Sesuai Kriteria">Belum Sesuai Kriteria</option>
+                            <option value="Verifikasi Online">Verifikasi Online</option>
+                            <option value="Verifikasi Berkas">Verifikasi Berkas</option>
+                            <option value="Tes Kesehatan">Tes Kesehatan</option>
+                            <option value="Tes Lapangan">Tes Lapangan</option>
+                            <option value="Medical Check-Up">Medical Check-Up (MCU)</option>
+                            <option value="Induksi Safety">Induksi Safety</option>
+                            <option value="Tanda Tangan Kontrak">Tanda Tangan Kontrak</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-6">
+                    <div class="mb-3">
+                        <label for="tanggal-proses">Tanggal Proses</label>
+                        <input class="form-control" type="date" name="tanggal_proses" id="tanggal-proses" required>
+                    </div>
+                </div>
             </div>
+
             <button type="submit" class="btn btn-primary mb-3">Perbarui proses lamaran</button>
         </div>
     </div>
