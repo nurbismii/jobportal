@@ -75,14 +75,24 @@ class LamaranController extends Controller
             }
 
             // Update semua yang dipilih
-            Lamaran::whereIn('id', $request->selected_ids)
-                ->update(['status_proses' => $request->status_proses]);
+            if (strtolower($request->status_proses) == 'tanda tangan kontrak' || strtolower($request->status_proses) == 'belum sesuai kriteria') {
+                Lamaran::whereIn('id', $request->selected_ids)
+                    ->update([
+                        'status_lamaran' => 0,
+                        'status_proses' => $request->status_proses,
+                    ]);
+            } else {
+                Lamaran::whereIn('id', $request->selected_ids)
+                    ->update([
+                        'status_proses' => $request->status_proses
+                    ]);
+            }
 
             Alert::success('Berhasil', 'Status proses berhasil diperbarui menjadi [ ' . $request->status_proses . ' ]');
             return back()->with('success', 'Status berhasil diperbarui.');
         } catch (Exception $e) {
             DB::rollBack();
-            
+
             Alert::error('Gagal', 'Terjadi kesalahan');
             return back();
         }
