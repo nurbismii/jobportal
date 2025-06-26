@@ -63,7 +63,7 @@
                     </div>
                 </div>
                 <div class="col py-2">
-                    <div class="card {{ $loop->first ? 'border-primary' : 'border-light' }} shadow">
+                    <div class="card {{ $loop->first ? 'border-primary shadow' : 'border-light shadow-sm' }}">
                         <div class="card-body">
                             <h4 class="card-title {{ $loop->first ? 'text-primary' : '' }}">{{ $proses->status_proses }}</h4>
                             <div class="float-right mb-3 {{ $loop->first ? 'text-primary' : '' }}">{{ tanggalIndoHari($proses->tanggal_proses) }}</div>
