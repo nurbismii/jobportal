@@ -1,16 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-
-@push('styles')
-
-<!-- Bootstrap CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<!-- Bootstrap Icons (untuk panah) -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-
-@endpush
-
 <!-- Header -->
 <div class="container-fluid bg-breadcrumb">
     <div class="container text-center py-5">
