@@ -17,21 +17,19 @@
         <tr>
             <td style="padding: 0 30px 10px 30px;">
                 <p style="font-size: 16px;">Halo <strong>{{ $user->name }}</strong>,</p>
-                <p style="font-size: 15px;">Kami ingin memberitahukan bahwa status lamaran kamu telah diperbarui. Berikut adalah detailnya:</p>
-
-                <p style="margin-bottom: 5px;"><strong>Posisi:</strong><br> {{ $lamaran->lowongan->nama_lowongan ?? 'Posisi tidak tersedia' }}</p>
-
-                <p style="margin-bottom: 5px;"><strong>Status Saat Ini:</strong></p>
-                <p style="background-color: #e9f7ef; color: #155724; padding: 10px 15px; border-radius: 6px; font-weight: bold; display: inline-block;">
-                    {{ $status }}
-                </p>
-
                 @if (!empty($pesan))
                 <div style="margin-top: 20px; font-size: 14px; white-space: pre-line; background-color: #e6f0ff; color: #004085; padding: 15px; border-left: 4px solid #015fc8; border-radius: 6px;">
                     {!! nl2br(e($pesan)) !!}
                 </div>
                 @endif
+                <p style="font-size: 15px;">Kami ingin memberitahukan bahwa status lamaran kamu telah diperbarui. Berikut adalah detailnya:</p>
 
+                <p style="margin-bottom: 5px;"><strong>Posisi:</strong><br> {{ $lamaran->lowongan->nama_lowongan ?? 'Posisi tidak tersedia' }}</p>
+
+                <p style="margin-bottom: 5px;"><strong>Status Saat Ini:</strong></p>
+                <p style="background-color: #e6f0ff; color: #004085; padding: 10px 15px; border-radius: 6px; font-weight: bold; display: inline-block;">
+                    {{ $status }}
+                </p>
 
                 <p style="margin-top: 20px;">Untuk informasi selengkapnya, silakan login ke portal rekrutmen kami.</p>
 

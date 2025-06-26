@@ -113,6 +113,52 @@ function interventionImg($dokumenFields, $biodata, $request)
     return $fileNames;
 }
 
+if (!function_exists('tanggalIndoHari')) {
+    function tanggalIndoHari($tanggal)
+    {
+        // Konversi jika format adalah timestamp (angka saja)
+        if (is_numeric($tanggal)) {
+            $tanggal = date('Y-m-d', $tanggal);
+        }
+
+        // Jika format datetime, ambil hanya bagian tanggalnya
+        if (strpos($tanggal, ' ') !== false) {
+            $tanggal = explode(' ', $tanggal)[0];
+        }
+
+        $hari = [
+            'Sunday'    => 'Minggu',
+            'Monday'    => 'Senin',
+            'Tuesday'   => 'Selasa',
+            'Wednesday' => 'Rabu',
+            'Thursday'  => 'Kamis',
+            'Friday'    => 'Jumat',
+            'Saturday'  => 'Sabtu'
+        ];
+
+        $bulan = [
+            1 => 'Januari',
+            2 => 'Februari',
+            3 => 'Maret',
+            4 => 'April',
+            5 => 'Mei',
+            6 => 'Juni',
+            7 => 'Juli',
+            8 => 'Agustus',
+            9 => 'September',
+            10 => 'Oktober',
+            11 => 'November',
+            12 => 'Desember'
+        ];
+
+        $split = explode('-', $tanggal);
+        $dateObj = DateTime::createFromFormat('Y-m-d', $tanggal);
+        $namaHari = $hari[$dateObj->format('l')];
+
+        return $namaHari . ', ' . $split[2] . ' ' . $bulan[(int)$split[1]] . ' ' . $split[0];
+    }
+}
+
 if (!function_exists('extractSimB2OnlyOCR')) {
     function extractSimB2OnlyOCR($biodata)
     {
@@ -148,7 +194,7 @@ if (!function_exists('pesanStatusLamaran')) {
     function pesanStatusLamaran($status, $tanggal_proses, $jam, $tempat)
     {
         $status = strtolower($status);
-        $tanggal = $tanggal_proses;
+        $tanggal = tanggalIndoHari($tanggal_proses);
         $jam = $jam;
         $tempat = $tempat;
 
@@ -238,24 +284,26 @@ Terima kasih
 EOT,
 
             'tanda tangan kontrak' => <<<EOT
-Selamat siang,
+PEMANGGILAN INDUKSI SAFETY & TANDA TANGAN KONTRAK
+Selamat sore,
+Bagi pelamar PT VDNI, diminta kehadirannya dalam mengikuti proses lanjutan yaitu INDUKSI SAFETY & TANDA TANGAN KONTRAK.
 
-Bagi peserta yang telah menyelesaikan tahapan sebelumnya di PT VDNI, dimohon hadir untuk proses Tanda Tangan Kontrak yang akan dilakukan pada:
+Hari/Tanggal : {$tanggal}
+Pukul        : {$jam}
+Tempat       : {$tempat}
 
-Hari/Tanggal  : {$tanggal}
-Pukul         : {$jam}
-Tempat        : {$tempat}
-Alamat        : Jl. Malaka No.25, Anduonohu, Kec. Poasia, Kota Kendari, Sulawesi Tenggara 93231
-Telepon       : (0401) 3081484
-Lokasi        : https://maps.app.goo.gl/sLt8ZDfrtNPgG9HD8?g_st=iw
+Dengan melampirkan berkas sebagai berikut:
+1. Fotocopy KTP 2 lembar
+2. Fotocopy Kartu Keluarga 1 lembar
+3. Fotocopy NPWP yang sudah dipadankan dengan NIK KTP ( WAJIB )
+4. Form biodata diri yang terlampir di email, diprint dan diisi
+5. SKCK Asli dan masih berlaku, berlogo emas timbul ( WAJIB )
+6. Fotocopy buku rekening BNI (jika ada)
 
-Membawa KTP, berpakaian rapi dan tetap menggunakan masker.
-
-PERHATIAN!
-1. Sampaikan bahwa Anda peserta MCU dari PT VDNI saat tiba di Klinik Rapha
-2. Jadwal hanya 1 hari, mohon ikuti jadwal yang ditentukan
-
-Terima kasih
+Catatan:
+- Diharapkan sudah memiliki NPWP sebelum proses tanda tangan kontrak. Pendaftaran NPWP secara online di ereg.pajak.go.id/daftar, bagi yang sudah memiliki NPWP wajib dipadankan dengan NIK KTP di web CORETAX dan cukup untuk memfotocopy 1 lembar
+- Berpakaian bebas, sopan, rapi, dan bersepatu
+- Membawa alat tulis"
 EOT,
         ];
 

@@ -3,65 +3,12 @@
 @section('content')
 
 @push('styles')
-<style>
-    .timeline {
-        position: relative;
-        padding-left: 60px;
-        counter-reset: step;
-    }
 
-    .timeline::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 28px;
-        width: 4px;
-        height: 100%;
-        background-color: #0d6efd;
-    }
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Bootstrap Icons (untuk panah) -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 
-    .timeline-item {
-        position: relative;
-        display: flex;
-        align-items: flex-start;
-        margin-bottom: 40px;
-    }
-
-    .timeline-item::before {
-        content: counter(step);
-        counter-increment: step;
-        position: absolute;
-        left: 10px;
-        top: 0;
-        width: 36px;
-        height: 36px;
-        background-color: #fff;
-        border: 3px solid #0d6efd;
-        border-radius: 50%;
-        text-align: center;
-        line-height: 30px;
-        font-weight: 600;
-        color: #0d6efd;
-        font-size: 1rem;
-        z-index: 1;
-    }
-
-    .timeline-content {
-        margin-left: 50px;
-    }
-
-    .timeline-title {
-        font-weight: 600;
-        font-size: 1.1rem;
-        margin-bottom: 4px;
-        color: #212529;
-    }
-
-    .timeline-date {
-        font-size: 0.875rem;
-        color: #6c757d;
-    }
-</style>
 @endpush
 
 <!-- Header -->
@@ -95,39 +42,47 @@
                 </div>
             </div>
 
-            <h4 class="fw-bold py-2">Status Lamaran</h4>
+            <h4 class="fw-bold py-3">📝 Status Lamaran</h4>
 
-            <!-- timeline item 1 -->
-            @forelse($riwayat_proses as $proses)
+            @forelse($riwayat_proses as $index => $proses)
+            @php
+            $collapseId = 'collapseProses' . $index;
+            @endphp
             <div class="row">
-                <!-- timeline item 1 left dot -->
                 <div class="col-auto text-center flex-column d-none d-sm-flex">
                     <div class="row h-50">
-                        <div class="col">&nbsp;</div>
+                        <div class="col border-end">&nbsp;</div>
                         <div class="col">&nbsp;</div>
                     </div>
                     <h5 class="m-2">
-                        <span class="badge bg-primary border shadow-sm">&nbsp;</span>
+                        <span class="badge rounded-pill  {{ $loop->first ? 'bg-primary' : 'bg-light' }}">&nbsp;</span>
                     </h5>
                     <div class="row h-50">
-                        <div class="col border-end border-primary">&nbsp;</div>
+                        <div class="col border-end">&nbsp;</div>
                         <div class="col">&nbsp;</div>
                     </div>
                 </div>
-                <!-- timeline item 1 event content -->
                 <div class="col py-2">
-                    <div class="card shadow">
+                    <div class="card {{ $loop->first ? 'border-primary' : 'border-light' }} shadow">
                         <div class="card-body">
-                            <div class="float-right text-muted">{{ tanggalIndo($proses->tanggal_proses) }}</div>
-                            <h4 class="card-title">{{ $proses->status_proses }}</h4>
-                            <p class="card-text">Welcome to the campus, introduction and get started with the tour.</p>
+                            <h4 class="card-title {{ $loop->first ? 'text-primary' : '' }}">{{ $proses->status_proses }}</h4>
+                            <div class="float-right mb-3 {{ $loop->first ? 'text-primary' : '' }}">{{ tanggalIndoHari($proses->tanggal_proses) }}</div>
+                            <button class="btn btn-sm {{ $loop->first ? 'btn-outline-primary ' : 'btn-outline-light text-dark' }}" type="button" data-bs-target="#detail-{{ $proses->id }}" data-bs-toggle="collapse">Lihat Detail ▼</button>
+                            <div class="collapse border" id="detail-{{ $proses->id }}">
+                                <div class="p-2 font-monospace">
+                                    {!! nl2br(e($proses->pesan)) !!}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
             @empty
-            <p class="text-muted">Belum ada riwayat proses.</p>
+            <div class="alert alert-info text-center">
+                Belum ada riwayat proses lamaran.
+            </div>
             @endforelse
+
             <!--/row-->
         </div>
     </div>

@@ -29,7 +29,7 @@ class LamaranController extends Controller
 
         $lamaran = Lamaran::with('lowongan', 'biodata')->where('biodata_id', $biodata->id)->orderBy('id', 'desc')->first();
 
-        $riwayat_proses = RiwayatProsesLamaran::where('lamaran_id', $lamaran->id)->get();
+        $riwayat_proses = RiwayatProsesLamaran::where('lamaran_id', $lamaran->id)->orderBy('created_at', 'desc')->get();
 
         return view('user.lamaran.show', compact('lamaran', 'riwayat_proses'));
     }
