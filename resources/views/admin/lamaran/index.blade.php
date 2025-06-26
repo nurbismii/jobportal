@@ -114,7 +114,7 @@
 <div class="card shadow mb-3">
     <div class="card-body">
         <form method="GET" class="row">
-            <div class="col-md-3">
+            <div class="col-md-3 mb-3">
                 <select name="status" class="form-control" onchange="this.form.submit()">
                     <option value="">-- Filter Status --</option>
                     <option value="Belum Sesuai Kriteria" {{ request('status') == 'Belum Sesuai Kriteria' ? 'selected' : '' }}>Belum Sesuai Kriteria</option>
@@ -129,14 +129,14 @@
                 </select>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-md-3 mb-3">
                 <input type="number" name="umur_min" class="form-control" placeholder="Umur Minimal" value="{{ request('umur_min') }}" onchange="this.form.submit()">
             </div>
-            <div class="col-md-3">
+            <div class="col-md-3 mb-3">
                 <input type="number" name="umur_max" class="form-control" placeholder="Umur Maksimal" value="{{ request('umur_max') }}" onchange="this.form.submit()">
             </div>
 
-            <div class="col-md-3">
+            <div class="col-md-3 mb-3">
                 <select name="pendidikan" class="form-control" onchange="this.form.submit()">
                     <option value="">-- Filter Pendidikan --</option>
                     <option value="SD 小学" {{ request('pendidikan') == 'SD 小学' ? 'selected' : '' }}>SD 小学</option>
@@ -179,6 +179,20 @@
                     <div class="mb-3">
                         <label for="tanggal-proses">Tanggal Proses</label>
                         <input class="form-control" type="date" name="tanggal_proses" id="tanggal-proses" required>
+                    </div>
+                </div>
+
+                <div class="col-6">
+                    <div class="mb-3">
+                        <label for="jam">Jam</label>
+                        <input class="form-control" type="time" name="jam" id="jam" required>
+                    </div>
+                </div>
+
+                 <div class="col-6">
+                    <div class="mb-3">
+                        <label for="tempat">Tempat</label>
+                        <input class="form-control" type="text" name="tempat" id="tempat" required>
                     </div>
                 </div>
             </div>

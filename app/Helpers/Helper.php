@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\RiwayatProsesLamaran;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
@@ -140,5 +141,124 @@ if (!function_exists('extractSimB2OnlyOCR')) {
         }
 
         return ['message' => 'Gagal menemukan file SIM B2'];
+    }
+}
+
+if (!function_exists('pesanStatusLamaran')) {
+    function pesanStatusLamaran($status, $tanggal_proses, $jam, $tempat)
+    {
+        $status = strtolower($status);
+        $tanggal = $tanggal_proses;
+        $jam = $jam;
+        $tempat = $tempat;
+
+        $templates = [
+            'verifikasi berkas' => <<<EOT
+Kepada yth,
+
+Peserta Tes Pelamar PT VIRTUE DRAGON NICKEL INDUSTRY
+
+Salam Hormat,
+
+Sehubungan dengan rekrutmen calon karyawan pada perusahaan PT VDNI, berdasarkan hasil seleksi evaluasi tahap awal Tim Rekrutmen terhadap lamaran pekerjaan saudara, dengan ini kami menyatakan telah memenuhi persyaratan administrasi.
+
+Melalui surat ini kami mengundang saudara untuk mengikuti tes evaluasi tahap lanjutan yang akan diadakan di perusahaan kami. Oleh karenanya, Saudara diharapkan hadir pada:
+
+Hari/Tanggal  : {$tanggal}
+Waktu         : {$jam}
+Tempat        : {$tempat}
+
+Dengan ini saudara diminta membawa berkas sebagai berikut:
+1. KTP (Asli dan Fotokopi 1 lembar)
+2. Fotokopi KK 1 lembar
+3. SKCK asli dan terbaru (berlogo timbul emas POLRI) - WAJIB
+4. Fotokopi SKCK terbaru 1 lembar
+5. Fotokopi Ijazah terakhir 1 lembar
+6. Fotokopi Sertifikat Vaksin 1 lembar
+7. Fotokopi NPWP yang dipadankan dengan NIK KTP 1 lembar
+8. SIM BII UMUM Asli & Fotokopi 1 lembar
+
+Berpakaian hitam putih dan tetap menggunakan masker.
+
+Demikian untuk diketahui, mohon balas pesan ini untuk konfirmasi penerimaan. Terima kasih.
+
+PERHATIAN!
+Pemanggilan resmi hanya dari email HR VDNI: vdnirekrutmen88@gmail.com
+EOT,
+
+            'tes kesehatan' => <<<EOT
+Selamat sore,
+
+Bagi pelamar PT VDNI, diminta kehadirannya untuk mengikuti proses lanjutan yaitu Tes Kesehatan yang dilaksanakan pada:
+
+Hari/Tanggal  : {$tanggal}
+Waktu         : {$jam}
+Tempat        : {$tempat}
+
+Hal-hal yang harus diperhatikan:
+- Membawa identitas masing-masing (KTP)
+- Berpakaian rapi, bersepatu, dan menggunakan masker
+EOT,
+
+            'tes lapangan' => <<<EOT
+Selamat sore,
+
+Bagi peserta yang sudah lulus tes kesehatan, selanjutnya adalah Tes Lapangan yang akan dilaksanakan pada:
+
+Hari/Tanggal  : {$tanggal}
+Pukul         : {$jam}
+Tempat        : {$tempat}
+
+Membawa berkas berikut:
+1. KTP ASLI
+2. SIM BII UMUM ASLI
+
+Wajib menggunakan sepatu
+EOT,
+
+            'medical check-up' => <<<EOT
+Selamat siang,
+
+Bagi peserta yang telah lulus interview di PT VDNI, untuk proses selanjutnya diminta mengikuti Medical Check-Up (MCU) yang dilaksanakan pada:
+
+Hari/Tanggal  : {$tanggal}
+Pukul         : {$jam}
+Tempat        : {$tempat}
+Alamat        : Jl. Malaka No.25, Anduonohu, Kec. Poasia, Kota Kendari, Sulawesi Tenggara 93231
+Telepon       : (0401) 3081484
+Lokasi        : https://maps.app.goo.gl/sLt8ZDfrtNPgG9HD8?g_st=iw
+
+Membawa KTP, berpakaian rapi dan tetap menggunakan masker.
+
+PERHATIAN!
+1. Sampaikan bahwa Anda peserta MCU dari PT VDNI saat tiba di Klinik Rapha
+2. Jadwal hanya 1 hari, mohon ikuti jadwal yang ditentukan
+
+Terima kasih
+EOT,
+
+            'tanda tangan kontrak' => <<<EOT
+Selamat siang,
+
+Bagi peserta yang telah menyelesaikan tahapan sebelumnya di PT VDNI, dimohon hadir untuk proses Tanda Tangan Kontrak yang akan dilakukan pada:
+
+Hari/Tanggal  : {$tanggal}
+Pukul         : {$jam}
+Tempat        : {$tempat}
+Alamat        : Jl. Malaka No.25, Anduonohu, Kec. Poasia, Kota Kendari, Sulawesi Tenggara 93231
+Telepon       : (0401) 3081484
+Lokasi        : https://maps.app.goo.gl/sLt8ZDfrtNPgG9HD8?g_st=iw
+
+Membawa KTP, berpakaian rapi dan tetap menggunakan masker.
+
+PERHATIAN!
+1. Sampaikan bahwa Anda peserta MCU dari PT VDNI saat tiba di Klinik Rapha
+2. Jadwal hanya 1 hari, mohon ikuti jadwal yang ditentukan
+
+Terima kasih
+EOT,
+        ];
+
+        return $templates[$status] ?? null;
     }
 }

@@ -16,72 +16,76 @@ class LamaranController extends Controller
 {
     public function updateStatusMassal(Request $request)
     {
-        $limitPerJam = 50;
-        $counter = 0;
+        try {
+            $limitPerJam = 50;
+            $counter = 0;
 
-        $request->validate([
-            'selected_ids' => 'required|array',
-            'status_proses' => 'required|string'
-        ]);
-
-        $lamaran = Lamaran::with('biodata')->whereIn('id', $request->selected_ids)->get();
-
-        foreach ($lamaran as $data) {
-            $userId = $data->biodata->user_id;
-            $lamaranId = $data->id;
-            $status = $request->status_proses;
-
-            // Hitung delay berdasarkan akumulasi kirim
-            $delayJam = $this->getBatchDelayJam($counter, $limitPerJam);
-            $batchKe = $delayJam + 1;
-
-            // DB::beginTransaction();
-
-            // Simpan log email blast
-            $log = EmailBlastLog::create([
-                'user_id' => $userId,
-                'lamaran_id' => $lamaranId,
-                'status_proses' => $status,
-                'batch_ke' => $batchKe,
-                'delay_jam' => $delayJam,
+            $request->validate([
+                'selected_ids' => 'required|array',
+                'status_proses' => 'required|string'
             ]);
 
-            // Kirim job dengan delay sesuai batch
-            SendProsesLamaranEmail::dispatch($userId, $status, $lamaranId, $log->id)
-                ->delay(now()->addHours($delayJam));
+            $lamaran = Lamaran::with('biodata')->whereIn('id', $request->selected_ids)->get();
 
-            $counter++;
+            foreach ($lamaran as $data) {
+                $userId = $data->biodata->user_id;
+                $lamaranId = $data->id;
+                $status = $request->status_proses;
 
-            $sudahAda = RiwayatProsesLamaran::where('user_id', $userId)
-                ->where('lamaran_id', $lamaranId)
-                ->where('status_proses', $status)
-                ->exists();
+                // Hitung delay berdasarkan akumulasi kirim
+                $delayJam = $this->getBatchDelayJam($counter, $limitPerJam);
+                $batchKe = $delayJam + 1;
 
-            if (!$sudahAda) {
-                RiwayatProsesLamaran::create([
+                DB::beginTransaction();
+
+                // Simpan log email blast
+                $log = EmailBlastLog::create([
                     'user_id' => $userId,
                     'lamaran_id' => $lamaranId,
                     'status_proses' => $status,
-                    'tanggal_proses' => $request->tanggal_proses
+                    'batch_ke' => $batchKe,
+                    'delay_jam' => $delayJam,
                 ]);
+
+                $pesan = pesanStatusLamaran($status, $request->tanggal_proses, $request->jam, $request->tempat);
+                // Kirim job dengan delay sesuai batch
+                SendProsesLamaranEmail::dispatch($userId, $status, $lamaranId, $log->id, $pesan)
+                    ->delay(now()->addHours($delayJam));
+
+                $counter++;
+
+                $sudahAda = RiwayatProsesLamaran::where('user_id', $userId)
+                    ->where('lamaran_id', $lamaranId)
+                    ->where('status_proses', $status)
+                    ->exists();
+
+                if (!$sudahAda) {
+                    RiwayatProsesLamaran::create([
+                        'user_id' => $userId,
+                        'lamaran_id' => $lamaranId,
+                        'status_proses' => $status,
+                        'tanggal_proses' => $request->tanggal_proses,
+                        'jam' => $request->jam,
+                        'tempat' => $request->tempat,
+                        'pesan' => $pesan
+                    ]);
+                }
+
+                DB::commit();
             }
 
-            // DB::commit();
+            // Update semua yang dipilih
+            Lamaran::whereIn('id', $request->selected_ids)
+                ->update(['status_proses' => $request->status_proses]);
+
+            Alert::success('Berhasil', 'Status proses berhasil diperbarui menjadi [ ' . $request->status_proses . ' ]');
+            return back()->with('success', 'Status berhasil diperbarui.');
+        } catch (Exception $e) {
+            DB::rollBack();
+            
+            Alert::error('Gagal', 'Terjadi kesalahan');
+            return back();
         }
-
-        // Update semua yang dipilih
-        Lamaran::whereIn('id', $request->selected_ids)
-            ->update(['status_proses' => $request->status_proses]);
-
-        Alert::success('Berhasil', 'Status proses berhasil diperbarui menjadi [ ' . $request->status_proses . ' ]');
-        return back()->with('success', 'Status berhasil diperbarui.');
-
-        // try {
-        // } catch (Exception $e) {
-        //     DB::rollBack();
-        //     Alert::error('Gagal', 'Terjadi kesalahan');
-        //     return back();
-        // }
     }
 
     public function update(Request $request, $id)

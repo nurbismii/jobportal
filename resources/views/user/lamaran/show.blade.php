@@ -92,30 +92,43 @@
                         <span class="badge bg-secondary">Tidak Aktif</span>
                         @endif
                     </p>
-                    <p class="card-text text-muted flex-grow-1" style="max-height: 90px; overflow: hidden;">
-                        {!! $lamaran->lowongan->kualifikasi !!}
-                    </p>
                 </div>
             </div>
 
-            <!-- Timeline Proses -->
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h4 class="fw-bold mb-4">Status Lamaran</h4>
-                    <div class="timeline">
-                        @forelse($riwayat_proses as $proses)
-                        <div class="timeline-item">
-                            <div class="timeline-content">
-                                <div class="timeline-title">{{ $proses->status_proses }}</div>
-                                <div class="timeline-date">{{ tanggalIndo($proses->tanggal_proses) }}</div>
-                            </div>
+            <h4 class="fw-bold py-2">Status Lamaran</h4>
+
+            <!-- timeline item 1 -->
+            @forelse($riwayat_proses as $proses)
+            <div class="row">
+                <!-- timeline item 1 left dot -->
+                <div class="col-auto text-center flex-column d-none d-sm-flex">
+                    <div class="row h-50">
+                        <div class="col">&nbsp;</div>
+                        <div class="col">&nbsp;</div>
+                    </div>
+                    <h5 class="m-2">
+                        <span class="badge bg-primary border shadow-sm">&nbsp;</span>
+                    </h5>
+                    <div class="row h-50">
+                        <div class="col border-end border-primary">&nbsp;</div>
+                        <div class="col">&nbsp;</div>
+                    </div>
+                </div>
+                <!-- timeline item 1 event content -->
+                <div class="col py-2">
+                    <div class="card shadow">
+                        <div class="card-body">
+                            <div class="float-right text-muted">{{ tanggalIndo($proses->tanggal_proses) }}</div>
+                            <h4 class="card-title">{{ $proses->status_proses }}</h4>
+                            <p class="card-text">Welcome to the campus, introduction and get started with the tour.</p>
                         </div>
-                        @empty
-                        <p class="text-muted">Belum ada riwayat proses.</p>
-                        @endforelse
                     </div>
                 </div>
             </div>
+            @empty
+            <p class="text-muted">Belum ada riwayat proses.</p>
+            @endforelse
+            <!--/row-->
         </div>
     </div>
 </div>

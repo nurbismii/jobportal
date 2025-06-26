@@ -17,13 +17,15 @@ class SendProsesLamaranEmail implements ShouldQueue
     public $status;
     public $lamaranId;
     public $logId;
+    public $pesan;
 
-    public function __construct($userId, $status, $lamaranId, $logId)
+    public function __construct($userId, $status, $lamaranId, $logId, $pesan)
     {
         $this->user = $userId; // simpan ID saja
         $this->status = $status;
         $this->lamaranId = $lamaranId;
         $this->logId = $logId;
+        $this->pesan = $pesan;
     }
 
     public function handle()
@@ -32,7 +34,7 @@ class SendProsesLamaranEmail implements ShouldQueue
             $user = \App\Models\User::findOrFail($this->user);
             $lamaran = \App\Models\Lamaran::with('lowongan')->findOrFail($this->lamaranId);
 
-            Mail::to($user->email)->send(new \App\Mail\StatusLamaran($user, $this->status, $lamaran));
+            Mail::to($user->email)->send(new \App\Mail\StatusLamaran($user, $this->status, $lamaran, $this->pesan));
 
             \App\Models\EmailBlastLog::find($this->logId)->update([
                 'status_kirim' => 'berhasil',

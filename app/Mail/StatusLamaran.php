@@ -16,16 +16,18 @@ class StatusLamaran extends Mailable
     public $user;
     public $status;
     public $lamaran;
+    public $pesan;
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct(User $user, string $status, Lamaran $lamaran)
+    public function __construct(User $user, string $status, Lamaran $lamaran, string $pesan)
     {
         $this->user = $user;
         $this->status = $status;
         $this->lamaran = $lamaran;
+        $this->pesan = $pesan;
     }
 
     /**
@@ -42,7 +44,8 @@ class StatusLamaran extends Mailable
             ->with([
                 'user' => $this->user,
                 'status' => $this->status,
-                'lamaran' => $this->lamaran
+                'lamaran' => $this->lamaran,
+                'pesan' => $this->pesan
             ]);
     }
 }

@@ -26,6 +26,13 @@
                     {{ $status }}
                 </p>
 
+                @if (!empty($pesan))
+                <div style="margin-top: 20px; font-size: 14px; white-space: pre-line; background-color: #e6f0ff; color: #004085; padding: 15px; border-left: 4px solid #015fc8; border-radius: 6px;">
+                    {!! nl2br(e($pesan)) !!}
+                </div>
+                @endif
+
+
                 <p style="margin-top: 20px;">Untuk informasi selengkapnya, silakan login ke portal rekrutmen kami.</p>
 
                 <div style="text-align: center; margin: 20px 0;">
