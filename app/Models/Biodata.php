@@ -46,6 +46,6 @@ class Biodata extends Model
     public function getRiwayatInHris()
     {
         return $this->hasMany(Employee::class, 'no_ktp', 'no_ktp')
-            ->select(['no_ktp', 'no_ktp as no_ktp_hris', 'nama_karyawan', 'tgl_resign', 'alasan_resign', 'posisi']);
+            ->select(['no_ktp', 'no_ktp as no_ktp_hris', 'nama_karyawan', 'tgl_resign', 'alasan_resign', 'posisi', 'status_resign']);
     }
 }

@@ -463,8 +463,9 @@ return $order[$item->level_sp] ?? 99;
                         <thead class="thead-dark text-center">
                             <tr>
                                 <th>Nama</th>
-                                <th>Tanggal Resign</th>
-                                <th>Alasan Resign</th>
+                                <th>Tanggal</th>
+                                <th>Kategori</th>
+                                <th>Alasan</th>
                                 <th>Posisi</th>
                             </tr>
                         </thead>
@@ -473,6 +474,7 @@ return $order[$item->level_sp] ?? 99;
                             <tr>
                                 <td>{{ $riwayat->nama_karyawan }}</td>
                                 <td class="text-center">{{ tanggalIndo($riwayat->tgl_resign) }}</td>
+                                <td>{{ $riwayat->status_resign }}</td>
                                 <td>{{ $riwayat->alasan_resign }}</td>
                                 <td>{{ $riwayat->posisi }}</td>
                             </tr>

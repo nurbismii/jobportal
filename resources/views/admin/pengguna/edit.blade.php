@@ -151,13 +151,48 @@
                                 <span class="text-danger">*</span>
                             </label>
                             <select name="jenis_kelamin" id="jenis_kelamin" class="form-control" required>
-                                @if($biodata)
-                                <option value="{{ $biodata->jenis_kelamin }}">{{ $biodata->jenis_kelamin == 'L' ? 'Laki-Laki' : 'Perempuan' }}</option>
+                                @php
+                                    $jenisKelaminList = [
+                                        'M 男' => 'Laki-laki 男',
+                                        'F 女' => 'Perempuan 女',
+                                    ];
+                                    $selected = $biodata->jenis_kelamin ?? '';
+                                @endphp
+                                @if($selected)
+                                    <option value="{{ $selected }}">{{ $jenisKelaminList[$selected] }}</option>
                                 @else
-                                <option value="">Pilih jenis kelamin</option>
+                                    <option value="">Pilih jenis kelamin</option>
                                 @endif
-                                <option value="L">Laki-laki</option>
-                                <option value="P">Perempuan</option>
+                                @foreach($jenisKelaminList as $key => $label)
+                                    @if($key != $selected)
+                                        <option value="{{ $key }}">{{ $label }}</option>
+                                    @endif
+                                @endforeach
+                            </select>
+                        </div>
+
+                         <div class="col-md-6 mb-3">
+                            <label for="agama">Agama
+                                <span class="text-danger">*</span>
+                            </label>
+                            <select name="agama" id="agama" class="form-control" required>
+                                @php
+                                    $agamaOptions = [
+                                    'SD 小学' => 'SD 小学',
+                                    'SMP 初中' => 'SMP 初中',
+                                    'SMA 高中' => 'SMA 高中',
+                                    'SMK 高中' => 'SMK 高中',
+                                    'D3 大专三年' => 'D3 大专三年',
+                                    'D4 大专三年' => 'D4 大专三年',
+                                    'S1 本科' => 'S1 本科',
+                                    'S2 研究生' => 'S2 研究生',
+                                ];
+                                    $selectedAgama = $biodata->agama ?? '';
+                                @endphp
+                                <option value="">Pilih agama</option>
+                                @foreach($agamaOptions as $agama)
+                                    <option value="{{ $agama }}" {{ $selectedAgama === $agama ? 'selected' : '' }}>{{ $agama }}</option>
+                                @endforeach
                             </select>
                         </div>
                     </div>
@@ -280,15 +315,20 @@
                                 <span class="text-danger">*</span>
                             </label>
                             <select name="golongan_darah" id="" class="form-control" required>
-                                @if($biodata)
-                                <option value="{{ $biodata->golongan_darah }}">{{ $biodata->golongan_darah }}</option>
+                                @php
+                                    $golonganDarahList = ['A 型', 'B 型', 'O 型', 'AB 型'];
+                                    $selected = $biodata->golongan_darah ?? '';
+                                @endphp
+                                @if($selected)
+                                    <option value="{{ $selected }}">{{ $selected }}</option>
                                 @else
-                                <option value="">Pilih golongan darah</option>
+                                    <option value="">Pilih golongan darah</option>
                                 @endif
-                                <option value="A">A</option>
-                                <option value="B">B</option>
-                                <option value="O">O</option>
-                                <option value="AB">AB</option>
+                                @foreach($golonganDarahList as $gol)
+                                    @if($gol != $selected)
+                                        <option value="{{ $gol }}">{{ $gol }}</option>
+                                    @endif
+                                @endforeach
                             </select>
                         </div>
                     </div>
@@ -314,20 +354,29 @@
                                 <span class="text-danger">*</span>
                             </label>
                             <select class="form-control" name="pendidikan_terakhir" required>
-                                @if($biodata)
-                                <option value="{{ $biodata->pendidikan_terakhir }}">{{ $biodata->pendidikan_terakhir }}</option>
+                                @php
+                                    $pendidikanList = [
+                                    'SD 小学' => 'SD 小学',
+                                    'SMP 初中' => 'SMP 初中',
+                                    'SMA 高中' => 'SMA 高中',
+                                    'SMK 高中' => 'SMK 高中',
+                                    'D3 大专三年' => 'D3 大专三年',
+                                    'D4 大专三年' => 'D4 大专三年',
+                                    'S1 本科' => 'S1 本科',
+                                    'S2 研究生' => 'S2 研究生',
+                                ];
+                                    $selected = $biodata->pendidikan_terakhir ?? '';
+                                @endphp
+                                @if($selected)
+                                    <option value="{{ $selected }}">{{ $selected }}</option>
                                 @else
-                                <option value="">Pilih pendidikan terakhir</option>
+                                    <option value="">Pilih pendidikan terakhir</option>
                                 @endif
-                                <option value="SD">SD</option>
-                                <option value="SMP">SMP</option>
-                                <option value="SMA">SMA</option>
-                                <option value="SMK">SMK</option>
-                                <option value="D3">D3</option>
-                                <option value="D4">D4</option>
-                                <option value="S1">S1</option>
-                                <option value="S2">S2</option>
-                                <option value="S3">S3</option>
+                                @foreach($pendidikanList as $pendidikan)
+                                    @if($pendidikan != $selected)
+                                        <option value="{{ $pendidikan }}">{{ $pendidikan }}</option>
+                                    @endif
+                                @endforeach
                             </select>
                         </div>
                     </div>
@@ -400,16 +449,23 @@
                             <label for="status_pernikahan">Status pernikahan
                                 <span class="text-danger">*</span>
                             </label>
-                            <select name="status_pernikahan" class="form-control" id="status_pernikahan" required>
-                                @if($biodata)
-                                <option value="{{ $biodata->status_pernikahan }}">{{ $biodata->status_pernikahan }}</option>
-                                @else
+                            @php
+                                $statusOptions = [
+                                    'Belum Kawin' => 'Belum Kawin',
+                                    'Kawin' => 'Kawin',
+                                    'Cerai Hidup' => 'Cerai Hidup',
+                                    'Cerai Mati' => 'Cerai Mati'
+                                ];
+                                $selectedStatus = $biodata->status_pernikahan ?? '';
+                            @endphp
+                            <select name="status_pernikahan" class="form-select" id="status_pernikahan" required>
                                 <option value="">Pilih status pernikahan</option>
+                                @if($selectedStatus && !array_key_exists($selectedStatus, $statusOptions))
+                                    <option value="{{ $selectedStatus }}" selected>{{ $selectedStatus }}</option>
                                 @endif
-                                <option value="Belum Kawin">Belum Kawin</option>
-                                <option value="Kawin">Kawin</option>
-                                <option value="Cerai Hidup">Cerai Hidup</option>
-                                <option value="Cerai Mati">Cerai Mati</option>
+                                @foreach($statusOptions as $value => $label)
+                                    <option value="{{ $value }}" {{ $selectedStatus === $value ? 'selected' : '' }}>{{ $label }}</option>
+                                @endforeach
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
@@ -473,15 +529,20 @@
                                 <span class="text-danger">*</span>
                             </label>
                             <select name="status_hubungan" id="status_hubungan" class="form-control" required>
-                                @if($biodata)
-                                <option value="{{ $biodata->status_hubungan }}">{{ $biodata->status_hubungan }}</option>
+                                @php
+                                    $statusList = ['Orang Tua', 'Saudara', 'Sepupu', 'Teman Dekat'];
+                                    $selected = $biodata->status_hubungan ?? '';
+                                @endphp
+                                @if($selected)
+                                    <option value="{{ $selected }}">{{ $selected }}</option>
                                 @else
-                                <option value="">Pilih status hubungan</option>
+                                    <option value="">Pilih status hubungan</option>
                                 @endif
-                                <option value="Orang Tua">Orang Tua</option>
-                                <option value="Saudara">Saudara</option>
-                                <option value="Sepupu">Sepupu</option>
-                                <option value="Teman Dekat">Teman Dekat</option>
+                                @foreach($statusList as $status)
+                                    @if($status != $selected)
+                                        <option value="{{ $status }}">{{ $status }}</option>
+                                    @endif
+                                @endforeach
                             </select>
                         </div>
                     </div>
@@ -492,9 +553,19 @@
                                 <span class="text-danger">*</span>
                             </label>
                             <select name="status_akun" id="status_akun" class="form-control" required>
-                                <option value="{{ $pengguna->status_akun }}">{{ $pengguna->status_akun == 0 ? 'Tidak aktif' : 'Aktif' }}</option>
-                                <option value="0">Tidak aktif</option>
-                                <option value="1">Aktif</option>
+                                @php
+                                    $statusOptions = [
+                                        0 => 'Tidak aktif',
+                                        1 => 'Aktif'
+                                    ];
+                                    $currentStatus = $pengguna->status_akun;
+                                @endphp
+                                <option value="{{ $currentStatus }}">{{ $statusOptions[$currentStatus] }}</option>
+                                @foreach($statusOptions as $value => $label)
+                                    @if($value != $currentStatus)
+                                        <option value="{{ $value }}">{{ $label }}</option>
+                                    @endif
+                                @endforeach
                             </select>
                         </div>
                     </div>

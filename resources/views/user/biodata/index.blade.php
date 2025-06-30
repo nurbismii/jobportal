@@ -178,13 +178,17 @@
                                 <span class="text-danger">*</span>
                             </label>
                             <select name="jenis_kelamin" id="jenis_kelamin" class="form-select" required>
-                                @if($biodata)
-                                <option value="{{ $biodata->jenis_kelamin }}">{{ $biodata->jenis_kelamin == 'L' ? 'Laki-Laki' : 'Perempuan' }}</option>
-                                @else
+                                @php
+                                    $genderOptions = [
+                                        'M 男' => 'Laki-laki 男',
+                                        'F 女' => 'Perempuan 女'
+                                    ];
+                                    $selectedGender = $biodata->jenis_kelamin ?? '';
+                                @endphp
                                 <option value="">Pilih jenis kelamin</option>
-                                @endif
-                                <option value="M 男">Laki-laki</option>
-                                <option value="F 女">Perempuan</option>
+                                @foreach($genderOptions as $value => $label)
+                                    <option value="{{ $value }}" {{ $selectedGender === $value ? 'selected' : '' }}>{{ $label }}</option>
+                                @endforeach
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
@@ -462,16 +466,23 @@
                             <label for="status_pernikahan">Status pernikahan
                                 <span class="text-danger">*</span>
                             </label>
+                            @php
+                                $statusOptions = [
+                                    'Belum Kawin' => 'Belum Kawin',
+                                    'Kawin' => 'Kawin',
+                                    'Cerai Hidup' => 'Cerai Hidup',
+                                    'Cerai Mati' => 'Cerai Mati'
+                                ];
+                                $selectedStatus = $biodata->status_pernikahan ?? '';
+                            @endphp
                             <select name="status_pernikahan" class="form-select" id="status_pernikahan" required>
-                                @if($biodata)
-                                <option value="{{ $biodata->status_pernikahan }}">{{ $biodata->status_pernikahan }}</option>
-                                @else
                                 <option value="">Pilih status pernikahan</option>
+                                @if($selectedStatus && !array_key_exists($selectedStatus, $statusOptions))
+                                    <option value="{{ $selectedStatus }}" selected>{{ $selectedStatus }}</option>
                                 @endif
-                                <option value="Belum Kawin">Belum Kawin</option>
-                                <option value="Kawin">Kawin</option>
-                                <option value="Cerai Hidup">Cerai Hidup</option>
-                                <option value="Cerai Mati">Cerai Mati</option>
+                                @foreach($statusOptions as $value => $label)
+                                    <option value="{{ $value }}" {{ $selectedStatus === $value ? 'selected' : '' }}>{{ $label }}</option>
+                                @endforeach
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
