@@ -163,7 +163,13 @@
                             <label>No Telp
                                 <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="no_telp" class="form-control" value="{{ $biodata->no_telp ?? '' }}" required>
+                            <input type="tel"
+                                name="no_telp"
+                                class="form-control"
+                                value="{{ $biodata->no_telp ?? '' }}"
+                                pattern="^(?:\+62|62|0)[2-9][0-9]{7,11}$"
+                                title="Masukkan nomor telepon Indonesia yang valid (misalnya 08123456789 atau +628123456789)"
+                                required>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label>No Kartu Keluarga
@@ -179,15 +185,15 @@
                             </label>
                             <select name="jenis_kelamin" id="jenis_kelamin" class="form-select" required>
                                 @php
-                                    $genderOptions = [
-                                        'M 男' => 'Laki-laki 男',
-                                        'F 女' => 'Perempuan 女'
-                                    ];
-                                    $selectedGender = $biodata->jenis_kelamin ?? '';
+                                $genderOptions = [
+                                'M 男' => 'Laki-laki 男',
+                                'F 女' => 'Perempuan 女'
+                                ];
+                                $selectedGender = $biodata->jenis_kelamin ?? '';
                                 @endphp
                                 <option value="">Pilih jenis kelamin</option>
                                 @foreach($genderOptions as $value => $label)
-                                    <option value="{{ $value }}" {{ $selectedGender === $value ? 'selected' : '' }}>{{ $label }}</option>
+                                <option value="{{ $value }}" {{ $selectedGender === $value ? 'selected' : '' }}>{{ $label }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -204,19 +210,19 @@
                             </label>
                             <select name="agama" id="agama" class="form-select" required>
                                 @php
-                                    $agamaOptions = [
-                                        'ISLAM 伊斯兰教',
-                                        'KRISTEN PROTESTAN 基督教新教',
-                                        'KRISTEN KATHOLIK 天主教徒',
-                                        'BUDHA 佛教',
-                                        'HINDU 印度教',
-                                        'KHONGHUCU 儒教',
-                                    ];
-                                    $selectedAgama = $biodata->agama ?? '';
+                                $agamaOptions = [
+                                'ISLAM 伊斯兰教',
+                                'KRISTEN PROTESTAN 基督教新教',
+                                'KRISTEN KATHOLIK 天主教徒',
+                                'BUDHA 佛教',
+                                'HINDU 印度教',
+                                'KHONGHUCU 儒教',
+                                ];
+                                $selectedAgama = $biodata->agama ?? '';
                                 @endphp
                                 <option value="">Pilih agama</option>
                                 @foreach($agamaOptions as $agama)
-                                    <option value="{{ $agama }}" {{ $selectedAgama === $agama ? 'selected' : '' }}>{{ $agama }}</option>
+                                <option value="{{ $agama }}" {{ $selectedAgama === $agama ? 'selected' : '' }}>{{ $agama }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -347,17 +353,17 @@
                             </label>
                             <select name="golongan_darah" id="" class="form-select" required>
                                 @php
-                                    $golonganOptions = ['A 型', 'B 型', 'O 型', 'AB 型'];
-                                    $selectedGolongan = $biodata->golongan_darah ?? '';
+                                $golonganOptions = ['A 型', 'B 型', 'O 型', 'AB 型'];
+                                $selectedGolongan = $biodata->golongan_darah ?? '';
                                 @endphp
                                 <option value="">Pilih golongan darah</option>
                                 @if($selectedGolongan && in_array($selectedGolongan, $golonganOptions))
-                                    <option value="{{ $selectedGolongan }}" selected>{{ $selectedGolongan }}</option>
+                                <option value="{{ $selectedGolongan }}" selected>{{ $selectedGolongan }}</option>
                                 @endif
                                 @foreach($golonganOptions as $golongan)
-                                    @if($golongan !== $selectedGolongan)
-                                        <option value="{{ $golongan }}">{{ $golongan }}</option>
-                                    @endif
+                                @if($golongan !== $selectedGolongan)
+                                <option value="{{ $golongan }}">{{ $golongan }}</option>
+                                @endif
                                 @endforeach
                             </select>
                         </div>
@@ -386,22 +392,22 @@
                                 <span class="text-danger">*</span>
                             </label>
                             @php
-                                $pendidikanOptions = [
-                                    'SD 小学' => 'SD 小学',
-                                    'SMP 初中' => 'SMP 初中',
-                                    'SMA 高中' => 'SMA 高中',
-                                    'SMK 高中' => 'SMK 高中',
-                                    'D3 大专三年' => 'D3 大专三年',
-                                    'D4 大专三年' => 'D4 大专三年',
-                                    'S1 本科' => 'S1 本科',
-                                    'S2 研究生' => 'S2 研究生',
-                                ];
-                                $selectedPendidikan = $biodata->pendidikan_terakhir ?? '';
+                            $pendidikanOptions = [
+                            'SD 小学' => 'SD 小学',
+                            'SMP 初中' => 'SMP 初中',
+                            'SMA 高中' => 'SMA 高中',
+                            'SMK 高中' => 'SMK 高中',
+                            'D3 大专三年' => 'D3 大专三年',
+                            'D4 大专三年' => 'D4 大专三年',
+                            'S1 本科' => 'S1 本科',
+                            'S2 研究生' => 'S2 研究生',
+                            ];
+                            $selectedPendidikan = $biodata->pendidikan_terakhir ?? '';
                             @endphp
                             <select class="form-select" name="pendidikan_terakhir" required>
                                 <option value="">Pilih pendidikan terakhir</option>
                                 @foreach($pendidikanOptions as $value => $label)
-                                    <option value="{{ $value }}" {{ $selectedPendidikan === $value ? 'selected' : '' }}>{{ $label }}</option>
+                                <option value="{{ $value }}" {{ $selectedPendidikan === $value ? 'selected' : '' }}>{{ $label }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -467,21 +473,21 @@
                                 <span class="text-danger">*</span>
                             </label>
                             @php
-                                $statusOptions = [
-                                    'Belum Kawin' => 'Belum Kawin',
-                                    'Kawin' => 'Kawin',
-                                    'Cerai Hidup' => 'Cerai Hidup',
-                                    'Cerai Mati' => 'Cerai Mati'
-                                ];
-                                $selectedStatus = $biodata->status_pernikahan ?? '';
+                            $statusOptions = [
+                            'Belum Kawin' => 'Belum Kawin',
+                            'Kawin' => 'Kawin',
+                            'Cerai Hidup' => 'Cerai Hidup',
+                            'Cerai Mati' => 'Cerai Mati'
+                            ];
+                            $selectedStatus = $biodata->status_pernikahan ?? '';
                             @endphp
                             <select name="status_pernikahan" class="form-select" id="status_pernikahan" required>
                                 <option value="">Pilih status pernikahan</option>
                                 @if($selectedStatus && !array_key_exists($selectedStatus, $statusOptions))
-                                    <option value="{{ $selectedStatus }}" selected>{{ $selectedStatus }}</option>
+                                <option value="{{ $selectedStatus }}" selected>{{ $selectedStatus }}</option>
                                 @endif
                                 @foreach($statusOptions as $value => $label)
-                                    <option value="{{ $value }}" {{ $selectedStatus === $value ? 'selected' : '' }}>{{ $label }}</option>
+                                <option value="{{ $value }}" {{ $selectedStatus === $value ? 'selected' : '' }}>{{ $label }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -532,7 +538,13 @@
                         <label>No telepon
                             <span class="text-danger">*</span>
                         </label>
-                        <input type="text" name="no_telp_darurat" class="form-control" value="{{ $biodata->no_telepon_darurat ?? '' }}" required>
+                        <input type="tel"
+                            name="no_telp_darurat"
+                            class="form-control"
+                            value="{{ $biodata->no_telepon_darurat ?? '' }}"
+                            pattern="^(?:\+62|62|0)[2-9][0-9]{7,11}$"
+                            title="Masukkan nomor telepon Indonesia yang valid (misalnya 08123456789 atau +628123456789)"
+                            required>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label>Status hubungan

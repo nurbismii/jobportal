@@ -4,15 +4,28 @@
 
 @push('styles')
 <style>
-    .hover-putih li {
-        color: #787878;
-        transition: color 0.3s ease;
+    .service-item:hover {
+        background-color: #007bff;
+        color: #fff;
     }
 
-    .service-item:hover .hover-putih li {
-        color: #ffffff;
+    .service-item:hover *:not(.btn):not(.btn *) {
+        color: #fff !important;
+    }
+
+    .service-item .btn {
+        background-color: #fff;
+        color: #007bff;
+        border: 2px solid #007bff;
+        transition: all 0.3s ease;
+    }
+
+    .service-item .btn:hover {
+        background-color: #007bff;
+        color: #fff;
     }
 </style>
+
 @endpush
 
 <!-- Carousel Start -->
@@ -84,8 +97,8 @@
                             </div>
 
                             <div class="d-flex justify-content-end gap-2 mt-auto pt-3">
-                                <a class="btn btn-primary rounded-pill py-2 px-3" href="{{ route('lowongan-kerja.show', $lowongan->id) }}">Lamar</a>
-                                <a class="btn btn-primary rounded-pill py-2 px-3" href="javascript:void(0)" onclick="copyToClipboard('{{ $shareUrl }}')">Bagikan</a>
+                                <a class="btn btn-primary btn-sm rounded-pill py-2 px-3" href="{{ route('lowongan-kerja.show', $lowongan->id) }}">Lamar</a>
+                                <a class="btn btn-primary btn-sm rounded-pill py-2 px-3" href="javascript:void(0)" onclick="copyToClipboard('{{ $shareUrl }}')">Bagikan</a>
                             </div>
                         </div>
                     </div>
@@ -188,7 +201,11 @@
                 <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
                     <div class="blog-item">
                         <div class="blog-img">
+                            @if($pengumuman->thumbnail)
+                            <img src="{{ asset('thumbnail/' . $pengumuman->thumbnail) }}" class="img-fluid rounded-top w-100" alt="">
+                            @else
                             <img src="{{ asset('img/megapone-loker.jpg') }}" class="img-fluid rounded-top w-100" alt="">
+                            @endif
                             <div class="blog-categiry py-2 px-4">
                                 <span>Pengumuman</span>
                             </div>

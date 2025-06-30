@@ -172,7 +172,7 @@ if (!function_exists('extractSimB2OnlyOCR')) {
             )->post('https://api.ocr.space/parse/image', [
                 'apikey' => 'K82052672988957',
                 'language' => 'eng',
-                'OCREngine' => '2',
+                'OCREngine' => '1',
                 'scale' => 'true',
                 'detectOrientation' => 'true',
                 'isOverlayRequired' => 'false',

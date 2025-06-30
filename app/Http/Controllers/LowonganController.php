@@ -49,7 +49,7 @@ class LowonganController extends Controller
             if (Cache::has($resetCooldownKey)) {
                 $secondsLeft = Cache::get($resetCooldownKey) - time();
                 if ($secondsLeft > 0) {
-                    Alert::warning('Tunggu dulu', "Anda bisa reset OCR lagi setelah $secondsLeft detik.");
+                    Alert::warning('Tunggu dulu', "Anda bisa memperbarui lagi setelah $secondsLeft detik.");
                     return redirect()->back();
                 }
             }
@@ -74,7 +74,7 @@ class LowonganController extends Controller
         if ($lowongan->status_sim_b2 == $aktif) {
 
             if (!$biodata->ocr_sim_b2) {
-                Alert::info('Opss!', 'Untuk lamar pekerjaan ini silakan upload SIM B2 Umum kamu dulu agar bisa diproses OCR.');
+                Alert::info('Opss!', 'Untuk melamar lowongan ini, silakan upload foto SIM B II Umum terlebih dahulu.');
                 return redirect()->route('biodata.index');
             }
 
