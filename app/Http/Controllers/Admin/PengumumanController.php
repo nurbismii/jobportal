@@ -27,28 +27,68 @@ class PengumumanController extends Controller
 
     public function store(Request $request)
     {
-
         if ($request->hasFile('thumbnail')) {
-
             $file = $request->file('thumbnail');
-            $path = public_path('pengumuman' . '/' . date('Ymd'));
-            $fileName = $file->getClientOriginalName();
-            $savePath = $path . '/' . $fileName;
+            $path = public_path('thumbnail');
+            if (!file_exists($path)) {
+                mkdir($path, 0777, true);
+            }
+            $fileName = date('Ymd') . '-' . $file->getClientOriginalName();
+            $file->move($path, $fileName);
         }
 
         Pengumuman::create([
             'pengumuman' => $request->pengumuman,
-            'thumbnail' => $savePath ?? null,
+            'thumbnail' => $fileName,
             'keterangan' => $request->keterangan
         ]);
 
         Alert::success('Berhasil', 'Pengumuman berhasil dibuat');
-        return redirect()->route('pengumuman.index');
+        return redirect()->route('pengumumans.index');
     }
 
     public function edit($id)
     {
         $pengumuman = Pengumuman::where('id', $id)->first();
         return view('admin.pengumuman.edit', compact('pengumuman'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $pengumuman = Pengumuman::findOrFail($id);
+        $pengumuman->pengumuman = $request->pengumuman;
+        $pengumuman->keterangan = $request->keterangan;
+
+        if ($request->hasFile('thumbnail')) {
+            $oldFile = public_path('thumbnail/' . $pengumuman->thumbnail);
+            if ($pengumuman->thumbnail && file_exists($oldFile)) {
+                unlink($oldFile);
+            }
+
+            $file = $request->file('thumbnail');
+            $path = public_path('thumbnail');
+            if (!file_exists($path)) {
+                mkdir($path, 0777, true);
+            }
+            $fileName = date('Ymd') . '-' . $file->getClientOriginalName();
+            $file->move($path, $fileName);
+            $pengumuman->thumbnail = $fileName;
+        }
+
+        $pengumuman->save();
+        Alert::success('Berhasil', 'Pengumuman berhasil diperbarui');
+        return redirect()->route('pengumumans.index');
+    }
+
+    public function destroy($id)
+    {
+        $pengumuman = Pengumuman::findOrFail($id);
+        if ($pengumuman->thumbnail && file_exists($pengumuman->thumbnail)) {
+            unlink($pengumuman->thumbnail);
+        }
+        $pengumuman->delete();
+
+        Alert::success('Berhasil', 'Pengumuman berhasil dihapus');
+        return redirect()->route('pengumumans.index');
     }
 }

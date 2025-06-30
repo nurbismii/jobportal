@@ -17,8 +17,9 @@
         <h6 class="m-0 font-weight-bold text-primary">Form Pengumuman</h6>
     </div>
     <div class="card-body">
-        <form action="{{ route('pengumumans.store') }}" method="POST">
+        <form action="{{ route('pengumumans.update', $pengumuman->id) }}" method="POST" enctype="multipart/form-data">
             @csrf
+            {{ method_field('patch') }}
             <div class="row g-3">
                 <div class="col-md-6 mb-3">
                     <label for="pengumuman">Pengumuman
@@ -27,8 +28,8 @@
                     <input type="text" name="pengumuman" id="pengumuman" class="form-control" value="{{ $pengumuman->pengumuman }}" required>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label for="status-sim">Thumbnail</label>
-                    <input type="file" name="thumbnail" class="form-control-file" value="{{ $pengumuman->thumbail }}">
+                    <label for="thumbnail">Thumbnail</label>
+                    <input type="file" name="thumbnail" class="form-control-file" accept=".png, .jpeg, .jpg" value="{{ $pengumuman->thumbnail }}">
                 </div>
             </div>
             <div class="row g-3">

@@ -23,7 +23,11 @@
             <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
                 <div class="blog-item">
                     <div class="blog-img">
+                        @if($pengumuman->thumbnail)
+                        <img src="{{ asset('thumbnail/' . $pengumuman->thumbnail) }}" class="img-fluid rounded-top w-100" alt="">
+                        @else
                         <img src="{{ asset('img/megapone-loker.jpg') }}" class="img-fluid rounded-top w-100" alt="">
+                        @endif
                         <div class="blog-categiry py-2 px-4">
                             <span>Pengumuman</span>
                         </div>

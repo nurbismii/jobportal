@@ -32,25 +32,33 @@
                 </thead>
                 <tbody>
                     @foreach($pengumumans as $data)
-                    <td>{{ ++$no }}</td>
-                    <td>{{ $data->pengumuman }}</td>
-                    <td>{{ $data->thumbnail }}</td>
-                    <td>{{ tanggalIndo($data->created_at) }}</td>
-                    <td>
-                        <a href="{{ route('pengumumans.edit', $data->id) }}" class="btn btn-success btn-sm btn-icon-split">
-                            <span class="icon text-white-50">
-                                <i class="fas fa-pen"></i>
-                            </span>
-                            <span class="text">Edit</span>
-                        </a>
-                        <a href="{{ route('pengumumans.destroy', $data->id) }}" class="btn btn-danger btn-sm btn-icon-split" data-confirm-delete="true">
-                            <span class="icon text-white-50">
-                                <i class="fas fa-trash"></i>
-                            </span>
-                            <span class="text">Hapus</span>
-                        </a>
-                    </td>
-                    @endforeach
+                    <tr>
+                        <td>{{ ++$no }}</td>
+                        <td>{{ $data->pengumuman }}</td>
+                        <td>
+                            @if($data->thumbnail)
+                            <img src="{{ asset('pengumuman/' . $data->thumbnail) }}" alt="Thumbnail" class="img-thumbnail" style="width: 100px; height: auto;">
+                            @else
+                            <span class="text-muted">Tidak ada thumbnail</span>
+                            @endif
+                        </td>
+                        <td>{{ tanggalIndo($data->created_at) }}</td>
+                        <td>
+                            <a href="{{ route('pengumumans.edit', $data->id) }}" class="btn btn-success btn-sm btn-icon-split">
+                                <span class="icon text-white-50">
+                                    <i class="fas fa-pen"></i>
+                                </span>
+                                <span class="text">Edit</span>
+                            </a>
+                            <a href="{{ route('pengumumans.destroy', $data->id) }}" class="btn btn-danger btn-sm btn-icon-split" data-confirm-delete="true">
+                                <span class="icon text-white-50">
+                                    <i class="fas fa-trash"></i>
+                                </span>
+                                <span class="text">Hapus</span>
+                            </a>
+                        </td>
+                    </tr>
+                    @endforeach.
                 </tbody>
             </table>
         </div>

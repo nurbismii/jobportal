@@ -18,7 +18,7 @@
         <h6 class="m-0 font-weight-bold text-primary">Form Pengumuman</h6>
     </div>
     <div class="card-body">
-        <form action="{{ route('pengumuman.store') }}" method="POST">
+        <form action="{{ route('pengumuman.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             <div class="row g-3">
                 <div class="col-md-6 mb-3">
@@ -29,7 +29,7 @@
                 </div>
                 <div class="col-md-6 mb-3">
                     <label for="status-sim">Thumbnail</label>
-                    <input type="file" name="thumbnail" class="form-control-file" id="">
+                    <input type="file" name="thumbnail" class="form-control-file" id="" accept=".png, .jpeg, .jpg" required>
                 </div>
             </div>
             <div class="row g-3">
