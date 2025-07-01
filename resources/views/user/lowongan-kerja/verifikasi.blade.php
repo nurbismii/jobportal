@@ -8,7 +8,7 @@
             <h2 class="accordion-header">
                 <button class="accordion-button bg-opacity-25 text-dark fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#alertBody" aria-expanded="true" aria-controls="alertBody">
                     <i class="fas fa-exclamation-triangle text-warning me-2"></i>
-                    Cara Meningkatkan Keberhasil Pemeriksaan
+                    Petunjuk Pengunggahan Dokumen
                 </button>
             </h2>
             <div id="alertBody" class="accordion-collapse collapse show" data-bs-parent="#alertAccordion">
@@ -16,18 +16,18 @@
                     <div class="col-xl-6 wow fadeInLeft" data-wow-delay="0.2s" style="visibility: visible; animation-delay: 0.2s; animation-name: fadeInLeft;">
                         <div class="accordion-body">
                             <p class="mb-3 fw-bold">
-                                Untuk menghasilkan hasil yang optimal berikut beberapa tips yang bisa di ikuti :
+                                Agar dokumen lamaran kamu bisa diproses dengan lancar, pastikan:
                             </p>
                             <ul class="mb-0 ps-3">
-                                <li class="mb-1">Direkomendasikan posisi KTP dan SIM gambar tegak.</li>
-                                <li class="mb-1">Hasil foto harus jelas, tidak blur, tidak pecah, dan dapat dibaca</li>
-                                <li class="mb-1">Gambar diambil dengan pencahayaan yang bagus dan tidak terlalu jauh</li>
-                                <li class="mb-1">Pastikan teks pada SIM B2 tidak tertutup oleh hologram saat diunggah</li>
-                                <li class="mb-1">Tidak mengandung tulisan lain selain dari dokumen.</li>
+                                <li class="mb-1">Foto dokumen diambil dalam posisi tegak (tidak miring atau terbalik)</li>
+                                <li class="mb-1">Teks pada dokumen terlihat jelas dan mudah dibaca</li>
+                                <li class="mb-1">Gunakan pencahayaan yang cukup, jangan terlalu gelap atau silau</li>
+                                <li class="mb-1">Pastikan tidak ada bagian penting yang tertutup, misalnya oleh tangan, stiker, atau pantulan cahaya</li>
+                                <li class="mb-1">Jangan menambahkan tulisan, coretan, atau gambar lain di luar isi dokumen</li>
                             </ul>
                             <span>
                                 <small class="text-danger mt-2 d-block">
-                                    Apabila unggahan KTP dan SIM tidak sesuai dengan ketentuan di atas, proses lamaran pekerjaan kamu dapat mengalami kendala.
+                                    Jika dokumen tidak sesuai, proses pengajuanmu bisa terhambat atau tidak diterima. Harap pastikan semua sudah benar sebelum mengunggah!
                                 </small>
                             </span>
                         </div>

@@ -50,7 +50,7 @@
                                 @if ($lamaran->status_lamaran == '1')
                                 <span class="badge bg-success"><i class="fa fa-check-circle me-1"></i>Aktif</span>
                                 @else
-                                <span class="badge bg-secondary"><i class="fa fa-times-circle me-1"></i>Tidak Aktif</span>
+                                <span class="badge bg-danger"><i class="fa fa-times-circle me-1"></i>Tidak Aktif</span>
                                 @endif
                             </p>
                             <p class="mb-0 small">

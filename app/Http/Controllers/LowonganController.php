@@ -59,31 +59,26 @@ class LowonganController extends Controller
         }
 
         if (!Auth::user()) {
-            Alert::info('Login dulu yuk!', 'Silahkan login untuk melihat lowongan kerja.');
+            Alert::info('Opps!', 'Silahkan login untuk melihat lowongan kerja.');
             return redirect()->route('login');
         }
 
         $biodata = Biodata::where('user_id', auth()->id())->first();
 
         if (!$biodata) {
-            Alert::info('Opss!', 'Lengkapi formulir biodata dulu yuks');
+            Alert::info('Opss!', 'Lengkapi formulir biodata anda terlebih dahulu sebelum melamar lowongan kerja.');
             return redirect()->route('biodata.index');
         }
 
         // Dapatkan data SIM B2 dari OCR
         if ($lowongan->status_sim_b2 == $aktif) {
 
-            if (!$biodata->ocr_sim_b2) {
+            if ($biodata->sim_b_2 == null || $biodata->sim_b_2 == '') {
                 Alert::info('Opss!', 'Untuk melamar lowongan ini, silakan upload foto SIM B II Umum terlebih dahulu.');
                 return redirect()->route('biodata.index');
             }
 
             $res_ocr_simb2 = $this->parseSimB2($biodata);
-
-            // if (!$res_ocr_simb2 || empty($res_ocr_simb2['nama']) || empty($res_ocr_simb2['tanggal_lahir'])) {
-            //     Alert::info('Opss!', 'Hasil OCR SIM B2 belum lengkap. Silakan pastikan fotonya jelas dan sesuai.');
-            //     return redirect()->route('biodata.index');
-            // }
 
             $nama_sim = strtoupper($res_ocr_simb2['data']['nama']);
             $tanggl_lahir_sim = $res_ocr_simb2['data']['tanggal_lahir'];
@@ -174,13 +169,13 @@ class LowonganController extends Controller
             if ($nama_sim == null) {
                 $msg_name_ktp_vs_sim_b2 = 'Nama pada SIM B II Umum tidak terbaca';
             } else {
-                $msg_name_ktp_vs_sim_b2 = $ocrResult['nama_sim'] != $ocrResult['nama_ktp'] ? 'Nama pada KTP dan SIM tidak sesuai.' : null;
+                $msg_name_ktp_vs_sim_b2 = $ocrResult['nama_sim'] != $ocrResult['nama_ktp'] ? 'Nama pada SIM B2 tidak sesuai dengan KTP' : null;
             }
 
             if ($tanggl_lahir_sim == null) {
                 $msg_date_ktp_vs_sim_b2 = 'Tanggal lahir pada SIM B II Umum tidak terbaca';
             } else {
-                $msg_date_ktp_vs_sim_b2 = $ocrResult['tgl_lahir_ktp'] != $ocrResult['tgl_lahir_sim'] ? 'Tanggal lahir pada KTP dan SIM B II Umum tidak sesuai.' : null;
+                $msg_date_ktp_vs_sim_b2 = $ocrResult['tgl_lahir_ktp'] != $ocrResult['tgl_lahir_sim'] ? 'Tanggal lahir pada SIM B2 tidak sesuai dengan KTP' : null;
             }
         } else {
 
@@ -219,6 +214,16 @@ class LowonganController extends Controller
     public function store(Request $request)
     {
         $lamaran = Lamaran::where('biodata_id', $request->biodata_id)->first();
+
+        if ($lamaran && $lamaran->loker_id) {
+            Alert::warning('Peringatan', 'Kamu sudah melamar lowongan ini.');
+            return redirect()->back();
+        }
+
+        if ($lamaran && $lamaran->loker_id) {
+            Alert::warning('Peringatan', 'Kamu sudah melamar lowongan ini.');
+            return redirect()->back();
+        }
 
         if ($lamaran && $lamaran->status_lamaran == '1') {
             Alert::warning('Peringatan', 'Saat ini kamu dalam proses lamaran, tidak dapat melamar lebih dari satu lowongan.');
