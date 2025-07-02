@@ -305,6 +305,22 @@ Catatan:
 - Berpakaian bebas, sopan, rapi, dan bersepatu
 - Membawa alat tulis"
 EOT,
+
+            'belum sesuai kriteria' => <<<EOT
+Terima kasih atas lamaran anda di PT VDNI. 
+
+Yth. Pelamar,
+Terima kasih telah meluangkan waktu untuk melamar.
+
+Setelah mempertimbangkan lamaran anda dengan seksama, kami menghargai minat dan usaha anda. Namun, untuk saat ini, kami memutuskan untuk melanjutkan proses dengan kandidat lain yang lebih sesuai dengan kualifikasi dan kebutuhan posisi tersebut.
+
+Kami tetap menyimpan data anda dalam database kami, dan akan menghubungi anda jika ada kesempatan yang lebih sesuai di masa mendatang.
+
+Terima kasih atas perhatian dan minat anda pada PT VDNI. Kami berharap anda sukses dalam perjalanan karier anda ke depan.
+
+Salam hormat,
+Rekrutmen PT VDNI"
+EOT,
         ];
 
         return $templates[$status] ?? null;
