@@ -115,7 +115,7 @@
     <div class="card-body">
         <form method="GET" class="row">
             <div class="col-md-3 mb-3">
-                <select name="status" class="form-control" onchange="this.form.submit()">
+                <select name="status" class="form-control form-control-sm" onchange="this.form.submit()">
                     <option value="">-- Filter Status --</option>
                     <option value="Belum Sesuai Kriteria" {{ request('status') == 'Belum Sesuai Kriteria' ? 'selected' : '' }}>Belum Sesuai Kriteria</option>
                     <option value="Verifikasi Online" {{ request('status') == 'Lamaran Dikirim' ? 'selected' : '' }}>Lamaran Dikirim</option>
@@ -130,14 +130,14 @@
             </div>
 
             <div class="col-md-3 mb-3">
-                <input type="number" name="umur_min" class="form-control" placeholder="Umur Minimal" value="{{ request('umur_min') }}" onchange="this.form.submit()">
+                <input type="number" name="umur_min" class="form-control form-control-sm" placeholder="Umur Minimal" value="{{ request('umur_min') }}" onchange="this.form.submit()">
             </div>
             <div class="col-md-3 mb-3">
-                <input type="number" name="umur_max" class="form-control" placeholder="Umur Maksimal" value="{{ request('umur_max') }}" onchange="this.form.submit()">
+                <input type="number" name="umur_max" class="form-control form-control-sm" placeholder="Umur Maksimal" value="{{ request('umur_max') }}" onchange="this.form.submit()">
             </div>
 
             <div class="col-md-3 mb-3">
-                <select name="pendidikan" class="form-control" onchange="this.form.submit()">
+                <select name="pendidikan" class="form-control form-control-sm" onchange="this.form.submit()">
                     <option value="">-- Filter Pendidikan --</option>
                     <option value="SD 小学" {{ request('pendidikan') == 'SD 小学' ? 'selected' : '' }}>SD 小学</option>
                     <option value="SMP 初中" {{ request('pendidikan') == 'SMP 初中' ? 'selected' : '' }}>SMP 初中</option>
@@ -161,7 +161,7 @@
                 <div class="col-6">
                     <div class="mb-3">
                         <label for="pilih-status">Pilih Status Baru</label>
-                        <select name="status_proses" class="form-control" id="pilih-status" required>
+                        <select name="status_proses" class="form-control form-control-sm" id="pilih-status" required>
                             <option value="">-- Pilih Status Baru --</option>
                             <option value="Belum Sesuai Kriteria">Belum Sesuai Kriteria</option>
                             <option value="Verifikasi Online">Verifikasi Online</option>
@@ -178,21 +178,21 @@
                 <div class="col-6">
                     <div class="mb-3">
                         <label for="tanggal-proses">Tanggal Proses</label>
-                        <input class="form-control" type="date" name="tanggal_proses" id="tanggal-proses" required>
+                        <input class="form-control form-control-sm" type="date" name="tanggal_proses" id="tanggal-proses" required>
                     </div>
                 </div>
 
                 <div class="col-6">
                     <div class="mb-3">
                         <label for="jam">Jam</label>
-                        <input class="form-control" type="time" name="jam" id="jam" required>
+                        <input class="form-control form-control-sm" type="time" name="jam" id="jam" required>
                     </div>
                 </div>
 
                  <div class="col-6">
                     <div class="mb-3">
                         <label for="tempat">Tempat</label>
-                        <input class="form-control" type="text" name="tempat" id="tempat" required>
+                        <input class="form-control form-control-sm" type="text" name="tempat" id="tempat" required>
                     </div>
                 </div>
             </div>
@@ -206,7 +206,7 @@
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover nowrap" id="dataTable" width="100%" cellspacing="0">
+                <table class="table table-striped table-bordered nowrap table-sm small" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                         <tr>
                             <th>No</th>
