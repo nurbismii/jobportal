@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Biodata;
 use App\Models\Lamaran;
 use App\Models\Lowongan;
+use App\Models\RiwayatProsesLamaran;
 use Carbon\Carbon;
 use DateTime;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Str;
@@ -28,6 +30,82 @@ class LowonganController extends Controller
     }
 
     public function show($id)
+    {
+        $today = Carbon::today()->toDateString();
+
+        $lowongan = Lowongan::selectRaw("*, IF(tanggal_berakhir < '$today', 'Kadaluwarsa', 'Aktif') as status_lowongan")->findOrFail($id);
+        $biodata = Biodata::where('user_id', auth()->id())->first();
+        $fieldLabels = $this->getFieldLabels($lowongan->status_sim_b2);
+
+        return view('user.lowongan-kerja.show', compact('lowongan', 'biodata', 'fieldLabels'));
+    }
+
+    public function store(Request $request)
+    {
+        $cekBerkas = $this->cekBerkas($request->loker_id);
+
+        if ($cekBerkas) {
+            return $cekBerkas; // Jika ada pesan verifikasi, kembalikan ke view verifikasi
+        }
+
+        $lamaran = Lamaran::where('biodata_id', $request->biodata_id)->first();
+
+        if ($lamaran && $lamaran->loker_id) {
+            Alert::warning('Peringatan', 'Kamu sudah melamar lowongan ini.');
+            return redirect()->route('lamaran.index');
+        }
+
+        if ($lamaran && $lamaran->status_lamaran == '1') {
+            Alert::warning('Peringatan', 'Saat ini kamu dalam proses lamaran, tidak dapat melamar lebih dari satu lowongan.');
+            return redirect()->route('lamaran.index');
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $lamaran = Lamaran::create([
+                'loker_id' => $request->loker_id,
+                'biodata_id' => $request->biodata_id,
+                'status_lamaran' => '1',
+                'status_proses' => 'Lamaran Dikirim',
+            ]);
+
+            RiwayatProsesLamaran::create([
+                'user_id' => auth()->id(),
+                'lamaran_id' => $lamaran->id,
+                'tanggal_proses' => Carbon::now(),
+                'jam' => Carbon::now()->format('H:i:s'),
+                'status_proses' => $lamaran->status_proses,
+                'tempat' => 'Online (Website)',
+                'pesan' => 'Lamaran telah dikirim pada ' . Carbon::now()->format('d-m-Y H:i:s'),
+            ]);
+
+            DB::commit();
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Alert::error('Gagal', 'Terjadi kesalahan saat mengirim lamaran' . ': ' . $e->getMessage());
+            return redirect()->back();
+        }
+
+
+
+        Alert::success('Lamaran Anda Sudah Kami Terima', 'Terima kasih telah melamar pekerjaan di perusahaan kami. Kami akan segera memproses lamaran Anda.');
+        return redirect()->back();
+    }
+
+    public function update(Request $request, $id)
+    {
+        $biodata = Biodata::findOrFail($id);
+        $biodata->update([
+            'status_ktp' => 'Verifikasi ulang' . ' : ' . $request->status_ktp,
+        ]);
+
+        Alert::success('Berhasil', 'No KTP berhasil berhasil diinput secara manual.');
+        return redirect()->back();
+    }
+
+    public function cekBerkas($id)
     {
         $userId = auth()->id();
         $cacheKey = 'ocr_result_user_' . $userId;
@@ -75,7 +153,7 @@ class LowonganController extends Controller
 
             if ($biodata->sim_b_2 == null || $biodata->sim_b_2 == '') {
                 Alert::info('Opss!', 'Untuk melamar lowongan ini, silakan upload foto SIM B II Umum terlebih dahulu.');
-                return redirect()->route('biodata.index');
+                return redirect()->to(route('biodata.index') . '#step5');
             }
 
             $res_ocr_simb2 = $this->parseSimB2($biodata);
@@ -97,7 +175,7 @@ class LowonganController extends Controller
 
             if (!$biodata->ktp || !file_exists($filePath)) {
                 Alert::warning('Gagal', 'File KTP tidak ditemukan, silakan upload KTP terlebih dahulu');
-                return redirect()->route('biodata.index');
+                return redirect()->to(route('biodata.index') . '#step5');
             }
 
             $url = rtrim(config('services.ocr.link'), '/') . '/' . ltrim(config('services.ocr.type'), '/');
@@ -111,7 +189,7 @@ class LowonganController extends Controller
 
             if ($fileContent === false) {
                 Alert::error('Gagal', 'Gagal membaca file KTP. Pastikan file tersedia dan tidak rusak.');
-                return redirect()->route('biodata.index');
+                return redirect()->to(route('biodata.index') . '#step5');
             }
 
             $response = Http::withToken(config('services.ocr.token'))
@@ -139,7 +217,7 @@ class LowonganController extends Controller
 
         if (!$ocrData) {
             Alert::info('Opss!', 'Silakan lengkapi dokumen pribadi yang dibutuhkan terlebih dahulu');
-            return redirect()->route('biodata.index');
+            return redirect()->to(route('biodata.index') . '#step5');
         }
 
         // Simpan dalam array data hasil ocr sim dan ktp
@@ -208,48 +286,7 @@ class LowonganController extends Controller
             ]);
         }
 
-        return view('user.lowongan-kerja.show', compact('lowongan', 'biodata'));
-    }
-
-    public function store(Request $request)
-    {
-        $lamaran = Lamaran::where('biodata_id', $request->biodata_id)->first();
-
-        if ($lamaran && $lamaran->loker_id) {
-            Alert::warning('Peringatan', 'Kamu sudah melamar lowongan ini.');
-            return redirect()->back();
-        }
-
-        if ($lamaran && $lamaran->loker_id) {
-            Alert::warning('Peringatan', 'Kamu sudah melamar lowongan ini.');
-            return redirect()->back();
-        }
-
-        if ($lamaran && $lamaran->status_lamaran == '1') {
-            Alert::warning('Peringatan', 'Saat ini kamu dalam proses lamaran, tidak dapat melamar lebih dari satu lowongan.');
-            return redirect()->back();
-        }
-
-        Lamaran::create([
-            'loker_id' => $request->loker_id,
-            'biodata_id' => $request->biodata_id,
-            'status_lamaran' => '1',
-            'status_proses' => 'Lamaran Dikirim',
-        ]);
-
-        Alert::success('Lamaran Anda Sudah Kami Terima', 'Terima kasih telah melamar pekerjaan di perusahaan kami. Kami akan segera memproses lamaran Anda.');
-        return redirect()->back();
-    }
-
-    public function update(Request $request, $id)
-    {
-        $biodata = Biodata::findOrFail($id);
-        $biodata->update([
-            'status_ktp' => 'Verifikasi ulang' . ' : ' . $request->status_ktp,
-        ]);
-
-        Alert::success('Berhasil', 'No KTP berhasil berhasil diinput secara manual.');
-        return redirect()->back();
+        return;
     }
 
     public function parseSimB2($biodata)
@@ -630,7 +667,6 @@ class LowonganController extends Controller
             $fieldLabels = [
 
                 // Identitas Pribadi
-                'user_id' => 'ID Pengguna',
                 'no_ktp' => 'Nomor KTP',
                 'no_telp' => 'Nomor Telepon',
                 'no_kk' => 'Nomor Kartu Keluarga',
@@ -688,7 +724,6 @@ class LowonganController extends Controller
             $fieldLabels = [
 
                 // Identitas Pribadi
-                'user_id' => 'ID Pengguna',
                 'no_ktp' => 'Nomor KTP',
                 'no_telp' => 'Nomor Telepon',
                 'no_kk' => 'Nomor Kartu Keluarga',
@@ -735,6 +770,7 @@ class LowonganController extends Controller
                 'surat_lamaran' => 'Surat Lamaran',
                 'ijazah' => 'Ijazah',
                 'ktp' => 'KTP (Kartu Tanda Penduduk)',
+                'sim_b_2' => 'SIM B II Umum',
                 'skck' => 'SKCK (Surat Keterangan Catatan Kepolisian)',
                 'sertifikat_vaksin' => 'Sertifikat Vaksin',
                 'kartu_keluarga' => 'Kartu Keluarga (KK)',

@@ -68,7 +68,7 @@
                 </div>
             </div>
             @empty
-            <div class="alert alert-info text-center">
+            <div class="alert alert-dark text-center">
                 Belum ada riwayat proses lamaran.
             </div>
             @endforelse

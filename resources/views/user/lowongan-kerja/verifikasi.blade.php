@@ -61,7 +61,7 @@
                 <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
             </div>
             <div>
-                <h4 class="mb-2 text-dark fw-bold">Pemeriksaan Dokumen KTP dan SIM B II Umum!</h4>
+                <h4 class="mb-2 text-dark fw-bold">Pemeriksaan Dokumen!</h4>
                 <p class="mb-3 text-danger fw-bold">
                     Oopss! Data tidak sesuai, Silahkan perbaiki data berikut sebelum melanjutkan proses verifikasi :
                 </p>
@@ -74,6 +74,11 @@
                     <li class="mb-1">{{ $msg_date_ktp_vs_sim_b2 }}</li>
                     @endif
                 </ul>
+                <span>
+                    <small class="text-danger mt-2 d-block">
+                        Mohon periksa kembali KTP atau SIM Anda karena dokumen tersebut belum terbaca dengan baik. Silakan perbaiki agar sesuai dengan format yang ditentukan sebelum melamar.
+                    </small>
+                </span>
             </div>
         </div>
     </div>
@@ -161,9 +166,9 @@
                 <i class="fas fa-check-square fa-2x text-success"></i>
             </div>
             <div>
-                <h4 class="mb-2 text-dark fw-bold">Fungsi Pengkinian Data!</h4>
+                <h4 class="mb-2 text-dark fw-bold">Pengkinian Data!</h4>
                 <p class="mb-3 fw-bold text-success">
-                    Lakukan pengkinian data jika hasil pengenalan karakter tidak sesuai atau ingin mencoba lagi.
+                    Lakukan pengkinian data jika KTP pertama yang diupload mengalami kendal.
                 </p>
                 <ul class="mb-0 ps-3">
                     <li class="mb-1">Setelah melakukan pengkinian data</li>

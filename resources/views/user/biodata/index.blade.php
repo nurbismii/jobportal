@@ -876,6 +876,23 @@
     let currentStep = 0;
 
     document.addEventListener('DOMContentLoaded', () => {
+
+        var hash = window.location.hash;
+        if (hash) {
+            var tabTriggerEl = document.querySelector('[data-bs-target="' + hash + '"]');
+            if (tabTriggerEl) {
+                var tab = new bootstrap.Tab(tabTriggerEl);
+                tab.show();
+
+                // Update currentStep sesuai index tab hash
+                tabs.forEach((t, i) => {
+                    if (t.getAttribute('data-bs-target') === hash) {
+                        currentStep = i;
+                    }
+                });
+            }
+        }
+
         showStep(currentStep);
 
         // Mencegah klik langsung pada tab selain currentStep
@@ -891,6 +908,7 @@
                 updateNavButtons();
             });
         });
+
     });
 
     function showStep(index) {
