@@ -118,7 +118,7 @@
                 <select name="status" class="form-control form-control-sm" onchange="this.form.submit()">
                     <option value="">-- Filter Status --</option>
                     <option value="Belum Sesuai Kriteria" {{ request('status') == 'Belum Sesuai Kriteria' ? 'selected' : '' }}>Belum Sesuai Kriteria</option>
-                    <option value="Verifikasi Online" {{ request('status') == 'Lamaran Dikirim' ? 'selected' : '' }}>Lamaran Dikirim</option>
+                    <option value="Lamaran Dikirim" {{ request('status') == 'Lamaran Dikirim' ? 'selected' : '' }}>Lamaran Dikirim</option>
                     <option value="Verifikasi Online" {{ request('status') == 'Verifikasi Online' ? 'selected' : '' }}>Verifikasi Online</option>
                     <option value="Verifikasi Berkas" {{ request('status') == 'Verifikasi Berkas' ? 'selected' : '' }}>Verifikasi Berkas</option>
                     <option value="Tes Kesehatan" {{ request('status') == 'Tes Kesehatan' ? 'selected' : '' }}>Tes Kesehatan</option>
