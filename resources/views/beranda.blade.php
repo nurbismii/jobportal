@@ -40,7 +40,7 @@
                             <h2 class="display-1 text-white mb-4">Rekrutmen Online</h2>
                             <p class="mb-5 fs-5">Selamat Datang di Website Rekrutmen Resmi PT VDNI</p>
                             <div class="d-flex justify-content-center justify-content-md-start flex-shrink-0 mb-4">
-                                <a class="btn btn-light rounded-pill py-3 px-4 px-md-5 me-2" href="#"><i class="fas fa-play-circle me-2"></i> Cara penggunaan</a>
+                                <a class="btn btn-light rounded-pill py-3 px-4 px-md-5 me-2" href="#"><i class="fas fa-arrow-circle-right me-2"></i> Masuk</a>
                                 <a class="btn btn-dark rounded-pill py-3 px-4 px-md-5 ms-2" href="{{ asset('pdf/MANUAL BOOK V-HIRE (1).pdf') }}" target="_blank">Panduan Pengguna</a>
                             </div>
                         </div>
@@ -264,7 +264,7 @@
                                 </h2>
                                 <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
                                     <div class="accordion-body">
-                                        Silakan login terlebih dahulu menggunakan akun yang telah terdaftar pilih menu lamaran -> pilih lamaran yang kamu ingin lihat riwayatnya
+                                        Silakan masuk terlebih dahulu menggunakan akun yang telah terdaftar. Kemudian pilih menu Lamaran, dan pilih lamaran yang ingin Anda lihat riwayatnya.
                                     </div>
                                 </div>
                             </div>

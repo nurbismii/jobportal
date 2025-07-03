@@ -17,7 +17,7 @@ class BerandaController extends Controller
         $VDNIP = 2;
 
         $lowongans = Lowongan::select('*')
-            ->selectRaw("IF(tanggal_berakhir < ?, 'Kadaluwarsa', 'Aktif') as status_lowongan", [Carbon::today()->toDateString()])
+            ->selectRaw("IF(tanggal_berakhir < ?, 'Kadaluwarsa', 'Aktif') as status_lowongan", [Carbon::now()])
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get();

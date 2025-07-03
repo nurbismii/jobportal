@@ -47,7 +47,7 @@
                             </h2>
                             <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
                                 <div class="accordion-body">
-                                    Silakan login terlebih dahulu menggunakan akun yang telah terdaftar pilih menu lamaran -> pilih lamaran yang kamu ingin lihat riwayatnya
+                                    Silakan masuk terlebih dahulu menggunakan akun yang telah terdaftar. Kemudian pilih menu Lamaran, dan pilih lamaran yang ingin Anda lihat riwayatnya.
                                 </div>
                             </div>
                         </div>

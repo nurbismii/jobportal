@@ -7,42 +7,69 @@
     <meta http-equiv="refresh" content="3; url={{ url('/') }}">
     <title>Verifikasi Berhasil | VDNI</title>
 
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-
-    <!-- Icon -->
     <link rel="icon" href="{{ asset('assets/img/backgrounds/icon.png') }}" />
-
     <style>
         body {
             background-color: #f8f9fa;
         }
 
-        .confetti-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 9999;
+        .checkmark-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: block;
+            stroke-width: 2;
+            stroke: #4caf50;
+            stroke-miterlimit: 10;
+            margin: 0 auto 20px auto;
+            box-shadow: inset 0px 0px 0px #4caf50;
+            animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+        }
+
+        .checkmark-circle__check {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: stroke .4s cubic-bezier(.65, .05, .36, 1) .8s forwards;
+        }
+
+        @keyframes stroke {
+            100% {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        @keyframes scale {
+
+            0%,
+            100% {
+                transform: none;
+            }
+
+            50% {
+                transform: scale3d(1.1, 1.1, 1);
+            }
+        }
+
+        @keyframes fill {
+            100% {
+                box-shadow: inset 0px 0px 0px 30px #4caf50;
+            }
         }
     </style>
 </head>
 
 <body>
-    <!-- Confetti Canvas -->
-    <canvas class="confetti-container" id="confetti-canvas"></canvas>
-
     <div class="d-flex justify-content-center align-items-center vh-100">
         <div class="text-center">
-            <h1 class="text-primary fw-bold mb-3">🎉 Verifikasi Berhasil!</h1>
+            <svg class="checkmark-circle" viewBox="0 0 52 52">
+                <circle cx="26" cy="26" r="25" fill="none" />
+                <path class="checkmark-circle__check" fill="none" stroke="#fff" stroke-width="4" d="M14 27l7 7 16-16" />
+            </svg>
+            <h1 class="text-success fw-bold mb-3">Verifikasi Berhasil!</h1>
             <p class="lead text-muted">Email kamu telah berhasil diverifikasi.<br>Akun kamu kini aktif dan siap digunakan.</p>
-
-            <a href="{{ url('/login') }}" class="btn btn-primary mt-3 px-4">
-                <i class="fas fa-sign-in-alt me-2"></i>Login Sekarang
-            </a>
-
+            <a href="{{ url('/login') }}" class="btn btn-success mt-3 px-4">Login Sekarang</a>
             <div class="mt-4">
                 <a href="{{ url('/') }}" class="text-decoration-none text-secondary">
                     <i class="fas fa-arrow-left me-1"></i> Kembali ke Beranda
@@ -52,79 +79,11 @@
     </div>
 
     <footer class="text-center small text-muted py-3">
-        &copy; {{ date('Y') }} PT Virtue Dragon Nickel Industry – HR Department
+        &copy; {{ date('Y') }} PT Virtue Dragon Nickel Industry. All rights reserved.
     </footer>
 
-    <!-- Font Awesome -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js" defer></script>
-
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-
-    <!-- Confetti JS -->
-    <script>
-        const canvas = document.getElementById("confetti-canvas");
-        const context = canvas.getContext("2d");
-
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
-        const confettiCount = 150;
-        const confetti = [];
-
-        for (let i = 0; i < confettiCount; i++) {
-            confetti.push({
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height - canvas.height,
-                r: Math.random() * 6 + 4,
-                d: Math.random() * confettiCount,
-                color: `hsl(${Math.floor(Math.random() * 360)}, 100%, 50%)`,
-                tilt: Math.floor(Math.random() * 10) - 10,
-                tiltAngle: 0,
-            });
-        }
-
-        function draw() {
-            context.clearRect(0, 0, canvas.width, canvas.height);
-            confetti.forEach((c, i) => {
-                context.beginPath();
-                context.lineWidth = c.r / 2;
-                context.strokeStyle = c.color;
-                context.moveTo(c.x + c.tilt + c.r / 4, c.y);
-                context.lineTo(c.x + c.tilt, c.y + c.tilt + c.r / 4);
-                context.stroke();
-            });
-
-            update();
-        }
-
-        function update() {
-            confetti.forEach((c, i) => {
-                c.tiltAngle += 0.05;
-                c.y += (Math.cos(c.d) + 3 + c.r / 2) / 2;
-                c.x += Math.sin(c.d);
-                c.tilt = Math.sin(c.tiltAngle - i / 3) * 15;
-
-                if (c.y > canvas.height) {
-                    c.x = Math.random() * canvas.width;
-                    c.y = -20;
-                }
-            });
-        }
-
-        function animate() {
-            draw();
-            requestAnimationFrame(animate);
-        }
-
-        animate();
-
-        // Responsif saat resize
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        });
-    </script>
 </body>
 
 </html>

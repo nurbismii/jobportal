@@ -1,77 +1,92 @@
 @extends('layouts.user-auth')
 
 @section('content-login')
-<div class="container-fluid min-vh-100 d-flex align-items-center justify-content-center bg-light">
-    <div class="row w-100 shadow" style="max-width: 1000px;">
+<div class="container-fluid min-vh-100 d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #cce6f7, #f8f9fa);">
+    <div class="row w-100 shadow-lg rounded-4 overflow-hidden" style="max-width: 900px; background-color: #fff;">
+
         <!-- Left Panel -->
-        <div class="col-md-6 d-flex flex-column justify-content-center align-items-center text-white" style="background-color: #cce6f7; padding: 60px 30px;">
-            <h4 class="fw-bold text-primary text-center">Halaman Pendaftaran V-HIRE</h4>
-            <h3 class="fw-bold text-primary text-center mt-2">PT VDNI</h3>
+        <div class="col-md-5 d-none d-md-flex flex-column justify-content-center align-items-center text-white p-4" style="background: linear-gradient(135deg, #007bff, #0056b3);">
+            <img src="{{ asset('img/logo-vdni1.png') }}" alt="VDNI Logo" class="mb-4" style="height: 60px;">
+            <h4 class="fw-bold text-center">Pendaftaran V-HIRE</h4>
+            <p class="text-center text-white-50 mt-2">Rekrutmen Resmi</p>
         </div>
 
-        <!-- Right Panel (Register Form) -->
-        <div class="col-md-6 bg-white p-5">
-            <div class="text-center mb-4">
-                <img src="{{ asset('img/logo-vdni.png') }}" alt="VDNI Logo" style="height: 50px;">
+        <!-- Right Panel -->
+        <div class="col-md-7 p-5">
+            <div class="mb-4 text-center">
+                <h3 class="fw-bold text-primary">Buat Akun Baru</h3>
+                <p class="text-muted small">Silakan isi data Anda dengan benar</p>
             </div>
 
             <form method="POST" action="{{ route('pendaftaran.store') }}">
                 @csrf
+
                 <div class="mb-3">
-                    <input type="text" maxlength="16" name="no_ktp" class="form-control @error('no_ktp') is-invalid @enderror" placeholder="No KTP" value="{{ old('no_ktp') }}" required>
-                    @error('nik')
-                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                    <label for="no_ktp" class="form-label">No KTP</label>
+                    <input type="text" maxlength="16" id="no_ktp" name="no_ktp"
+                        class="form-control form-control @error('no_ktp') is-invalid @enderror"
+                        value="{{ old('no_ktp') }}" placeholder="16 digit NIK" required>
+                    @error('no_ktp')
+                    <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
                 <div class="row g-3 mb-3">
                     <div class="col">
-                        <input type="text" name="first_name" class="form-control @error('first_name') is-invalid @enderror" placeholder="Nama Depan" value="{{ old('first_name') }}" required>
+                        <label for="first_name" class="form-label">Nama Depan</label>
+                        <input type="text" id="first_name" name="first_name"
+                            class="form-control form-control @error('first_name') is-invalid @enderror"
+                            value="{{ old('first_name') }}" placeholder="Nama Depan" required>
                         @error('first_name')
-                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                        <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
                     <div class="col">
-                        <input type="text" name="last_name" class="form-control @error('last_name') is-invalid @enderror" placeholder="Nama Belakang" value="{{ old('last_name') }}" required>
+                        <label for="last_name" class="form-label">Nama Belakang</label>
+                        <input type="text" id="last_name" name="last_name"
+                            class="form-control form-control @error('last_name') is-invalid @enderror"
+                            value="{{ old('last_name') }}" placeholder="Nama Belakang" required>
                         @error('last_name')
-                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                        <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
                 </div>
 
                 <div class="mb-3">
-                    <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" placeholder="Email" value="{{ old('email') }}" required>
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" id="email" name="email"
+                        class="form-control form-control @error('email') is-invalid @enderror"
+                        value="{{ old('email') }}" placeholder="contoh@email.com" required>
                     @error('email')
-                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                    <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
                 <div class="mb-3 position-relative">
-                    <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" placeholder="Kata Sandi" required>
-                    <span class="position-absolute top-50 end-0 translate-middle-y me-3">
-                        <i class="bi bi-eye-slash"></i>
-                    </span>
+                    <label for="password" class="form-label">Kata Sandi</label>
+                    <input type="password" id="password" name="password"
+                        class="form-control form-control @error('password') is-invalid @enderror"
+                        placeholder="Minimal 8 karakter" required>
                     @error('password')
-                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                    <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
-                <div class="mb-4 position-relative">
-                    <input type="password" name="password_confirmation" class="form-control" placeholder="Konfirmasi Kata Sandi" required>
-                    <span class="position-absolute top-50 end-0 translate-middle-y me-3">
-                        <i class="bi bi-eye-slash"></i>
-                    </span>
+                <div class="mb-3 position-relative">
+                    <label for="password_confirmation" class="form-label">Konfirmasi Kata Sandi</label>
+                    <input type="password" id="password_confirmation" name="password_confirmation"
+                        class="form-control form-control" placeholder="Ulangi kata sandi" required>
                 </div>
 
                 <div class="d-grid mb-3">
-                    <button type="submit" class="btn btn-primary fw-bold">Buat Akun</button>
+                    <button type="submit" class="btn btn-primary rounded-pill fw-bold">Buat Akun</button>
                 </div>
 
-                <div class="text-center">
-                    Sudah punya akun? <a href="{{ route('login') }}" class="text-decoration-none fw-bold text-primary">Masuk</a>
+                <div class="text-center small">
+                    Sudah punya akun? <a href="{{ route('login') }}" class="fw-bold text-primary text-decoration-none">Masuk</a>
                 </div>
 
-                <div class="text-center text-muted mt-4" style="font-size: 0.9rem;">
+                <div class="text-center text-muted mt-4 small">
                     © {{ date('Y') }} HRD PT VDNI
                 </div>
             </form>

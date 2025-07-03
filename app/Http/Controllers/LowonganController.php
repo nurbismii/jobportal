@@ -21,7 +21,7 @@ class LowonganController extends Controller
     public function index()
     {
         $lowongans = Lowongan::select('*')
-            ->selectRaw("IF(tanggal_berakhir < ?, 'Kadaluwarsa', 'Aktif') as status_lowongan", [Carbon::today()->toDateString()])
+            ->selectRaw("IF(tanggal_berakhir < ?, 'Kadaluwarsa', 'Aktif') as status_lowongan", [Carbon::now()])
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get();
@@ -31,7 +31,7 @@ class LowonganController extends Controller
 
     public function show($id)
     {
-        $today = Carbon::today()->toDateString();
+        $today = Carbon::now()->toDateTimeString();
 
         $lowongan = Lowongan::selectRaw("*, IF(tanggal_berakhir < '$today', 'Kadaluwarsa', 'Aktif') as status_lowongan")->findOrFail($id);
         $biodata = Biodata::where('user_id', auth()->id())->first();
@@ -81,7 +81,6 @@ class LowonganController extends Controller
             ]);
 
             DB::commit();
-
         } catch (\Exception $e) {
             DB::rollBack();
             Alert::error('Gagal', 'Terjadi kesalahan saat mengirim lamaran' . ': ' . $e->getMessage());
