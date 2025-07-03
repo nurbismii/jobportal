@@ -60,27 +60,43 @@
                 </div>
             </div>
 
-            <div class="d-none d-xl-flex flex-shrink-0 ps-4 dropdown">
-                <button class="btn btn-light btn-lg-square rounded-circle position-relative wow tada" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="fa fa-user dropdown-toogle fa-2x"></i>
+            <div class="d-none d-xl-flex align-items-center ps-4 dropdown">
+                <button class="btn btn-light btn-lg-square rounded-circle position-relative shadow-sm" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fa fa-user fa-2x text-primary"></i>
                 </button>
-                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm rounded-3 mt-2" aria-labelledby="dropdownMenuButton1">
                     @if(Auth::user()->role == 'user')
-                    <li><a class="dropdown-item" href="{{ route('profil.index') }}">Profil</a></li>
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center" href="{{ route('profil.index') }}">
+                            <i class="fa fa-id-card me-2 text-primary"></i> Profil
+                        </a>
+                    </li>
                     @else
-                    <li><a class="dropdown-item" href="{{ route('home') }}">Kelola job portal</a></li>
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center" href="{{ route('home') }}">
+                            <i class="fa fa-briefcase me-2 text-primary"></i> Kelola Job Portal
+                        </a>
+                    </li>
                     @endif
-                    <div class="dropdown-divider"></div>
-                    <li><a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Keluar</a></li>
-                    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                        {{ csrf_field() }}
-                    </form>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                            <i class="fa fa-sign-out-alt me-2 text-danger"></i> Keluar
+                        </a>
+                    </li>
                 </ul>
                 <div class="d-flex flex-column ms-3">
-                    <span>{{ Auth::user()->no_ktp }}</span>
-                    <a href="#"><span class="text-dark">{{ Auth::user()->name }}</span></a>
+                    <span class="small text-muted">{{ Auth::user()->no_ktp }}</span>
+                    <a href="#" class="fw-bold text-dark text-decoration-none">{{ Auth::user()->name }}</a>
                 </div>
             </div>
+
+            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                {{ csrf_field() }}
+            </form>
+
             @endif
         </nav>
     </div>
