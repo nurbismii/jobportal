@@ -32,7 +32,7 @@
             </p>
         </div>
         <div class="row g-4 justify-content-center">
-            @foreach ($lamarans as $lamaran)
+            @forelse($lamarans as $lamaran)
             <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body p-4 d-flex flex-column">
@@ -44,13 +44,13 @@
                         <p class="card-text text-muted flex-grow-1" style="max-height: 90px; overflow: hidden;">
                             {!! $lamaran->lowongan->kualifikasi !!}
                         </p>
-                        <div class="mt-2 mb-3">
+                        <div class="mb-3">
                             <p class="mb-1 small">
                                 <strong>Status Lamaran : </strong>
                                 @if ($lamaran->status_lamaran == '1')
                                 <span class="badge bg-success"><i class="fa fa-check-circle me-1"></i>Aktif</span>
                                 @else
-                                <span class="badge bg-danger"><i class="fa fa-times-circle me-1"></i>Tidak Aktif</span>
+                                <span class="badge bg-dark"><i class="fa fa-times-circle me-1"></i>Tidak Aktif</span>
                                 @endif
                             </p>
                             <p class="mb-0 small">
@@ -64,7 +64,16 @@
                     </div>
                 </div>
             </div>
-            @endforeach
+            @empty
+            <div class="col-12">
+                <div class="text-center p-5 my-4 border rounded-3 shadow-sm bg-light">
+                    <i class="fa fa-file-alt fa-3x text-primary mb-3"></i>
+                    <h4 class="fw-bold mb-2">Belum ada lamaran yang diajukan</h4>
+                    <p class="text-muted mb-3">Kamu belum mengajukan lamaran kerja. Silakan pilih lowongan yang tersedia.</p>
+                    <a href="{{ route('lowongan-kerja.index') }}" class="btn btn-primary rounded-pill px-4">Lihat Lowongan</a>
+                </div> 
+            </div>
+            @endforelse
         </div>
     </div>
 </div>

@@ -26,7 +26,7 @@
                         @if ($lamaran->status_lamaran == '1')
                         <span class="badge bg-success">Aktif</span>
                         @else
-                        <span class="badge bg-secondary">Tidak Aktif</span>
+                        <span class="badge bg-dark">Tidak Aktif</span>
                         @endif
                     </p>
                 </div>

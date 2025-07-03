@@ -46,7 +46,7 @@
             $shareUrl = route('lowongan-kerja.index');
             @endphp
 
-            @foreach ($lowongans as $lowongan)
+            @forelse($lowongans as $lowongan)
             <div class="col-md-6 col-lg-4">
                 <div class="service-item h-100 d-flex flex-column"> <!-- h-100: biar tinggi seragam -->
                     <div class="service-img">
@@ -82,7 +82,16 @@
                     </div>
                 </div>
             </div>
-            @endforeach
+            @empty
+            <div class="col-12">
+                <div class="text-center p-5 my-4 border rounded-3 shadow-sm bg-light">
+                    <i class="fa fa-briefcase fa-3x text-primary mb-3"></i>
+                    <h4 class="fw-bold mb-2">Belum ada lowongan tersedia</h4>
+                    <p class="text-muted mb-3">Silakan cek kembali di lain waktu. Kami terus memperbarui informasi lowongan secara berkala.</p>
+                    <a href="{{ url('/') }}" class="btn btn-primary rounded-pill px-4">Kembali ke Beranda</a>
+                </div>
+            </div>
+            @endforelse
         </div>
     </div>
 </div>

@@ -37,10 +37,10 @@
                     <div class="col-lg-7 animated fadeInLeft">
                         <div class="text-sm-center text-md-start">
                             <h1 class="text-white text-uppercase fw-bold mb-2">V-HIRE</h1>
-                            <h2 class="display-1 text-white mb-4">Rekrutmen Online</h2>
+                            <h4 class="display-2 text-white mb-4">Rekrutmen Online</h4>
                             <p class="mb-5 fs-5">Selamat Datang di Website Rekrutmen Resmi PT VDNI</p>
                             <div class="d-flex justify-content-center justify-content-md-start flex-shrink-0 mb-4">
-                                <a class="btn btn-light rounded-pill py-3 px-4 px-md-5 me-2" href="#"><i class="fas fa-arrow-circle-right me-2"></i> Masuk</a>
+                                <a class="btn btn-light rounded-pill py-3 px-4 px-md-5 me-2" href="{{ route('login') }}"><i class="fas fa-arrow-circle-right me-2"></i> Masuk</a>
                                 <a class="btn btn-dark rounded-pill py-3 px-4 px-md-5 ms-2" href="{{ asset('pdf/MANUAL BOOK V-HIRE (1).pdf') }}" target="_blank">Panduan Pengguna</a>
                             </div>
                         </div>
@@ -60,15 +60,15 @@
 <!-- Lowongan Kerja Start -->
 <div class="container-fluid service py-5">
     <div class="container py-5">
-        <h1 class="display-4 mb-4">Informasi</h1>
-        <h4 class="text-primary">Lowongan Tersedia</h4>
+        <h4 class="display-4 fw-bold mb-0">Lowongan</h4>
+        <p class="text-primary mb-3">Lihat daftar lowongan kerja terbaru dan kesempatan berkarir bersama kami.</p>
         <div class="row g-4 justify-content-center">
 
             @php
             $shareUrl = route('lowongan-kerja.index');
             @endphp
 
-            @foreach ($lowongans as $lowongan)
+            @forelse($lowongans as $lowongan)
             <div class="col-md-6 col-lg-4">
                 <div class="service-item h-100 d-flex flex-column"> <!-- h-100: biar tinggi seragam -->
                     <div class="service-img">
@@ -104,7 +104,15 @@
                     </div>
                 </div>
             </div>
-            @endforeach
+            @empty
+            <div class="col-12">
+                <div class="text-center p-5 my-4 border rounded-3 shadow-sm bg-light wow fadeInRight" data-wow-delay="0.2s">
+                    <i class="fa fa-briefcase fa-3x text-primary mb-3"></i>
+                    <h4 class="fw-bold mb-2">Belum ada lowongan tersedia</h4>
+                    <p class="text-muted mb-3">Silakan cek kembali di lain waktu. Kami terus memperbarui informasi lowongan secara berkala.</p>
+                </div>
+            </div>
+            @endforelse
 
         </div>
         <div class="d-flex justify-content-end mt-3">
@@ -189,15 +197,13 @@
     <!-- Tentang End -->
 
     <!-- Pengumumam Start -->
-    @foreach($pengumumans as $pengumuman)
+
     <div class="container-fluid blog py-5">
         <div class="container py-5">
-            <div class="mx-auto pb-5 wow fadeInUp" data-wow-delay="0.2s">
-                <h4 class="text-primary">Pengumuman</h4>
-                <h1 class="display-4 mb-4">Berita terbaru</h1>
-            </div>
+            <h4 class="display-4 fw-bold mb-0">Pengumuman</h4>
+            <p class="text-primary mb-3">Temukan informasi terbaru dan penting dari kami di bawah ini.</p>
             <div class="row g-4 justify-content-center">
-                <!-- Kolom 1 -->
+                @forelse($pengumumans as $pengumuman)
                 <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
                     <div class="blog-item">
                         <div class="blog-img">
@@ -221,10 +227,18 @@
                         </div>
                     </div>
                 </div>
+                @empty
+                <div class="col-12">
+                    <div class="text-center p-5 my-4 border rounded-3 shadow-sm bg-light wow fadeInLeft" data-wow-delay="0.2s">
+                        <i class="fa fa-bullhorn fa-3x text-primary mb-3"></i>
+                        <h4 class="fw-bold mb-2">Belum ada pengumuman terbaru</h4>
+                        <p class="text-muted mb-3">Kami akan segera memperbarui informasi pengumuman di sini.</p>
+                    </div>
+                </div>
+                @endforelse
             </div>
         </div>
     </div>
-    @endforeach
     <!-- Pengumumam End -->
 
     <!-- FAQs Start -->

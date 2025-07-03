@@ -11,7 +11,7 @@
 <!-- Header End -->
 
 <!-- Pengumumam Start -->
-@foreach($pengumumans as $pengumuman)
+@forelse($pengumumans as $pengumuman)
 <div class="container-fluid blog py-5">
     <div class="container py-5">
         <div class="mx-auto pb-5 wow fadeInUp" data-wow-delay="0.2s">
@@ -46,6 +46,15 @@
         </div>
     </div>
 </div>
-@endforeach
+@empty
+<div class="container py-5">
+    <div class="text-center p-5 my-4 border rounded-3 shadow-sm bg-light">
+        <i class="fa fa-bullhorn fa-3x text-primary mb-3"></i>
+        <h4 class="fw-bold mb-2">Belum ada pengumuman terbaru</h4>
+        <p class="text-muted mb-3">Kami akan segera memperbarui informasi pengumuman di sini.</p>
+        <a href="{{ url('/') }}" class="btn btn-primary rounded-pill px-4">Kembali ke Beranda</a>
+    </div>
+</div>
+@endforelse
 <!-- Pengumumam End -->
 @endsection
