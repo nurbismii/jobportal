@@ -114,7 +114,7 @@
 <div class="card shadow mb-3">
     <div class="card-body">
         <form method="GET" class="row">
-            <div class="col-md-3 mb-3">
+            <div class="col-md-4 mb-3">
                 <select name="status" class="form-control form-control-sm" onchange="this.form.submit()">
                     <option value="">-- Filter Status --</option>
                     <option value="Belum Sesuai Kriteria" {{ request('status') == 'Belum Sesuai Kriteria' ? 'selected' : '' }}>Belum Sesuai Kriteria</option>
@@ -129,14 +129,14 @@
                 </select>
             </div>
 
-            <div class="col-md-3 mb-3">
+            <div class="col-md-4 mb-3">
                 <input type="number" name="umur_min" class="form-control form-control-sm" placeholder="Umur Minimal" value="{{ request('umur_min') }}" onchange="this.form.submit()">
             </div>
-            <div class="col-md-3 mb-3">
+            <div class="col-md-4 mb-3">
                 <input type="number" name="umur_max" class="form-control form-control-sm" placeholder="Umur Maksimal" value="{{ request('umur_max') }}" onchange="this.form.submit()">
             </div>
 
-            <div class="col-md-3 mb-3">
+            <div class="col-md-6 mb-3">
                 <select name="pendidikan" class="form-control form-control-sm" onchange="this.form.submit()">
                     <option value="">-- Filter Pendidikan --</option>
                     <option value="SD 小学" {{ request('pendidikan') == 'SD 小学' ? 'selected' : '' }}>SD 小学</option>
@@ -147,6 +147,19 @@
                     <option value="D4 大专三年" {{ request('pendidikan') == 'D4 大专三年' ? 'selected' : '' }}>D4 大专三年</option>
                     <option value="S1 本科" {{ request('pendidikan') == 'S1 本科' ? 'selected' : '' }}>S1 本科</option>
                     <option value="S2 研究生" {{ request('pendidikan') == 'S2 研究生' ? 'selected' : '' }}>S2 研究生</option>
+                </select>
+            </div>
+
+             <div class="col-md-6 mb-3">
+                <select name="status_resign" class="form-control form-control-sm" onchange="this.form.submit()">
+                    <option value="">-- Filter Status Pelamar --</option>
+                    <option value="RESIGN SESUAI PROSEDUR" {{ request('status_resign') == 'RESIGN SESUAI PROSEDUR' ? 'selected' : '' }}>RESIGN SESUAI PROSEDUR</option>
+                    <option value="RESIGN TIDAK SESUAI PROSEDUR" {{ request('status_resign') == 'RESIGN TIDAK SESUAI PROSEDUR' ? 'selected' : '' }}>RESIGN TIDAK SESUAI PROSEDUR</option>
+                    <option value="PHK" {{ request('status_resign') == 'PHK' ? 'selected' : '' }}>PHK</option>
+                    <option value="PHK PIDANA" {{ request('status_resign') == 'PHK PIDANA' ? 'selected' : '' }}>PHK PIDANA</option>
+                    <option value="PB PHK" {{ request('status_resign') == 'PB PHK' ? 'selected' : '' }}>PB PHK</option>
+                    <option value="PB RESIGN" {{ request('status_resign') == 'PB RESIGN' ? 'selected' : '' }}>PB RESIGN</option>
+                    <option value="PUTUS KONTRAK" {{ request('status_resign') == 'PUTUS KONTRAK' ? 'selected' : '' }}>PUTUS KONTRAK</option>
                 </select>
             </div>
         </form>
@@ -189,7 +202,7 @@
                     </div>
                 </div>
 
-                 <div class="col-6">
+                <div class="col-6">
                     <div class="mb-3">
                         <label for="tempat">Tempat</label>
                         <input class="form-control form-control-sm" type="text" name="tempat" id="tempat" required>
@@ -446,7 +459,7 @@ return $order[$item->level_sp] ?? 99;
 <div class="modal fade" id="modalSP{{ $data->id }}" tabindex="-1" role="dialog" aria-labelledby="modalSPLabel{{ $data->id }}" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
         <div class="modal-content shadow-lg">
-            <div class="modal-header bg-warning text-dark">
+            <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title font-weight-bold" id="modalSPLabel{{ $data->id }}">
                     <i class="fas fa-exclamation-triangle mr-2"></i>
                     Riwayat Bekerja - {{ $data->biodata->user->name }}
@@ -464,6 +477,7 @@ return $order[$item->level_sp] ?? 99;
                             <tr>
                                 <th>Nama</th>
                                 <th>Tanggal</th>
+                                <th>Rentang</th>
                                 <th>Kategori</th>
                                 <th>Alasan</th>
                                 <th>Posisi</th>
@@ -474,15 +488,24 @@ return $order[$item->level_sp] ?? 99;
                             <tr>
                                 <td>{{ $riwayat->nama_karyawan }}</td>
                                 <td class="text-center">{{ tanggalIndo($riwayat->tgl_resign) }}</td>
+                                <td>
+                                    @php
+                                    $tglResign = \Carbon\Carbon::parse($riwayat->tgl_resign);
+                                    $sekarang = \Carbon\Carbon::now();
+                                    $diff = $tglResign->diff($sekarang);
+                                    @endphp
+                                    {{ $diff->y }} Tahun {{ $diff->m }} Bulan
+                                </td>
                                 <td>{{ $riwayat->status_resign }}</td>
                                 <td>{{ $riwayat->alasan_resign }}</td>
                                 <td>{{ $riwayat->posisi }}</td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="4" class="text-center text-muted">Tidak ada data resign.</td>
+                                <td colspan="6" class="text-center text-muted">Tidak ada data resign.</td>
                             </tr>
                             @endforelse
+
                         </tbody>
                     </table>
                 </div>

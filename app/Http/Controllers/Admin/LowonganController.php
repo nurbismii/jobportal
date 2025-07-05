@@ -123,6 +123,19 @@ class LowonganController extends Controller
             });
         }
 
+
+        if ($request->filled('status_resign')) {
+            $noKtpList = \App\Models\Hris\Employee::where('status_resign', $request->status_resign)
+                ->pluck('no_ktp')
+                ->toArray();
+
+            // Lalu filter Lamaran
+            $query->whereHas('biodata', function ($q) use ($noKtpList) {
+                $q->whereIn('no_ktp', $noKtpList);
+            });
+        }
+
+
         $lamarans = $query->get();
 
         return view('admin.lamaran.index', compact('lamarans', 'lowongan'))->with('no');
