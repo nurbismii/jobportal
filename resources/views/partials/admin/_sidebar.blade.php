@@ -40,8 +40,8 @@
         </a>
     </li>
 
-    <li class="nav-item {{ request()->routeIs('lowongan.**') ? 'active' : '' }}">
-        <a class="nav-link" href="">
+    <li class="nav-item {{ request()->routeIs('permintaan-tenaga-kerja.**') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('permintaan-tenaga-kerja.index') }}">
             <i class="fas fa-fw fa-user-plus"></i>
             <span>Permintaan Tenaga Kerja</span>
         </a>

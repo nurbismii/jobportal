@@ -63,6 +63,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['redirect.role']], function 
     Route::post('/auto-update-field', [LamaranController::class, 'autoUpdate'])->name('data.autoUpdate');
 
     Route::resource('/personal-file', 'App\Http\Controllers\Admin\PersonalController');
+    Route::resource('/permintaan-tenaga-kerja', 'App\Http\Controllers\Admin\PermintaanTenagaKerjaController');
 });
 
 // API route
@@ -70,4 +71,6 @@ Route::group(['prefix' => 'api'], function () {
     Route::get('kabupaten/{id}', [App\Http\Controllers\ApiController::class, 'fetchKabupaten']);
     Route::get('kecamatan/{id}', [App\Http\Controllers\ApiController::class, 'fetchKecamatan']);
     Route::get('kelurahan/{id}', [App\Http\Controllers\ApiController::class, 'fetchKelurahan']);
+
+    Route::get('/get-divisi/{departemen_id}', [App\Http\Controllers\ApiController::class, 'getByDepartemen']);
 });

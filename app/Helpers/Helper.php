@@ -321,6 +321,24 @@ Terima kasih atas perhatian dan minat anda pada PT VDNI. Kami berharap anda suks
 Salam hormat,
 Rekrutmen PT VDNI"
 EOT,
+
+            'aktif bekerja' => <<<EOT
+Yth. Bapak/Ibu,
+
+Terima kasih telah meluangkan waktu dan berkomitmen untuk bergabung bersama PT VDNI.
+Kami mengucapkan selamat atas telah selesainya proses administrasi, termasuk penandatanganan kontrak kerja.
+
+Kami sangat senang menyambut Anda sebagai bagian dari keluarga besar PT VDNI.
+Silakan bersiap untuk memulai pekerjaan Anda sesuai jadwal yang telah disampaikan. Tim kami akan terus berkoordinasi untuk mendukung kelancaran proses awal Anda di perusahaan.
+
+Apabila ada hal yang ingin ditanyakan atau dipersiapkan lebih lanjut, jangan ragu untuk menghubungi tim Rekrutmen kami.
+
+Terima kasih atas kepercayaan dan kerja sama Anda.
+Kami berharap Anda sukses dan berkembang bersama kami.
+
+Salam hormat,
+Rekrutmen PT VDNI"
+EOT,
         ];
 
         return $templates[$status] ?? null;

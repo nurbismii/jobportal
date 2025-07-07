@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Lamaran;
 use App\Models\Lowongan;
-use App\Models\User;
+use App\Models\PermintaanTenagaKerja;
 use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
 
@@ -30,13 +30,16 @@ class LowonganController extends Controller
 
     public function create()
     {
-        return view('admin.lowongan-kerja.create');
+        $permintaanTenagaKerjas = PermintaanTenagaKerja::where('status_ptk', '!=', 'Selesai')->orderBy('created_at', 'desc')->get();
+
+        return view('admin.lowongan-kerja.create', compact('permintaanTenagaKerjas'));
     }
 
     public function store(Request $request)
     {
         // Buat data lowongan kerja baru
         Lowongan::create([
+            'permintaan_tenaga_kerja_id' => $request->ptk_id,
             'nama_lowongan' => $request->nama_lowongan,
             'kualifikasi' => $request->kualifikasi,
             'status_sim_b2' => $request->status_sim_b2,

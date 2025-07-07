@@ -126,6 +126,7 @@
                     <option value="Medical Check-Up" {{ request('status') == 'Medical Check-Up' ? 'selected' : '' }}>Medical Check-Up</option>
                     <option value="Induksi Safety" {{ request('status') == 'Induksi Safety' ? 'selected' : '' }}>Induksi Safety</option>
                     <option value="Tanda Tangan Kontrak" {{ request('status') == 'Tanda Tangan Kontrak' ? 'selected' : '' }}>Tanda Tangan Kontrak</option>
+                    <option value="Aktif Bekerja" {{ request('status') == 'Aktif Bekerja' ? 'selected' : '' }}>Aktif Bekerja</option>
                 </select>
             </div>
 
@@ -150,7 +151,7 @@
                 </select>
             </div>
 
-             <div class="col-md-6 mb-3">
+            <div class="col-md-6 mb-3">
                 <select name="status_resign" class="form-control form-control-sm" onchange="this.form.submit()">
                     <option value="">-- Filter Status Pelamar --</option>
                     <option value="RESIGN SESUAI PROSEDUR" {{ request('status_resign') == 'RESIGN SESUAI PROSEDUR' ? 'selected' : '' }}>RESIGN SESUAI PROSEDUR</option>
@@ -184,6 +185,7 @@
                             <option value="Medical Check-Up">Medical Check-Up (MCU)</option>
                             <option value="Induksi Safety">Induksi Safety</option>
                             <option value="Tanda Tangan Kontrak">Tanda Tangan Kontrak</option>
+                            <option value="Aktif Bekerja">Aktif Bekerja</option>
                         </select>
                     </div>
                 </div>
