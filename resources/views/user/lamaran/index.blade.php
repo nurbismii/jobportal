@@ -44,19 +44,19 @@
                         <p class="card-text text-muted flex-grow-1" style="max-height: 90px; overflow: hidden;">
                             {!! $lamaran->lowongan->kualifikasi !!}
                         </p>
-                        <div class="mb-3">
+                        <div class="mb-1">
                             <p class="mb-1 small">
                                 <strong>Status Lamaran : </strong>
                                 @if ($lamaran->status_lamaran == '1')
-                                <span class="badge bg-success"><i class="fa fa-check-circle me-1"></i>Aktif</span>
+                                <span class="badge bg-success"><i class="fa fa-check-circle me-1"></i>Dalam Proses Rekrutmen</span>
                                 @else
-                                <span class="badge bg-dark"><i class="fa fa-times-circle me-1"></i>Tidak Aktif</span>
+                                <span class="badge bg-dark"><i class="fa fa-times-circle me-1"></i>Rekrutmen Selesai</span>
                                 @endif
                             </p>
-                            <p class="mb-0 small">
+                            <!-- <p class="mb-0 small">
                                 <strong>Status Proses : </strong>
                                 <span class="fw-bold">{{ $lamaran->status_proses }}</span>
-                            </p>
+                            </p> -->
                         </div>
                         <div>
                             <a href="{{ route('lamaran.show', $lamaran->id) }}" class="btn p-0 mt-3 float-left">Baca Detail <i class="fa fa-arrow-right"></i></a>
@@ -71,7 +71,7 @@
                     <h4 class="fw-bold mb-2">Belum ada lamaran yang diajukan</h4>
                     <p class="text-muted mb-3">Kamu belum mengajukan lamaran kerja. Silakan pilih lowongan yang tersedia.</p>
                     <a href="{{ route('lowongan-kerja.index') }}" class="btn btn-primary rounded-pill px-4">Lihat Lowongan</a>
-                </div> 
+                </div>
             </div>
             @endforelse
         </div>

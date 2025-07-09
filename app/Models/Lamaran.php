@@ -31,4 +31,21 @@ class Lamaran extends Model
     {
         return $this->hasOne(RiwayatProsesLamaran::class, 'id, lamaran_id');
     }
+
+    // Relasi ke Lowongan
+    public function lowonganBelongs()
+    {
+        return $this->belongsTo(Lowongan::class, 'loker_id', 'id');
+    }
+
+    // Relasi ke User (jika ada)
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
+
+    public function riwayatProsesLamaran()
+    {
+        return $this->hasMany(RiwayatProsesLamaran::class, 'lamaran_id');
+    }
 }

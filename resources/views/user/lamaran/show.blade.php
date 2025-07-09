@@ -24,9 +24,9 @@
                     <p class="mb-1"><strong>Posisi:</strong> {{ $lamaran->lowongan->nama_lowongan }}</p>
                     <p class="mb-1"><strong>Status Lamaran:</strong>
                         @if ($lamaran->status_lamaran == '1')
-                        <span class="badge bg-success">Aktif</span>
+                        <span class="badge bg-success"><i class="fa fa-check-circle me-1"></i>Dalam Proses Rekrutmen</span>
                         @else
-                        <span class="badge bg-dark">Tidak Aktif</span>
+                        <span class="badge bg-dark"><i class="fa fa-times-circle me-1"></i>Rekrutmen Selesai</span>
                         @endif
                     </p>
                 </div>

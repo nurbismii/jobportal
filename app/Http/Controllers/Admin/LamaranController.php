@@ -17,38 +17,51 @@ class LamaranController extends Controller
 {
     public function updateStatusMassal(Request $request)
     {
-        try {
-            $limitPerJam = 50;
-            $counter = 0;
+        $limitPerJam = 50;
+        $counter = 0;
 
-            $request->validate([
-                'selected_ids' => 'required|array',
-                'status_proses' => 'required|string'
+        // DB::beginTransaction();
+
+        $lamaran = Lamaran::with('biodata', 'lowongan')->whereIn('id', $request->selected_ids)->get();
+
+        foreach ($lamaran as $data) {
+
+            $pesan = null;
+            $lolos = null;
+            $userId = $data->biodata->user_id;
+            $lamaranId = $data->id;
+            $status = $request->status_proses;
+
+            // Hitung delay berdasarkan akumulasi kirim
+            $delayJam = $this->getBatchDelayJam($counter, $limitPerJam);
+            $batchKe = $delayJam + 1;
+
+            // Simpan log email blast
+            $log = EmailBlastLog::create([
+                'user_id' => $userId,
+                'lamaran_id' => $lamaranId,
+                'status_proses' => $status,
+                'batch_ke' => $batchKe,
+                'delay_jam' => $delayJam,
             ]);
 
-            DB::beginTransaction();
+            $tahapanTidakLolos = [
+                'Belum Sesuai Kriteria',
+                'Tidak Lolos Verifikasi Berkas',
+                'Tidak Lolos Tes Kesehatan',
+                'Tidak Lolos Tes Lapangan',
+                // 'Tidak Lolos Medical Check-Up',
+                'Tidak Lolos Induksi Safety',
+                'Tidak Lolos Tanda Tangan Kontrak',
+            ];
 
-            $lamaran = Lamaran::with('biodata', 'lowongan')->whereIn('id', $request->selected_ids)->get();
-
-            foreach ($lamaran as $data) {
-                $userId = $data->biodata->user_id;
-                $lamaranId = $data->id;
-                $status = $request->status_proses;
-
-
-
-                // Hitung delay berdasarkan akumulasi kirim
-                $delayJam = $this->getBatchDelayJam($counter, $limitPerJam);
-                $batchKe = $delayJam + 1;
-
-                // Simpan log email blast
-                $log = EmailBlastLog::create([
-                    'user_id' => $userId,
-                    'lamaran_id' => $lamaranId,
-                    'status_proses' => $status,
-                    'batch_ke' => $batchKe,
-                    'delay_jam' => $delayJam,
+            if (in_array($status, $tahapanTidakLolos)) {
+                $lolos = 'Tidak Lolos';
+                Lamaran::where('id', $lamaranId)->update([
+                    'status_lamaran' => 0
                 ]);
+            } else {
+                $lolos = null;
 
                 $pesan = pesanStatusLamaran($status, $request->tanggal_proses, $request->jam, $request->tempat);
                 // Kirim job dengan delay sesuai batch
@@ -56,50 +69,53 @@ class LamaranController extends Controller
                     ->delay(now()->addHours($delayJam));
 
                 $counter++;
+            }
 
-                $sudahAda = RiwayatProsesLamaran::where('user_id', $userId)
-                    ->where('lamaran_id', $lamaranId)
-                    ->where('status_proses', $status)
-                    ->exists();
+            $sudahAda = RiwayatProsesLamaran::where('user_id', $userId)
+                ->where('lamaran_id', $lamaranId)
+                ->where('status_proses', $status)
+                ->exists();
 
-                // Cek apakah sudah ada riwayat proses dengan status yang sama
-                if (!$sudahAda) {
+            // Cek apakah sudah ada riwayat proses dengan status yang sama
+            if (!$sudahAda) {
 
-                    RiwayatProsesLamaran::create([
-                        'user_id' => $userId,
-                        'lamaran_id' => $lamaranId,
-                        'status_proses' => $status,
-                        'tanggal_proses' => $request->tanggal_proses,
-                        'jam' => $request->jam,
-                        'tempat' => $request->tempat,
-                        'pesan' => $pesan
-                    ]);
+                RiwayatProsesLamaran::create([
+                    'user_id' => $userId,
+                    'lamaran_id' => $lamaranId,
+                    'status_lolos' => $lolos,
+                    'status_proses' => $status,
+                    'tanggal_proses' => $request->tanggal_proses,
+                    'jam' => $request->jam,
+                    'tempat' => $request->tempat,
+                    'pesan' => $pesan ?? '-'
+                ]);
 
-                    if (strtolower($request->status_proses) == 'aktif bekerja') {
-                        PermintaanTenagaKerja::where('id', $data->lowongan->permintaan_tenaga_kerja_id)
-                            ->increment('jumlah_masuk', 1);
-                    }
+                if (strtolower($request->status_proses) == 'aktif bekerja') {
+                    PermintaanTenagaKerja::where('id', $data->lowongan->permintaan_tenaga_kerja_id)
+                        ->increment('jumlah_masuk', 1);
                 }
             }
+        }
 
-            // Update semua yang dipilih
-            if (strtolower($request->status_proses) == 'tanda tangan kontrak' || strtolower($request->status_proses) == 'belum sesuai kriteria' || strtolower($request->status_proses) == 'aktif bekerja') {
-                Lamaran::whereIn('id', $request->selected_ids)
-                    ->update([
-                        'status_lamaran' => 0,
-                        'status_proses' => $request->status_proses,
-                    ]);
-            } else {
-                Lamaran::whereIn('id', $request->selected_ids)
-                    ->update([
-                        'status_proses' => $request->status_proses
-                    ]);
-            }
+        // Update semua yang dipilih
+        if (strtolower($request->status_proses) == 'tanda tangan kontrak' || strtolower($request->status_proses) == 'belum sesuai kriteria' || strtolower($request->status_proses) == 'aktif bekerja') {
+            Lamaran::whereIn('id', $request->selected_ids)
+                ->update([
+                    'status_lamaran' => 0,
+                    'status_proses' => $request->status_proses,
+                ]);
+        } else {
+            Lamaran::whereIn('id', $request->selected_ids)
+                ->update([
+                    'status_proses' => $request->status_proses
+                ]);
+        }
 
-            DB::commit();
+        // DB::commit();
 
-            Alert::success('Berhasil', 'Status proses berhasil diperbarui menjadi [ ' . $request->status_proses . ' ]');
-            return back()->with('success', 'Status berhasil diperbarui.');
+        Alert::success('Berhasil', 'Status proses berhasil diperbarui menjadi [ ' . $request->status_proses . ' ]');
+        return back()->with('success', 'Status berhasil diperbarui.');
+        try {
         } catch (Exception $e) {
             DB::rollBack();
 

@@ -89,7 +89,7 @@ class LowonganController extends Controller
 
     public function directToLamaran(Request $request, $loker_id)
     {
-        $lowongan = Lowongan::select('nama_lowongan')->where('id', $loker_id)->first();
+        $lowongan = Lowongan::select('nama_lowongan', 'status_sim_b2')->where('id', $loker_id)->first();
 
         $query = Lamaran::with(
             'lowongan',
@@ -126,7 +126,6 @@ class LowonganController extends Controller
             });
         }
 
-
         if ($request->filled('status_resign')) {
             $noKtpList = \App\Models\Hris\Employee::where('status_resign', $request->status_resign)
                 ->pluck('no_ktp')
@@ -138,9 +137,10 @@ class LowonganController extends Controller
             });
         }
 
-
         $lamarans = $query->get();
 
         return view('admin.lamaran.index', compact('lamarans', 'lowongan'))->with('no');
     }
+
+    
 }

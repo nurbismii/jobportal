@@ -33,4 +33,11 @@ class ApiController extends Controller
         $divisi = Divisi::where('departemen_id', $departemen_id)->orderBy('nama_divisi', 'asc')->get();
         return response()->json($divisi);
     }
+
+    public function getLowongan($ptk_id = null)
+    {
+        $query = \App\Models\Lowongan::select('id', 'nama_lowongan')->where('permintaan_tenaga_kerja_id', $ptk_id)->get();
+
+        return response()->json($query);
+    }
 }

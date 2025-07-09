@@ -117,16 +117,26 @@
             <div class="col-md-4 mb-3">
                 <select name="status" class="form-control form-control-sm" onchange="this.form.submit()">
                     <option value="">-- Filter Status --</option>
-                    <option value="Belum Sesuai Kriteria" {{ request('status') == 'Belum Sesuai Kriteria' ? 'selected' : '' }}>Belum Sesuai Kriteria</option>
-                    <option value="Lamaran Dikirim" {{ request('status') == 'Lamaran Dikirim' ? 'selected' : '' }}>Lamaran Dikirim</option>
-                    <option value="Verifikasi Online" {{ request('status') == 'Verifikasi Online' ? 'selected' : '' }}>Verifikasi Online</option>
-                    <option value="Verifikasi Berkas" {{ request('status') == 'Verifikasi Berkas' ? 'selected' : '' }}>Verifikasi Berkas</option>
-                    <option value="Tes Kesehatan" {{ request('status') == 'Tes Kesehatan' ? 'selected' : '' }}>Tes Kesehatan</option>
-                    <option value="Tes Lapangan" {{ request('status') == 'Tes Lapangan' ? 'selected' : '' }}>Tes Lapangan</option>
-                    <option value="Medical Check-Up" {{ request('status') == 'Medical Check-Up' ? 'selected' : '' }}>Medical Check-Up</option>
-                    <option value="Induksi Safety" {{ request('status') == 'Induksi Safety' ? 'selected' : '' }}>Induksi Safety</option>
-                    <option value="Tanda Tangan Kontrak" {{ request('status') == 'Tanda Tangan Kontrak' ? 'selected' : '' }}>Tanda Tangan Kontrak</option>
-                    <option value="Aktif Bekerja" {{ request('status') == 'Aktif Bekerja' ? 'selected' : '' }}>Aktif Bekerja</option>
+                    <optgroup label="Tahapan Proses">
+                        <option value="Belum Sesuai Kriteria" {{ request('status') == 'Belum Sesuai Kriteria' ? 'selected' : '' }}>Belum Sesuai Kriteria</option>
+                        <option value="Lamaran Dikirim" {{ request('status') == 'Lamaran Dikirim' ? 'selected' : '' }}>Lamaran Dikirim</option>
+                        <option value="Verifikasi Online" {{ request('status') == 'Verifikasi Online' ? 'selected' : '' }}>Verifikasi Online</option>
+                        <option value="Verifikasi Berkas" {{ request('status') == 'Verifikasi Berkas' ? 'selected' : '' }}>Verifikasi Berkas</option>
+                        <option value="Tes Kesehatan" {{ request('status') == 'Tes Kesehatan' ? 'selected' : '' }}>Tes Kesehatan</option>
+                        <option value="Tes Lapangan" {{ request('status') == 'Tes Lapangan' ? 'selected' : '' }}>Tes Lapangan</option>
+                        <option value="Medical Check-Up" {{ request('status') == 'Medical Check-Up' ? 'selected' : '' }}>Medical Check-Up</option>
+                        <option value="Induksi Safety" {{ request('status') == 'Induksi Safety' ? 'selected' : '' }}>Induksi Safety</option>
+                        <option value="Tanda Tangan Kontrak" {{ request('status') == 'Tanda Tangan Kontrak' ? 'selected' : '' }}>Tanda Tangan Kontrak</option>
+                        <option value="Aktif Bekerja" {{ request('status') == 'Aktif Bekerja' ? 'selected' : '' }}>Aktif Bekerja</option>
+                    </optgroup>
+                    <optgroup label="Tahapan Tidak Lolos">
+                        <option value="Tidak Sesuai Kriteria" {{ request('status') == 'Tidak Sesuai Kriteria' ? 'selected' : '' }}>Tidak Sesuai Kriteria</option>
+                        <option value="Tidak Lolos Verifikasi Berkas" {{ request('status') == 'Tidak Lolos Verifikasi Berkas' ? 'selected' : '' }}>Tidak Lolos Verifikasi Berkas</option>
+                        <option value="Tidak Lolos Tes Kesehatan" {{ request('status') == 'Tidak Lolos Tes Kesehatan' ? 'selected' : '' }}>Tidak Lolos Tes Kesehatan</option>
+                        <option value="Tidak Lolos Tes Lapangan" {{ request('status') == 'Tidak Lolos Tes Lapangan' ? 'selected' : '' }}>Tidak Lolos Tes Lapangan</option>
+                        <option value="Tidak Lolos Medical Check-Up" {{ request('status') == 'Tidak Lolos Medical Check-Up' ? 'selected' : '' }}>Tidak Lolos Medical Check-Up</option>
+                    </optgroup>
+
                 </select>
             </div>
 
@@ -168,53 +178,67 @@
 </div>
 
 <form action="{{ route('lamaran.updateStatusMassal') }}" method="POST">
-    <div class="card shadow border-primary mb-3">
-        <div class="card-body">
-            @csrf
-            <div class="row">
-                <div class="col-6">
-                    <div class="mb-3">
-                        <label for="pilih-status">Pilih Status Baru</label>
-                        <select name="status_proses" class="form-control form-control-sm" id="pilih-status" required>
-                            <option value="">-- Pilih Status Baru --</option>
-                            <option value="Belum Sesuai Kriteria">Belum Sesuai Kriteria</option>
-                            <option value="Verifikasi Online">Verifikasi Online</option>
-                            <option value="Verifikasi Berkas">Verifikasi Berkas</option>
-                            <option value="Tes Kesehatan">Tes Kesehatan</option>
-                            <option value="Tes Lapangan">Tes Lapangan</option>
-                            <option value="Medical Check-Up">Medical Check-Up (MCU)</option>
-                            <option value="Induksi Safety">Induksi Safety</option>
-                            <option value="Tanda Tangan Kontrak">Tanda Tangan Kontrak</option>
-                            <option value="Aktif Bekerja">Aktif Bekerja</option>
-                        </select>
-                    </div>
-                </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow border-primary mb-3">
+                <div class="card-body">
+                    @csrf
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="mb-1">
+                                <label for="pilih-status">Pilih Status Tahapan</label>
+                                <select name="status_proses" class="form-control form-control-sm" id="pilih-status" required>
+                                    <option value="">-- Pilih --</option>
+                                    <optgroup label="Tahapan Proses">
+                                        <option value="Verifikasi Online">Verifikasi Online</option>
+                                        <option value="Verifikasi Berkas">Verifikasi Berkas</option>
+                                        <option value="Tes Kesehatan">Tes Kesehatan</option>
+                                        <option value="Tes Lapangan">Tes Lapangan</option>
+                                        <option value="Medical Check-Up">Medical Check-Up (MCU)</option>
+                                        <option value="Induksi Safety">Induksi Safety</option>
+                                        <option value="Tanda Tangan Kontrak">Tanda Tangan Kontrak</option>
+                                        <option value="Aktif Bekerja">Aktif Bekerja</option>
+                                    </optgroup>
+                                    <optgroup label="Tidak Lolos">
+                                        <option value="Belum Sesuai Kriteria">Belum Sesuai Kriteria</option>
+                                        <option value="Tidak Lolos Verifikasi Online">Tidak Lolos Verifikasi Online</option>
+                                        <option value="Tidak Lolos Verifikasi Berkas">Tidak Lolos Verifikasi Berkas</option>
+                                        <option value="Tidak Lolos Tes Kesehatan">Tidak Lolos Tes Kesehatan</option>
+                                        <option value="Tidak Lolos Tes Lapangan">Tidak Lolos Tes Lapangan</option>
+                                        <option value="Tidak Lolos Medical Check-Up">Tidak Lolos Medical Check-Up (MCU)</option>
+                                        <option value="Tidak Lolos Induksi Safety">Tidak Lolos Induksi Safety</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                        </div>
 
-                <div class="col-6">
-                    <div class="mb-3">
-                        <label for="tanggal-proses">Tanggal Proses</label>
-                        <input class="form-control form-control-sm" type="date" name="tanggal_proses" id="tanggal-proses" required>
-                    </div>
-                </div>
+                        <div class="col-6">
+                            <div class="mb-1">
+                                <label for="tanggal-proses">Tanggal Proses</label>
+                                <input class="form-control form-control-sm" type="date" name="tanggal_proses" id="tanggal-proses" required>
+                            </div>
+                        </div>
 
-                <div class="col-6">
-                    <div class="mb-3">
-                        <label for="jam">Jam</label>
-                        <input class="form-control form-control-sm" type="time" name="jam" id="jam" required>
-                    </div>
-                </div>
+                        <div class="col-6">
+                            <div class="mb-1">
+                                <label for="jam">Jam</label>
+                                <input class="form-control form-control-sm" type="time" name="jam" id="jam" required>
+                            </div>
+                        </div>
 
-                <div class="col-6">
-                    <div class="mb-3">
-                        <label for="tempat">Tempat</label>
-                        <input class="form-control form-control-sm" type="text" name="tempat" id="tempat" required>
+                        <div class="col-6">
+                            <div class="mb-1">
+                                <label for="tempat">Tempat</label>
+                                <input class="form-control form-control-sm" type="text" name="tempat" id="tempat" required>
+                            </div>
+                        </div>
                     </div>
+                    <button type="submit" class="btn btn-primary mt-1">Perbarui proses lamaran</button>
                 </div>
             </div>
-
-            <button type="submit" class="btn btn-primary mb-3">Perbarui proses lamaran</button>
         </div>
     </div>
+
     <div class="card shadow mb-4">
         <div class="card-header py-3">
             <h6 class="m-0 font-weight-bold text-primary">Data Pelamar</h6>
@@ -273,8 +297,10 @@
                             <th>CV</th>
                             <th>KTP</th>
                             <th>KTP Status</th>
+                            @if($lowongan->status_sim_b2 == 1)
                             <th>SIM B2</th>
                             <th>SIM B2 Status</th>
+                            @endif
                             <th>KK</th>
                             <th>Ijazah</th>
                             <th>SKCK</th>
@@ -377,6 +403,7 @@
                                 data-field="status_ktp">
                                 {{ $data->biodata->status_ktp }}
                             </td>
+                            @if($lowongan->status_sim_b2 == 1)
                             <td>
                                 <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sim_b_2) }}" target="_blank">
                                     {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sim_b_2) }}
@@ -388,6 +415,7 @@
                                 data-field="status_sim_b2">
                                 {{ $data->biodata->status_sim_b2 }}
                             </td>
+                            @endif
                             <td>
                                 <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->kartu_keluarga) }}" target="_blank">
                                     {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->kartu_keluarga) }}

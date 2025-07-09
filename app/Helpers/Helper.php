@@ -199,6 +199,24 @@ if (!function_exists('pesanStatusLamaran')) {
         $tempat = $tempat;
 
         $templates = [
+
+            'verifikasi online' => <<<EOT
+Yth. Bapak/Ibu,
+
+Terima kasih telah meluangkan waktu untuk melamar dan mengirimkan berkas persyaratan kepada PT VDNI.
+
+Saat ini, Anda berada pada tahap Verifikasi Online, di mana seluruh dokumen yang telah Anda kirimkan akan kami periksa dan validasi terlebih dahulu untuk memastikan kesesuaian dengan persyaratan yang dibutuhkan.
+
+Mohon pastikan seluruh dokumen yang dikirim telah lengkap, jelas terbaca, dan sesuai dengan ketentuan.
+Apabila terdapat kekurangan atau ketidaksesuaian, tim Rekrutmen kami akan segera menghubungi Anda untuk melakukan perbaikan atau melengkapi dokumen tersebut.
+
+Terima kasih atas perhatian dan kerja sama Anda.
+Kami menghargai minat Anda untuk bergabung bersama PT VDNI dan berharap proses ini berjalan lancar.
+
+Salam hormat,
+Rekrutmen PT VDNI"
+EOT,
+
             'verifikasi berkas' => <<<EOT
 Kepada yth,
 
@@ -231,6 +249,8 @@ Demikian untuk diketahui, mohon balas pesan ini untuk konfirmasi penerimaan. Ter
 PERHATIAN!
 Pemanggilan resmi hanya dari email HR VDNI: vdnirekrutmen88@gmail.com
 EOT,
+
+
 
             'tes kesehatan' => <<<EOT
 Selamat sore,
@@ -306,22 +326,6 @@ Catatan:
 - Membawa alat tulis"
 EOT,
 
-            'belum sesuai kriteria' => <<<EOT
-Terima kasih atas lamaran anda di PT VDNI. 
-
-Yth. Pelamar,
-Terima kasih telah meluangkan waktu untuk melamar.
-
-Setelah mempertimbangkan lamaran anda dengan seksama, kami menghargai minat dan usaha anda. Namun, untuk saat ini, kami memutuskan untuk melanjutkan proses dengan kandidat lain yang lebih sesuai dengan kualifikasi dan kebutuhan posisi tersebut.
-
-Kami tetap menyimpan data anda dalam database kami, dan akan menghubungi anda jika ada kesempatan yang lebih sesuai di masa mendatang.
-
-Terima kasih atas perhatian dan minat anda pada PT VDNI. Kami berharap anda sukses dalam perjalanan karier anda ke depan.
-
-Salam hormat,
-Rekrutmen PT VDNI"
-EOT,
-
             'aktif bekerja' => <<<EOT
 Yth. Bapak/Ibu,
 
@@ -339,6 +343,211 @@ Kami berharap Anda sukses dan berkembang bersama kami.
 Salam hormat,
 Rekrutmen PT VDNI"
 EOT,
+
+            'belum sesuai kriteria' => <<<EOT
+Yth. Pelamar,
+
+Terima kasih telah meluangkan waktu untuk melamar.
+
+Setelah mempertimbangkan lamaran anda dengan seksama, kami menghargai minat dan usaha anda. Namun, untuk saat ini, kami memutuskan untuk melanjutkan proses dengan kandidat lain yang lebih sesuai dengan kualifikasi dan kebutuhan posisi tersebut.
+
+Kami tetap menyimpan data anda dalam database kami, dan akan menghubungi anda jika ada kesempatan yang lebih sesuai di masa mendatang.
+
+Terima kasih atas perhatian dan minat anda pada PT VDNI. Kami berharap anda sukses dalam perjalanan karier anda ke depan.
+
+Salam hormat,
+Rekrutmen PT VDNI"
+EOT,
+
+
+            'tidak lolos verifikasi online' => <<<EOT
+Yth. Bapak/Ibu, 
+
+Terima kasih telah meluangkan waktu untuk melamar dan mengirimkan berkas persyaratan kepada PT VDNI.
+
+Setelah melakukan verifikasi berkas, kami mohon maaf karena berkas yang Anda kirimkan tidak memenuhi kriteria yang kami butuhkan saat ini.
+
+Kami menghargai minat Anda untuk bergabung dengan perusahaan kami, namun saat ini kami tidak dapat melanjutkan proses lamaran Anda.
+
+Kami menyarankan Anda untuk terus memantau lowongan pekerjaan yang kami buka di masa mendatang, dan kami berharap Anda dapat menemukan kesempatan yang lebih sesuai dengan kualifikasi dan pengalaman Anda.
+
+Terima kasih atas perhatian dan kerja sama Anda.
+
+Salam hormat,
+Rekrutmen PT VDNI"
+EOT,
+
+            'tidak lolos verifikasi berkas' => <<<EOT
+Yth. Bapak/Ibu,
+
+Terima kasih telah meluangkan waktu untuk melamar dan mengirimkan berkas persyaratan kepada PT VDNI.
+
+Setelah melakukan verifikasi berkas, kami mohon maaf karena berkas yang ditampilkan tidak memenuhi kriteria yang kami butuhkan saat ini.
+
+Kami menghargai usaha dan komitmen Anda dalam mengikuti proses seleksi ini. Meskipun demikian, kami tidak dapat melanjutkan proses lamaran Anda pada tahap ini.
+
+Kami menyarankan Anda untuk terus memantau lowongan pekerjaan yang kami buka di masa mendatang, dan kami berharap Anda dapat menemukan kesempatan yang lebih sesuai dengan kualifikasi dan pengalaman Anda.
+
+Terima kasih atas perhatian dan kerja sama Anda.
+
+Salam hormat,
+Rekrutmen PT VDNI"
+EOT,
+
+            'tidak lolos tes kesehatan' => <<<EOT
+Yth. Bapak/Ibu,
+
+Terima kasih telah meluangkan waktu untuk mengikuti proses seleksi di PT VDNI.
+
+Setelah melakukan evaluasi terhadap hasil Tes Kesehatan yang telah Anda jalani, kami mohon maaf karena Anda tidak memenuhi kriteria kesehatan yang kami butuhkan saat ini.
+
+Kami menghargai usaha dan komitmen Anda dalam mengikuti proses seleksi ini. Meskipun demikian, kami tidak dapat melanjutkan proses lamaran Anda pada tahap ini.
+
+Kami menyarankan Anda untuk terus memantau lowongan pekerjaan yang kami buka di masa mendatang, dan kami berharap Anda dapat menemukan kesempatan yang lebih sesuai dengan kualifikasi dan pengalaman Anda.
+
+Terima kasih atas perhatian dan kerja sama Anda.
+
+Salam hormat,
+Rekrutmen PT VDNI"
+EOT,
+
+            'tidak lolos tes lapangan' => <<<EOT
+Yth. Bapak/Ibu,
+
+Terima kasih telah meluangkan waktu untuk mengikuti proses seleksi di PT VDNI.
+
+Setelah melakukan evaluasi terhadap hasil Tes Lapangan yang telah Anda jalani, kami mohon maaf karena Anda tidak memenuhi kriteria yang kami butuhkan saat ini.
+
+Kami menghargai usaha dan komitmen Anda dalam mengikuti proses seleksi ini. Meskipun demikian, kami tidak dapat melanjutkan proses lamaran Anda pada tahap ini.
+
+Kami menyarankan Anda untuk terus memantau lowongan pekerjaan yang kami buka di masa mendatang, dan kami berharap Anda dapat menemukan kesempatan yang lebih sesuai dengan kualifikasi dan pengalaman Anda.
+
+Terima kasih atas perhatian dan kerja sama Anda.
+
+Salam hormat,
+Rekrutmen PT VDNI"
+EOT,
+
+            'tidak lolos medical check-up' => <<<EOT
+
+Yth. Bapak/Ibu,
+
+Terima kasih telah meluangkan waktu untuk mengikuti proses seleksi di PT VDNI.
+
+Setelah melakukan evaluasi terhadap hasil Medical Check-Up (MCU) yang telah Anda jalani, kami mohon maaf karena Anda tidak memenuhi kriteria kesehatan yang kami butuhkan saat ini.
+
+Kami menghargai usaha dan komitmen Anda dalam mengikuti proses seleksi ini. Meskipun demikian, kami tidak dapat melanjutkan proses lamaran Anda pada tahap ini.
+
+Kami menyarankan Anda untuk terus memantau lowongan pekerjaan yang kami buka di masa mendatang, dan kami berharap Anda dapat menemukan kesempatan yang lebih sesuai dengan kualifikasi dan pengalaman Anda.
+
+Terima kasih atas perhatian dan kerja sama Anda.
+
+Salam hormat,
+Rekrutmen PT VDNI"
+EOT,
+
+            'tidak lolos induksi safety' => <<<EOT
+Yth. Bapak/Ibu,
+
+Terima kasih telah meluangkan waktu untuk mengikuti proses seleksi di PT VDNI.
+
+Anda dinyatakan tidak lolos pada tahap induksi safety karena tidak mengikuti proses induksi safety sesuai jadwal yang telah ditentukan.
+
+Kami menghargai usaha dan komitmen Anda dalam mengikuti proses seleksi ini. Meskipun demikian, kami tidak dapat melanjutkan proses lamaran Anda pada tahap ini.
+
+Kami menyarankan Anda untuk terus memantau lowongan pekerjaan yang kami buka di masa mendatang, dan kami berharap Anda dapat menemukan kesempatan yang lebih sesuai dengan kualifikasi dan pengalaman Anda.
+
+Terima kasih atas perhatian dan kerja sama Anda.
+
+Salam hormat,
+Rekrutmen PT VDNI"
+EOT,
+
+            'lolos verifikasi online' => <<<EOT
+Yth. Bapak/Ibu,
+
+Terima kasih telah meluangkan waktu untuk melamar dan mengirimkan berkas persyaratan kepada PT VDNI.
+
+Setelah melakukan verifikasi berkas, kami dengan senang hati menginformasikan bahwa Anda telah lolos pada tahap Verifikasi Online.
+
+Kami mengapresiasi usaha dan komitmen Anda dalam mengikuti proses seleksi ini. Selanjutnya, Anda akan diundang untuk mengikuti tahap berikutnya sesuai dengan jadwal yang akan kami sampaikan.
+
+Kami berharap Anda dapat mempersiapkan diri dengan baik untuk tahap selanjutnya.
+
+Terima kasih atas perhatian dan kerja sama Anda.
+
+Salam hormat,
+Rekrutmen PT VDNI"
+EOT,
+
+            'lolos verifikasi berkas' => <<<EOT
+Yth. Bapak/Ibu,
+
+Terima kasih telah meluangkan waktu untuk melamar dan mengirimkan berkas persyaratan kepada PT VDNI.
+
+Setelah melakukan verifikasi berkas, kami dengan senang hati menginformasikan bahwa Anda telah lolos pada tahap Verifikasi Berkas.
+
+Kami mengapresiasi usaha dan komitmen Anda dalam mengikuti proses seleksi ini. Selanjutnya, Anda akan diundang untuk mengikuti tahap berikutnya sesuai dengan jadwal yang akan kami sampaikan.
+
+Kami berharap Anda dapat mempersiapkan diri dengan baik untuk tahap selanjutnya.
+
+Terima kasih atas perhatian dan kerja sama Anda.
+
+Salam hormat,
+Rekrutmen PT VDNI"
+EOT,
+
+            'lolos tes kesehatan' => <<<EOT
+Yth. Bapak/Ibu,
+
+Terima kasih telah meluangkan waktu untuk mengikuti proses seleksi di PT VDNI.
+
+Setelah melakukan evaluasi terhadap hasil Tes Kesehatan yang telah Anda jalani, kami dengan senang hati menginformasikan bahwa Anda telah lolos pada tahap Tes Kesehatan.
+
+Kami mengapresiasi usaha dan komitmen Anda dalam mengikuti proses seleksi ini. Selanjutnya, Anda akan diundang untuk mengikuti tahap berikutnya sesuai dengan jadwal yang akan kami sampaikan.
+
+Kami berharap Anda dapat mempersiapkan diri dengan baik untuk tahap selanjutnya.
+
+Terima kasih atas perhatian dan kerja sama Anda.
+
+Salam hormat,
+Rekrutmen PT VDNI"
+EOT,
+
+            'lolos tes lapangan' => <<<EOT
+Yth. Bapak/Ibu,
+
+Terima kasih telah meluangkan waktu untuk mengikuti proses seleksi di PT VDNI.
+
+Setelah melakukan evaluasi terhadap hasil Tes Lapangan yang telah Anda jalani, kami dengan senang hati menginformasikan bahwa Anda telah lolos pada tahap Tes Lapangan.
+
+Kami mengapresiasi usaha dan komitmen Anda dalam mengikuti proses seleksi ini. Selanjutnya, Anda akan diundang untuk mengikuti tahap berikutnya sesuai dengan jadwal yang akan kami sampaikan.
+
+Kami berharap Anda dapat mempersiapkan diri dengan baik untuk tahap selanjutnya.
+
+Terima kasih atas perhatian dan kerja sama Anda.
+
+Salam hormat,
+Rekrutmen PT VDNI"
+EOT,
+
+            'lolos medical check-up' => <<<EOT
+Yth. Bapak/Ibu,
+
+Terima kasih telah meluangkan waktu untuk mengikuti proses seleksi di PT VDNI.
+
+Setelah melakukan evaluasi terhadap hasil Medical Check-Up (MCU) yang telah Anda jalani, kami dengan senang hati menginformasikan bahwa Anda telah lolos pada tahap Medical Check-Up.
+
+Kami mengapresiasi usaha dan komitmen Anda dalam mengikuti proses seleksi ini. Selanjutnya, Anda akan diundang untuk mengikuti tahap berikutnya sesuai dengan jadwal yang akan kami sampaikan.
+
+Kami berharap Anda dapat mempersiapkan diri dengan baik untuk tahap selanjutnya.
+
+Terima kasih atas perhatian dan kerja sama Anda.
+
+Salam hormat,
+Rekrutmen PT VDNI"
+EOT,
+
         ];
 
         return $templates[$status] ?? null;

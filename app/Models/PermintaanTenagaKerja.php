@@ -22,4 +22,10 @@ class PermintaanTenagaKerja extends Model
     {
         return $this->belongsTo('App\Models\Hris\Divisi', 'divisi_id');
     }
+
+    // Relasi ke Lowongan
+    public function lowongan()
+    {
+        return $this->hasMany(Lowongan::class, 'permintaan_tenaga_kerja_id', 'id');
+    }
 }

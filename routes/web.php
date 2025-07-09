@@ -49,6 +49,9 @@ Route::group(['prefix' => 'admin', 'middleware' => ['redirect.role']], function 
 
     Route::get('/', [App\Http\Controllers\Admin\DasborController::class, 'index']);
     Route::get('/dasbor', [App\Http\Controllers\Admin\DasborController::class, 'index'])->name('home');
+    Route::get('/dasbor/lowongan-data', [App\Http\Controllers\Admin\DasborController::class, 'lowonganData']);
+    Route::get('/dasbor/lowongan-chart', [App\Http\Controllers\Admin\DasborController::class, 'lowonganChart']);
+
     Route::resource('/pengguna', 'App\Http\Controllers\Admin\PenggunaController');
 
     Route::resource('/lowongan', 'App\Http\Controllers\Admin\LowonganController');
@@ -73,4 +76,5 @@ Route::group(['prefix' => 'api'], function () {
     Route::get('kelurahan/{id}', [App\Http\Controllers\ApiController::class, 'fetchKelurahan']);
 
     Route::get('/get-divisi/{departemen_id}', [App\Http\Controllers\ApiController::class, 'getByDepartemen']);
+    Route::get('/lowongan-by-ptk/{ptk_id?}', [App\Http\Controllers\ApiController::class, 'getLowongan']);
 });

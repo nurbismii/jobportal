@@ -48,15 +48,17 @@ class LowonganController extends Controller
             return $cekBerkas; // Jika ada pesan verifikasi, kembalikan ke view verifikasi
         }
 
-        $lamaran = Lamaran::where('biodata_id', $request->biodata_id)->first();
-
-        if ($lamaran && $lamaran->loker_id) {
-            Alert::warning('Peringatan', 'Kamu sudah melamar lowongan ini.');
-            return redirect()->route('lamaran.index');
-        }
+        $lamaran = Lamaran::where('biodata_id', $request->biodata_id)
+            ->where('loker_id', $request->loker_id)
+            ->first();
 
         if ($lamaran && $lamaran->status_lamaran == '1') {
             Alert::warning('Peringatan', 'Saat ini kamu dalam proses lamaran, tidak dapat melamar lebih dari satu lowongan.');
+            return redirect()->route('lamaran.index');
+        }
+
+        if ($lamaran && $lamaran->status_lamaran == '0') {
+            Alert::warning('Peringatan', 'Kamu tidak dapat mengirim ulang lamaran yang sudah diproses sebelumnya.');
             return redirect()->route('lamaran.index');
         }
 

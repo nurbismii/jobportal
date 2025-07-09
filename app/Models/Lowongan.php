@@ -17,4 +17,16 @@ class Lowongan extends Model
     {
         return $this->hasMany(Lamaran::class, 'loker_id');
     }
+
+    // Relasi ke PermintaanTenagaKerja
+    public function permintaanTenagaKerja()
+    {
+        return $this->belongsTo(PermintaanTenagaKerja::class, 'permintaan_tenaga_kerja_id', 'id');
+    }
+
+    // Relasi ke Lamaran
+    public function lamaran()
+    {
+        return $this->hasMany(Lamaran::class, 'loker_id', 'id');
+    }
 }
