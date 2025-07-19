@@ -50,7 +50,7 @@ class PermintaanTenagaKerjaController extends Controller
 
         $month = $romanMonths[$month];
 
-        return view('admin.permintaan-tenaga-kerja.create', compact('departemens', 'total_ptk', 'month', 'ptk'));
+        return view('admin.permintaan-tenaga-kerja.create', compact('departemens', 'total_ptk', 'month'));
     }
 
     public function store(Request $request)
