@@ -38,7 +38,6 @@
             <div class="card-body d-flex flex-column">
                 <h4 class="card-title fw-bold text-primary">{{ $data->nama_lowongan }}</h4>
                 <h5 class="card-title text-primary">Jumlah Pelamar saat ini : {{$data->lamarans_count}}</h5>
-                <p class="mb-1">{!! $data->kualifikasi !!}</p>
                 <p class="mb-1"><strong>SIM B2 :</strong> {{ $data->status_sim_b2 == 1 ? 'Dibutuhkan' : 'Tidak dibutuhkan' }}</p>
                 <p class="mb-1"><strong>Mulai :</strong> {{ tanggalIndo($data->tanggal_mulai) }}</p>
                 <p class="mb-3"><strong>Berakhir :</strong> {{ tanggalIndo($data->tanggal_berakhir) }}</p>
