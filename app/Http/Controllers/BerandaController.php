@@ -18,6 +18,7 @@ class BerandaController extends Controller
 
         $lowongans = Lowongan::select('*')
             ->selectRaw("IF(tanggal_berakhir < ?, 'Kadaluwarsa', 'Aktif') as status_lowongan", [Carbon::now()])
+            ->having('status_lowongan', '=', 'Aktif')
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get();

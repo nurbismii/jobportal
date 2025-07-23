@@ -165,30 +165,43 @@ if (!function_exists('extractSimB2OnlyOCR')) {
         if ($biodata && $biodata->sim_b_2) {
             $fullPath = public_path($biodata->no_ktp . '/dokumen/' . $biodata->sim_b_2);
 
-            $response = Http::attach(
-                'file',
-                file_get_contents($fullPath),
-                basename($fullPath)
-            )->post('https://api.ocr.space/parse/image', [
-                'apikey' => 'K82052672988957',
-                'language' => 'eng',
-                'OCREngine' => '2',
-                'scale' => 'true',
-                'detectOrientation' => 'true',
-                'isOverlayRequired' => 'false',
-            ]);
+            try {
+                $response = Http::timeout(30) // batas waktu 30 detik
+                    ->attach(
+                        'file',
+                        file_get_contents($fullPath),
+                        basename($fullPath)
+                    )->post('https://api.ocr.space/parse/image', [
+                        'apikey' => 'K82052672988957',
+                        'language' => 'eng',
+                        'OCREngine' => '2',
+                        'scale' => 'true',
+                        'detectOrientation' => 'true',
+                        'isOverlayRequired' => 'false',
+                    ]);
 
-            $text = $response->json()['ParsedResults'][0]['ParsedText'] ?? null;
+                if ($response->successful()) {
+                    $text = $response->json()['ParsedResults'][0]['ParsedText'] ?? null;
 
-            $biodata->ocr_sim_b2 = $text;
-            $biodata->save();
+                    $biodata->ocr_sim_b2 = $text;
+                    $biodata->save();
 
-            return ['message' => 'OCR berhasil, silakan lanjutkan parsing.'];
+                    return ['success' => true, 'message' => 'Berhasil upload sim B2'];
+                } else {
+                    return ['success' => false, 'message' => 'Upload sim B2 gagal! Silakan coba lagi nanti.'];
+                }
+            } catch (\Illuminate\Http\Client\RequestException $e) {
+                // menangkap error koneksi, timeout, dll.
+                return ['success' => false, 'message' => 'Silakan coba beberapa saat lagi.'];
+            } catch (\Exception $e) {
+                return ['success' => false, 'message' => 'Terjadi kesalahan'];
+            }
         }
 
-        return ['message' => 'Gagal menemukan file SIM B2'];
+        return ['success' => false, 'message' => 'Gagal menemukan file SIM B2'];
     }
 }
+
 
 if (!function_exists('pesanStatusLamaran')) {
     function pesanStatusLamaran($status, $tanggal_proses, $jam, $tempat)

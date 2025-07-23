@@ -22,6 +22,7 @@ class LowonganController extends Controller
     {
         $lowongans = Lowongan::select('*')
             ->selectRaw("IF(tanggal_berakhir < ?, 'Kadaluwarsa', 'Aktif') as status_lowongan", [Carbon::now()])
+            ->having('status_lowongan', '=', 'Aktif')
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get();
@@ -48,18 +49,14 @@ class LowonganController extends Controller
             return $cekBerkas; // Jika ada pesan verifikasi, kembalikan ke view verifikasi
         }
 
-        $lamaran = Lamaran::where('biodata_id', $request->biodata_id)
-            ->where('loker_id', $request->loker_id)
-            ->first();
+        $lamaran = Lamaran::where('biodata_id', $request->biodata_id)->latest()->first();
 
-        if ($lamaran && $lamaran->status_lamaran == '1') {
-            Alert::warning('Peringatan', 'Saat ini kamu dalam proses lamaran, tidak dapat melamar lebih dari satu lowongan.');
-            return redirect()->route('lamaran.index');
-        }
+        if ($lamaran) {
 
-        if ($lamaran && $lamaran->status_lamaran == '0') {
-            Alert::warning('Peringatan', 'Kamu tidak dapat mengirim ulang lamaran yang sudah diproses sebelumnya.');
-            return redirect()->route('lamaran.index');
+            if ($lamaran->loker_id == $request->loker_id || $lamaran->status_lamaran == '1') {
+                Alert::warning('Peringatan', 'Saat ini kamu dalam proses lamaran, tidak dapat melamar lebih dari satu lowongan.');
+                return redirect()->route('lamaran.index');
+            }
         }
 
         try {
@@ -88,8 +85,6 @@ class LowonganController extends Controller
             Alert::error('Gagal', 'Terjadi kesalahan saat mengirim lamaran' . ': ' . $e->getMessage());
             return redirect()->back();
         }
-
-
 
         Alert::success('Lamaran Anda Sudah Kami Terima', 'Terima kasih telah melamar pekerjaan di perusahaan kami. Kami akan segera memproses lamaran Anda.');
         return redirect()->back();

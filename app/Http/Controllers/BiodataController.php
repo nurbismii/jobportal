@@ -118,7 +118,12 @@ class BiodataController extends Controller
         );
 
         // Langsung proses OCR saat file diunggah
-        extractSimB2OnlyOCR($biodata);
+        $res_extract = extractSimB2OnlyOCR($biodata);
+
+        if (!$res_extract['success']) {
+            Alert::error('Gagal', $res_extract['message']);
+            return redirect()->back();
+        }
 
         Alert::success('success', 'Biodata diri berhasil ditambahkan.');
         return redirect()->back();
@@ -154,6 +159,12 @@ class BiodataController extends Controller
 
             if (File::exists($filePath)) {
                 File::delete($filePath);
+            }
+
+            // Reset OCR data if SIM B II Umum is deleted
+            if ($field === 'sim_b_2') {
+                $biodata->ocr_sim_b2 = null;
+                $biodata->parsed_sim_b2 = null;
             }
 
             $biodata->{$field} = null;
