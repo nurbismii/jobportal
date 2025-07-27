@@ -55,8 +55,10 @@ class PenggunaController extends Controller
 
         $biodata = Biodata::where('user_id', $user->id)->first();
 
-        Lamaran::where('biodata_id', $biodata->id)->delete();
-
+        if ($biodata) {
+            Lamaran::where('biodata_id', $biodata->id)->delete();
+        }
+        
         SuratPeringatan::where('user_id', $user->id)->delete();
 
         $user->delete();
