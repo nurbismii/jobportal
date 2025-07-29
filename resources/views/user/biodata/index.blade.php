@@ -105,6 +105,10 @@
         /* Agar tidak transparan */
         border-radius: 0.5rem 0.5rem 0 0;
     }
+
+    .check-pasif {
+        pointer-events: none;
+    }
 </style>
 
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -626,8 +630,8 @@
                         'pas_foto' => ['label' => 'Pas Foto 3x4 (jpeg, jpg, png)', 'accept' => '.png,.jpg,.jpeg'],
                         'surat_lamaran' => ['label' => 'Surat Lamaran Kerja (pdf)', 'accept' => '.pdf'],
                         'ijazah' => ['label' => 'Ijazah dan Transkrip nilai (pdf)', 'accept' => '.pdf'],
-                        'ktp' => ['label' => 'Kartu Tanda Penduduk (KTP) (jpg, jpeg, png)', 'accept' => '.jpg,.jpeg,.png'],
-                        'sim_b_2' => ['label' => 'SIM B II Umum/SIO (jpg, jpeg, png) <sup>Opsional</sup>', 'accept' => '.jpg,.jpeg,.png'],
+                        'ktp' => ['label' => 'Kartu Tanda Penduduk (KTP) (jpg, jpeg, png)', 'accept' => '.jpg,.jpeg,.png', 'onchange' => 'handleKtpOCR(this)'],
+                        'sim_b_2' => ['label' => 'SIM B II Umum/SIO (jpg, jpeg, png) <sup>Opsional</sup>', 'accept' => '.jpg,.jpeg,.png', 'onchange' => 'handleSimB2OCR(this)'],
                         'skck' => ['label' => 'SKCK (pdf)', 'accept' => '.pdf'],
                         'sertifikat_vaksin' => ['label' => 'Sertifikat Vaksin (pdf)', 'accept' => '.pdf'],
                         'kartu_keluarga' => ['label' => 'Kartu Keluarga (pdf)', 'accept' => '.pdf'],
@@ -645,23 +649,27 @@
                             $accept = $meta['accept'];
                             $inputId = $field . '-upload';
                             $spanId = 'file-name-' . str_replace('_', '-', $field);
+                            $ocrResultId = 'ocr-result-' . str_replace('_', '-', $field); // Tambahan
                             @endphp
 
-                            @if(!$biodata || !$filename)
                             <div class="col-md-6 mb-2">
-                                <label class="form-label">{!! $label !!}</label>
+                                <label class="form-label">{!! strip_tags($label) !!}</label>
+
+                                @if(!$biodata || !$filename)
                                 <div class="file-upload-box">
                                     <div class="upload-label">
                                         <i class="bi bi-file-earmark-text file-icon"></i>
-                                        <span id="{{ $spanId }}">Dokumen belum diunggah</span>
+                                        <span id="{{ $spanId }}">{{ $filename ? $filename : 'Dokumen belum diunggah' }}</span>
                                     </div>
                                     <label for="{{ $inputId }}" class="btn btn-upload">Unggah</label>
-                                    <input type="file" name="{{ $field }}" id="{{ $inputId }}" accept="{{ $accept }}">
+                                    <input type="file" name="{{ $field }}" id="{{ $inputId }}" accept="{{ $accept }}"
+                                        onchange="{{ $field == 'sim_b_2' ? 'handleSimB2OCR(this)' : ($field == 'ktp' ? 'handleKtpOcr(this)' : '') }}">
                                 </div>
-                            </div>
-                            @else
-                            <div class="col-md-6 mb-2">
-                                <label class="form-label">{!! strip_tags($label) !!}</label>
+                                {{-- Tempat hasil OCR ditampilkan hanya untuk KTP dan SIM B2 --}}
+                                @if(in_array($field, ['ktp', 'sim_b_2']))
+                                <div id="{{ $ocrResultId }}" class="mt-2 small text-muted">Hasil OCR akan muncul di sini.</div>
+                                @endif
+                                @else
                                 <div class="file-box">
                                     <div class="file-info">
                                         <i class="bi bi-file-earmark-text file-icon"></i>
@@ -681,8 +689,8 @@
                                         </button>
                                     </div>
                                 </div>
+                                @endif
                             </div>
-                            @endif
                             @endforeach
                         </div>
                     </div>
@@ -692,14 +700,113 @@
                 <div class="tab-pane fade" id="step6">
                     <h6 class="text-primary">Pernyataan Keaslian Data</h6>
                     <div class="row g-3">
-                        <div class="col-md-12">
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" id="checkBox1" name="pernyataan_1" value="Dengan ini, Saya ( {{ Auth::user()->name}} ) menyatakan bahwa seluruh data dan dokumen yang saya input dan unggah adalah benar dan asli.">
-                                <label class="form-check-label" for="checkBox1">Dengan ini, Saya ( {{ Auth::user()->name}} ) menyatakan bahwa seluruh data dan dokumen yang saya input dan unggah adalah benar dan asli.</label>
+                        <!-- IFRAME ditampilkan penuh -->
+                        <div class="col-12">
+                            <div id="termsBox" style="height: 500px; overflow-y: auto; border: 1px solid #ccc; padding: 15px; background-color: #ffffff;">
+                                <h2 class="text-center">SYARAT DAN KETENTUAN <br>REKRUTMEN KERJA</h2>
+
+                                <section>
+                                    <h3>I. SYARAT REKRUTMEN</h3>
+
+                                    <h4>A. SYARAT UMUM</h4>
+                                    <ol>
+                                        <li>Warga Negara Indonesia yang memiliki Kartu Tanda Penduduk/KTP aktif;</li>
+                                        <li>Berusia minimal 18 tahun dan maksimal sesuai ketentuan posisi yang dilamar;</li>
+                                        <li>Memiliki ijazah pendidikan sesuai kualifikasi yang dipersyaratkan;</li>
+                                        <li>Sehat jasmani dan rohani;</li>
+                                        <li>Tidak pernah terlibat dalam tindak pidana yang dibuktikan dengan SKCK;</li>
+                                        <li>Memiliki kartu/akun BPJS Kesehatan dan Ketenagakerjaan yang aktif atau bersedia dibuatkan oleh Perusahaan.</li>
+                                    </ol>
+
+                                    <h4>B. SYARAT KHUSUS</h4>
+                                    <ol>
+                                        <li>Bersedia menjalani medical check-up menyeluruh yang dipersyaratkan;</li>
+                                        <li>Tidak memiliki riwayat penyakit yang membahayakan keselamatan kerja;</li>
+                                        <li>Tidak memiliki catatan kriminal atau dalam proses hukum;</li>
+                                        <li>Bersedia dilakukan background check oleh pihak ketiga;</li>
+                                        <li>Tidak sedang terikat kontrak kerja dengan perusahaan lain;</li>
+                                        <li>Tidak menggunakan narkoba dan bersedia tes urine/darah kapan saja.</li>
+                                    </ol>
+
+                                    <h4>C. SYARAT DOKUMEN</h4>
+                                    <ol>
+                                        <li>Surat lamaran kerja;</li>
+                                        <li>Curriculum Vitae (CV) terkini;</li>
+                                        <li>Pas foto terbaru;</li>
+                                        <li>KTP yang masih berlaku;</li>
+                                        <li>Ijazah dan transkrip nilai pendidikan terakhir;</li>
+                                        <li>SKCK;</li>
+                                        <li>Kartu Kuning/AK1;</li>
+                                        <li>SIM (khusus posisi tertentu);</li>
+                                        <li>Sertifikat keahlian (khusus posisi tertentu);</li>
+                                        <li>Sertifikat pelatihan atau kompetensi (khusus posisi tertentu).</li>
+                                    </ol>
+                                </section>
+
+                                <section>
+                                    <h3>II. KETENTUAN REKRUTMEN</h3>
+
+                                    <h4>A. KETENTUAN UMUM</h4>
+                                    <ol>
+                                        <li>Prinsip Kebenaran Mutlak</li>
+                                        <li>Hak Prerogatif Verifikasi</li>
+                                        <li>Tanggung Jawab Mutlak</li>
+                                        <li>Prinsip Kepatuhan Regulatif</li>
+                                    </ol>
+                                </section>
+
+                                <section>
+                                    <h3>III. REGIMEN SANKSI PELANGGARAN</h3>
+                                    <h4>A. SANKSI ADMINISTRASI</h4>
+                                    <ol>
+                                        <li>Diskualifikasi, pembatalan sepihak, blacklisting permanen.</li>
+                                        <li>Restitusi/ganti rugi materiil dan immateriil.</li>
+                                    </ol>
+
+                                    <h4>B. SANKSI PIDANA DAN PERDATA</h4>
+                                    <ol>
+                                        <li>Sanksi pidana berdasarkan KUHP (Pasal 263 dan 266).</li>
+                                        <li>Sanksi perdata berdasarkan Pasal 1365 dan 1366 KUHPerdata.</li>
+                                    </ol>
+
+                                    <h4>C. AKIBAT HUKUM – BATAL DEMI HUKUM</h4>
+                                    <p>Segala pelanggaran akan mengakibatkan seluruh proses rekrutmen menjadi batal demi hukum (ab initio) dan tidak ada hak atas kompensasi, termasuk potensi pemotongan gaji untuk ganti rugi.</p>
+                                </section>
+
+                                <section>
+                                    <h3>PERNYATAAN, PERSETUJUAN, DAN KESANGGUPAN PELAMAR KERJA</h3>
+
+                                    <h4>I. PERNYATAAN PATUH DAN TUNDUK PADA DASAR HUKUM</h4>
+                                    <p>Saya menyatakan tunduk pada seluruh ketentuan hukum dan rekrutmen perusahaan.</p>
+
+                                    <h4>II. KONSEKUENSI JURIDIS YANG DIAKUI DAN DITERIMA</h4>
+                                    <ol>
+                                        <li>Pertanggungjawaban Hukum</li>
+                                        <li>Tanggung Jawab Mutlak</li>
+                                        <li>Kerugian Materiil dan Immateriil</li>
+                                        <li>Beban Pembuktian Terbalik</li>
+                                        <li>Biaya Perkara dan Proses Hukum</li>
+                                    </ol>
+
+                                    <h4>III. PERSETUJUAN KESANGGUPAN</h4>
+                                    <div class="checkbox-group">
+                                        <label><input class="form-check-input" type="checkbox" class="check-pasif" checked onclick="return false;" /> Menyetujui seluruh syarat dan ketentuan rekrutmen yang berlaku (Final and Binding) </label>
+                                        <label><input class="form-check-input" type="checkbox" class="check-pasif" checked onclick="return false;" /> Menjamin keabsahan seluruh data dan kesiapan memenuhi seluruh syarat (Absolute Warranty)</label>
+                                        <label><input class="form-check-input" type="checkbox" class="check-pasif" checked onclick="return false;" /> Melepaskan hak untuk menggugat atau menuntut perusahaan jika terbukti melanggar syarat (Absolute Waiver of Rights)</label>
+                                        <label><input class="form-check-input" type="checkbox" class="check-pasif" checked onclick="return false;" />
+                                            Siap menanggung semua konsekuensi hukum dan moral secara penuh (Final and Binding Commitment)</label>
+                                    </div>
+                                </section>
                             </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" id="checkBox2" name="pernyataan_2" value="Saya memahami bahwa apabila terbukti melakukan pemalsuan data, saya bersedia menerima konsekuensinya, termasuk tidak diluluskan dalam proses rekrutmen.">
-                                <label class="form-check-label" for="checkBox2">Saya memahami bahwa apabila terbukti melakukan pemalsuan data, saya bersedia menerima konsekuensinya, termasuk tidak diluluskan dalam proses rekrutmen.</label>
+                        </div>
+
+                        <!-- Checkbox pernyataan -->
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="checkBox1" disabled>
+                                <label class="form-check-label" for="checkBox1">
+                                    Saya memahami bahwa apabila terbukti melakukan pemalsuan data, saya bersedia menerima konsekuensinya, termasuk tidak diluluskan dalam proses rekrutmen.
+                                </label>
                             </div>
                         </div>
                     </div>
@@ -724,6 +831,149 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+    function handleSimB2OCR(input) {
+        const file = input.files[0];
+        const resultElement = document.getElementById("ocr-result-sim-b-2");
+
+        if (!resultElement) {
+            console.error("Elemen hasil OCR tidak ditemukan");
+            return;
+        }
+
+        // tampilkan spinner/loading
+        resultElement.innerHTML = "⏳ Memproses baca sim...";
+
+        const formData = new FormData();
+        formData.append("sim_b_2", file);
+
+        fetch("{{ route('biodata.ocr.sim_b2') }}", {
+                method: "POST",
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(result => {
+                const resultElement = document.getElementById('ocr-result-sim-b-2');
+                if (!resultElement) return; // Jangan lanjut jika elemen tidak ada
+
+                if (result.success) {
+                    const data = result.data;
+
+                    resultElement.innerHTML = `
+                        <div class="card mt-1">
+                            <div class="card-header fw-bold">Hasil Baca :</div>
+                            <div class="card-body">
+                                <p><strong>Nama Lengkap:</strong> ${data.nama}</p>
+                                <p><strong>Tempat Lahir:</strong> ${data.tempat_lahir}</p>
+                                <p><strong>Tanggal Lahir:</strong> ${formatTanggal(data.tanggal_lahir)}</p>
+                                <p><strong>Jenis Kelamin:</strong> ${formatJenisKelamin(data.jenis_kelamin)}</p>
+                                <p><strong>Alamat:</strong> ${data.alamat}</p>
+                                <p><strong>Pekerjaan:</strong> ${data.pekerjaan}</p>
+                                <p><strong>Wilayah Penerbit:</strong> ${data.wilayah}</p>
+                                <p><strong>Berlaku Sampai:</strong> ${formatTanggal(data.berlaku_sampai)}</p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    resultElement.innerHTML = `<span class="text-danger">${result.message || 'Gagal membaca data OCR.'}</span>`;
+                }
+            })
+            .catch(error => {
+                resultElement.innerHTML = `<span class="text-danger">Gagal OCR</span>`;
+                console.error("OCR error:", error);
+            });
+    }
+
+    function handleKtpOcr(input) {
+        const file = input.files[0];
+        const resultElement = document.getElementById("ocr-result-ktp");
+
+        if (!resultElement) {
+            console.error("Elemen hasil OCR tidak ditemukan");
+            return;
+        }
+
+        // tampilkan spinner/loading
+        resultElement.innerHTML = "⏳ Memproses baca ktp...";
+
+        const formData = new FormData();
+        formData.append("ktp", file);
+
+        fetch("{{ route('biodata.ocr.ktp') }}", {
+                method: "POST",
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(result => {
+                const resultElement = document.getElementById('ocr-result-ktp');
+                if (!resultElement) return; // Jangan lanjut jika elemen tidak ada
+
+                if (result.success) {
+                    const data = result.data;
+                    console.log(data)
+                    resultElement.innerHTML = `
+                    <div class="card mt-3">
+                        <div class="card-header fw-bold">Hasil baca KTP :</div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>NIK:</strong> ${data.result.nik?.value || '-'}</p>
+                                    <p><strong>Nama Lengkap:</strong> ${data.result.nama?.value || '-'}</p>
+                                    <p><strong>Tempat Lahir:</strong> ${data.result.tempatLahir?.value || '-'}</p>
+                                    <p><strong>Tanggal Lahir:</strong> ${data.result.tanggalLahir?.value || '-'}</p>
+                                    <p><strong>Jenis Kelamin:</strong> ${data.result.jenisKelamin?.value || '-'}</p>
+                                    <p><strong>Golongan Darah:</strong> ${data.result.golonganDarah?.value || '-'}</p>
+                                    <p><strong>Status Perkawinan:</strong> ${data.result.statusPerkawinan?.value || '-'}</p>
+                                    <p><strong>Agama:</strong> ${data.result.agama?.value || '-'}</p>
+                                    <p><strong>Pekerjaan:</strong> ${data.result.pekerjaan?.value || '-'}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Kewarganegaraan:</strong> ${data.result.kewarganegaraan?.value || '-'}</p>
+                                    <p><strong>Alamat:</strong> ${data.result.alamat?.value || '-'}</p>
+                                    <p><strong>RT/RW:</strong> ${data.result.rt?.value || '-'} / ${data.rw?.value || '-'}</p>
+                                    <p><strong>Kelurahan/Desa:</strong> ${data.result.kelurahanDesa?.value || '-'}</p>
+                                    <p><strong>Kecamatan:</strong> ${data.result.kecamatan?.value || '-'}</p>
+                                    <p><strong>Kabupaten/Kota:</strong> ${data.result.kabupatenKota?.value || '-'}</p>
+                                    <p><strong>Provinsi:</strong> ${data.result.provinsi?.value || '-'}</p>
+                                    <p><strong>Diterbitkan di:</strong> ${data.result.tempatDiterbitkan?.value || '-'}</p>
+                                    <p><strong>Tanggal Diterbitkan:</strong> ${data.result.tanggalDiterbitkan?.value || '-'}</p>
+                                    <p><strong>Berlaku Hingga:</strong> ${data.result.berlakuHingga?.value || '-'}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                } else {
+                    resultElement.innerHTML = `<span class="text-danger">${result.message || 'Gagal membaca data OCR.'}</span>`;
+                }
+            })
+            .catch(error => {
+                resultElement.innerHTML = `<span class="text-danger">Gagal OCR</span>`;
+                console.error("OCR error:", error);
+            });
+    }
+
+    function formatTanggal(tanggal) {
+        const bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+        ];
+        const [dd, mm, yyyy] = tanggal.split('-');
+        return `${parseInt(dd)} ${bulan[parseInt(mm) - 1]} ${yyyy}`;
+    }
+
+    function formatJenisKelamin(jk) {
+        if (!jk) return '';
+        jk = jk.toUpperCase();
+        return jk === 'PRIA' ? 'Pria' : jk === 'WANITA' ? 'Wanita' : jk;
+    }
+</script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -960,17 +1210,39 @@
 
     document.addEventListener('DOMContentLoaded', () => showStep(currentStep));
 
+    const scrollBox = document.getElementById('termsBox');
+    const checkBox = document.getElementById('checkBox1');
+
+    scrollBox.addEventListener('scroll', function() {
+        const {
+            scrollTop,
+            scrollHeight,
+            clientHeight
+        } = scrollBox;
+        const isBottom = scrollTop + clientHeight >= scrollHeight - 5;
+
+        if (isBottom) {
+            checkBox.disabled = false;
+        }
+    });
+
     function checkCheckboxes() {
         const checkBox1 = document.getElementById('checkBox1');
-        const checkBox2 = document.getElementById('checkBox2');
         const submitBtn = document.getElementById('submitBtn');
 
-        if (checkBox1.checked && checkBox2.checked) {
+        if (checkBox1.checked) {
             submitBtn.disabled = false;
         } else {
             submitBtn.disabled = true;
         }
     }
+
+    const masterCheckbox = document.getElementById('checkBox1');
+    const childCheckboxes = document.querySelectorAll('.check-pasif');
+
+    masterCheckbox.addEventListener('change', function() {
+        childCheckboxes.forEach(cb => cb.checked = this.checked);
+    });
 
     document.addEventListener('DOMContentLoaded', () => {
         // Cek awal
@@ -978,7 +1250,6 @@
 
         // Cek ulang setiap kali checkbox berubah
         document.getElementById('checkBox1').addEventListener('change', checkCheckboxes);
-        document.getElementById('checkBox2').addEventListener('change', checkCheckboxes);
     });
 
     document.addEventListener('DOMContentLoaded', function() {

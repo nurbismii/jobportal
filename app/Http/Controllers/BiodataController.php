@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Biodata;
 use App\Models\Hris\Provinsi;
+use App\Models\SyaratKetentuan;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
 use Intervention\Image\Facades\Image;
 
 class BiodataController extends Controller
@@ -24,6 +26,7 @@ class BiodataController extends Controller
     public function store(Request $request)
     {
         $biodata = Biodata::where('user_id', auth()->id())->first();
+        $syarat_ketentuan = SyaratKetentuan::where('id', 1)->first();
 
         $dokumenFields = [
             'cv' => 'CV',
@@ -113,7 +116,7 @@ class BiodataController extends Controller
                 'sertifikat_pendukung' => $fileNames['sertifikat_pendukung'],
 
                 // Tambahan
-                'status_pernyataan' => $request->pernyataan_1 . ', ' . $request->pernyataan_2,
+                'status_pernyataan' => $syarat_ketentuan->syarat_ketentuan
             ]
         );
 
@@ -172,6 +175,6 @@ class BiodataController extends Controller
         }
 
         Alert::success('Berhasil', ucfirst(str_replace('_', ' ', $field)) . ' berhasil dihapus.');
-        return redirect()->back();
+        return redirect()->to(route('biodata.index') . '#step5');
     }
 }

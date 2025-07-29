@@ -77,4 +77,7 @@ Route::group(['prefix' => 'api'], function () {
 
     Route::get('/get-divisi/{departemen_id}', [App\Http\Controllers\ApiController::class, 'getByDepartemen']);
     Route::get('/lowongan-by-ptk/{ptk_id?}', [App\Http\Controllers\ApiController::class, 'getLowongan']);
+
+    Route::post('/biodata/ocr/sim-b2', [App\Http\Controllers\ApiController::class, 'ocrSimB2'])->name('biodata.ocr.sim_b2');
+    Route::post('/biodata/ocr/ktp', [App\Http\Controllers\ApiController::class, 'ocrKtp'])->name('biodata.ocr.ktp');
 });

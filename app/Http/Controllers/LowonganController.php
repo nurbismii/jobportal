@@ -285,7 +285,7 @@ class LowonganController extends Controller
         return;
     }
 
-    public function parseSimB2($biodata)
+    public function parseSimB2($biodata, $save = true)
     {
         if (!$biodata->ocr_sim_b2) {
             return ['message' => 'Belum ada hasil OCR untuk diparsing.'];
@@ -631,8 +631,10 @@ class LowonganController extends Controller
             $parsed['tempat_pembuatan'] = '';
         }
 
-        $biodata->parsed_sim_b2 = $parsed;
-        $biodata->save();
+        if ($save && method_exists($biodata, 'save')) {
+            $biodata->parsed_sim_b2 = $parsed;
+            $biodata->save();
+        }
 
         return [
             'message' => 'Parsing berhasil.',
