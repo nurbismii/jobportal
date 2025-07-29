@@ -667,7 +667,7 @@
                                 </div>
                                 {{-- Tempat hasil OCR ditampilkan hanya untuk KTP dan SIM B2 --}}
                                 @if(in_array($field, ['ktp', 'sim_b_2']))
-                                <div id="{{ $ocrResultId }}" class="mt-2 small text-muted">Hasil OCR akan muncul di sini.</div>
+                                <div id="{{ $ocrResultId }}" class="mt-2 small text-muted">Hasil baca dokumen akan muncul di sini.</div>
                                 @endif
                                 @else
                                 <div class="file-box">
