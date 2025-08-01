@@ -1,7 +1,8 @@
 @extends('layouts.app-pic')
 
 @section('content-admin')
-<div class="container py-4">
+<div class="container-fluid">
+
     <div class="card shadow-sm rounded">
         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Detail Permintaan Tenaga Kerja (PTK)</h5>
@@ -30,7 +31,7 @@
         {{-- Collapse Sections --}}
         <div id="accordion">
             <div class="card mb-2">
-                <div class="card-header bg-info text-white p-2">
+                <div class="card-header bg-primary text-white p-2">
                     <h6 class="mb-0">
                         <a href="#collapsePosisi" class="text-white d-block" data-toggle="collapse" aria-expanded="true" aria-controls="collapsePosisi">
                             <i class="fa fa-briefcase"></i> Informasi Posisi
@@ -50,7 +51,7 @@
             </div>
 
             <div class="card mb-2">
-                <div class="card-header bg-secondary text-white p-2">
+                <div class="card-header bg-primary text-white p-2">
                     <h6 class="mb-0">
                         <a href="#collapseTanggal" class="text-white d-block" data-toggle="collapse" aria-expanded="false" aria-controls="collapseTanggal">
                             <i class="fa fa-calendar"></i> Jadwal & Tanggal
@@ -68,7 +69,7 @@
             </div>
 
             <div class="card mb-2">
-                <div class="card-header bg-success text-white p-2">
+                <div class="card-header bg-primary text-white p-2">
                     <h6 class="mb-0">
                         <a href="#collapseDept" class="text-white d-block" data-toggle="collapse" aria-expanded="false" aria-controls="collapseDept">
                             <i class="fa fa-building"></i> Departemen & Divisi
@@ -86,9 +87,9 @@
             </div>
 
             <div class="card mb-2">
-                <div class="card-header bg-warning text-dark p-2">
+                <div class="card-header bg-primary text-white p-2">
                     <h6 class="mb-0">
-                        <a href="#collapseKualifikasi" class="text-dark d-block" data-toggle="collapse" aria-expanded="false" aria-controls="collapseKualifikasi">
+                        <a href="#collapseKualifikasi" class="text-white d-block" data-toggle="collapse" aria-expanded="false" aria-controls="collapseKualifikasi">
                             <i class="fa fa-file-alt"></i> Kualifikasi PTK
                         </a>
                     </h6>
@@ -102,7 +103,7 @@
         </div>
 
         <div class="mt-3">
-            <a href="{{ route('permintaan-tenaga-kerja.index') }}" class="btn btn-secondary">
+            <a href="{{ route('permintaan-tenaga-kerja.index') }}" class="btn btn-secondary btn-sm">
                 <i class="fa fa-arrow-left"></i> Kembali
             </a>
         </div>
