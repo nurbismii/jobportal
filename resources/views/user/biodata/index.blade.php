@@ -694,6 +694,7 @@
                             @endforeach
                         </div>
                     </div>
+                    <div id="ocr-compare-result" class="mt-3"></div>
                 </div>
 
                 <!-- Step 6 -->
@@ -863,9 +864,17 @@
                 if (result.success) {
                     const data = result.data;
 
+                    window.simOcrData = data;
+                    if (window.ktpOcrData) {
+                        compareSimKtpOcr(window.simOcrData, window.ktpOcrData);
+                    }
+
+                    window.simOcrData = data; // Simpan data SIM secara global
+                    if (window.ktpOcrData) compareSimKtpOcr(window.simOcrData, window.ktpOcrData);
+
                     resultElement.innerHTML = `
                         <div class="card mt-1">
-                            <div class="card-header fw-bold">Hasil Baca :</div>
+                            <div class="card-header fw-bold">Hasil Baca SIM :</div>
                             <div class="card-body">
                                 <p><strong>Nama Lengkap:</strong> ${data.nama}</p>
                                 <p><strong>Tempat Lahir:</strong> ${data.tempat_lahir}</p>
@@ -917,7 +926,12 @@
 
                 if (result.success) {
                     const data = result.data;
-                    console.log(data)
+
+                    window.ktpOcrData = data;
+                    if (window.simOcrData) {
+                        compareSimKtpOcr(window.simOcrData, window.ktpOcrData);
+                    }
+
                     resultElement.innerHTML = `
                     <div class="card mt-3">
                         <div class="card-header fw-bold">Hasil baca KTP :</div>
@@ -958,6 +972,63 @@
                 resultElement.innerHTML = `<span class="text-danger">Gagal OCR</span>`;
                 console.error("OCR error:", error);
             });
+    }
+
+    function compareSimKtpOcr(simData, ktpData) {
+        const resultElement = document.getElementById("ocr-compare-result");
+        if (!resultElement) return;
+
+        const errors = [];
+
+        // Normalisasi nama
+        const simNama = (simData.nama || '').trim().toLowerCase();
+        const ktpNama = (ktpData.result.nama?.value || '').trim().toLowerCase();
+        if (simNama !== ktpNama) {
+            errors.push('❌ Nama pada SIM tidak sesuai dengan nama pada KTP.');
+        }
+
+        // Bandingkan tanggal lahir
+        const simTanggal = formatTanggalIso(simData.tanggal_lahir);
+        const ktpTanggal = formatTanggalIso(ktpData.result.tanggalLahir?.value);
+        if (simTanggal !== ktpTanggal) {
+            errors.push('❌ Tanggal lahir pada SIM tidak sesuai dengan KTP.');
+        }
+
+        // Periksa masa berlaku SIM
+        const simBerlakuSampai = new Date(simData.berlaku_sampai);
+        const today = new Date();
+        if (simBerlakuSampai < today) {
+            errors.push('❌ Tanggal berlaku SIM sudah kadaluarsa.');
+        }
+
+        // Tampilkan hasil
+        if (errors.length > 0) {
+            resultElement.innerHTML = `
+            <div class="alert alert-warning" role="alert">
+                <h5 class="mb-2">Hasil Validasi Data SIM dan KTP:</h5>
+                <ul class="mb-0">
+                    ${errors.map(e => `<li>${e}</li>`).join('')}
+                </ul>
+            </div>
+        `;
+        } else {
+            resultElement.innerHTML = `
+            <div class="alert alert-success" role="alert">
+                ✅ Data SIM dan KTP sesuai.
+            </div>
+        `;
+        }
+    }
+
+    // Fungsi bantu format tanggal jadi yyyy-mm-dd
+    function formatTanggalIso(tanggal) {
+        if (!tanggal) return '';
+        const d = new Date(tanggal);
+        if (isNaN(d.getTime())) return ''; // Cek invalid date
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     }
 
     function formatTanggal(tanggal) {
