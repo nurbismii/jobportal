@@ -109,6 +109,149 @@
     .check-pasif {
         pointer-events: none;
     }
+
+    .header {
+        text-align: center;
+        border-bottom: 3px solid #2c3e50;
+        padding-bottom: 20px;
+        margin-bottom: 30px;
+    }
+
+    .header h1 {
+        color: #2c3e50;
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .section {
+        margin-bottom: 30px;
+    }
+
+    .section-title {
+        background: linear-gradient(135deg, #2c3e50, #3498db);
+        color: white;
+        padding: 12px 20px;
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 15px;
+        border-radius: 5px;
+    }
+
+    .subsection {
+        margin-bottom: 20px;
+    }
+
+    .subsection-title {
+        background-color: #ecf0f1;
+        color: #2c3e50;
+        padding: 8px 15px;
+        font-weight: bold;
+        margin-bottom: 10px;
+        border-left: 4px solid #3498db;
+    }
+
+    .requirement-list {
+        margin-left: 20px;
+        margin-bottom: 15px;
+    }
+
+    .requirement-list li {
+        margin-bottom: 8px;
+        text-align: justify;
+    }
+
+    .legal-text {
+        background-color: #fafafa;
+        border-left: 4px solid #e74c3c;
+        padding: 15px;
+        margin: 15px 0;
+        font-style: italic;
+        border-radius: 0 5px 5px 0;
+    }
+
+    .checkbox-section {
+        background-color: #f8f9fa;
+        border: 2px solid #dee2e6;
+        padding: 20px;
+        margin: 15px 0;
+        border-radius: 8px;
+    }
+
+    .checkbox-item {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 15px;
+        padding: 10px;
+        background: white;
+        border-radius: 5px;
+        border: 1px solid #e9ecef;
+    }
+
+    .checkbox-item input[type="checkbox"] {
+        margin-right: 15px;
+        margin-top: 5px;
+        transform: scale(1.2);
+    }
+
+    .checkbox-item label {
+        cursor: pointer;
+        text-align: justify;
+        flex: 1;
+    }
+
+    .warning-box {
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
+        color: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+    }
+
+    .warning-box h3 {
+        margin-bottom: 10px;
+        font-size: 18px;
+    }
+
+    .article-reference {
+        background-color: #e8f4f8;
+        border: 1px solid #bee5eb;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 5px;
+        font-size: 14px;
+    }
+
+    .signature-section {
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 2px solid #2c3e50;
+    }
+
+    .signature-box {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+        margin-top: 30px;
+    }
+
+    .signature-field {
+        text-align: center;
+        padding: 20px;
+        border: 2px dashed #bdc3c7;
+        border-radius: 8px;
+    }
+
+    .signature-field h4 {
+        margin-bottom: 60px;
+        color: #2c3e50;
+    }
+
+    .signature-line {
+        border-top: 2px solid #2c3e50;
+        margin-top: 20px;
+        padding-top: 10px;
+    }
 </style>
 
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -703,101 +846,308 @@
                     <div class="row g-3">
                         <!-- IFRAME ditampilkan penuh -->
                         <div class="col-12">
-                            <div id="termsBox" style="height: 500px; overflow-y: auto; border: 1px solid #ccc; padding: 15px; background-color: #ffffff;">
-                                <h2 class="text-center">SYARAT DAN KETENTUAN <br>REKRUTMEN KERJA</h2>
+                            <div id="termsBox" style="height: 600px; overflow-y: auto; border: 1px solid #ccc; padding: 15px; background-color: #ffffff;">
 
-                                <section>
-                                    <h3>I. SYARAT REKRUTMEN</h3>
+                                <div class="header">
+                                    <h1>SYARAT DAN KETENTUAN REKRUTMEN KERJA</h1>
+                                </div>
 
-                                    <h4>A. SYARAT UMUM</h4>
-                                    <ol>
-                                        <li>Warga Negara Indonesia yang memiliki Kartu Tanda Penduduk/KTP aktif;</li>
-                                        <li>Berusia minimal 18 tahun dan maksimal sesuai ketentuan posisi yang dilamar;</li>
-                                        <li>Memiliki ijazah pendidikan sesuai kualifikasi yang dipersyaratkan;</li>
-                                        <li>Sehat jasmani dan rohani;</li>
-                                        <li>Tidak pernah terlibat dalam tindak pidana yang dibuktikan dengan SKCK;</li>
-                                        <li>Memiliki kartu/akun BPJS Kesehatan dan Ketenagakerjaan yang aktif atau bersedia dibuatkan oleh Perusahaan.</li>
-                                    </ol>
+                                <!-- BAGIAN I: SYARAT REKRUTMEN -->
+                                <div class="section">
+                                    <div class="section-title">I. SYARAT REKRUTMEN</div>
+                                    <p style="margin-bottom: 20px;"><strong>Setiap Pelamar wajib memenuhi syarat-syarat berikut:</strong></p>
 
-                                    <h4>B. SYARAT KHUSUS</h4>
-                                    <ol>
-                                        <li>Bersedia menjalani medical check-up menyeluruh yang dipersyaratkan;</li>
-                                        <li>Tidak memiliki riwayat penyakit yang membahayakan keselamatan kerja;</li>
-                                        <li>Tidak memiliki catatan kriminal atau dalam proses hukum;</li>
-                                        <li>Bersedia dilakukan background check oleh pihak ketiga;</li>
-                                        <li>Tidak sedang terikat kontrak kerja dengan perusahaan lain;</li>
-                                        <li>Tidak menggunakan narkoba dan bersedia tes urine/darah kapan saja.</li>
-                                    </ol>
-
-                                    <h4>C. SYARAT DOKUMEN</h4>
-                                    <ol>
-                                        <li>Surat lamaran kerja;</li>
-                                        <li>Curriculum Vitae (CV) terkini;</li>
-                                        <li>Pas foto terbaru;</li>
-                                        <li>KTP yang masih berlaku;</li>
-                                        <li>Ijazah dan transkrip nilai pendidikan terakhir;</li>
-                                        <li>SKCK;</li>
-                                        <li>Kartu Kuning/AK1;</li>
-                                        <li>SIM (khusus posisi tertentu);</li>
-                                        <li>Sertifikat keahlian (khusus posisi tertentu);</li>
-                                        <li>Sertifikat pelatihan atau kompetensi (khusus posisi tertentu).</li>
-                                    </ol>
-                                </section>
-
-                                <section>
-                                    <h3>II. KETENTUAN REKRUTMEN</h3>
-
-                                    <h4>A. KETENTUAN UMUM</h4>
-                                    <ol>
-                                        <li>Prinsip Kebenaran Mutlak</li>
-                                        <li>Hak Prerogatif Verifikasi</li>
-                                        <li>Tanggung Jawab Mutlak</li>
-                                        <li>Prinsip Kepatuhan Regulatif</li>
-                                    </ol>
-                                </section>
-
-                                <section>
-                                    <h3>III. REGIMEN SANKSI PELANGGARAN</h3>
-                                    <h4>A. SANKSI ADMINISTRASI</h4>
-                                    <ol>
-                                        <li>Diskualifikasi, pembatalan sepihak, blacklisting permanen.</li>
-                                        <li>Restitusi/ganti rugi materiil dan immateriil.</li>
-                                    </ol>
-
-                                    <h4>B. SANKSI PIDANA DAN PERDATA</h4>
-                                    <ol>
-                                        <li>Sanksi pidana berdasarkan KUHP (Pasal 263 dan 266).</li>
-                                        <li>Sanksi perdata berdasarkan Pasal 1365 dan 1366 KUHPerdata.</li>
-                                    </ol>
-
-                                    <h4>C. AKIBAT HUKUM – BATAL DEMI HUKUM</h4>
-                                    <p>Segala pelanggaran akan mengakibatkan seluruh proses rekrutmen menjadi batal demi hukum (ab initio) dan tidak ada hak atas kompensasi, termasuk potensi pemotongan gaji untuk ganti rugi.</p>
-                                </section>
-
-                                <section>
-                                    <h3>PERNYATAAN, PERSETUJUAN, DAN KESANGGUPAN PELAMAR KERJA</h3>
-
-                                    <h4>I. PERNYATAAN PATUH DAN TUNDUK PADA DASAR HUKUM</h4>
-                                    <p>Saya menyatakan tunduk pada seluruh ketentuan hukum dan rekrutmen perusahaan.</p>
-
-                                    <h4>II. KONSEKUENSI JURIDIS YANG DIAKUI DAN DITERIMA</h4>
-                                    <ol>
-                                        <li>Pertanggungjawaban Hukum</li>
-                                        <li>Tanggung Jawab Mutlak</li>
-                                        <li>Kerugian Materiil dan Immateriil</li>
-                                        <li>Beban Pembuktian Terbalik</li>
-                                        <li>Biaya Perkara dan Proses Hukum</li>
-                                    </ol>
-
-                                    <h4>III. PERSETUJUAN KESANGGUPAN</h4>
-                                    <div class="checkbox-group">
-                                        <label><input class="form-check-input" type="checkbox" class="check-pasif" checked onclick="return false;" /> Menyetujui seluruh syarat dan ketentuan rekrutmen yang berlaku (Final and Binding) </label>
-                                        <label><input class="form-check-input" type="checkbox" class="check-pasif" checked onclick="return false;" /> Menjamin keabsahan seluruh data dan kesiapan memenuhi seluruh syarat (Absolute Warranty)</label>
-                                        <label><input class="form-check-input" type="checkbox" class="check-pasif" checked onclick="return false;" /> Melepaskan hak untuk menggugat atau menuntut perusahaan jika terbukti melanggar syarat (Absolute Waiver of Rights)</label>
-                                        <label><input class="form-check-input" type="checkbox" class="check-pasif" checked onclick="return false;" />
-                                            Siap menanggung semua konsekuensi hukum dan moral secara penuh (Final and Binding Commitment)</label>
+                                    <div class="subsection">
+                                        <div class="subsection-title">A. SYARAT UMUM</div>
+                                        <ol class="requirement-list">
+                                            <li>Warga Negara Indonesia yang memiliki Kartu Tanda Penduduk/KTP aktif;</li>
+                                            <li>Berusia minimal 18 tahun dan maksimal sesuai ketentuan posisi yang dilamar;</li>
+                                            <li>Memiliki ijazah pendidikan sesuai kualifikasi yang dipersyaratkan;</li>
+                                            <li>Sehat jasmani dan rohani;</li>
+                                            <li>Tidak pernah terlibat dalam tindak pidana yang dibuktikan dengan Surat Keterangan Catatan Kepolisian/SKCK;</li>
+                                            <li>Memiliki kartu/akun Badan Penyelenggara Jaminan Sosial/BPJS Kesehatan dan Ketenagakerjaan yang aktif atau bersedia dibuatkan oleh Perusahaan.</li>
+                                        </ol>
                                     </div>
-                                </section>
+
+                                    <div class="subsection">
+                                        <div class="subsection-title">B. SYARAT KHUSUS</div>
+                                        <ol class="requirement-list">
+                                            <li>Bersedia menjalani medical check-up menyeluruh yang dipersyaratkan;</li>
+                                            <li>Tidak memiliki riwayat penyakit yang dapat membahayakan keselamatan kerja, dan sanggup bekerja di lingkungan industri peleburan nikel;</li>
+                                            <li>Tidak memiliki catatan kriminal atau sedang dalam proses hukum apa pun;</li>
+                                            <li>Bersedia dilakukan background check oleh pihak ketiga yang ditunjuk perusahaan;</li>
+                                            <li>Tidak sedang terikat kontrak kerja dengan perusahaan lain;</li>
+                                            <li>Bukan pengguna narkoba, psikotropika, dan zat adiktif lainnya serta bersedia menjalani tes urine/darah kapan saja.</li>
+                                        </ol>
+                                    </div>
+
+                                    <div class="subsection">
+                                        <div class="subsection-title">C. SYARAT DOKUMEN</div>
+                                        <ol class="requirement-list">
+                                            <li>Surat lamaran kerja;</li>
+                                            <li>Curriculum Vitae (CV) terkini;</li>
+                                            <li>Pas foto terbaru;</li>
+                                            <li>Kartu Tanda Penduduk/KTP yang masih berlaku;</li>
+                                            <li>Ijazah dan transkrip nilai pendidikan terakhir sesuai yang dipersyaratkan;</li>
+                                            <li>Surat Keterangan Catatan Kepolisian/SKCK;</li>
+                                            <li>Kartu Kuning/AK1/Kartu Pencari Kerja;</li>
+                                            <li>Surat Izin Mengemudi/SIM (khusus posisi tertentu);</li>
+                                            <li>Sertifikat keahlian (khusus posisi tertentu);</li>
+                                            <li>Sertifikat pelatihan atau kompetensi (khusus posisi tertentu).</li>
+                                        </ol>
+                                    </div>
+                                </div>
+
+                                <!-- BAGIAN II: KETENTUAN REKRUTMEN -->
+                                <div class="section">
+                                    <div class="section-title">II. KETENTUAN REKRUTMEN</div>
+
+                                    <div class="subsection">
+                                        <div class="subsection-title">A. KETENTUAN UMUM</div>
+                                        <p style="margin-bottom: 15px;">Berdasarkan asas-asas hukum perjanjian dan ketentuan peraturan perundang-undangan yang berlaku, ditetapkan ketentuan sebagai berikut:</p>
+
+                                        <div style="margin-bottom: 20px;">
+                                            <h4 style="color: #2c3e50; margin-bottom: 10px;">1. Prinsip Kebenaran Mutlak (Principle of Absolute Truth):</h4>
+                                            <p style="text-align: justify; margin-bottom: 10px;">Bahwa setiap dan seluruh data, informasi, dokumen, keterangan, maupun pernyataan yang disampaikan oleh Pelamar kepada Perusahaan haruslah benar secara faktual, lengkap tanpa pengurangan, dan akurat sesuai dengan keadaan sebenarnya, sebagaimana diamanatkan dalam Pasal 1338 ayat (3) Kitab Undang-Undang Hukum Perdata.</p>
+                                            <div class="article-reference">
+                                                <strong>Pasal 1338 ayat (3) KUHPerdata:</strong> "(3) Persetujuan harus dilaksanakan dengan itikad baik"
+                                            </div>
+                                        </div>
+
+                                        <div style="margin-bottom: 20px;">
+                                            <h4 style="color: #2c3e50; margin-bottom: 10px;">2. Hak Prerogatif Verifikasi (Prerogative Right of Verification):</h4>
+                                            <p style="text-align: justify; margin-bottom: 10px;">Perusahaan memiliki hak mutlak dan tidak dapat diganggu gugat untuk melakukan verifikasi, investigasi, konfirmasi, dan/atau pemeriksaan terhadap kebenaran, keabsahan, dan keakuratan seluruh data yang diberikan oleh Pelamar, termasuk namun tidak terbatas pada: pemeriksaan silang dengan pihak ketiga, lembaga pendidikan, instansi pemerintah, dan/atau pihak-pihak lain yang relevan.</p>
+                                            <div class="article-reference">
+                                                <strong>Pasal 29 UU No. 27 Tahun 2022 tentang Pelindungan Data Pribadi:</strong> "(1) Pengendali Data Pribadi wajib memastikan akurasi, kelengkapan, dan konsistensi Data Pribadi sesuai dengan ketentuan peraturan perundang-undangan; (2) Dalam memastikan akurasi, kelengkapan, dan konsistensi Data Pribadi sebagaimana dimaksud pada ayat (1) Pengendali Data Pribadi wajib melakukan verifikasi"
+                                            </div>
+                                        </div>
+
+                                        <div style="margin-bottom: 20px;">
+                                            <h4 style="color: #2c3e50; margin-bottom: 10px;">3. Tanggung Jawab Mutlak (Strict Liability):</h4>
+                                            <p style="text-align: justify; margin-bottom: 10px;">Pelamar memikul tanggung jawab hukum secara mutlak (strict liability) atas kebenaran, keabsahan, dan keakuratan seluruh informasi yang telah disampaikan, tanpa dapat berdalih ketidaktahuan, kelalaian, atau sebab-sebab lain yang dapat menghapuskan tanggung jawab tersebut.</p>
+                                            <div class="article-reference">
+                                                <strong>Pasal 1366 KUHPerdata:</strong> "Setiap orang bertanggung jawab, bukan hanya atas kerugian yang disebabkan perbuatan-perbuatan, melainkan juga atas kerugian yang disebabkan kelalaian atau kesembronoannya"
+                                            </div>
+                                        </div>
+
+                                        <div style="margin-bottom: 20px;">
+                                            <h4 style="color: #2c3e50; margin-bottom: 10px;">4. Prinsip Kepatuhan Regulatif (Regulatory Compliance Principle):</h4>
+                                            <p style="text-align: justify;">Pelamar wajib patuh dan tunduk secara penuh kepada seluruh peraturan perundang-undangan Negara Kesatuan Republik Indonesia dan asas-asas hukum universal yang berlaku, serta seluruh syarat, ketentuan, dan kebijakan proses rekrutmen Perusahaan.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- BAGIAN III: REGIMEN SANKSI PELANGGARAN -->
+                                <div class="section">
+                                    <div class="section-title">III. REGIMEN SANKSI PELANGGARAN</div>
+                                    <div class="warning-box">
+                                        <h3>⚠️ PERINGATAN PENTING</h3>
+                                        <p>Dalam hal ditemukan adanya ketidakbenaran data, pemalsuan dokumen, atau pelanggaran terhadap persyaratan yang telah ditetapkan, maka berlaku regimen sanksi sebagai berikut:</p>
+                                    </div>
+
+                                    <div class="subsection">
+                                        <div class="subsection-title">A. SANKSI ADMINISTRASI</div>
+                                        <div style="margin-bottom: 15px;">
+                                            <h4 style="color: #e74c3c; margin-bottom: 10px;">1. Berdasarkan hak pengelolaan administratif Perusahaan:</h4>
+                                            <ul class="requirement-list">
+                                                <li>diskualifikasi dari seluruh tahapan proses seleksi (ex officio);</li>
+                                                <li>pembatalan sepihak terhadap segala bentuk tawaran yang telah disepakati (unilateral cancellation);</li>
+                                                <li>blacklisting permanen dari seluruh proses rekrutmen Perusahaan di masa yang akan datang tanpa batasan waktu.</li>
+                                            </ul>
+                                        </div>
+
+                                        <div style="margin-bottom: 15px;">
+                                            <h4 style="color: #e74c3c; margin-bottom: 10px;">2. Kewajiban Ganti Rugi:</h4>
+                                            <p style="text-align: justify; margin-bottom: 10px;">Berdasarkan Pasal 1365 Kitab Undang-Undang Hukum Perdata, Pelamar wajib memberi restitusi integral atau ganti rugi keseluruhan (full restitution) atas segala kerugian materiil dan immateriil yang diderita Perusahaan akibat perbuatan Pelamar.</p>
+                                            <div class="article-reference">
+                                                <strong>Pasal 1365 KUHPerdata:</strong> "Tiap perbuatan yang melanggar hukum dan membawa kerugian kepada orang lain, mewajibkan orang yang menimbulkan kerugian itu karena kesalahannya untuk menggantikan kerugian tersebut"
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="subsection">
+                                        <div class="subsection-title">B. SANKSI PIDANA DAN PERDATA</div>
+                                        <div style="margin-bottom: 15px;">
+                                            <h4 style="color: #e74c3c; margin-bottom: 10px;">1. Sanksi Pidana:</h4>
+                                            <div class="article-reference">
+                                                <strong>Pasal 263 KUHP:</strong> Pemalsuan surat - pidana penjara paling lama 6 tahun
+                                            </div>
+                                            <div class="article-reference">
+                                                <strong>Pasal 266 KUHP:</strong> Keterangan palsu dalam akta otentik - pidana penjara paling lama 7 tahun
+                                            </div>
+                                        </div>
+
+                                        <div style="margin-bottom: 15px;">
+                                            <h4 style="color: #e74c3c; margin-bottom: 10px;">2. Sanksi Perdata:</h4>
+                                            <div class="article-reference">
+                                                <strong>Pasal 1365 KUHPerdata:</strong> Kewajiban mengganti kerugian akibat perbuatan melanggar hukum
+                                            </div>
+                                            <div class="article-reference">
+                                                <strong>Pasal 1366 KUHPerdata:</strong> Tanggung jawab atas kerugian akibat kelalaian
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="subsection">
+                                        <div class="subsection-title">C. AKIBAT HUKUM – BATAL DEMI HUKUM (NIETIGHEID VAN RECHTSWEGE)</div>
+                                        <div class="legal-text">
+                                            <p><strong>KONSEKUENSI HUKUM YANG TIDAK DAPAT DIBATALKAN:</strong></p>
+                                            <ol style="margin-left: 20px; margin-top: 10px;">
+                                                <li>Seluruh proses rekrutmen, perjanjian kerja, dan hubungan hukum yang timbul adalah <strong>BATAL DEMI HUKUM</strong> sejak semula (dianggap tidak pernah ada/ab initio);</li>
+                                                <li>Perusahaan tidak memiliki kewajiban hukum untuk melakukan pemberitahuan PHK atau pembayaran pesangon (dismissal without severance pay);</li>
+                                                <li>Perusahaan berhak melakukan pemotongan gaji sebagai bentuk ganti rugi.</li>
+                                            </ol>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- BAGIAN PERNYATAAN, PERSETUJUAN, DAN KESANGGUPAN -->
+                                <div class="section">
+                                    <div class="section-title">PERNYATAAN, PERSETUJUAN, DAN KESANGGUPAN PELAMAR KERJA</div>
+
+                                    <div class="subsection">
+                                        <div class="subsection-title">I. PERNYATAAN PATUH DAN TUNDUK PADA DASAR HUKUM</div>
+                                        <p style="text-align: justify; background-color: #f8f9fa; padding: 15px; border-radius: 5px;">
+                                            Dengan ini, saya, dalam kedudukan sebagai Pelamar, mengakui dan menerima secara sadar, sukarela, dan tanpa paksaan dari pihak mana pun, menyatakan patuh dan tunduk secara penuh kepada seluruh peraturan perundang-undangan Negara Kesatuan Republik Indonesia dan asas-asas hukum universal yang berlaku, serta seluruh syarat, ketentuan, dan kebijakan proses rekrutmen Perusahaan.
+                                        </p>
+                                    </div>
+
+                                    <div class="subsection">
+                                        <div class="subsection-title">II. KONSEKUENSI JURIDIS YANG DIAKUI DAN DITERIMA</div>
+                                        <p style="margin-bottom: 15px;">Berdasarkan pada pengakuan dan penerimaan sebagaimana tersebut di atas, dengan ini saya juga memahami, mengakui, menerima, serta menyadari bahwa dalam hal Perusahaan menemukan ketidaksesuaian, kekeliruan, kesalahan, atau pemalsuan terhadap seluruh data, informasi, dokumen, keterangan, pernyataan, serta hal-hal lainnya yang telah, sedang, dan akan saya sampaikan, maka dibebankan atas saya:</p>
+                                        <ol class="requirement-list">
+                                            <li><strong>Pertanggungjawaban Hukum:</strong> pertanggungjawaban pidana dan/atau perdata sesuai dengan ketentuan peraturan perundang-undangan yang berlaku.</li>
+                                            <li><strong>Tanggung Jawab Mutlak:</strong> akibat hukum yang timbul sebab pelanggaran yang melekat pada diri saya berdasarkan hukum (ex lege) tanpa dapat dialihkan kepada pihak lain.</li>
+                                            <li><strong>Kerugian Materiil dan Immateriil:</strong> segala bentuk kerugian materiil dan immateriil yang diderita oleh Perusahaan akibat perbuatan melawan hukum yang saya lakukan menjadi tanggung jawab penuh saya untuk memberikan kompensasi yang layak dan memadai.</li>
+                                            <li><strong>Beban Pembuktian Terbalik:</strong> Dalam hal terjadi sengketa, saya menerima bahwa beban pembuktian mengenai kebenaran data dan keabsahan dokumen yang saya sampaikan berada pada saya (burden of proof), bukan pada Perusahaan.</li>
+                                            <li><strong>Biaya Perkara dan Proses Hukum:</strong> Seluruh biaya yang timbul dalam proses penyelesaian sengketa, termasuk namun tidak terbatas pada: biaya perkara, honor advokat, biaya saksi ahli, dan biaya-biaya lain yang terkait menjadi tanggung jawab saya sepenuhnya.</li>
+                                        </ol>
+                                    </div>
+
+                                    <div class="subsection">
+                                        <div class="subsection-title">III. PERSETUJUAN KESANGGUPAN</div>
+                                        <p style="margin-bottom: 20px; text-align: justify; font-style: italic;">
+                                            Dengan menandacentangi atau tetap mengikuti proses rekrutmen ini, saya dalam kapasitas sebagai Pelamar, dengan penuh kesadaran hukum, serta atas kehendak bebas, dan tanpa adanya paksaan, kekeliruan, kekhilafan, atau penipuan dari pihak mana pun (vrije wil, zonder dwang, dwaling, of bedrog), dengan ini secara tegas dan tidak dapat ditarik kembali, menyatakan:
+                                        </p>
+
+                                        <div class="checkbox-section">
+                                            <h4 style="color: #2c3e50; margin-bottom: 15px; text-align: center;">A. PERSETUJUAN FINAL DAN MENGIKAT (FINAL AND BINDING AGREEMENT)</h4>
+
+                                            <div class="checkbox-item">
+                                                <input type="checkbox" id="agree1" class="check-pasif form-check-input" checked onclick="return false;" name="agreements">
+                                                <label for="agree1">
+                                                    <strong>MENYETUJUI</strong> secara mutlak seluruh syarat dan ketentuan rekrutmen yang telah ditetapkan serta persetujuan ini sebagai dokumen hukum yang sah dan mengikat (legally binding document) antara saya dengan Perusahaan sebagai Para Pihak (pacta sunt servanda), serta memiliki kekuatan eksekutorial, sehingga pelanggarannya dapat mengakibatkan sanksi hukum yang tegas sesuai dengan mekanisme penegakan hukum yang berlaku di Negara Kesatuan Republik Indonesia;
+                                                </label>
+                                            </div>
+
+                                            <div class="checkbox-item">
+                                                <input type="checkbox" id="agree2" class="check-pasif form-check-input" checked onclick="return false;" name="agreements">
+                                                <label for="agree2">
+                                                    <strong>MEMAHAMI</strong> sepenuhnya dan secara komprehensif seluruh konsekuensi hukum, baik pidana maupun perdata, yang timbul akibat dari pelanggaran yang saya lakukan terhadap syarat dan ketentuan yang telah ditetapkan;
+                                                </label>
+                                            </div>
+
+                                            <div class="checkbox-item">
+                                                <input type="checkbox" id="agree3" class="check-pasif form-check-input" checked onclick="return false;" name="agreements">
+                                                <label for="agree3">
+                                                    <strong>MENERIMA</strong> dengan sepenuh hati dan tanpa keberatan, seluruh regimen sanksi yang telah ditetapkan, dan bersedia menjalani sanksi-sanksi tersebut apabila di kemudian hari terbukti melakukan pelanggaran terhadap syarat dan ketentuan yang telah ditetapkan;
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div class="checkbox-section">
+                                            <h4 style="color: #2c3e50; margin-bottom: 15px; text-align: center;">B. JAMINAN MUTLAK (ABSOLUTE WARRANTY)</h4>
+
+                                            <div class="checkbox-item">
+                                                <input type="checkbox" id="warranty1" class="check-pasif form-check-input" checked onclick="return false;" name="warranties">
+                                                <label for="warranty1">
+                                                    <strong>MENJAMIN</strong> dengan segenap integritas dan kehormatan diri bahwa seluruh data, informasi, dokumen, keterangan, pernyataan, serta hal-hal lainnya yang telah, sedang, dan akan saya sampaikan, terkait syarat rekrutmen kepada Perusahaan adalah benar secara faktual, lengkap tanpa pengurangan material, dan akurat sesuai dengan keadaan yang sebenarnya, serta tidak mengandung unsur penipuan, penyesatan, atau pemalsuan dalam bentuk apa pun;
+                                                </label>
+                                            </div>
+
+                                            <div class="checkbox-item">
+                                                <input type="checkbox" id="warranty2" class="check-pasif form-check-input" checked onclick="return false;" name="warranties">
+                                                <label for="warranty2">
+                                                    <strong>MENJAMIN</strong> secara absolut kesanggupan saya, baik secara fisik, mental, maupun hukum untuk memenuhi seluruh persyaratan yang telah ditetapkan oleh Perusahaan, termasuk namun tidak terbatas pada: persyaratan kesehatan, kompetensi, integritas, dan kepatuhan terhadap peraturan perundang-undangan;
+                                                </label>
+                                            </div>
+
+                                            <div class="checkbox-item">
+                                                <input type="checkbox" id="warranty3" class="check-pasif form-check-input" checked onclick="return false;" name="warranties">
+                                                <label for="warranty3">
+                                                    <strong>MENJAMIN</strong> kepatuhan penuh dan konsisten terhadap seluruh peraturan, ketentuan, prosedur, dan kebijakan rekrutmen yang telah, sedang, dan akan ditetapkan oleh Perusahaan, serta seluruh peraturan perundang-undangan yang berlaku di Negara Kesatuan Republik Indonesia;
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div class="checkbox-section">
+                                            <h4 style="color: #2c3e50; margin-bottom: 15px; text-align: center;">C. PELEPASAN HAK MUTLAK (ABSOLUTE WAIVER OF RIGHTS)</h4>
+
+                                            <div class="checkbox-item">
+                                                <input type="checkbox" id="waiver1" class="check-pasif form-check-input" checked onclick="return false;" name="waivers">
+                                                <label for="waiver1">
+                                                    <strong>MELEPASKAN</strong> dengan sepenuhnya dengan tidak dapat ditarik kembali (irrevocable) segala hak untuk mengajukan gugatan, tuntutan, klaim, keberatan, atau bentuk upaya hukum lainnya terhadap Perusahaan, direksi, komisaris, pemegang saham, jajaran manajemen, atau afiliasi Perusahaan apabila sanksi-sanksi sebagaimana dimaksud dalam ketentuan ini diberlakukan atas pelanggaran yang telah saya lakukan;
+                                                </label>
+                                            </div>
+
+                                            <div class="checkbox-item">
+                                                <input type="checkbox" id="waiver2" class="check-pasif form-check-input" checked onclick="return false;" name="waivers">
+                                                <label for="waiver2">
+                                                    <strong>MEMBERIKAN KUASA</strong> yang sah dan tidak dapat dicabut (irrevocable power of attorney) kepada Perusahaan untuk melakukan verifikasi, investigasi, dan konfirmasi kepada seluruh pihak ketiga yang relevan, termasuk namun tidak terbatas pada: instansi pemerintah, lembaga pendidikan, perusahaan tempat bekerja sebelumnya, pemberi referensi, dan pihak-pihak lain yang dipandang perlu untuk memastikan kebenaran dan keabsahan data/informasi yang saya sampaikan;
+                                                </label>
+                                            </div>
+
+                                            <div class="checkbox-item">
+                                                <input type="checkbox" id="waiver3" class="check-pasif form-check-input" checked onclick="return false;" name="waivers">
+                                                <label for="waiver3">
+                                                    <strong>MENYETUJUI</strong> untuk tunduk pada yurisdiksi dan kompetensi absolut Pengadilan Negeri Kota Kendari untuk penyelesaian segala sengketa, perselisihan, atau konflik yang mungkin timbul dari atau sehubungan dengan pelaksanaan syarat dan ketentuan ini, dengan mengesampingkan eksepsi kewenangan relatif atau upaya untuk memindahkan yurisdiksi ke pengadilan di wilayah lain;
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div class="checkbox-section">
+                                            <h4 style="color: #2c3e50; margin-bottom: 15px; text-align: center;">D. KESANGGUPAN FINAL DAN MENGIKAT (FINAL AND BINDING COMMITMENT)</h4>
+
+                                            <div class="checkbox-item">
+                                                <input type="checkbox" id="commitment1" class="check-pasif form-check-input" checked onclick="return false;" name="commitments">
+                                                <label for="commitment1">
+                                                    Menyatakan <strong>SANGGUP dan SIAP</strong> memikul seluruh tanggung jawab hukum (legal liability), finansial (financial obligation), dan moral (moral responsibility) yang timbul dari proses rekrutmen kerja ini, termasuk segala konsekuensi yang dapat terjadi di masa mendatang sesuai dengan ketentuan peraturan perundang-undangan yang berlaku;
+                                                </label>
+                                            </div>
+
+                                            <div class="checkbox-item">
+                                                <input type="checkbox" id="commitment2" class="check-pasif form-check-input" checked onclick="return false;" name="commitments">
+                                                <label for="commitment2">
+                                                    <strong>BERKOMITMEN</strong> untuk melaksanakan seluruh kewajiban yang timbul dari persetujuan ini dengan penuh integritas, profesionalitas, dan dedikasi yang tinggi, serta tidak akan melakukan perbuatan-perbuatan yang dapat merugikan kepentingan Perusahaan atau bertentangan dengan nilai-nilai etika dan moral;
+                                                </label>
+                                            </div>
+
+                                            <div class="checkbox-item">
+                                                <input type="checkbox" id="commitment3" class="check-pasif form-check-input" checked onclick="return false;" name="commitments">
+                                                <label for="commitment3">
+                                                    <strong>MENYADARI</strong> secara penuh seluruh syarat dan ketentuan rekrutmen yang telah ditetapkan serta persetujuan ini sebagai dokumen hukum yang sah dan mengikat (legally binding document) antara saya dengan Perusahaan sebagai Para Pihak (pacta sunt servanda), serta memiliki kekuatan eksekutorial, sehingga pelanggarannya dapat mengakibatkan sanksi hukum yang tegas sesuai dengan mekanisme penegakan hukum yang berlaku di Negara Kesatuan Republik Indonesia.
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- BAGIAN TANDA TANGAN -->
+                                <div class="signature-section">
+                                    <div class="warning-box">
+                                        <h3>📋 PERHATIAN KHUSUS</h3>
+                                        <p><strong>Dengan menyetujui dokumen ini, Pelamar menyatakan telah membaca, memahami, dan menyetujui seluruh isi dokumen serta siap menanggung segala konsekuensi hukum yang timbul.</strong></p>
+                                    </div>
+
+                                    <div style="margin-top: 30px; padding: 20px; background-color: #f8f9fa; border-radius: 8px; text-align: center;">
+                                        <p style="font-style: italic; color: #6c757d; margin-bottom: 10px;">
+                                            "Dokumen ini telah disusun sesuai dengan peraturan perundang-undangan yang berlaku di Negara Kesatuan Republik Indonesia"
+                                        </p>
+                                        <p style="font-size: 12px; color: #6c757d;">
+                                            Dokumen ini dibuat dalam rangkap yang cukup dan mempunyai kekuatan hukum yang sama
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
