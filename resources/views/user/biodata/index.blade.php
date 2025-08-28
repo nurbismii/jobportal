@@ -282,7 +282,7 @@
                     <button class="nav-link" data-bs-toggle="tab" data-bs-target="#step5" type="button">Dokumen Pribadi</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#step6" type="button">Pernyataan dan Ajukan</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#step6" type="button">Syarat dan Ketentuan</button>
                 </li>
             </ul>
 
@@ -842,7 +842,6 @@
 
                 <!-- Step 6 -->
                 <div class="tab-pane fade" id="step6">
-                    <h6 class="text-primary">Pernyataan Keaslian Data</h6>
                     <div class="row g-3">
                         <!-- IFRAME ditampilkan penuh -->
                         <div class="col-12">
