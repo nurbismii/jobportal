@@ -808,6 +808,12 @@
                                     <input type="file" name="{{ $field }}" id="{{ $inputId }}" accept="{{ $accept }}"
                                         onchange="{{ $field == 'sim_b_2' ? 'handleSimB2OCR(this)' : ($field == 'ktp' ? 'handleKtpOcr(this)' : '') }}">
                                 </div>
+                                @if($field === 'sertifikat_pendukung')
+                                <span class="small text-muted fw-bold d-block mt-1">
+                                    <i class="bi bi-exclamation-circle me-1"></i>
+                                    Sertifikat lebih dari 1? Gabungkan semua dalam satu file PDF sebelum diunggah!
+                                </span>
+                                @endif
                                 {{-- Tempat hasil OCR ditampilkan hanya untuk KTP dan SIM B2 --}}
                                 @if(in_array($field, ['ktp', 'sim_b_2']))
                                 <div id="{{ $ocrResultId }}" class="mt-2 small text-muted">Hasil baca dokumen akan muncul di sini.</div>
@@ -832,6 +838,12 @@
                                         </button>
                                     </div>
                                 </div>
+                                @if($field === 'sertifikat_pendukung')
+                                <span class="small text-muted fw-bold d-block mt-1">
+                                    <i class="bi bi-exclamation-circle me-1"></i>
+                                    Sertifikat lebih dari 1? Gabungkan semua dalam satu file PDF sebelum diunggah!
+                                </span>
+                                @endif
                                 @endif
                             </div>
                             @endforeach
