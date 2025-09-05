@@ -17,6 +17,11 @@ class BiodataController extends Controller
 {
     public function index()
     {
+        if (!Auth::user()) {
+            Alert::warning('Peringatan', 'Silahkan login terlebih dahulu.');
+            return redirect()->route('login');
+        }
+
         $provinsis = Provinsi::all();
         $biodata = Biodata::with('getProvinsi', 'getKabupaten', 'getKecamatan', 'getKelurahan')->where('user_id', auth()->id())->first();
 
