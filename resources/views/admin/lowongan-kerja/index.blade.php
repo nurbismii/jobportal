@@ -45,7 +45,13 @@
                             <p class="mb-1"><strong>SIM B2 :</strong> {{ $data->status_sim_b2 == 1 ? 'Dibutuhkan' : 'Tidak dibutuhkan' }}</p>
                             <p class="mb-1"><strong>Mulai :</strong> {{ tanggalIndo($data->tanggal_mulai) }}</p>
                             <p class="mb-3"><strong>Berakhir :</strong> {{ tanggalIndo($data->tanggal_berakhir) }}</p>
-
+                            <div class="mb-3">
+                                @if($data->status_lowongan == 'Aktif')
+                                <span class="badge badge-success"><i class="fa fa-check-circle me-1"></i> {{ $data->status_lowongan }}</span>
+                                @else
+                                <span class="badge badge-danger"><i class="fa fa-times-circle me-1"></i> {{ $data->status_lowongan }}</span>
+                                @endif
+                            </div>
                             <div class="mt-auto">
                                 <a href="{{ route('directToLamaran', $data->id) }}" class="btn btn-secondary btn-sm btn-block mb-2">
                                     <i class="fas fa-list mr-1"></i> Pelamar

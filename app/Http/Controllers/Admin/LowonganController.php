@@ -8,12 +8,16 @@ use App\Models\Lowongan;
 use App\Models\PermintaanTenagaKerja;
 use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Carbon;
 
 class LowonganController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Lowongan::withCount('lamarans');
+        $today = Carbon::now()->toDateTimeString();
+
+        $query = Lowongan::selectRaw("*, IF(tanggal_berakhir < '$today', 'Kadaluwarsa', 'Aktif') as status_lowongan")->withCount('lamarans');
 
         $title = 'Hapus Lowongan!';
         $text = "Kamu yakin ingin menghapus lowongan ini?";
@@ -141,6 +145,4 @@ class LowonganController extends Controller
 
         return view('admin.lamaran.index', compact('lamarans', 'lowongan'))->with('no');
     }
-
-    
 }
