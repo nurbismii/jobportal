@@ -219,7 +219,7 @@ class LowonganController extends Controller
         }
 
         // Simpan dalam array data hasil ocr sim dan ktp
-        return $ocrResult = [
+        $ocrResult = [
             'nama_ktp' => strtoupper($ocrData['result']['nama']['value']) ?? null,
             'nik_ktp' => $ocrData['result']['nik']['value'] ?? null,
             'tgl_lahir_ktp' => $ocrData['result']['tanggalLahir']['value'] ?? null,
