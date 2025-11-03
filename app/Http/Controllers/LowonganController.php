@@ -205,11 +205,13 @@ class LowonganController extends Controller
                 ], $response->status()));
             }
 
-            return 'not cache' . $ocrData = $response->json();
+            return $ocrData = $response->json();
             Cache::put($cacheKey, $ocrData, now()->addHours(12));
         } else {
-            return 'cache' . $ocrData = Cache::get($cacheKey);
+            return $ocrData = Cache::get($cacheKey);
         }
+
+        return $ocrData;
 
         if (!$ocrData) {
             Alert::info('Opss!', 'Silakan lengkapi dokumen pribadi yang dibutuhkan terlebih dahulu');
