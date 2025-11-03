@@ -137,7 +137,7 @@ class LowonganController extends Controller
             return redirect()->route('login');
         }
 
-        return $biodata = Biodata::where('user_id', auth()->id())->first();
+        $biodata = Biodata::where('user_id', auth()->id())->first();
 
         if (!$biodata) {
             Alert::info('Opss!', 'Lengkapi formulir biodata anda terlebih dahulu sebelum melamar lowongan kerja.');
@@ -205,13 +205,11 @@ class LowonganController extends Controller
                 ], $response->status()));
             }
 
-            return $ocrData = $response->json();
+            $ocrData = $response->json();
             Cache::put($cacheKey, $ocrData, now()->addHours(12));
         } else {
-            return $ocrData = Cache::get($cacheKey);
+            $ocrData = Cache::get($cacheKey);
         }
-
-        return $ocrData;
 
         if (!$ocrData) {
             Alert::info('Opss!', 'Silakan lengkapi dokumen pribadi yang dibutuhkan terlebih dahulu');
@@ -219,7 +217,7 @@ class LowonganController extends Controller
         }
 
         // Simpan dalam array data hasil ocr sim dan ktp
-        return $ocrResult = [
+        $ocrResult = [
             'nama_ktp' => strtoupper($ocrData['result']['nama']['value']) ?? null,
             'nik_ktp' => $ocrData['result']['nik']['value'] ?? null,
             'tgl_lahir_ktp' => $ocrData['result']['tanggalLahir']['value'] ?? null,
@@ -229,6 +227,8 @@ class LowonganController extends Controller
             'expired_sim' => $berlaku_sim,
             'keterangan_sim' => $keterangan_sim
         ];
+
+        return $ocrResult;
 
         $expiredSim = DateTime::createFromFormat('d-m-Y', $berlaku_sim);
         $today = new DateTime(); // otomatis tanggal hari ini
