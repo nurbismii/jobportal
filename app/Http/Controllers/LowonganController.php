@@ -43,12 +43,6 @@ class LowonganController extends Controller
 
     public function store(Request $request)
     {
-        $cekBerkas = $this->cekBerkas($request->loker_id);
-
-        if ($cekBerkas) {
-            return $cekBerkas; // Jika ada pesan verifikasi, kembalikan ke view verifikasi
-        }
-
         $lamaran = Lamaran::where('biodata_id', $request->biodata_id)->latest()->first();
 
         if ($lamaran) {
@@ -57,6 +51,12 @@ class LowonganController extends Controller
                 Alert::warning('Peringatan', 'Saat ini kamu dalam proses lamaran, tidak dapat melamar lebih dari satu lowongan.');
                 return redirect()->route('lamaran.index');
             }
+        }
+
+        $cekBerkas = $this->cekBerkas($request->loker_id);
+
+        if ($cekBerkas) {
+            return $cekBerkas; // Jika ada pesan verifikasi, kembalikan ke view verifikasi
         }
 
         try {
