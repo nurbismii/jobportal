@@ -205,10 +205,10 @@ class LowonganController extends Controller
                 ], $response->status()));
             }
 
-            $ocrData = $response->json();
+            return 'not cache' . $ocrData = $response->json();
             Cache::put($cacheKey, $ocrData, now()->addHours(12));
         } else {
-            $ocrData = Cache::get($cacheKey);
+            return 'cache' . $ocrData = Cache::get($cacheKey);
         }
 
         if (!$ocrData) {
