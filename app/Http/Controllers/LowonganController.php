@@ -104,8 +104,6 @@ class LowonganController extends Controller
     public function cekBerkas($id)
     {
         $userId = auth()->id();
-        $cacheKey = 'ocr_result_user_' . $userId;
-        $resetCooldownKey = 'ocr_reset_cooldown_user_' . $userId;
 
         $nama_sim = null;
         $tanggl_lahir_sim = null;
@@ -113,36 +111,10 @@ class LowonganController extends Controller
         $keterangan_sim = null;
 
         $aktif = 1;
-        $tidak_aktif = 0;
-
         $today = Carbon::today()->toDateString();
+
         $lowongan = Lowongan::selectRaw("*, IF(tanggal_berakhir < '$today', 'Kadaluwarsa', 'Aktif') as status_lowongan")->findOrFail($id);
 
-        // -------------------------------
-        // 🔄 HANDLE REFRESH OCR MANUAL
-        // -------------------------------
-        if (request()->query('refresh') === 'true') {
-
-            // Batasi agar hanya bisa refresh setiap 5 menit
-            if (Cache::has($resetCooldownKey)) {
-                $secondsLeft = Cache::get($resetCooldownKey) - time();
-                if ($secondsLeft > 0) {
-                    Alert::warning('Tunggu dulu', "Anda bisa memperbarui lagi setelah $secondsLeft detik.");
-                    return redirect()->back();
-                }
-            }
-
-            // Hapus cache hasil OCR dan set cooldown 5 menit
-            Cache::forget($cacheKey);
-            Cache::put($resetCooldownKey, time() + 300, 300); // 300 detik = 5 menit
-
-            Alert::success('Berhasil', 'Data OCR berhasil diperbarui. Silakan tunggu proses verifikasi ulang.');
-            return redirect()->to(url()->current()); // refresh halaman tanpa ?refresh=true
-        }
-
-        // -------------------------------
-        // 🔐 CEK LOGIN & BIODATA
-        // -------------------------------
         if (!Auth::user()) {
             Alert::info('Opps!', 'Silahkan login untuk melihat lowongan kerja.');
             return redirect()->route('login');
@@ -155,11 +127,8 @@ class LowonganController extends Controller
             return redirect()->route('biodata.index');
         }
 
-        // -------------------------------
-        // 🚘 CEK SIM B2 (JIKA DIPERLUKAN)
-        // -------------------------------
+        // Jika lowongan memerlukan SIM B2
         if ($lowongan->status_sim_b2 == $aktif) {
-
             if (empty($biodata->sim_b_2)) {
                 Alert::info('Opss!', 'Untuk melamar lowongan ini, silakan upload foto SIM B II Umum terlebih dahulu.');
                 return redirect()->to(route('biodata.index') . '#step5');
@@ -167,71 +136,64 @@ class LowonganController extends Controller
 
             $res_ocr_simb2 = $this->parseSimB2($biodata);
 
-            $nama_sim = strtoupper($res_ocr_simb2['data']['nama']);
-            $tanggl_lahir_sim = $res_ocr_simb2['data']['tanggal_lahir'];
+            $nama_sim = strtoupper($res_ocr_simb2['data']['nama'] ?? '');
+            $tanggl_lahir_sim = $res_ocr_simb2['data']['tanggal_lahir'] ?? '';
             $berlaku_sim = $res_ocr_simb2['data']['berlaku_sampai'] ?? null;
         }
 
-        // -------------------------------
-        // 🧾 PROSES OCR KTP
-        // -------------------------------
-        if (!Cache::has($cacheKey)) {
-            $filePath = public_path($biodata->no_ktp . '/dokumen/' . $biodata->ktp);
+        // Jalankan OCR langsung setiap kali (tanpa cache)
+        $filePath = public_path($biodata->no_ktp . '/dokumen/' . $biodata->ktp);
 
-            if (!$biodata->ktp || !file_exists($filePath)) {
-                Alert::warning('Gagal', 'File KTP tidak ditemukan, silakan upload KTP terlebih dahulu');
-                return redirect()->to(route('biodata.index') . '#step5');
-            }
-
-            $url = rtrim(config('services.ocr.link'), '/') . '/' . ltrim(config('services.ocr.type'), '/');
-
-            if (empty($url) || !filter_var($url, FILTER_VALIDATE_URL)) {
-                Alert::error('Gagal', 'URL OCR tidak valid. Silakan periksa konfigurasi.');
-                return back();
-            }
-
-            $fileContent = @file_get_contents($filePath);
-            if ($fileContent === false) {
-                Alert::error('Gagal', 'Gagal membaca file KTP. Pastikan file tersedia dan tidak rusak.');
-                return redirect()->to(route('biodata.index') . '#step5');
-            }
-
-            $response = Http::withToken(config('services.ocr.token'))
-                ->withHeaders([
-                    'Authentication' => 'bearer ' . config('services.ocr.token'),
-                ])
-                ->attach('file', $fileContent, $biodata->ktp)
-                ->put($url);
-
-            if (!$response->successful()) {
-                abort(response()->json([
-                    'status' => 'error',
-                    'http_code' => $response->status(),
-                    'reason' => $response->reason(),
-                    'headers' => $response->headers(),
-                    'body' => $response->body(),
-                ], $response->status()));
-            }
-
-            $ocrData = $response->json();
-            Cache::put($cacheKey, $ocrData, now()->addHours(12));
-        } else {
-            $ocrData = Cache::get($cacheKey);
-        }
-
-        if (!$ocrData) {
-            Alert::info('Opss!', 'Silakan lengkapi dokumen pribadi yang dibutuhkan terlebih dahulu');
+        if (!$biodata->ktp || !file_exists($filePath)) {
+            Alert::warning('Gagal', 'File KTP tidak ditemukan, silakan upload KTP terlebih dahulu.');
             return redirect()->to(route('biodata.index') . '#step5');
         }
 
-        // -------------------------------
-        // 📊 ANALISIS HASIL OCR
-        // -------------------------------
+        $url = rtrim(config('services.ocr.link'), '/') . '/' . ltrim(config('services.ocr.type'), '/');
+
+        if (empty($url) || !filter_var($url, FILTER_VALIDATE_URL)) {
+            Alert::error('Gagal', 'URL OCR tidak valid. Silakan periksa konfigurasi.');
+            return back();
+        }
+
+        $fileContent = @file_get_contents($filePath);
+
+        if ($fileContent === false) {
+            Alert::error('Gagal', 'Gagal membaca file KTP. Pastikan file tersedia dan tidak rusak.');
+            return redirect()->to(route('biodata.index') . '#step5');
+        }
+
+        // Panggil API OCR langsung tanpa cache
+        $response = Http::withToken(config('services.ocr.token'))
+            ->withHeaders([
+                'Authentication' => 'bearer ' . config('services.ocr.token'),
+            ])
+            ->attach('file', $fileContent, $biodata->ktp)
+            ->put($url);
+
+        if (!$response->successful()) {
+            abort(response()->json([
+                'status' => 'error',
+                'http_code' => $response->status(),
+                'reason' => $response->reason(),
+                'headers' => $response->headers(),
+                'body' => $response->body(),
+            ], $response->status()));
+        }
+
+        $ocrData = $response->json();
+
+        if (!$ocrData) {
+            Alert::info('Opss!', 'Silakan lengkapi dokumen pribadi yang dibutuhkan terlebih dahulu.');
+            return redirect()->to(route('biodata.index') . '#step5');
+        }
+
+        // Simpan hasil OCR
         $ocrResult = [
-            'nama_ktp' => strtoupper($ocrData['result']['nama']['value']) ?? null,
-            'nik_ktp' => $ocrData['result']['nik']['value'] ?? null,
-            'tgl_lahir_ktp' => $ocrData['result']['tanggalLahir']['value'] ?? null,
-            'nik_score_ktp' => $ocrData['result']['nik']['score'] ?? null,
+            'nama_ktp' => strtoupper($ocrData['result']['nama']['value'] ?? ''),
+            'nik_ktp' => $ocrData['result']['nik']['value'] ?? '',
+            'tgl_lahir_ktp' => $ocrData['result']['tanggalLahir']['value'] ?? '',
+            'nik_score_ktp' => $ocrData['result']['nik']['score'] ?? '',
             'nama_sim' => $nama_sim,
             'tgl_lahir_sim' => $tanggl_lahir_sim,
             'expired_sim' => $berlaku_sim,
@@ -241,42 +203,38 @@ class LowonganController extends Controller
         // Cek expired SIM
         if ($berlaku_sim) {
             $expiredSim = DateTime::createFromFormat('d-m-Y', $berlaku_sim);
-            $today = new DateTime();
-            $msg_expired_sim = $expiredSim < $today ? 'EXPIRED' : null;
-            $biodata->update(['status_sim_b2' => $msg_expired_sim . ' ' . $keterangan_sim]);
+            $todayDate = new DateTime();
+            $msg_expired_sim = $expiredSim < $todayDate ? 'EXPIRED' : null;
+            $biodata->update(['status_sim_b2' => $msg_expired_sim]);
         }
 
-        // -------------------------------
-        // ⚖️ VALIDASI KTP vs SIM
-        // -------------------------------
+        // Bandingkan data KTP vs SIM
+        $msg_name_ktp_vs_sim_b2 = null;
+        $msg_date_ktp_vs_sim_b2 = null;
+
         if ($lowongan->status_sim_b2) {
-            $msg_name_ktp_vs_sim_b2 = $nama_sim
-                ? ($ocrResult['nama_sim'] != $ocrResult['nama_ktp'] ? 'Nama pada SIM B2 tidak sesuai dengan KTP' : null)
-                : 'Nama pada SIM B II Umum tidak terbaca';
+            if (empty($nama_sim)) {
+                $msg_name_ktp_vs_sim_b2 = 'Nama pada SIM B II Umum tidak terbaca.';
+            } elseif ($ocrResult['nama_sim'] != $ocrResult['nama_ktp']) {
+                $msg_name_ktp_vs_sim_b2 = 'Nama pada SIM B2 tidak sesuai dengan KTP.';
+            }
 
-            $msg_date_ktp_vs_sim_b2 = $tanggl_lahir_sim
-                ? ($ocrResult['tgl_lahir_ktp'] != $ocrResult['tgl_lahir_sim'] ? 'Tanggal lahir pada SIM B2 tidak sesuai dengan KTP' : null)
-                : 'Tanggal lahir pada SIM B II Umum tidak terbaca';
-        } else {
-            $msg_name_ktp_vs_sim_b2 = null;
-            $msg_date_ktp_vs_sim_b2 = null;
+            if (empty($tanggl_lahir_sim)) {
+                $msg_date_ktp_vs_sim_b2 = 'Tanggal lahir pada SIM B II Umum tidak terbaca.';
+            } elseif ($ocrResult['tgl_lahir_ktp'] != $ocrResult['tgl_lahir_sim']) {
+                $msg_date_ktp_vs_sim_b2 = 'Tanggal lahir pada SIM B2 tidak sesuai dengan KTP.';
+            }
         }
 
-        // -------------------------------
-        // 🧩 CEK BIODATA KOSONG / KURANG
-        // -------------------------------
+        // Periksa field biodata kosong
         $fieldLabels = $this->getFieldLabels($lowongan->status_sim_b2);
-        $emptyFields = collect($fieldLabels)->filter(function ($label, $field) use ($biodata) {
-            return empty($biodata->$field);
-        })->values()->all();
+        $emptyFields = collect($fieldLabels)->filter(fn($label, $field) => empty($biodata->$field))->values()->all();
 
         $msg_no_ktp = $ocrResult['nik_ktp'] !== $biodata->no_ktp ? 'No KTP tidak sesuai dengan biodata anda.' : null;
-        $msg_no_ktp_score = $ocrResult['nik_score_ktp'] < 80 ? 'KTP tidak jelas, blur atau tidak dapat dibaca. Silakan perbarui KTP pada dokumen biodata anda.' : null;
-        $nikScoreKtp = ($biodata->status_ktp == null && $ocrResult['nik_score_ktp'] < 70) ? 'Verifikasi kepemilikan KTP' : null;
+        $msg_no_ktp_score = ($ocrResult['nik_score_ktp'] < 80) ? 'KTP tidak jelas, blur, atau tidak dapat dibaca. Silakan perbarui KTP pada dokumen biodata anda.' : null;
+        $nikScoreKtp = ($biodata->status_ktp == null && $ocrResult['nik_score_ktp'] < 70) ? 'Verifikasi kepemilikan KTP.' : null;
 
-        // -------------------------------
-        // ⚠️ TAMPILKAN VIEW VERIFIKASI JIKA ADA MASALAH
-        // -------------------------------
+        // Jika ada kesalahan verifikasi, tampilkan view
         if (count($emptyFields) || $msg_no_ktp || $msg_no_ktp_score || $nikScoreKtp || $msg_name_ktp_vs_sim_b2 || $msg_date_ktp_vs_sim_b2) {
             return view('user.lowongan-kerja.verifikasi', [
                 'emptyFields' => $emptyFields,
@@ -289,12 +247,8 @@ class LowonganController extends Controller
             ]);
         }
 
-        // -------------------------------
-        // ✅ SEMUA LULUS VERIFIKASI
-        // -------------------------------
-        return;
+        return; // lanjut ke proses store() jika semua lolos
     }
-
 
     public function parseSimB2($biodata, $save = true)
     {
