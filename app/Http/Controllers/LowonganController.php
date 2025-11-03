@@ -137,7 +137,7 @@ class LowonganController extends Controller
             return redirect()->route('login');
         }
 
-        $biodata = Biodata::where('user_id', auth()->id())->first();
+        return $biodata = Biodata::where('user_id', auth()->id())->first();
 
         if (!$biodata) {
             Alert::info('Opss!', 'Lengkapi formulir biodata anda terlebih dahulu sebelum melamar lowongan kerja.');
