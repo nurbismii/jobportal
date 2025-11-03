@@ -164,6 +164,8 @@ class LowonganController extends Controller
         // Jika ada query ?refresh=true, hapus cache manual
         if (request()->query('refresh') === 'true') {
             Cache::forget($cacheKey);
+
+            return "ahaha";
         }
 
         if (!Cache::has($cacheKey)) {
