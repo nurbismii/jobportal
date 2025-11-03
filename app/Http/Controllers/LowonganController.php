@@ -217,7 +217,7 @@ class LowonganController extends Controller
         }
 
         // Simpan dalam array data hasil ocr sim dan ktp
-        $ocrResult = [
+        return $ocrResult = [
             'nama_ktp' => strtoupper($ocrData['result']['nama']['value']) ?? null,
             'nik_ktp' => $ocrData['result']['nik']['value'] ?? null,
             'tgl_lahir_ktp' => $ocrData['result']['tanggalLahir']['value'] ?? null,
@@ -264,9 +264,7 @@ class LowonganController extends Controller
             return empty($biodata->$field);
         })->values()->all();
 
-        return $biodata->no_ktp . '=' . $ocrResult['nik_ktp'];
-
-        return $msg_no_ktp = $ocrResult['nik_ktp'] !== $biodata->no_ktp ? 'No KTP tidak sesuai dengan biodata anda.' : null;
+        $msg_no_ktp = $ocrResult['nik_ktp'] !== $biodata->no_ktp ? 'No KTP tidak sesuai dengan biodata anda.' : null;
 
         $msg_no_ktp_score = $ocrResult['nik_score_ktp'] < 80 ? 'KTP tidak jelas, blur atau tidak dapat dibaca. Silakan perbarui KTP pada dokumen biodata anda.' : null;
 
