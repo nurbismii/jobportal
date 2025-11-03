@@ -228,8 +228,6 @@ class LowonganController extends Controller
             'keterangan_sim' => $keterangan_sim
         ];
 
-        return $ocrResult;
-
         $expiredSim = DateTime::createFromFormat('d-m-Y', $berlaku_sim);
         $today = new DateTime(); // otomatis tanggal hari ini
 
