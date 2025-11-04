@@ -342,7 +342,7 @@
                             @else
                             <td>{{ $data->biodata->user->area_kerja ?? '---' }}</td>
                             @endif
-                            <td>{{ $data->biodata->jenis_kelamin == 'L' ? 'Laki-Laki' : 'Perempuan' }}</td>
+                            <td>{{ $data->biodata->jenis_kelamin == 'F 女' ? 'Laki-Laki' : 'Perempuan' }}</td>
                             <td>{{ $data->biodata->tempat_lahir }}</td>
                             <td>{{ $data->biodata->tanggal_lahir }}</td>
                             <td>{{ hitungUmur($data->biodata->tanggal_lahir) }}</td>

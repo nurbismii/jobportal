@@ -159,28 +159,7 @@
         </div>
     </div>
     @endif
-
-    <div class="alert border-1 border-success shadow-sm rounded-3 p-4">
-        <div class="d-flex align-items-start">
-            <div class="me-3">
-                <i class="fas fa-check-square fa-2x text-success"></i>
-            </div>
-            <div>
-                <h4 class="mb-2 text-dark fw-bold">Pengkinian Data!</h4>
-                <p class="mb-3 fw-bold text-success">
-                    Lakukan pengkinian data jika KTP pertama yang diupload mengalami kendal.
-                </p>
-                <ul class="mb-0 ps-3">
-                    <li class="mb-1">Setelah melakukan pengkinian data</li>
-                    <li class="mb-1">Pastikan KTP sudah sesuai dengan format yang ditentukan</li>
-                    <li class="mb-1">Klik link "Pengkinian Data" untuk mengulangi proses pemeriksaan</li>
-                    <li class="mb-1">Hasil akan diperbarui sesuai dengan data terbaru</li>
-                    <li class="mb-1">Lakukan <a href="{{ url()->current() }}?refresh=true" id="btn-reset-ocr">Pengkinian Data! </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>
+    
     <div class="mt-3">
         <a href="{{ route('biodata.index') }}" class="btn btn-primary">Lengkapi Data</a>
     </div>
