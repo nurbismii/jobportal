@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\BiodataController;
 use App\Http\Controllers\PendaftaranController;
 use App\Http\Controllers\ResetPasswordController;
+use App\Http\Controllers\Admin\LowonganController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -64,6 +65,8 @@ Route::group(['prefix' => 'admin', 'middleware' => ['redirect.role']], function 
     Route::resource('/pengumumans', 'App\Http\Controllers\Admin\PengumumanController');
 
     Route::post('/auto-update-field', [LamaranController::class, 'autoUpdate'])->name('data.autoUpdate');
+
+    Route::post('/refresh-data-pelamar', [LowonganController::class, 'refreshDataPelamar'])->name('refreshData');
 
     Route::resource('/personal-file', 'App\Http\Controllers\Admin\PersonalController');
     Route::resource('/permintaan-tenaga-kerja', 'App\Http\Controllers\Admin\PermintaanTenagaKerjaController');

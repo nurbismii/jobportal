@@ -11,6 +11,8 @@
 
 <link rel="stylesheet" href="https://cdn.datatables.net/fixedcolumns/4.3.0/css/fixedColumns.dataTables.min.css">
 
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
 <style>
     td.editable {
         cursor: text;
@@ -100,14 +102,51 @@
     </div>
 </div>
 
-<div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+<div class="card-header py-3 d-flex flex-row align-items-center justify-content-between mb-3">
     <h2 class="m-0 font-weight-bold text-primary">{{ $lowongan->nama_lowongan }}</h2>
-    <a href="{{ route('lowongan.index') }}" class="btn btn-danger btn-sm btn-icon-split">
-        <span class="icon text-white-50">
-            <i class="fas fa-arrow-left"></i>
-        </span>
-        <span class="text">Kembali</span>
-    </a>
+    <div class="d-flex align-items-center">
+
+        <button type="button" class="btn btn-warning btn-sm mr-2" data-toggle="modal" data-target="#modalRefreshStatus">
+            Refresh Status Pelamar
+        </button>
+
+        <a href="{{ route('lowongan.index') }}" class="btn btn-danger btn-sm btn-icon-split">
+            <span class="icon text-white-50">
+                <i class="fas fa-arrow-left"></i>
+            </span>
+            <span class="text">Kembali</span>
+        </a>
+
+
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="modalRefreshStatus" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger" id="exampleModalLabel">Peringatan!</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form action="{{ route('refreshData') }}" method="post">
+                    @csrf
+                    <div class="modal-body">
+                        Kamu yakin ingin melakukan refresh status pelamar ?
+                    </div>
+                    @foreach($lamarans as $data)
+                    <input type="hidden" name="no_ktp[]" value="{{ $data->biodata->no_ktp }}">
+                    @endforeach
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Tidak</button>
+                        <button type="submit" class="btn btn-primary">Ya</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Filter data pelamar -->
@@ -115,63 +154,68 @@
     <div class="card-body">
         <form method="GET" class="row">
             <div class="col-md-4 mb-3">
-                <select name="status" class="form-control form-control-sm" onchange="this.form.submit()">
+                <select name="status[]" class="form-control form-control-sm multiple-status-pelamar" multiple="multiple">
                     <option value="">-- Filter Status --</option>
                     <optgroup label="Tahapan Proses">
-                        <option value="Belum Sesuai Kriteria" {{ request('status') == 'Belum Sesuai Kriteria' ? 'selected' : '' }}>Belum Sesuai Kriteria</option>
-                        <option value="Lamaran Dikirim" {{ request('status') == 'Lamaran Dikirim' ? 'selected' : '' }}>Lamaran Dikirim</option>
-                        <option value="Verifikasi Online" {{ request('status') == 'Verifikasi Online' ? 'selected' : '' }}>Verifikasi Online</option>
-                        <option value="Verifikasi Berkas" {{ request('status') == 'Verifikasi Berkas' ? 'selected' : '' }}>Verifikasi Berkas</option>
-                        <option value="Tes Kesehatan" {{ request('status') == 'Tes Kesehatan' ? 'selected' : '' }}>Tes Kesehatan</option>
-                        <option value="Tes Lapangan" {{ request('status') == 'Tes Lapangan' ? 'selected' : '' }}>Tes Lapangan</option>
-                        <option value="Medical Check-Up" {{ request('status') == 'Medical Check-Up' ? 'selected' : '' }}>Medical Check-Up</option>
-                        <option value="Induksi Safety" {{ request('status') == 'Induksi Safety' ? 'selected' : '' }}>Induksi Safety</option>
-                        <option value="Tanda Tangan Kontrak" {{ request('status') == 'Tanda Tangan Kontrak' ? 'selected' : '' }}>Tanda Tangan Kontrak</option>
-                        <option value="Aktif Bekerja" {{ request('status') == 'Aktif Bekerja' ? 'selected' : '' }}>Aktif Bekerja</option>
+                        <option value="Belum Sesuai Kriteria" {{ collect(request('status'))->contains('Belum Sesuai Kriteria') ? 'selected' : '' }}>Belum Sesuai Kriteria</option>
+                        <option value="Lamaran Dikirim" {{ collect(request('status'))->contains('Lamaran Dikirim') ? 'selected' : '' }}>Lamaran Dikirim</option>
+                        <option value="Verifikasi Online" {{ collect(request('status'))->contains('Verifikasi Online') ? 'selected' : '' }}>Verifikasi Online</option>
+                        <option value="Verifikasi Berkas" {{ collect(request('status'))->contains('Verifikasi Berkas') ? 'selected' : '' }}>Verifikasi Berkas</option>
+                        <option value="Tes Kesehatan" {{ collect(request('status'))->contains('Tes Kesehatan') ? 'selected' : '' }}>Tes Kesehatan</option>
+                        <option value="Tes Lapangan" {{ collect(request('status'))->contains('Tes Lapangan') ? 'selected' : '' }}>Tes Lapangan</option>
+                        <option value="Medical Check-Up" {{ collect(request('status'))->contains('Medical Check-Up') ? 'selected' : '' }}>Medical Check-Up</option>
+                        <option value="Induksi Safety" {{ collect(request('status'))->contains('Induksi Safety') ? 'selected' : '' }}>Induksi Safety</option>
+                        <option value="Tanda Tangan Kontrak" {{ collect(request('status'))->contains('Tanda Tangan Kontrak') ? 'selected' : '' }}>Tanda Tangan Kontrak</option>
+                        <option value="Aktif Bekerja" {{ collect(request('status'))->contains('Aktif Bekerja') ? 'selected' : '' }}>Aktif Bekerja</option>
                     </optgroup>
                     <optgroup label="Tahapan Tidak Lolos">
-                        <option value="Tidak Sesuai Kriteria" {{ request('status') == 'Tidak Sesuai Kriteria' ? 'selected' : '' }}>Tidak Sesuai Kriteria</option>
-                        <option value="Tidak Lolos Verifikasi Berkas" {{ request('status') == 'Tidak Lolos Verifikasi Berkas' ? 'selected' : '' }}>Tidak Lolos Verifikasi Berkas</option>
-                        <option value="Tidak Lolos Tes Kesehatan" {{ request('status') == 'Tidak Lolos Tes Kesehatan' ? 'selected' : '' }}>Tidak Lolos Tes Kesehatan</option>
-                        <option value="Tidak Lolos Tes Lapangan" {{ request('status') == 'Tidak Lolos Tes Lapangan' ? 'selected' : '' }}>Tidak Lolos Tes Lapangan</option>
-                        <option value="Tidak Lolos Medical Check-Up" {{ request('status') == 'Tidak Lolos Medical Check-Up' ? 'selected' : '' }}>Tidak Lolos Medical Check-Up</option>
+                        <option value="Tidak Sesuai Kriteria" {{ collect(request('status'))->contains('Tidak Sesuai Kriteria') ? 'selected' : '' }}>Tidak Sesuai Kriteria</option>
+                        <option value="Tidak Lolos Verifikasi Berkas" {{ collect(request('status'))->contains('Tidak Lolos Verifikasi Berkas') ? 'selected' : '' }}>Tidak Lolos Verifikasi Berkas</option>
+                        <option value="Tidak Lolos Tes Kesehatan" {{ collect(request('status'))->contains('Tidak Lolos Tes Kesehatan') ? 'selected' : '' }}>Tidak Lolos Tes Kesehatan</option>
+                        <option value="Tidak Lolos Tes Lapangan" {{ collect(request('status'))->contains('Tidak Lolos Tes Lapangan') ? 'selected' : '' }}>Tidak Lolos Tes Lapangan</option>
+                        <option value="Tidak Lolos Medical Check-Up" {{ collect(request('status'))->contains('Tidak Lolos Medical Check-Up') ? 'selected' : '' }}>Tidak Lolos Medical Check-Up</option>
                     </optgroup>
 
                 </select>
             </div>
 
             <div class="col-md-4 mb-3">
-                <input type="number" name="umur_min" class="form-control form-control-sm" placeholder="Umur Minimal" value="{{ request('umur_min') }}" onchange="this.form.submit()">
+                <input type="number" name="umur_min" class="form-control form-control-sm" placeholder="Umur Minimal" value="{{ request('umur_min') }}">
             </div>
             <div class="col-md-4 mb-3">
-                <input type="number" name="umur_max" class="form-control form-control-sm" placeholder="Umur Maksimal" value="{{ request('umur_max') }}" onchange="this.form.submit()">
+                <input type="number" name="umur_max" class="form-control form-control-sm" placeholder="Umur Maksimal" value="{{ request('umur_max') }}">
             </div>
 
             <div class="col-md-6 mb-3">
-                <select name="pendidikan" class="form-control form-control-sm" onchange="this.form.submit()">
+                <select name="pendidikan[]" class="form-control form-control-sm multiple-pendidikan" multiple="multiple">
                     <option value="">-- Filter Pendidikan --</option>
-                    <option value="SD 小学" {{ request('pendidikan') == 'SD 小学' ? 'selected' : '' }}>SD 小学</option>
-                    <option value="SMP 初中" {{ request('pendidikan') == 'SMP 初中' ? 'selected' : '' }}>SMP 初中</option>
-                    <option value="SMA 高中" {{ request('pendidikan') == 'SMA 高中' ? 'selected' : '' }}>SMA 高中</option>
-                    <option value="SMK 高中" {{ request('pendidikan') == 'SMK 高中' ? 'selected' : '' }}>SMK 高中</option>
-                    <option value="D3 大专三年" {{ request('pendidikan') == 'D3 大专三年' ? 'selected' : '' }}>D3 大专三年</option>
-                    <option value="D4 大专三年" {{ request('pendidikan') == 'D4 大专三年' ? 'selected' : '' }}>D4 大专三年</option>
-                    <option value="S1 本科" {{ request('pendidikan') == 'S1 本科' ? 'selected' : '' }}>S1 本科</option>
-                    <option value="S2 研究生" {{ request('pendidikan') == 'S2 研究生' ? 'selected' : '' }}>S2 研究生</option>
+                    <option value="SD 小学" {{ collect(request('pendidikan'))->contains('SD 小学') ? 'selected' : '' }}>SD 小学</option>
+                    <option value="SMP 初中" {{ collect(request('pendidikan'))->contains('SMP 初中') ? 'selected' : '' }}>SMP 初中</option>
+                    <option value="SMA 高中" {{ collect(request('pendidikan'))->contains('SMA 高中') ? 'selected' : '' }}>SMA 高中</option>
+                    <option value="SMK 高中" {{ collect(request('pendidikan'))->contains('SMK 高中') ? 'selected' : '' }}>SMK 高中</option>
+                    <option value="D3 大专三年" {{ collect(request('pendidikan'))->contains('D3 大专三年') ? 'selected' : '' }}>D3 大专三年</option>
+                    <option value="D4 大专三年" {{ collect(request('pendidikan'))->contains('D4 大专三年') ? 'selected' : '' }}>D4 大专三年</option>
+                    <option value="S1 本科" {{ collect(request('pendidikan'))->contains('S1 本科') ? 'selected' : '' }}>S1 本科</option>
+                    <option value="S2 研究生" {{ collect(request('pendidikan'))->contains('S2 研究生') ? 'selected' : '' }}>S2 研究生</option>
                 </select>
             </div>
 
             <div class="col-md-6 mb-3">
-                <select name="status_resign" class="form-control form-control-sm" onchange="this.form.submit()">
+                <select name="status_resign[]" class="form-control form-control-sm multiple-status" multiple="multiple">
                     <option value="">-- Filter Status Pelamar --</option>
-                    <option value="RESIGN SESUAI PROSEDUR" {{ request('status_resign') == 'RESIGN SESUAI PROSEDUR' ? 'selected' : '' }}>RESIGN SESUAI PROSEDUR</option>
-                    <option value="RESIGN TIDAK SESUAI PROSEDUR" {{ request('status_resign') == 'RESIGN TIDAK SESUAI PROSEDUR' ? 'selected' : '' }}>RESIGN TIDAK SESUAI PROSEDUR</option>
-                    <option value="PHK" {{ request('status_resign') == 'PHK' ? 'selected' : '' }}>PHK</option>
-                    <option value="PHK PIDANA" {{ request('status_resign') == 'PHK PIDANA' ? 'selected' : '' }}>PHK PIDANA</option>
-                    <option value="PB PHK" {{ request('status_resign') == 'PB PHK' ? 'selected' : '' }}>PB PHK</option>
-                    <option value="PB RESIGN" {{ request('status_resign') == 'PB RESIGN' ? 'selected' : '' }}>PB RESIGN</option>
-                    <option value="PUTUS KONTRAK" {{ request('status_resign') == 'PUTUS KONTRAK' ? 'selected' : '' }}>PUTUS KONTRAK</option>
+                    <option value="RESIGN SESUAI PROSEDUR" {{ collect(request('status_resign'))->contains('RESIGN SESUAI PROSEDUR') ? 'selected' : '' }}>RESIGN SESUAI PROSEDUR</option>
+                    <option value="RESIGN TIDAK SESUAI PROSEDUR" {{ collect(request('status_resign'))->contains('RESIGN TIDAK SESUAI PROSEDUR') ? 'selected' : '' }}>RESIGN TIDAK SESUAI PROSEDUR</option>
+                    <option value="PHK" {{ collect(request('status_resign'))->contains('PHK') ? 'selected' : '' }}>PHK</option>
+                    <option value="PHK PIDANA" {{ collect(request('status_resign'))->contains('PHK PIDANA') ? 'selected' : '' }}>PHK PIDANA</option>
+                    <option value="PB PHK" {{ collect(request('status_resign'))->contains('PB PHK') ? 'selected' : '' }}>PB PHK</option>
+                    <option value="PB RESIGN" {{ collect(request('status_resign'))->contains('PB RESIGN') ? 'selected' : '' }}>PB RESIGN</option>
+                    <option value="PUTUS KONTRAK" {{ collect(request('status_resign'))->contains('PUTUS KONTRAK') ? 'selected' : '' }}>PUTUS KONTRAK</option>
                 </select>
+            </div>
+
+            <div class="col-md-12">
+                <a href="{{ route('directToLamaran', $lowongan->id) }}" class="btn btn-secondary">Reset</a>
+                <button type="submit" class="btn btn-primary">Filter</button>
             </div>
         </form>
     </div>
@@ -581,8 +625,6 @@ return $order[$item->level_sp] ?? 99;
 @endif
 @endforeach
 
-
-
 @push('scripts')
 <!-- Page level plugins -->
 <script src="{{ asset('admin/vendor/datatables/jquery.dataTables.min.js') }}"></script>
@@ -596,6 +638,24 @@ return $order[$item->level_sp] ?? 99;
 
 <script src="https://cdn.datatables.net/fixedcolumns/4.3.0/js/dataTables.fixedColumns.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        $('.multiple-pendidikan').select2({
+            placeholder: "Pilih Pendidikan Terakhir"
+        });
+
+        $('.multiple-status').select2({
+            placeholder: "Pilih Status Ex Karyawan"
+        });
+
+        $('.multiple-status-pelamar').select2({
+            placeholder: "Pilih Status Tahapan Pelamar"
+        });
+    });
+</script>
 
 <script>
     $(document).ready(function() {

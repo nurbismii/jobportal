@@ -93,9 +93,9 @@ class LowonganController extends Controller
 
     public function directToLamaran(Request $request, $loker_id)
     {
-        $lowongan = Lowongan::select('nama_lowongan', 'status_sim_b2')->where('id', $loker_id)->first();
+        $lowongan = Lowongan::select('id', 'nama_lowongan', 'status_sim_b2')->where('id', $loker_id)->first();
 
-        $query = Lamaran::with(
+        $query = Lamaran::with([
             'lowongan',
             'biodata.user',
             'biodata.getRiwayatInHris',
@@ -104,17 +104,19 @@ class LowonganController extends Controller
             'biodata.getKecamatan',
             'biodata.getKelurahan',
             'biodata.user.suratPeringatan',
-        )->where('loker_id', $loker_id);
+        ])->where('loker_id', $loker_id);
 
-        // Filter status proses
+        // Filter status proses (multiple)
         if ($request->filled('status')) {
-            $query->where('status_proses', $request->status);
+            $statusArray = is_array($request->status) ? $request->status : [$request->status];
+            $query->whereIn('status_proses', $statusArray);
         }
 
-        // Filter pendidikan
+        // Filter pendidikan (multiple)
         if ($request->filled('pendidikan')) {
-            $query->whereHas('biodata', function ($q) use ($request) {
-                $q->where('pendidikan_terakhir', $request->pendidikan);
+            $pendidikanArray = is_array($request->pendidikan) ? $request->pendidikan : explode(',', $request->pendidikan);
+            $query->whereHas('biodata', function ($q) use ($pendidikanArray) {
+                $q->whereIn('pendidikan_terakhir', $pendidikanArray);
             });
         }
 
@@ -130,12 +132,13 @@ class LowonganController extends Controller
             });
         }
 
+        // Filter status resign (multiple)
         if ($request->filled('status_resign')) {
-            $noKtpList = \App\Models\Hris\Employee::where('status_resign', $request->status_resign)
+            $statusResignArray = is_array($request->status_resign) ? $request->status_resign : [$request->status_resign];
+            $noKtpList = \App\Models\Hris\Employee::whereIn('status_resign', $statusResignArray)
                 ->pluck('no_ktp')
                 ->toArray();
 
-            // Lalu filter Lamaran
             $query->whereHas('biodata', function ($q) use ($noKtpList) {
                 $q->whereIn('no_ktp', $noKtpList);
             });
@@ -144,5 +147,38 @@ class LowonganController extends Controller
         $lamarans = $query->get();
 
         return view('admin.lamaran.index', compact('lamarans', 'lowongan'))->with('no');
+    }
+
+    // Refresh status pelamar berdasarkan data dari HRIS
+    public function refreshDataPelamar(Request $request)
+    {
+        $noKtpArray = (array) $request->input('no_ktp', []);
+
+        foreach ($noKtpArray as $noKtp) {
+            $user = \App\Models\User::whereHas('biodata', function ($q) use ($noKtp) {
+                $q->where('no_ktp', $noKtp);
+            })->first();
+
+            if (!$user) {
+                continue;
+            }
+
+            $biodata = $user->biodata;
+            $hrisEmployee = $biodata->getRiwayatInHris()
+                ->where('no_ktp', $biodata->no_ktp)
+                ->orderBy('tgl_resign', 'asc')
+                ->first();
+
+            if ($hrisEmployee) {
+                $user->status_pelamar = $hrisEmployee->status_resign;
+            } else {
+                $user->status_pelamar = Null;
+            }
+
+            $user->save();
+        }
+
+        Alert::success('Berhasil', 'Status pelamar berhasil di-refresh!');
+        return redirect()->back();
     }
 }
