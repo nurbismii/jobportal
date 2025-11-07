@@ -171,8 +171,10 @@ class LowonganController extends Controller
 
             if ($hrisEmployee) {
                 $user->status_pelamar = $hrisEmployee->status_resign;
+                $user->area_kerja = $hrisEmployee->area_kerja;
             } else {
                 $user->status_pelamar = Null;
+                $user->area_kerja = Null;
             }
 
             $user->save();
