@@ -197,8 +197,6 @@ if (!function_exists('extractSimB2OnlyOCR')) {
                 return ['success' => false, 'message' => 'Terjadi kesalahan'];
             }
         }
-
-        return ['success' => false, 'message' => 'Gagal menemukan file SIM B2'];
     }
 }
 

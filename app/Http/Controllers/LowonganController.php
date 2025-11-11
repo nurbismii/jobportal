@@ -22,9 +22,10 @@ class LowonganController extends Controller
     {
         $lowongans = Lowongan::select('*')
             ->selectRaw("IF(tanggal_berakhir < ?, 'Kadaluwarsa', 'Aktif') as status_lowongan", [Carbon::now()])
+            ->where('tanggal_mulai', '<=', Carbon::now()) // hanya yang sudah mulai
             ->having('status_lowongan', '=', 'Aktif')
             ->orderBy('created_at', 'desc')
-            ->take(5)
+            ->take(12)
             ->get();
 
         return view('user.lowongan-kerja.index', compact('lowongans'));
