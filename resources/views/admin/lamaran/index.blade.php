@@ -398,10 +398,10 @@
                             </td>
                             <td>{{ $data->biodata->rt }}/{{ $data->biodata->rt }}</td>
                             <td>{{ $data->biodata->kode_pos }}</td>
-                            <td>{{ $data->biodata->getProvinsi->provinsi }}</td>
-                            <td>{{ $data->biodata->getKabupaten->kabupaten }}</td>
-                            <td>{{ $data->biodata->getKecamatan->kecamatan }}</td>
-                            <td>{{ $data->biodata->getKelurahan->kelurahan }}</td>
+                            <td>{{ $data->biodata->getProvinsi->provinsi ?? '-' }}</td>
+                            <td>{{ $data->biodata->getKabupaten->kabupaten ?? '-'}}</td>
+                            <td>{{ $data->biodata->getKecamatan->kecamatan ?? '-' }}</td>
+                            <td>{{ $data->biodata->getKelurahan->kelurahan ?? '-'}}</td>
                             <td>{{ $data->biodata->alamat }}</td>
                             <td>{{ $data->biodata->no_telp }}</td>
                             <td>{{ $data->biodata->no_npwp }}</td>
