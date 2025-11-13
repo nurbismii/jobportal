@@ -8,6 +8,7 @@ use App\Models\Hris\Kecamatan;
 use App\Models\Hris\Kelurahan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 
 class ApiController extends Controller
 {
@@ -94,50 +95,79 @@ class ApiController extends Controller
         }
 
         $file = $request->file('ktp');
-        $path = $file->storeAs('temp_ocr', uniqid() . '.' . $file->getClientOriginalExtension(), 'public');
+        $extension = $file->getClientOriginalExtension();
+        $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+
+        // === Folder cache OCR ===
+        $cacheDir = storage_path('app/ocr_cache');
+        if (!is_dir($cacheDir)) mkdir($cacheDir, 0777, true);
+
+        // === Identitas unik file berdasarkan hash isi ===
+        $fileHash = md5_file($file->getRealPath());
+        $cacheFile = "{$cacheDir}/{$fileHash}.json";
+        $cacheExpireSeconds = 86400; // 1 hari
+
+        // === Cek apakah cache masih valid ===
+        if (file_exists($cacheFile)) {
+            $cacheAge = time() - filemtime($cacheFile);
+            if ($cacheAge < $cacheExpireSeconds) {
+                // ✅ Gunakan hasil cache (tidak perlu OCR ulang)
+                $cachedData = json_decode(file_get_contents($cacheFile), true);
+                return response()->json([
+                    'success' => true,
+                    'cached' => true,
+                    'data' => $cachedData
+                ]);
+            }
+        }
+
+        // === Simpan sementara file ke storage/public/temp_ocr ===
+        $path = $file->storeAs('temp_ocr', uniqid() . '.' . $extension, 'public');
         $fullPath = storage_path('app/public/' . $path);
 
         try {
-            // Panggil API OCR
+            // === Validasi konfigurasi OCR API ===
             $url = rtrim(config('services.ocr.link'), '/') . '/' . ltrim(config('services.ocr.type'), '/');
+            $token = config('services.ocr.token');
 
-            if (empty($url) || !filter_var($url, FILTER_VALIDATE_URL)) {
-                return back();
+            if (empty($url) || !filter_var($url, FILTER_VALIDATE_URL) || empty($token)) {
+                return response()->json(['success' => false, 'message' => 'Konfigurasi OCR tidak valid.']);
             }
 
-            $fileContent = @file_get_contents($fullPath); // gunakan @ untuk suppress warning
-
-            if ($fileContent === false) {
-                return redirect()->to(route('biodata.index') . '#step5');
-            }
-
-            $response = Http::withToken(config('services.ocr.token'))
-                ->withHeaders([
-                    'Authentication' => 'bearer ' . config('services.ocr.token'),
-                ])
+            // === Kirim ke API OCR ===
+            $response = Http::withToken($token)
+                ->withHeaders(['Authentication' => 'bearer ' . $token])
                 ->attach('file', file_get_contents($fullPath), basename($fullPath))
                 ->put($url);
 
             if (!$response->successful()) {
-                abort(response()->json([
-                    'status' => 'error',
+                return response()->json([
+                    'success' => false,
                     'http_code' => $response->status(),
                     'reason' => $response->reason(),
-                    'headers' => $response->headers(),
                     'body' => $response->body(),
-                ], $response->status()));
+                ], $response->status());
             }
 
             $ocrData = $response->json();
 
+            // === Simpan hasil ke cache ===
+            file_put_contents($cacheFile, json_encode($ocrData, JSON_PRETTY_PRINT));
+
             return response()->json([
                 'success' => true,
+                'cached' => false,
                 'data' => $ocrData,
             ]);
         } catch (\Throwable $e) {
-            return response()->json(['success' => false, 'message' => 'Terjadi kesalahan saat OCR.' . $e]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat OCR.',
+                'error' => $e->getMessage(),
+            ]);
         } finally {
-            \Storage::disk('public')->delete($path);
+            // Hapus file sementara
+            Storage::disk('public')->delete($path);
         }
     }
 }
