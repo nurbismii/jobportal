@@ -6,25 +6,25 @@
 <div class="container-fluid service py-4">
     <div class="container">
         @if(Auth::user() && $fieldLabels)
-            @php
-            $dataKosong = [];
-            foreach ($fieldLabels as $field => $label) {
-                if (empty($biodata->$field)) {
-                $dataKosong[] = $label;
-            }
+        @php
+        $dataKosong = [];
+        foreach ($fieldLabels as $field => $label) {
+        if (empty($biodata->$field)) {
+        $dataKosong[] = $label;
+        }
         }
         @endphp
 
-            @if(count($dataKosong) > 0)
-            <div class="alert alert-warning mt-3">
-                <strong>Perhatian!</strong> Mohon lengkapi data berikut sebelum melamar:
-                <ul class="mb-0">
-                    @foreach($dataKosong as $label)
-                    <li>{{ $label }}</li>
-                    @endforeach
-                </ul>
-            </div>
-            @endif
+        @if(count($dataKosong) > 0)
+        <div class="alert alert-warning mt-3">
+            <strong>Perhatian!</strong> Mohon lengkapi data berikut sebelum melamar:
+            <ul class="mb-0">
+                @foreach($dataKosong as $label)
+                <li>{{ $label }}</li>
+                @endforeach
+            </ul>
+        </div>
+        @endif
         @endif
         <div class="alert border-2 border-primary shadow-sm rounded-3">
             <div class="mx-auto pb-2 wow fadeInUp" data-wow-delay="0.2s">
@@ -66,7 +66,7 @@
                 <h1 class="modal-title fs-5" id="exampleModalLabel">Konfirmasi Lamaran</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="{{ route('lowongan-kerja.store') }}" method="post">
+            <form id="form-lamaran" action="{{ route('lowongan-kerja.store') }}" method="post">
                 @csrf
                 <div class="modal-body">
                     <p class="text-primary fw-bold">Kamu yakin ingin melamar posisi {{$lowongan->nama_lowongan}}?</p>
@@ -75,11 +75,19 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">Ya, Lamar Sekarang</button>
+                    <button type="submit" id="btn-submit-lamaran" class="btn btn-primary">Ya, Lamar Sekarang</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+<script>
+    document.getElementById('form-lamaran').addEventListener('submit', function(e) {
+        const submitBtn = document.getElementById('btn-submit-lamaran');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mengirim...';
+    });
+</script>
 
 @endsection
