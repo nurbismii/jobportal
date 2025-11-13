@@ -366,8 +366,10 @@
                                 <a data-toggle="modal" data-target="#modalSP{{ $data->id }}" class="text-link">
                                     Lihat
                                 </a>
-                                @else
-                                <span class="text-muted">-</span>
+                                @elseif($data->biodata->getRiwayatInHris->isNotEmpty())
+                                <a data-toggle="modal" data-target="#modalResign{{ $data->biodata->no_ktp }}" class="text-link">
+                                    Lihat
+                                </a>
                                 @endif
                             </td>
                             <td><input type="checkbox" name="selected_ids[]" value="{{ $data->id }}"></td>
@@ -522,6 +524,94 @@
 </form>
 
 @foreach($lamarans as $data)
+
+<div class="modal fade" id="modalResign{{$data->biodata->no_ktp}}" tabindex="-1" role="dialog" aria-labelledby="modalSPLabel{{$data->biodata->no_ktp}}" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+        <div class="modal-content shadow-lg">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title font-weight-bold" id="modalSPLabel{{ $data->id }}">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    Riwayat Bekerja - {{ $data->biodata->user->name }}
+                </h5>
+                <button type="button" class="close text-dark" data-dismiss="modal" aria-label="Tutup">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body bg-light">
+                {{-- Section: Riwayat Resign --}}
+                <h6 class="text-primary font-weight-bold mb-3">📄 Riwayat Resign</h6>
+                <div class="table-responsive mb-4">
+                    <table class="table table-sm table-bordered table-hover">
+                        <thead class="thead-dark text-center">
+                            <tr>
+                                <th>Nama</th>
+                                <th>Tanggal</th>
+                                <th>Rentang</th>
+                                <th>Kategori</th>
+                                <th>Alasan</th>
+                                <th>Posisi</th>
+                                <th>Area</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($data->biodata->getRiwayatInHris as $riwayat)
+                            <tr>
+                                <td>{{ $riwayat->nama_karyawan }}</td>
+                                @php
+                                    $tglResignRaw = $riwayat->tgl_resign ?? null;
+                                    $threshold = \Carbon\Carbon::create(2015, 4, 1);
+                                    $showValue = false;
+                                    if ($tglResignRaw) {
+                                        try {
+                                            $tglResignCarbon = \Carbon\Carbon::parse($tglResignRaw);
+                                            $showValue = $tglResignCarbon->gte($threshold);
+                                        } catch (\Exception $e) {
+                                            $showValue = false;
+                                        }
+                                    }
+                                @endphp
+
+                                <td class="text-center">
+                                    @if($showValue)
+                                        {{ tanggalIndo($tglResignCarbon) }}
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($showValue)
+                                        @php
+                                            $sekarang = \Carbon\Carbon::now();
+                                            $diff = $tglResignCarbon->diff($sekarang);
+                                        @endphp
+                                        {{ $diff->y }} Tahun {{ $diff->m }} Bulan
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                                <td>{{ $riwayat->status_resign }}</td>
+                                <td>{{ $riwayat->alasan_resign }}</td>
+                                <td>{{ $riwayat->posisi }}</td>
+                                <td>{{ $riwayat->area_kerja }}</td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">Tidak ada data resign.</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer bg-white">
+                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">
+                    <i class="fas fa-times"></i> Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @if($data->biodata->user->suratPeringatan->isNotEmpty())
 @php
 $orderedSP = $data->biodata->user->suratPeringatan->sortBy(function ($item) {
@@ -555,6 +645,7 @@ return $order[$item->level_sp] ?? 99;
                                 <th>Kategori</th>
                                 <th>Alasan</th>
                                 <th>Posisi</th>
+                                <th>Area</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -573,6 +664,7 @@ return $order[$item->level_sp] ?? 99;
                                 <td>{{ $riwayat->status_resign }}</td>
                                 <td>{{ $riwayat->alasan_resign }}</td>
                                 <td>{{ $riwayat->posisi }}</td>
+                                <td>{{ $riwayat->area_kerja }}</td>
                             </tr>
                             @empty
                             <tr>
