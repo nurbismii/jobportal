@@ -20,6 +20,7 @@
                             <thead>
                                 <tr>
                                     <th>Nama</th>
+                                    <th>KTP</th>
                                     <th>Email</th>
                                     <th>Akun</th>
                                     <th>Aksi</th>
@@ -29,6 +30,7 @@
                                 @foreach($penggunas as $pengguna)
                                 <tr>
                                     <td>{{ $pengguna->name }}</td>
+                                    <td>{{ $pengguna->no_ktp }}</td>
                                     <td>{{ $pengguna->email }}</td>
                                     <td>
                                         @if($pengguna->status_akun == '1')
