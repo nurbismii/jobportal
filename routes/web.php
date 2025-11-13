@@ -28,6 +28,7 @@ Route::resource('pengumuman', 'App\Http\Controllers\PengumumanController');
 Route::resource('bantuan', 'App\Http\Controllers\BantuanController');
 Route::resource('pendaftaran', 'App\Http\Controllers\PendaftaranController');
 
+Route::get('konfirmasi-email/{id}', [PendaftaranController::class, 'konfirmasiEmail']);
 Route::get('konfirmasi-email-token/{token}', [PendaftaranController::class, 'konfirmasiEmailToken']);
 
 Route::resource('reset-password', 'App\Http\Controllers\ResetPasswordController');
