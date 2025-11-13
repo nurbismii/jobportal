@@ -131,7 +131,7 @@ class BiodataController extends Controller
         $res_extract = extractSimB2OnlyOCR($biodata);
 
         if (!$res_extract['success']) {
-            Alert::error('Gagal', $res_extract['message']);
+            Alert::error('Info', $res_extract['message']);
             return redirect()->back();
         }
 

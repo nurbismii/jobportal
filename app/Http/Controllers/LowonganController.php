@@ -136,13 +136,12 @@ class LowonganController extends Controller
             }
 
             $res_ocr_simb2 = $this->parseSimB2($biodata);
-
             $nama_sim = strtoupper($res_ocr_simb2['data']['nama'] ?? '');
             $tanggl_lahir_sim = $res_ocr_simb2['data']['tanggal_lahir'] ?? '';
             $berlaku_sim = $res_ocr_simb2['data']['berlaku_sampai'] ?? null;
         }
 
-        // Jalankan OCR langsung setiap kali (tanpa cache)
+        // === Bagian Optimasi OCR (pakai cache file) ===
         $filePath = public_path($biodata->no_ktp . '/dokumen/' . $biodata->ktp);
 
         if (!$biodata->ktp || !file_exists($filePath)) {
@@ -150,46 +149,82 @@ class LowonganController extends Controller
             return redirect()->to(route('biodata.index') . '#step5');
         }
 
-        $url = rtrim(config('services.ocr.link'), '/') . '/' . ltrim(config('services.ocr.type'), '/');
+        // Pastikan folder cache ada
+        $cacheDir = storage_path('app/ocr_cache');
+        if (!is_dir($cacheDir)) mkdir($cacheDir, 0777, true);
 
-        if (empty($url) || !filter_var($url, FILTER_VALIDATE_URL)) {
-            Alert::error('Gagal', 'URL OCR tidak valid. Silakan periksa konfigurasi.');
-            return back();
+        $cacheFile = $cacheDir . '/' . $biodata->no_ktp . '_ktp.json';
+        $ocrData = null;
+
+        // Masa berlaku cache (3 hari)
+        $maxCacheAge = 60 * 60 * 24 * 3;
+
+        // Dapatkan informasi file saat ini
+        $fileModified = filemtime($filePath);
+        $fileHash = md5_file($filePath);
+
+        // Cek cache valid
+        if (file_exists($cacheFile)) {
+            $cache = json_decode(file_get_contents($cacheFile), true);
+
+            $cacheExpired = (time() - filemtime($cacheFile)) > $maxCacheAge;
+
+            if (
+                !$cacheExpired &&
+                isset($cache['fileModified'], $cache['fileHash'], $cache['ocrData']) &&
+                $cache['fileModified'] === $fileModified &&
+                $cache['fileHash'] === $fileHash
+            ) {
+                // Cache valid
+                $ocrData = $cache['ocrData'];
+            }
         }
 
-        $fileContent = @file_get_contents($filePath);
+        // Jika cache belum valid → panggil OCR API
+        if (!$ocrData) {
+            $url = rtrim(config('services.ocr.link'), '/') . '/' . ltrim(config('services.ocr.type'), '/');
 
-        if ($fileContent === false) {
-            Alert::error('Gagal', 'Gagal membaca file KTP. Pastikan file tersedia dan tidak rusak.');
-            return redirect()->to(route('biodata.index') . '#step5');
+            if (empty($url) || !filter_var($url, FILTER_VALIDATE_URL)) {
+                Alert::error('Gagal', 'URL OCR tidak valid. Silakan periksa konfigurasi.');
+                return back();
+            }
+
+            $fileContent = @file_get_contents($filePath);
+            if ($fileContent === false) {
+                Alert::error('Gagal', 'Gagal membaca file KTP. Pastikan file tersedia dan tidak rusak.');
+                return redirect()->to(route('biodata.index') . '#step5');
+            }
+
+            $response = Http::withToken(config('services.ocr.token'))
+                ->withHeaders(['Authentication' => 'bearer ' . config('services.ocr.token')])
+                ->attach('file', $fileContent, $biodata->ktp)
+                ->put($url);
+
+            if (!$response->successful()) {
+                abort(response()->json([
+                    'status' => 'error',
+                    'http_code' => $response->status(),
+                    'reason' => $response->reason(),
+                    'body' => $response->body(),
+                ], $response->status()));
+            }
+
+            $ocrData = $response->json();
+
+            // Simpan hasil OCR + metadata
+            file_put_contents($cacheFile, json_encode([
+                'fileModified' => $fileModified,
+                'fileHash' => $fileHash,
+                'ocrData' => $ocrData
+            ], JSON_PRETTY_PRINT));
         }
 
-        // Panggil API OCR langsung tanpa cache
-        $response = Http::withToken(config('services.ocr.token'))
-            ->withHeaders([
-                'Authentication' => 'bearer ' . config('services.ocr.token'),
-            ])
-            ->attach('file', $fileContent, $biodata->ktp)
-            ->put($url);
-
-        if (!$response->successful()) {
-            abort(response()->json([
-                'status' => 'error',
-                'http_code' => $response->status(),
-                'reason' => $response->reason(),
-                'headers' => $response->headers(),
-                'body' => $response->body(),
-            ], $response->status()));
-        }
-
-        $ocrData = $response->json();
-
+        // === Gunakan hasil OCR ===
         if (!$ocrData) {
             Alert::info('Opss!', 'Silakan lengkapi dokumen pribadi yang dibutuhkan terlebih dahulu.');
             return redirect()->to(route('biodata.index') . '#step5');
         }
 
-        // Simpan hasil OCR
         $ocrResult = [
             'nama_ktp' => strtoupper($ocrData['result']['nama']['value'] ?? ''),
             'nik_ktp' => $ocrData['result']['nik']['value'] ?? '',
@@ -227,7 +262,7 @@ class LowonganController extends Controller
             }
         }
 
-        // Periksa field biodata kosong
+        // Cek field kosong
         $fieldLabels = $this->getFieldLabels($lowongan->status_sim_b2);
         $emptyFields = collect($fieldLabels)->filter(fn($label, $field) => empty($biodata->$field))->values()->all();
 
@@ -235,7 +270,6 @@ class LowonganController extends Controller
         $msg_no_ktp_score = ($ocrResult['nik_score_ktp'] < 80) ? 'KTP tidak jelas, blur, atau tidak dapat dibaca. Silakan perbarui KTP pada dokumen biodata anda.' : null;
         $nikScoreKtp = ($biodata->status_ktp == null && $ocrResult['nik_score_ktp'] < 70) ? 'Verifikasi kepemilikan KTP.' : null;
 
-        // Jika ada kesalahan verifikasi, tampilkan view
         if (count($emptyFields) || $msg_no_ktp || $msg_no_ktp_score || $nikScoreKtp || $msg_name_ktp_vs_sim_b2 || $msg_date_ktp_vs_sim_b2) {
             return view('user.lowongan-kerja.verifikasi', [
                 'emptyFields' => $emptyFields,
@@ -248,7 +282,7 @@ class LowonganController extends Controller
             ]);
         }
 
-        return; // lanjut ke proses store() jika semua lolos
+        return; // lanjut ke store()
     }
 
     public function parseSimB2($biodata, $save = true)
