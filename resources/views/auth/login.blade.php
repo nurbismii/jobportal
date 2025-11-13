@@ -18,9 +18,8 @@
                 <p class="text-muted small">Silakan login dengan email dan kata sandi Anda</p>
             </div>
 
-            <form method="POST" action="{{ route('login') }}">
+            <form id="form-login" method="POST" action="{{ route('login') }}">
                 @csrf
-
                 <div class="mb-3">
                     <label for="email" class="form-label">Email</label>
                     <input id="email" type="email"
@@ -57,7 +56,7 @@
                 </div>
 
                 <div class="d-grid mb-3">
-                    <button type="submit" class="btn btn-primary rounded-pill">
+                    <button type="submit" id="btn-submit-login" class="btn btn-primary rounded-pill">
                         Masuk
                     </button>
                 </div>
@@ -73,4 +72,12 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.getElementById('form-login').addEventListener('submit', function(e) {
+        const submitBtn = document.getElementById('btn-submit-login');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Proses masuk...';
+    });
+</script>
 @endsection

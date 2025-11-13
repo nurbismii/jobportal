@@ -18,7 +18,7 @@
                 <p class="text-muted small">Silakan isi data Anda dengan benar</p>
             </div>
 
-            <form method="POST" action="{{ route('pendaftaran.store') }}">
+            <form id="form-register" method="POST" action="{{ route('pendaftaran.store') }}">
                 @csrf
 
                 <div class="mb-3">
@@ -79,7 +79,9 @@
                 </div>
 
                 <div class="d-grid mb-3">
-                    <button type="submit" class="btn btn-primary rounded-pill fw-bold">Buat Akun</button>
+                    <button type="submit" id="btn-submit-register" class="btn btn-primary rounded-pill fw-bold">
+                        Buat Akun
+                    </button>
                 </div>
 
                 <div class="text-center small">
@@ -93,4 +95,12 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.getElementById('form-register').addEventListener('submit', function(e) {
+        const submitBtn = document.getElementById('btn-submit-register');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mengirim...';
+    });
+</script>
 @endsection
