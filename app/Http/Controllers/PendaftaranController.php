@@ -111,6 +111,12 @@ class PendaftaranController extends Controller
     public function konfirmasiEmail($id)
     {
         $check = User::where('id', $id)->first();
+
+        if (!$check) {
+            Alert::error('Opps!', 'Akun tidak ditemukan silakan daftar ulang');
+            return redirect('login');
+        }
+
         if ($check->status_akun == 1) {
             Alert::error('Opps!', 'Akun kamu telah aktif silakan login');
             return redirect('login');
@@ -127,6 +133,12 @@ class PendaftaranController extends Controller
     public function konfirmasiEmailToken($token)
     {
         $check = User::where('email_verifikasi_token', $token)->first();
+
+        if (!$check) {
+            Alert::error('Opps!', 'Akun tidak ditemukan silakan daftar ulang');
+            return redirect('login');
+        }
+
         if ($check->status_akun == 1) {
             Alert::error('Opps!', 'Akun kamu telah aktif silakan login');
             return redirect('login');
