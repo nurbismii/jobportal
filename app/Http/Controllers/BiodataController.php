@@ -127,12 +127,10 @@ class BiodataController extends Controller
             ]
         );
 
-        // Langsung proses OCR saat file diunggah
-        $res_extract = extractSimB2OnlyOCR($biodata);
-
-        if (!$res_extract['success']) {
-            Alert::error('info', $res_extract['message']);
-            return redirect()->back();
+        // Check if SIM B II file is available before processing OCR
+        if (isset($fileNames['sim_b_2']) && $fileNames['sim_b_2']) {
+            // Langsung proses OCR saat file diunggah
+            extractSimB2OnlyOCR($biodata);
         }
 
         Alert::success('success', 'Biodata diri berhasil ditambahkan.');

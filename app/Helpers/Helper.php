@@ -96,7 +96,7 @@ function interventionImg($dokumenFields, $biodata, $request)
                 $fileNames[$field] = $fileName;
             } elseif ($extension === 'pdf') {
                 $sizeKB = $file->getSize() / 1024;
-                if ($sizeKB <= 2048) {
+                if ($sizeKB <= 51200) {
                     $file->move($folderPath, $fileName);
                     $fileNames[$field] = $fileName;
                 } else {
