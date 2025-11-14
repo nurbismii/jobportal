@@ -4,13 +4,11 @@
 
 @push('styles')
 <link href="{{ asset('admin/vendor/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
-
 <!-- DataTables CSS -->
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
-
+<!-- FixedColumns CSS -->
 <link rel="stylesheet" href="https://cdn.datatables.net/fixedcolumns/4.3.0/css/fixedColumns.dataTables.min.css">
-
+<!-- Select2 CSS -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
 <style>
@@ -68,7 +66,7 @@
     /* Pagination */
     .dataTables_paginate .pagination .page-item .page-link {
         border-radius: 0.25rem;
-        margin: 0 2px;
+        /* margin: 0 1px; */
         color: #007bff;
     }
 
@@ -558,35 +556,35 @@
                             <tr>
                                 <td>{{ $riwayat->nama_karyawan }}</td>
                                 @php
-                                    $tglResignRaw = $riwayat->tgl_resign ?? null;
-                                    $threshold = \Carbon\Carbon::create(2015, 4, 1);
-                                    $showValue = false;
-                                    if ($tglResignRaw) {
-                                        try {
-                                            $tglResignCarbon = \Carbon\Carbon::parse($tglResignRaw);
-                                            $showValue = $tglResignCarbon->gte($threshold);
-                                        } catch (\Exception $e) {
-                                            $showValue = false;
-                                        }
-                                    }
+                                $tglResignRaw = $riwayat->tgl_resign ?? null;
+                                $threshold = \Carbon\Carbon::create(2015, 4, 1);
+                                $showValue = false;
+                                if ($tglResignRaw) {
+                                try {
+                                $tglResignCarbon = \Carbon\Carbon::parse($tglResignRaw);
+                                $showValue = $tglResignCarbon->gte($threshold);
+                                } catch (\Exception $e) {
+                                $showValue = false;
+                                }
+                                }
                                 @endphp
 
                                 <td class="text-center">
                                     @if($showValue)
-                                        {{ tanggalIndo($tglResignCarbon) }}
+                                    {{ tanggalIndo($tglResignCarbon) }}
                                     @else
-                                        -
+                                    -
                                     @endif
                                 </td>
                                 <td>
                                     @if($showValue)
-                                        @php
-                                            $sekarang = \Carbon\Carbon::now();
-                                            $diff = $tglResignCarbon->diff($sekarang);
-                                        @endphp
-                                        {{ $diff->y }} Tahun {{ $diff->m }} Bulan
+                                    @php
+                                    $sekarang = \Carbon\Carbon::now();
+                                    $diff = $tglResignCarbon->diff($sekarang);
+                                    @endphp
+                                    {{ $diff->y }} Tahun {{ $diff->m }} Bulan
                                     @else
-                                        -
+                                    -
                                     @endif
                                 </td>
                                 <td>{{ $riwayat->status_resign }}</td>
@@ -792,6 +790,22 @@ return $order[$item->level_sp] ?? 99;
                     },
                     customize: function(xlsx) {
                         let sheet = xlsx.xl.worksheets['sheet1.xml'];
+                        
+                        const textColumns = ['F', 'G'];
+
+                        $(textColumns).each(function(i, col) {
+                            $('c[r^="' + col + '"]', sheet).each(function() {
+                                let cell = $(this);
+                                let val = cell.find('v').text();
+
+                                // Paksa jadi string
+                                cell.attr('t', 'str');
+
+                                // Jika Excel menghapus leading zero, kembali tambahkan val sebagai string
+                                cell.find('v').text(val);
+                            });
+                        });
+
                         const columnsToLink = ['P', 'Q', 'R', 'T', 'V', 'W', 'X', 'Y', 'Z', 'AA', 'AB', 'AC'];
 
                         $(columnsToLink).each(function(index, colRef) {
