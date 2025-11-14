@@ -1556,6 +1556,27 @@
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
     const submitBtn = document.getElementById('submitBtn');
+    const form = document.getElementById('formWizard');
+    let formSubmitting = false;
+
+    // Tampilkan loading spinner saat form disubmit, dan cegah double-submit
+    form.addEventListener('submit', function (e) {
+        if (formSubmitting) {
+            e.preventDefault();
+            return;
+        }
+
+        formSubmitting = true;
+
+        // Ganti teks tombol dengan spinner Bootstrap kecil
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Mengirim...';
+        submitBtn.disabled = true;
+
+        // Non-aktifkan navigasi agar user tidak berpindah langkah saat mengirim
+        if (typeof nextBtn !== 'undefined' && nextBtn) nextBtn.disabled = true;
+        if (typeof prevBtn !== 'undefined' && prevBtn) prevBtn.disabled = true;
+    });
+    
     let currentStep = 0;
 
     document.addEventListener('DOMContentLoaded', () => {
