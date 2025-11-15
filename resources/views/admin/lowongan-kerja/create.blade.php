@@ -99,7 +99,6 @@
                                     </div>
                                 </div>
                             </div>
-
                         </div>
                     </div>
                 </div>
@@ -123,6 +122,18 @@
                                 </label>
                                 <select name="status_sim_b2" id="status-sim" class="form-control" required>
                                     <option value="">Pilih status sim B2</option>
+                                    <option value="1">Dibutuhkan</option>
+                                    <option value="0">Tidak dibutuhkan</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6 mb-3">
+                                <label for="status-sio">Status SIO
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <select name="status_sio" id="status-sio" class="form-control" required>
+                                    <option value="">Pilih status SIO</option>
                                     <option value="1">Dibutuhkan</option>
                                     <option value="0">Tidak dibutuhkan</option>
                                 </select>

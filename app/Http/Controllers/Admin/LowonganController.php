@@ -47,6 +47,7 @@ class LowonganController extends Controller
             'nama_lowongan' => $request->nama_lowongan,
             'kualifikasi' => $request->kualifikasi,
             'status_sim_b2' => $request->status_sim_b2,
+            'status_sio' => $request->status_sio,
             'tanggal_mulai' => $request->tanggal_mulai,
             'tanggal_berakhir' => $request->tanggal_berakhir,
         ]);
@@ -70,6 +71,7 @@ class LowonganController extends Controller
             'nama_lowongan' => $request->nama_lowongan,
             'kualifikasi' => $request->kualifikasi,
             'status_sim_b2' => $request->status_sim_b2,
+            'status_sio' => $request->status_sio,
             'tanggal_mulai' => $request->tanggal_mulai,
             'tanggal_berakhir' => $request->tanggal_berakhir,
         ]);
@@ -93,7 +95,7 @@ class LowonganController extends Controller
 
     public function directToLamaran(Request $request, $loker_id)
     {
-        $lowongan = Lowongan::select('id', 'nama_lowongan', 'status_sim_b2')->where('id', $loker_id)->first();
+        $lowongan = Lowongan::select('id', 'nama_lowongan', 'status_sim_b2', 'status_sio')->where('id', $loker_id)->first();
 
         $query = Lamaran::with([
             'lowongan',
@@ -120,6 +122,12 @@ class LowonganController extends Controller
             });
         }
 
+        if ($request->filled('jenis_kelamin')) {
+            $query->whereHas('biodata', function ($q) use ($request) {
+                $q->where('jenis_kelamin', $request->jenis_kelamin);
+            });
+        }
+
         // Filter umur
         if ($request->filled('umur_min') || $request->filled('umur_max')) {
             $query->whereHas('biodata', function ($q) use ($request) {
@@ -135,13 +143,42 @@ class LowonganController extends Controller
         // Filter status resign (multiple)
         if ($request->filled('status_resign')) {
             $statusResignArray = is_array($request->status_resign) ? $request->status_resign : [$request->status_resign];
-            $noKtpList = \App\Models\Hris\Employee::whereIn('status_resign', $statusResignArray)
-                ->pluck('no_ktp')
-                ->toArray();
 
-            $query->whereHas('biodata', function ($q) use ($noKtpList) {
-                $q->whereIn('no_ktp', $noKtpList);
+            $containsPendaftar = in_array('PENDAFTAR BERSIH', $statusResignArray);
+            $otherStatuses = array_filter($statusResignArray, function ($s) {
+                return $s !== 'PENDAFTAR BERSIH';
             });
+
+            $noKtpList = [];
+            if (count($otherStatuses) > 0) {
+                $noKtpList = \App\Models\Hris\Employee::whereIn('status_resign', $otherStatuses)
+                    ->pluck('no_ktp')
+                    ->toArray();
+            }
+
+            if ($containsPendaftar && count($noKtpList) > 0) {
+                // Gabungkan pendaftar bersih (status_pelamar NULL) dan karyawan dengan status_resign tertentu
+                $query->where(function ($q) use ($noKtpList) {
+                    $q->whereHas('biodata.user', function ($q2) {
+                        $q2->whereNull('status_pelamar');
+                    })->orWhereHas('biodata', function ($q3) use ($noKtpList) {
+                        $q3->whereIn('no_ktp', $noKtpList);
+                    });
+                });
+            } elseif ($containsPendaftar) {
+                // Hanya pendaftar bersih
+                $query->whereHas('biodata.user', function ($q) {
+                    $q->whereNull('status_pelamar');
+                });
+            } elseif (count($noKtpList) > 0) {
+                // Hanya status_resign lainnya
+                $query->whereHas('biodata', function ($q) use ($noKtpList) {
+                    $q->whereIn('no_ktp', $noKtpList);
+                });
+            } else {
+                // Tidak ada status yang valid — tidak mengembalikan hasil
+                $query->whereRaw('0 = 1');
+            }
         }
 
         $lamarans = $query->get();

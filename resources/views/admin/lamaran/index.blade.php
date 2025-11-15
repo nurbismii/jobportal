@@ -184,7 +184,7 @@
                 <input type="number" name="umur_max" class="form-control form-control-sm" placeholder="Umur Maksimal" value="{{ request('umur_max') }}">
             </div>
 
-            <div class="col-md-6 mb-3">
+            <div class="col-md-4 mb-3">
                 <select name="pendidikan[]" class="form-control form-control-sm multiple-pendidikan" multiple="multiple">
                     <option value="">-- Filter Pendidikan --</option>
                     <option value="SD 小学" {{ collect(request('pendidikan'))->contains('SD 小学') ? 'selected' : '' }}>SD 小学</option>
@@ -198,9 +198,10 @@
                 </select>
             </div>
 
-            <div class="col-md-6 mb-3">
+            <div class="col-md-4 mb-3">
                 <select name="status_resign[]" class="form-control form-control-sm multiple-status" multiple="multiple">
                     <option value="">-- Filter Status Pelamar --</option>
+                    <option value="PENDAFTAR BERSIH" {{ collect(request('status_resign'))->contains('PENDAFTAR BERSIH') ? 'selected' : '' }}>PENDAFTAR BERSIH</option>
                     <option value="RESIGN SESUAI PROSEDUR" {{ collect(request('status_resign'))->contains('RESIGN SESUAI PROSEDUR') ? 'selected' : '' }}>RESIGN SESUAI PROSEDUR</option>
                     <option value="RESIGN TIDAK SESUAI PROSEDUR" {{ collect(request('status_resign'))->contains('RESIGN TIDAK SESUAI PROSEDUR') ? 'selected' : '' }}>RESIGN TIDAK SESUAI PROSEDUR</option>
                     <option value="PHK" {{ collect(request('status_resign'))->contains('PHK') ? 'selected' : '' }}>PHK</option>
@@ -208,6 +209,14 @@
                     <option value="PB PHK" {{ collect(request('status_resign'))->contains('PB PHK') ? 'selected' : '' }}>PB PHK</option>
                     <option value="PB RESIGN" {{ collect(request('status_resign'))->contains('PB RESIGN') ? 'selected' : '' }}>PB RESIGN</option>
                     <option value="PUTUS KONTRAK" {{ collect(request('status_resign'))->contains('PUTUS KONTRAK') ? 'selected' : '' }}>PUTUS KONTRAK</option>
+                </select>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <select name="jenis_kelamin" class="form-control form-control-sm">
+                    <option value="">-- Filter Jenis Kelamin --</option>
+                    <option value="M 男" {{ request('jenis_kelamin') == 'M 男' ? 'selected' : '' }}>M 男</option>
+                    <option value="F 女" {{ request('jenis_kelamin') == 'F 女' ? 'selected' : '' }}>F 女</option>
                 </select>
             </div>
 
@@ -343,6 +352,10 @@
                             <th>SIM B2</th>
                             <th>SIM B2 Status</th>
                             @endif
+                            @if($lowongan->status_sio == 1)
+                            <th>SIO</th>
+                            <th>Status SIO</th>
+                            @endif
                             <th>KK</th>
                             <th>Ijazah</th>
                             <th>SKCK</th>
@@ -351,7 +364,8 @@
                             <th>Vaksin</th>
                             <th>NPWP</th>
                             <th>Pas Foto</th>
-                            <th>Pendukung</th>
+                            <th>Sertipikat</th>
+                            <th>Status Sertipikat</th>
                             <th>Rekomendasi</th>
                         </tr>
                     </thead>
@@ -460,6 +474,19 @@
                                 {{ $data->biodata->status_sim_b2 }}
                             </td>
                             @endif
+                            @if($lowongan->status_sio == 1)
+                            <td>
+                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sio) }}" target="_blank">
+                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sio) }}
+                                </a>
+                            </td>
+                            <td class="editable"
+                                data-id="{{ $data->biodata_id }}"
+                                data-model="biodata"
+                                data-field="status_sio">
+                                {{ $data->biodata->status_sio }}
+                            </td>
+                            @endif
                             <td>
                                 <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->kartu_keluarga) }}" target="_blank">
                                     {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->kartu_keluarga) }}
@@ -505,6 +532,12 @@
                                 <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sertifikat_pendukung) }}" target="_blank">
                                     {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sertifikat_pendukung) }}
                                 </a>
+                            </td>
+                            <td class="editable"
+                                data-id="{{ $data->biodata_id }}"
+                                data-model="biodata"
+                                data-field="status_sertifikat">
+                                {{ $data->biodata->status_sertifikat }}
                             </td>
                             <td class="editable"
                                 data-id="{{ $data->id }}"
@@ -790,7 +823,7 @@ return $order[$item->level_sp] ?? 99;
                     },
                     customize: function(xlsx) {
                         let sheet = xlsx.xl.worksheets['sheet1.xml'];
-                        
+
                         const textColumns = ['F', 'G'];
 
                         $(textColumns).each(function(i, col) {

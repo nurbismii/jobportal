@@ -150,7 +150,7 @@ class LamaranController extends Controller
         ];
 
         $allowedFields = [
-            'biodata' => ['status_ktp', 'status_skck', 'status_sim_b2'],
+            'biodata' => ['status_ktp', 'status_skck', 'status_sim_b2', 'status_sio', 'status_sertifikat'],
             'lamaran' => ['rekomendasi'],
         ];
 
@@ -158,6 +158,8 @@ class LamaranController extends Controller
             'status_ktp' => 'Status KTP',
             'status_skck' => 'Status SKCK',
             'status_sim_b2' => 'Status SIM B2 Umum',
+            'status_sio' => 'Status SIO',
+            'status_sertifikat' => 'Status Sertifikat',
             'rekomendasi' => 'Rekomendasi',
         ];
 

@@ -45,6 +45,18 @@
                         </div>
                         <div class="row g-3">
                             <div class="col-md-6 mb-3">
+                                <label for="status-sio">Status SIO
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <select name="status_sio" id="status-sio" class="form-control" required>
+                                    <option value="{{ $lowongan->status_sio }}">{{ $lowongan->status_sio == '1' ? 'Dibutuhkan' : 'Tidak dibutuhkan' }}</option>
+                                    <option value="1">Dibutuhkan</option>
+                                    <option value="0">Tidak dibutuhkan</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6 mb-3">
                                 <label for="tanggal-mulai">Tanggal Mulai
                                     <span class="text-danger">*</span>
                                 </label>
