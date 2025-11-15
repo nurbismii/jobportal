@@ -170,6 +170,11 @@ class BiodataController extends Controller
                 File::delete($filePath);
             }
 
+            // Reset OCR data if SIM KTP Umum is deleted
+            if ($field === 'ktp') {
+                $biodata->ocr_ktp = null;
+            }
+
             // Reset OCR data if SIM B II Umum is deleted
             if ($field === 'sim_b_2') {
                 $biodata->ocr_sim_b2 = null;

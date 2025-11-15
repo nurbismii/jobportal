@@ -395,11 +395,11 @@
                             <label>Provinsi
                                 <span class="text-danger">*</span>
                             </label>
-                            <select name="provinsi" id="provinsi_id" class="form-select">
+                            <select name="provinsi" id="provinsi_id" class="form-select" required>
                                 @if($biodata)
                                 <option value="{{ $biodata->provinsi }}">{{ $biodata->getProvinsi->provinsi }}</option>
                                 @else
-                                <option value="">Pilih provinsi</option>
+                                <option value="" disabled selected>Pilih provinsi</option>
                                 @endif
                                 @foreach ($provinsis as $item)
                                 <option value="{{ $item->id }}">{{ $item->provinsi }}</option>
@@ -410,11 +410,11 @@
                             <label>Kabupaten
                                 <span class="text-danger">*</span>
                             </label>
-                            <select name="kabupaten" id="kabupaten_id" class="form-select">
+                            <select name="kabupaten" id="kabupaten_id" class="form-select" required>
                                 @if($biodata)
                                 <option value="{{ $biodata->kabupaten }}">{{ $biodata->getKabupaten->kabupaten }}</option>
                                 @else
-                                <option value="">Pilih kabupaten</option>
+                                <option value="" disabled selected>Pilih kabupaten</option>
                                 @endif
                             </select>
                         </div>
@@ -425,11 +425,11 @@
                             <label>Kecamatan
                                 <span class="text-danger">*</span>
                             </label>
-                            <select name="kecamatan" id="kecamatan_id" class="form-select">
+                            <select name="kecamatan" id="kecamatan_id" class="form-select" required>
                                 @if($biodata)
                                 <option value="{{ $biodata->kecamatan }}">{{ $biodata->getKecamatan->kecamatan }}</option>
                                 @else
-                                <option value="">Pilih kecamatan</option>
+                                <option value="" disabled selected>Pilih kecamatan</option>
                                 @endif
                             </select>
                         </div>
@@ -437,11 +437,11 @@
                             <label>Kelurahan/Desa
                                 <span class="text-danger">*</span>
                             </label>
-                            <select name="kelurahan" id="kelurahan_id" class="form-select">
+                            <select name="kelurahan" id="kelurahan_id" class="form-select" required>
                                 @if($biodata)
                                 <option value="{{ $biodata->kelurahan }}">{{ $biodata->getKelurahan->kelurahan }}</option>
                                 @else
-                                <option value="">Pilih kelurahan</option>
+                                <option value="" disabled selected>Pilih kelurahan</option>
                                 @endif
                             </select>
                         </div>
@@ -452,7 +452,7 @@
                             <label for="alamat">Alamat Lengkap
                                 <span class="text-danger">*</span>
                             </label>
-                            <textarea name="alamat" class="form-control" id="alamat">{{ $biodata->alamat ?? '' }}</textarea>
+                            <textarea name="alamat" class="form-control" id="alamat" required>{{ $biodata->alamat ?? '' }}</textarea>
                         </div>
                         <div class="col-md-2 mb-3">
                             <label>Kode Pos
@@ -492,7 +492,7 @@
                             <label>Hobi
                                 <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="hobi" class="form-control" value="{{ $biodata->hobi ?? '' }}">
+                            <input type="text" name="hobi" class="form-control" value="{{ $biodata->hobi ?? '' }}" required>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label>Golongan Darah
@@ -520,13 +520,13 @@
                             <label>Tinggi badan<sup>(cm)</sup>
                                 <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="tinggi_badan" maxlength="3" value="{{ $biodata->tinggi_badan ?? '' }}" class="form-control">
+                            <input type="text" name="tinggi_badan" maxlength="3" value="{{ $biodata->tinggi_badan ?? '' }}" class="form-control" required>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label>Berat badan<sup>(kg)</sup>
                                 <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="berat_badan" maxlength="3" value="{{ $biodata->berat_badan ?? '' }}" class="form-control">
+                            <input type="text" name="berat_badan" maxlength="3" value="{{ $biodata->berat_badan ?? '' }}" class="form-control" required>
                         </div>
                     </div>
                 </div>
@@ -585,7 +585,7 @@
                                 <label>Tahun lulus
                                     <span class="text-danger">*</span>
                                 </label>
-                                <input type="date" name="tahun_lulus" class="form-control" value="{{ $biodata->tahun_lulus ?? '' }}">
+                                <input type="date" name="tahun_lulus" class="form-control" value="{{ $biodata->tahun_lulus ?? '' }}" required>
                             </div>
                         </div>
                     </div>
@@ -1483,12 +1483,12 @@
                     success: function(data) {
                         if (data) {
                             $('#kabupaten_id').empty();
-                            $('#kabupaten_id').append('<option hidden>Pilih kabupaten</option>');
+                            $('#kabupaten_id').append('<option value="" disabled selected>Pilih kabupaten</option>');
                             $.each(data, function(id, kabupaten) {
                                 $('select[name="kabupaten"]').append('<option value="' + kabupaten.id + '">' + kabupaten.kabupaten + '</option>');
                             });
                         } else {
-                            $('#kabupaten_id').empty();
+                            $('#kabupaten_id').empty().append('<option value="" disabled selected>Pilih kabupaten</option>');
                         }
                     }
                 });
@@ -1510,12 +1510,12 @@
                     success: function(data) {
                         if (data) {
                             $('#kecamatan_id').empty();
-                            $('#kecamatan_id').append('<option hidden>Pilih kecamatan</option>');
+                            $('#kecamatan_id').append('<option value="" disabled selected>Pilih kecamatan</option>');
                             $.each(data, function(id, kecamatan) {
                                 $('select[name="kecamatan"]').append('<option value="' + kecamatan.id + '">' + kecamatan.kecamatan + '</option>');
                             })
                         } else {
-                            $('#kecamatan_id').empty();
+                            $('#kecamatan_id').empty().append('<option value="" disabled selected>Pilih kecamatan</option>');
                         }
                     }
                 });
@@ -1533,18 +1533,21 @@
                     },
                     dataType: "json",
                     success: function(data) {
+                        $('#kelurahan_id').empty();
+
+                        // default kosong agar required bekerja
+                        $('#kelurahan_id').append('<option value="" disabled selected>Pilih kelurahan/desa</option>');
+
                         if (data) {
-                            $('#kelurahan_id').empty();
-                            $('#kelurahan_id').append('<option hidden>Pilih kelurahan/desa</option>');
-                            console.log(data);
                             $.each(data, function(id, kelurahan) {
-                                $('select[name="kelurahan"]').append('<option value="' + kelurahan.id + '">' + kelurahan.kelurahan + '</option>');
-                            })
-                        } else {
-                            $('#kelurahan_id').empty();
+                                $('#kelurahan_id')
+                                    .append('<option value="' + kelurahan.id + '">' + kelurahan.kelurahan + '</option>');
+                            });
                         }
                     }
                 });
+            } else {
+                $('#kelurahan_id').empty().append('<option value="" disabled selected>Pilih kelurahan/desa</option>');
             }
         });
     });
@@ -1560,7 +1563,7 @@
     let formSubmitting = false;
 
     // Tampilkan loading spinner saat form disubmit, dan cegah double-submit
-    form.addEventListener('submit', function (e) {
+    form.addEventListener('submit', function(e) {
         if (formSubmitting) {
             e.preventDefault();
             return;
@@ -1576,7 +1579,7 @@
         if (typeof nextBtn !== 'undefined' && nextBtn) nextBtn.disabled = true;
         if (typeof prevBtn !== 'undefined' && prevBtn) prevBtn.disabled = true;
     });
-    
+
     let currentStep = 0;
 
     document.addEventListener('DOMContentLoaded', () => {

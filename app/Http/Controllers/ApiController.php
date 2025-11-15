@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Biodata;
 use App\Models\Hris\Divisi;
 use App\Models\Hris\Kabupaten;
 use App\Models\Hris\Kecamatan;
 use App\Models\Hris\Kelurahan;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
@@ -111,7 +113,7 @@ class ApiController extends Controller
         if (file_exists($cacheFile)) {
             $cacheAge = time() - filemtime($cacheFile);
             if ($cacheAge < $cacheExpireSeconds) {
-                // ✅ Gunakan hasil cache (tidak perlu OCR ulang)
+                // Gunakan hasil cache (tidak perlu OCR ulang)
                 $cachedData = json_decode(file_get_contents($cacheFile), true);
                 return response()->json([
                     'success' => true,
@@ -150,6 +152,11 @@ class ApiController extends Controller
             }
 
             $ocrData = $response->json();
+
+            // === Simpan ke database ===
+            Biodata::where('user_id', auth()->id())->update(
+                ['ocr_ktp' => json_encode($ocrData, JSON_PRETTY_PRINT)]
+            );
 
             // === Simpan hasil ke cache ===
             file_put_contents($cacheFile, json_encode($ocrData, JSON_PRETTY_PRINT));
