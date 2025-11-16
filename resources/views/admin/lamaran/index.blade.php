@@ -10,6 +10,8 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/fixedcolumns/4.3.0/css/fixedColumns.dataTables.min.css">
 <!-- Select2 CSS -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<!-- Quill CSS -->
+<link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" />
 
 <style>
     td.editable {
@@ -229,68 +231,8 @@
 </div>
 
 <form action="{{ route('lamaran.updateStatusMassal') }}" method="POST">
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow border-primary mb-3">
-                <div class="card-body">
-                    @csrf
-                    <div class="row">
-                        <div class="col-6">
-                            <div class="mb-1">
-                                <label for="pilih-status">Pilih Status Tahapan</label>
-                                <select name="status_proses" class="form-control form-control-sm" id="pilih-status" required>
-                                    <option value="">-- Pilih --</option>
-                                    <optgroup label="Tahapan Proses">
-                                        <option value="Verifikasi Online">Verifikasi Online</option>
-                                        <option value="Verifikasi Berkas">Verifikasi Berkas</option>
-                                        <option value="Tes Kesehatan">Tes Kesehatan</option>
-                                        <option value="Tes Lapangan">Tes Lapangan</option>
-                                        <option value="Medical Check-Up">Medical Check-Up (MCU)</option>
-                                        <option value="Induksi Safety">Induksi Safety</option>
-                                        <option value="Tanda Tangan Kontrak">Tanda Tangan Kontrak</option>
-                                        <option value="Aktif Bekerja">Aktif Bekerja</option>
-                                    </optgroup>
-                                    <optgroup label="Tidak Lolos">
-                                        <option value="Belum Sesuai Kriteria">Belum Sesuai Kriteria</option>
-                                        <option value="Tidak Lolos Verifikasi Online">Tidak Lolos Verifikasi Online</option>
-                                        <option value="Tidak Lolos Verifikasi Berkas">Tidak Lolos Verifikasi Berkas</option>
-                                        <option value="Tidak Lolos Tes Kesehatan">Tidak Lolos Tes Kesehatan</option>
-                                        <option value="Tidak Lolos Tes Lapangan">Tidak Lolos Tes Lapangan</option>
-                                        <option value="Tidak Lolos Medical Check-Up">Tidak Lolos Medical Check-Up (MCU)</option>
-                                        <option value="Tidak Lolos Induksi Safety">Tidak Lolos Induksi Safety</option>
-                                    </optgroup>
-                                </select>
-                            </div>
-                        </div>
 
-                        <div class="col-6">
-                            <div class="mb-1">
-                                <label for="tanggal-proses">Tanggal Proses</label>
-                                <input class="form-control form-control-sm" type="date" name="tanggal_proses" id="tanggal-proses" required>
-                            </div>
-                        </div>
-
-                        <div class="col-6">
-                            <div class="mb-1">
-                                <label for="jam">Jam</label>
-                                <input class="form-control form-control-sm" type="time" name="jam" id="jam" required>
-                            </div>
-                        </div>
-
-                        <div class="col-6">
-                            <div class="mb-1">
-                                <label for="tempat">Tempat</label>
-                                <input class="form-control form-control-sm" type="text" name="tempat" id="tempat" required>
-                            </div>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary mt-1">Perbarui proses lamaran</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="card shadow mb-4">
+    <div class="card shadow mb-2">
         <div class="card-header py-3">
             <h6 class="m-0 font-weight-bold text-primary">Data Pelamar</h6>
         </div>
@@ -552,6 +494,97 @@
             </div>
         </div>
     </div>
+
+    <div class="accordion" id="accordionStatusProses">
+        <div class="card shadow border-primary mb-3">
+            <div class="card-header" id="headingStatus" style="cursor: pointer;" data-toggle="collapse" data-target="#collapseStatus" aria-expanded="true" aria-controls="collapseStatus">
+                <h6 class="mb-0 d-flex justify-content-between align-items-center">
+                    <span>Form Update Status Lamaran</span>
+                </h6>
+            </div>
+            <div id="collapseStatus" class="collapse show" aria-labelledby="headingStatus" data-parent="#accordionStatusProses">
+                <div class="card-body">
+                    @csrf
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="mb-2">
+                                <label for="pilih-status">Pilih Status Tahapan <span class="text-danger">*</span></label>
+                                <select name="status_proses" class="form-control form-control-sm" id="pilih-status" required>
+                                    <option value="">-- Pilih --</option>
+                                    <optgroup label="Tahapan Proses">
+                                        <option value="Verifikasi Online">Verifikasi Online</option>
+                                        <option value="Verifikasi Berkas">Verifikasi Berkas</option>
+                                        <option value="Tes Kesehatan">Tes Kesehatan</option>
+                                        <option value="Tes Lapangan">Tes Lapangan</option>
+                                        <option value="Medical Check-Up">Medical Check-Up (MCU)</option>
+                                        <option value="Induksi Safety">Induksi Safety</option>
+                                        <option value="Tanda Tangan Kontrak">Tanda Tangan Kontrak</option>
+                                        <option value="Aktif Bekerja">Aktif Bekerja</option>
+                                    </optgroup>
+                                    <optgroup label="Tidak Lolos">
+                                        <option value="Belum Sesuai Kriteria">Belum Sesuai Kriteria</option>
+                                        <option value="Tidak Lolos Verifikasi Online">Tidak Lolos Verifikasi Online</option>
+                                        <option value="Tidak Lolos Verifikasi Berkas">Tidak Lolos Verifikasi Berkas</option>
+                                        <option value="Tidak Lolos Tes Kesehatan">Tidak Lolos Tes Kesehatan</option>
+                                        <option value="Tidak Lolos Tes Lapangan">Tidak Lolos Tes Lapangan</option>
+                                        <option value="Tidak Lolos Medical Check-Up">Tidak Lolos Medical Check-Up (MCU)</option>
+                                        <option value="Tidak Lolos Induksi Safety">Tidak Lolos Induksi Safety</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-6">
+                            <div class="mb-2">
+                                <label for="tanggal-proses">Tanggal Proses <span class="text-danger">*</span></label>
+                                <input class="form-control form-control-sm" type="date" name="tanggal_proses" id="tanggal-proses" required>
+                            </div>
+                        </div>
+
+                        <div class="col-6">
+                            <div class="mb-2">
+                                <label for="jam">Jam <span class="text-danger">*</span></label>
+                                <input class="form-control form-control-sm" type="time" name="jam" id="jam" required>
+                            </div>
+                        </div>
+
+                        <div class="col-6">
+                            <div class="mb-2">
+                                <label for="tempat">Tempat <span class="text-danger">*</span></label>
+                                <input class="form-control form-control-sm" type="text" name="tempat" id="tempat" required>
+                            </div>
+                        </div>
+
+                        <div class="col-6">
+                            <div class="mb-3">
+                                <label>Kirim Email? <span class="text-danger">*</span></label>
+                                <div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="blast_email" id="blast-email-yes" value="iya" required>
+                                        <label class="form-check-label" for="blast-email-yes">Iya</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="blast_email" id="blast-email-no" value="tidak" required>
+                                        <label class="form-check-label" for="blast-email-no">Tidak</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label" for="inputEmail">Pesan <span class="text-danger">*</span></label>
+                            <div id="quill-editor" class="mb-3" style="height: 300px;"></div>
+                            <textarea rows="3" class="mb-3 d-none" name="pesanEmail" id="quill-editor-area"></textarea>
+                        </div>
+
+                    </div>
+
+                    <button type="submit" class="btn btn-primary mt-1">Perbarui proses lamaran</button>
+
+                </div>
+            </div>
+        </div>
+    </div>
 </form>
 
 @foreach($lamarans as $data)
@@ -761,8 +794,29 @@ return $order[$item->level_sp] ?? 99;
 
 <script src="https://cdn.datatables.net/fixedcolumns/4.3.0/js/dataTables.fixedColumns.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+<!-- Select 2 -->
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (document.getElementById('quill-editor-area')) {
+            var editor = new Quill('#quill-editor', {
+                theme: 'snow'
+            });
+            var quillEditor = document.getElementById('quill-editor-area');
+            editor.on('text-change', function() {
+                quillEditor.value = editor.root.innerHTML;
+            });
+
+            quillEditor.addEventListener('input', function() {
+                editor.root.innerHTML = quillEditor.value;
+            });
+        }
+    });
+</script>
 
 <script>
     $(document).ready(function() {
@@ -955,6 +1009,16 @@ return $order[$item->level_sp] ?? 99;
     document.querySelectorAll('td.editable').forEach(td => {
         td.addEventListener('focus', () => td.classList.add('editing'));
         td.addEventListener('blur', () => td.classList.remove('editing'));
+    });
+</script>
+
+<script>
+    $('#formStatusProses').on('shown.bs.collapse', function() {
+        $('[data-target="#formStatusProses"]').text('Tutup Form Update Status Lamaran');
+    });
+
+    $('#formStatusProses').on('hidden.bs.collapse', function() {
+        $('[data-target="#formStatusProses"]').text('Buka Form Update Status Lamaran');
     });
 </script>
 @endpush

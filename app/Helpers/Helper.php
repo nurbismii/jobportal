@@ -197,7 +197,23 @@ if (!function_exists('extractSimB2OnlyOCR')) {
                 return ['success' => false, 'message' => 'Terjadi kesalahan'];
             }
         }
-        return ['success' => false, 'message' => 'File SIM B2 belum terseida.'];
+        return ['success' => false, 'message' => 'File SIM B2 belum tersedia.'];
+    }
+}
+
+if (! function_exists('cleanEmailText')) {
+    function cleanEmailText($text)
+    {
+        $text = preg_replace('/<br\\s*\\/>|<br>/i', "\n", $text);
+        $text = preg_replace('/<p[^>]*>/i', "\n", $text);
+        $text = preg_replace('/<\/p>/i', "\n", $text);
+
+        $text = strip_tags($text);
+
+        // Buat line break tetap rapi, tidak berlebihan
+        $text = preg_replace("/\n{2,}/", "\n\n", $text);
+
+        return trim($text);
     }
 }
 
@@ -252,14 +268,14 @@ Dengan ini saudara diminta membawa berkas sebagai berikut:
 5. Fotokopi Ijazah terakhir 1 lembar
 6. Fotokopi Sertifikat Vaksin 1 lembar
 7. Fotokopi NPWP yang dipadankan dengan NIK KTP 1 lembar
-8. SIM BII UMUM Asli & Fotokopi 1 lembar
+8. SIM BII UMUM Asli & Fotokopi 1 lembar (Spesifik untuk pelamar posisi DT/OPR)
 
 Berpakaian hitam putih dan tetap menggunakan masker.
 
 Demikian untuk diketahui, mohon balas pesan ini untuk konfirmasi penerimaan. Terima kasih.
 
 PERHATIAN!
-Pemanggilan resmi hanya dari email HR VDNI: vdnirekrutmen88@gmail.com
+Pemanggilan resmi hanya dari email HR VDNI: no-reply@vdni.top
 EOT,
 
 
@@ -289,7 +305,7 @@ Tempat        : {$tempat}
 
 Membawa berkas berikut:
 1. KTP ASLI
-2. SIM BII UMUM ASLI
+2. SIM BII UMUM ASLI (Spesifik untuk pelamar posisi DT/OPR)
 
 Wajib menggunakan sepatu
 EOT,

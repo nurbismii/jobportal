@@ -60,7 +60,7 @@
                             <button class="btn btn-sm {{ $loop->first ? 'btn-outline-primary ' : 'btn-outline-light text-dark' }}" type="button" data-bs-target="#detail-{{ $proses->id }}" data-bs-toggle="collapse">Lihat Detail ▼</button>
                             <div class="collapse border" id="detail-{{ $proses->id }}">
                                 <div class="p-2 font-monospace">
-                                    {!! nl2br(e($proses->pesan)) !!}
+                                    {!! $proses->pesan !!}
                                 </div>
                             </div>
                         </div>

@@ -19,7 +19,7 @@
                 <p style="font-size: 16px;">Halo <strong>{{ $user->name }}</strong>,</p>
                 @if (!empty($pesan))
                 <div style="margin-top: 20px; font-size: 14px; white-space: pre-line; background-color: #e6f0ff; color: #004085; padding: 15px; border-left: 4px solid #015fc8; border-radius: 6px;">
-                    {!! nl2br(e($pesan)) !!}
+                    {{ cleanEmailText($pesan) }}
                 </div>
                 @endif
                 <p style="font-size: 15px;">Kami ingin memberitahukan bahwa status lamaran kamu telah diperbarui. Berikut adalah detailnya:</p>

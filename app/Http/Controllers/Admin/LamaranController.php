@@ -20,37 +20,39 @@ class LamaranController extends Controller
         $limitPerJam = 50;
         $counter = 0;
 
-        // DB::beginTransaction();
-
         $lamaran = Lamaran::with('biodata', 'lowongan')->whereIn('id', $request->selected_ids)->get();
 
         foreach ($lamaran as $data) {
 
-            $pesan = null;
+            $YES_BLAST = 'iya';
             $lolos = null;
             $userId = $data->biodata->user_id;
             $lamaranId = $data->id;
             $status = $request->status_proses;
+            $pesan = $request->pesanEmail;
 
             // Hitung delay berdasarkan akumulasi kirim
             $delayJam = $this->getBatchDelayJam($counter, $limitPerJam);
             $batchKe = $delayJam + 1;
 
-            // Simpan log email blast
-            $log = EmailBlastLog::create([
-                'user_id' => $userId,
-                'lamaran_id' => $lamaranId,
-                'status_proses' => $status,
-                'batch_ke' => $batchKe,
-                'delay_jam' => $delayJam,
-            ]);
+            if ($request->blast_email == $YES_BLAST) {
+                // Simpan log email blast
+                $log = EmailBlastLog::create([
+                    'user_id' => $userId,
+                    'lamaran_id' => $lamaranId,
+                    'status_proses' => $status,
+                    'batch_ke' => $batchKe,
+                    'delay_jam' => $delayJam,
+                ]);
+            }
 
             $tahapanTidakLolos = [
                 'Belum Sesuai Kriteria',
+                'Tidak Lolos Verifikasi Online',
                 'Tidak Lolos Verifikasi Berkas',
                 'Tidak Lolos Tes Kesehatan',
                 'Tidak Lolos Tes Lapangan',
-                // 'Tidak Lolos Medical Check-Up',
+                'Tidak Lolos Medical Check-Up',
                 'Tidak Lolos Induksi Safety',
                 'Tidak Lolos Tanda Tangan Kontrak',
             ];
@@ -60,10 +62,11 @@ class LamaranController extends Controller
                 Lamaran::where('id', $lamaranId)->update([
                     'status_lamaran' => 0
                 ]);
-            } else {
-                $lolos = null;
+            }
 
-                $pesan = pesanStatusLamaran($status, $request->tanggal_proses, $request->jam, $request->tempat);
+            if ($request->blast_email == $YES_BLAST) {
+
+                $lolos = null;
                 // Kirim job dengan delay sesuai batch
                 SendProsesLamaranEmail::dispatch($userId, $status, $lamaranId, $log->id, $pesan)
                     ->delay(now()->addHours($delayJam));
@@ -86,7 +89,7 @@ class LamaranController extends Controller
                     'status_proses' => $status,
                     'tanggal_proses' => $request->tanggal_proses,
                     'jam' => $request->jam,
-                    'tempat' => $request->tempat,
+                    'tempat' => $request->tempat ?? '-',
                     'pesan' => $pesan ?? '-'
                 ]);
 
@@ -111,17 +114,8 @@ class LamaranController extends Controller
                 ]);
         }
 
-        // DB::commit();
-
         Alert::success('Berhasil', 'Status proses berhasil diperbarui menjadi [ ' . $request->status_proses . ' ]');
         return back()->with('success', 'Status berhasil diperbarui.');
-        try {
-        } catch (Exception $e) {
-            DB::rollBack();
-
-            Alert::error('Gagal', 'Terjadi kesalahan');
-            return back();
-        }
     }
 
     public function update(Request $request, $id)
