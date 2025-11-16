@@ -71,6 +71,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['redirect.role']], function 
 
     Route::resource('/personal-file', 'App\Http\Controllers\Admin\PersonalController');
     Route::resource('/permintaan-tenaga-kerja', 'App\Http\Controllers\Admin\PermintaanTenagaKerjaController');
+    Route::resource('/email-blast-log', 'App\Http\Controllers\Admin\EmailBlastController');
 });
 
 // API route

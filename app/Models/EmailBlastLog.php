@@ -12,4 +12,9 @@ class EmailBlastLog extends Model
     protected $table = 'email_blast_logs';
 
     protected $guarded = [];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

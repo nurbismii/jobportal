@@ -69,6 +69,13 @@
         </a>
     </li>
 
+    <li class="nav-item {{ request()->routeIs('email-blast-log.*') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('email-blast-log.index') }}">
+            <i class="fas fa-fw fa-list"></i>
+            <span>Email log</span>
+        </a>
+    </li>
+
     <!-- Divider -->
     <hr class="sidebar-divider d-none d-md-block">
 
