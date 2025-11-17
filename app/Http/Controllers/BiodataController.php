@@ -133,8 +133,8 @@ class BiodataController extends Controller
             extractSimB2OnlyOCR($biodata);
         }
 
-        Alert::success('success', 'Biodata diri berhasil ditambahkan.');
-        return redirect()->back();
+        Alert::success('success', 'Biodata sudah diubah. Silakan pilih lowongan dan kirim lamaran');
+        return redirect()->to(route('lowongan-kerja.index'));
     }
 
     public function deleteFile($field)
