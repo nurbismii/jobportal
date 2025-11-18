@@ -204,15 +204,23 @@ if (!function_exists('extractSimB2OnlyOCR')) {
 if (! function_exists('cleanEmailText')) {
     function cleanEmailText($text)
     {
-        $text = preg_replace('/<br\\s*\\/>|<br>/i', "\n", $text);
+        // Ubah <br> menjadi newline
+        $text = preg_replace('/<br\s*\/?>/i', "\n", $text);
+
+        // Ubah <p> menjadi newline
         $text = preg_replace('/<p[^>]*>/i', "\n", $text);
         $text = preg_replace('/<\/p>/i', "\n", $text);
 
+        // Hapus semua tag HTML
         $text = strip_tags($text);
 
-        // Buat line break tetap rapi, tidak berlebihan
+        // Decode HTML entities (contoh: &nbsp; menjadi spasi)
+        $text = html_entity_decode($text, ENT_QUOTES, 'UTF-8');
+
+        // Rapikan double break line
         $text = preg_replace("/\n{2,}/", "\n\n", $text);
 
+        // Hilangkan whitespace tidak penting
         return trim($text);
     }
 }
