@@ -250,7 +250,10 @@
                             <th>No KK</th>
                             <th>Email</th>
                             <th class="bg-warning">Status Pelamar</th>
+                            <th class="bg-warning">Tgl Resign</th>
+                            <th class="bg-warning">Rentang</th>
                             <th class="bg-warning">Ex Area</th>
+                            <th class="bg-warning">Alasan</th>
                             <th>Jenis Kelamin</th>
                             <th>Tempat Lahir</th>
                             <th>Tanggal Lahir</th>
@@ -332,16 +335,57 @@
                             <td>{{ $data->biodata->no_ktp }}</td>
                             <td>{{ $data->biodata->no_kk }}</td>
                             <td>{{ $data->biodata->user->email }}</td>
+
                             @if($data->biodata->user->status_pelamar)
                             <td class="bg-warning">{{ strtoupper($data->biodata->user->status_pelamar) }}</td>
                             @else
                             <td>{{ strtoupper($data->biodata->user->status_pelamar ?? '---') }}</td>
                             @endif
+
+                            @php
+                            $tglResignRaw = $data->biodata->user->tanggal_resign ?? null;
+                            $threshold = \Carbon\Carbon::create(2015, 4, 1);
+                            $showValue = false;
+                            if ($tglResignRaw) {
+                            try {
+                            $tglResignCarbon = \Carbon\Carbon::parse($tglResignRaw);
+                            $showValue = $tglResignCarbon->gte($threshold);
+                            } catch (\Exception $e) {
+                            $showValue = false;
+                            }
+                            }
+                            @endphp
+
+                            @if($showValue)
+                            <td class="bg-warning">{{ $tglResignCarbon->format('Y-m-d') }}</td>
+                            @else
+                            <td>---</td>
+                            @endif
+
+                            <td class="bg-warning">
+                                @if($showValue)
+                                @php
+                                $sekarang = \Carbon\Carbon::now();
+                                $diff = $tglResignCarbon->diff($sekarang);
+                                @endphp
+                                {{ $diff->y }} Tahun {{ $diff->m }} Bulan
+                                @else
+                                ---
+                                @endif
+                            </td>
+
                             @if($data->biodata->user->area_kerja)
                             <td class="bg-warning">{{ $data->biodata->user->area_kerja }}</td>
                             @else
                             <td>{{ $data->biodata->user->area_kerja ?? '---' }}</td>
                             @endif
+
+                            @if($data->biodata->user->ket_resign)
+                            <td class="bg-warning">{{ strtoupper($data->biodata->user->ket_resign) }}</td>
+                            @else
+                            <td>{{ strtoupper($data->biodata->user->ket_resign ?? '---') }}</td>
+                            @endif
+
                             <td>{{ $data->biodata->jenis_kelamin == 'M 男' ? 'Laki-Laki' : 'Perempuan' }}</td>
                             <td>{{ $data->biodata->tempat_lahir }}</td>
                             <td>{{ $data->biodata->tanggal_lahir }}</td>
