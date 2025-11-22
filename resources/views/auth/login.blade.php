@@ -165,9 +165,8 @@
                     title: "📢 6. Pengumuman",
                     html: `
                     Semua pengumuman resmi seperti:<br><br>
-                    • Tes<br>
-                    • Jadwal interview<br>
-                    • Hasil seleksi<br><br>
+                    • Lowongan baru<br>
+                    • Rekrutmen selesai<br><br>
                     Akan muncul di menu <b>Pengumuman</b>. Pastikan kamu mengecek secara berkala.
                 `,
                     icon: "info"
