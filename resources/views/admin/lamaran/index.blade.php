@@ -760,14 +760,36 @@ return $order[$item->level_sp] ?? 99;
                             @forelse($data->biodata->getRiwayatInHris as $riwayat)
                             <tr>
                                 <td>{{ $riwayat->nama_karyawan }}</td>
-                                <td class="text-center">{{ tanggalIndo($riwayat->tgl_resign) }}</td>
+                                @php
+                                $tglResignRaw = $riwayat->tgl_resign ?? null;
+                                $threshold = \Carbon\Carbon::create(2015, 4, 1);
+                                $showValue = false;
+                                if ($tglResignRaw) {
+                                    try {
+                                        $tglResignCarbon = \Carbon\Carbon::parse($tglResignRaw);
+                                        $showValue = $tglResignCarbon->gte($threshold);
+                                    } catch (\Exception $e) {
+                                        $showValue = false;
+                                    }
+                                }
+                                @endphp
+                                <td class="text-center">
+                                    @if($showValue)
+                                        {{ tanggalIndo($tglResignCarbon) }}
+                                    @else
+                                        ---
+                                    @endif
+                                </td>
                                 <td>
-                                    @php
-                                    $tglResign = \Carbon\Carbon::parse($riwayat->tgl_resign);
-                                    $sekarang = \Carbon\Carbon::now();
-                                    $diff = $tglResign->diff($sekarang);
-                                    @endphp
-                                    {{ $diff->y }} Tahun {{ $diff->m }} Bulan
+                                    @if($showValue)
+                                        @php
+                                        $sekarang = \Carbon\Carbon::now();
+                                        $diff = $tglResignCarbon->diff($sekarang);
+                                        @endphp
+                                        {{ $diff->y }} Tahun {{ $diff->m }} Bulan
+                                    @else
+                                        ---
+                                    @endif
                                 </td>
                                 <td>{{ $riwayat->status_resign }}</td>
                                 <td>{{ $riwayat->alasan_resign }}</td>
