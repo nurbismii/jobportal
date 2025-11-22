@@ -9,6 +9,10 @@
         transform: scale(1.01);
         transition: 0.3s;
     }
+
+    nav .pagination {
+        gap: 6px;
+    }
 </style>
 @endpush
 
