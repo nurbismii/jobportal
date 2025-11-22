@@ -381,9 +381,9 @@
                             @endif
 
                             @if($data->biodata->user->ket_resign)
-                            <td class="bg-warning">{{ strtoupper($data->biodata->user->ket_resign) }}</td>
+                            <td class="bg-warning">{{ $data->biodata->user->ket_resign }}</td>
                             @else
-                            <td>{{ strtoupper($data->biodata->user->ket_resign ?? '---') }}</td>
+                            <td>{{ $data->biodata->user->ket_resign ?? '---' }}</td>
                             @endif
 
                             <td>{{ $data->biodata->jenis_kelamin == 'M 男' ? 'Laki-Laki' : 'Perempuan' }}</td>

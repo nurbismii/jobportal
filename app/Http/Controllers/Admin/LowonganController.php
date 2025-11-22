@@ -4,12 +4,13 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Hris\Employee;
+use App\Models\Hris\Peringatan;
 use App\Models\Lamaran;
 use App\Models\Lowongan;
 use App\Models\PermintaanTenagaKerja;
+use App\Models\SuratPeringatan;
 use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
 
 class LowonganController extends Controller
@@ -190,37 +191,69 @@ class LowonganController extends Controller
     // Refresh status pelamar berdasarkan data dari HRIS
     public function refreshDataPelamar(Request $request)
     {
-        $noKtpArray = (array) $request->input('no_ktp', []);
+        $noKtpArray = array_filter((array) $request->input('no_ktp', []));
 
-        foreach ($noKtpArray as $noKtp) {
-            $user = \App\Models\User::whereHas('biodata', function ($q) use ($noKtp) {
-                $q->where('no_ktp', $noKtp);
-            })->first();
+        if (empty($noKtpArray)) {
+            Alert::warning('Peringatan', 'Tidak ada NIK yang diproses.');
+            return back();
+        }
 
-            if (!$user) {
-                continue;
-            }
+        // Ambil semua user sekaligus berdasarkan list KTP
+        $users = \App\Models\User::whereHas('biodata', function ($q) use ($noKtpArray) {
+            $q->whereIn('no_ktp', $noKtpArray);
+        })->get();
+
+        foreach ($users as $user) {
+
+            $noKtp = $user->biodata->no_ktp;
 
             $hrisEmployee = Employee::where('no_ktp', $noKtp)
                 ->orderByRaw('LEFT(nik, 4) DESC')
                 ->first();
 
             if ($hrisEmployee) {
-                $user->status_pelamar = $hrisEmployee->status_resign;
-                $user->area_kerja = $hrisEmployee->area_kerja;
-                $user->tanggal_resign = $hrisEmployee->tgl_resign;
-                $user->ket_resign = $hrisEmployee->alasan_resign;
-            } else {
-                $user->status_pelamar = Null;
-                $user->area_kerja = Null;
-                $user->tanggal_resign = Null;
-                $user->ket_resign = Null;
-            }
+                $user->update([
+                    'status_pelamar' => $hrisEmployee->status_resign,
+                    'area_kerja' => $hrisEmployee->area_kerja,
+                    'tanggal_resign' => $hrisEmployee->tgl_resign,
+                    'ket_resign' => $hrisEmployee->alasan_resign,
+                ]);
 
-            $user->save();
+                // Ambil SP sekaligus
+                $peringatanList = Peringatan::where('nik_karyawan', $hrisEmployee->nik)->get();
+
+                foreach ($peringatanList as $data) {
+
+                    // Cegah duplikasi SP
+                    $exists = SuratPeringatan::where([
+                        'user_id' => $user->id,
+                        'level_sp' => $data->level_sp,
+                        'tanggal_mulai_sp' => $data->tgl_mulai,
+                    ])->exists();
+
+                    if (!$exists) {
+                        SuratPeringatan::create([
+                            'user_id' => $user->id,
+                            'level_sp' => $data->level_sp,
+                            'ket_sp' => $data->keterangan,
+                            'tanggal_mulai_sp' => $data->tgl_mulai,
+                            'tanggal_berakhir_sp' => $data->tgl_berakhir,
+                        ]);
+                    }
+                }
+            } else {
+
+                // Tidak ada data HRIS → reset tetap pakai update()
+                $user->update([
+                    'status_pelamar' => null,
+                    'area_kerja' => null,
+                    'tanggal_resign' => null,
+                    'ket_resign' => null,
+                ]);
+            }
         }
 
         Alert::success('Berhasil', 'Status pelamar berhasil di-refresh!');
-        return redirect()->back();
+        return back();
     }
 }
