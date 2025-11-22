@@ -181,7 +181,7 @@ class DasborController extends Controller
                 'Verifikasi Berkas',
                 'Tes Kesehatan',
                 'Tes Lapangan',
-                'Medical Check Up',
+                'Medical Check-Up',
                 'Tanda Tangan Kontrak',
                 'Aktif Bekerja'
             ],
@@ -239,7 +239,7 @@ class DasborController extends Controller
             'Tidak Lolos Tes Kesehatan',
             'Tes Lapangan',
             'Tidak Lolos Tes Lapangan',
-            'Medical Check Up',
+            'Medical Check-Up',
             'Tidak Lolos Medical Check-Up',
             'Tanda Tangan Kontrak',
             'Tidak Lolos Induksi Safety',
