@@ -50,7 +50,9 @@ class PendaftaranController extends Controller
         }
 
         // Ambil data karyawan jika ada
-        $employee = Employee::where('no_ktp', $validatedData['no_ktp'])->first();
+        $employee = Employee::where('no_ktp', $validatedData['no_ktp'])
+            ->orderByRaw('LEFT(nik, 4) DESC')
+            ->first();
 
         // Gunakan transaksi untuk menjamin konsistensi data
         DB::beginTransaction();

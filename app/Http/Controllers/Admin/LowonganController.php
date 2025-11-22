@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Hris\Employee;
 use App\Models\Lamaran;
 use App\Models\Lowongan;
 use App\Models\PermintaanTenagaKerja;
@@ -200,18 +201,20 @@ class LowonganController extends Controller
                 continue;
             }
 
-            $biodata = $user->biodata;
-            $hrisEmployee = $biodata->getRiwayatInHris()
-                ->where('no_ktp', $biodata->no_ktp)
-                ->orderBy('tgl_resign', 'asc')
+            $hrisEmployee = Employee::where('no_ktp', $noKtp)
+                ->orderByRaw('LEFT(nik, 4) DESC')
                 ->first();
 
             if ($hrisEmployee) {
                 $user->status_pelamar = $hrisEmployee->status_resign;
                 $user->area_kerja = $hrisEmployee->area_kerja;
+                $user->tanggal_resign = $hrisEmployee->tgl_resign;
+                $user->ket_resign = $hrisEmployee->alasan_resign;
             } else {
                 $user->status_pelamar = Null;
                 $user->area_kerja = Null;
+                $user->tanggal_resign = Null;
+                $user->ket_resign = Null;
             }
 
             $user->save();

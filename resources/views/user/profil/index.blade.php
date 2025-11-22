@@ -20,11 +20,11 @@
                         <div class="mb-3">
                             <label for="nama" class="form-label">Nama Lengkap</label>
                             <input type="text" id="nama" name="nama"
-                                   class="form-control @error('nama') is-invalid @enderror"
-                                   value="{{ old('nama', auth()->user()->name) }}"
-                                   required autocomplete="name">
+                                class="form-control @error('nama') is-invalid @enderror"
+                                value="{{ old('nama', auth()->user()->name) }}"
+                                required autocomplete="name">
                             @error('nama')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -32,10 +32,10 @@
                         <div class="mb-3">
                             <label for="no_ktp" class="form-label">No. KTP</label>
                             <input type="text" id="no_ktp" name="no_ktp" class="form-control @error('no_ktp') is-invalid @enderror"
-                                   value="{{ old('no_ktp', auth()->user()->no_ktp) }}"
-                                   maxlength="16" required autocomplete="off">
+                                value="{{ old('no_ktp', auth()->user()->no_ktp) }}"
+                                maxlength="16" required autocomplete="off">
                             @error('no_ktp')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -43,11 +43,11 @@
                         <div class="mb-3">
                             <label for="email" class="form-label">Alamat Email</label>
                             <input type="email" id="email" name="email"
-                                   class="form-control @error('email') is-invalid @enderror"
-                                   value="{{ old('email', auth()->user()->email) }}"
-                                   required autocomplete="email">
+                                class="form-control @error('email') is-invalid @enderror"
+                                value="{{ old('email', auth()->user()->email) }}"
+                                required autocomplete="email" readonly>
                             @error('email')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -55,10 +55,10 @@
                         <div class="mb-3">
                             <label for="password" class="form-label">Password Baru <small class="text-muted">(kosongkan jika tidak ingin diubah)</small></label>
                             <input type="password" id="password" name="password"
-                                   class="form-control @error('password') is-invalid @enderror"
-                                   autocomplete="new-password">
+                                class="form-control @error('password') is-invalid @enderror"
+                                autocomplete="new-password">
                             @error('password')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -66,8 +66,8 @@
                         <div class="mb-3">
                             <label for="password_confirmation" class="form-label">Konfirmasi Password Baru</label>
                             <input type="password" id="password_confirmation" name="password_confirmation"
-                                   class="form-control"
-                                   autocomplete="new-password">
+                                class="form-control"
+                                autocomplete="new-password">
                         </div>
 
                         {{-- Status Akun --}}
@@ -75,9 +75,9 @@
                             <label class="form-label">Status Akun</label>
                             <div>
                                 @if (auth()->user()->status_akun == 1)
-                                    <span class="badge bg-success">Aktif</span>
+                                <span class="badge bg-success">Aktif</span>
                                 @else
-                                    <span class="badge bg-secondary">Tidak Aktif</span>
+                                <span class="badge bg-secondary">Tidak Aktif</span>
                                 @endif
                             </div>
                         </div>

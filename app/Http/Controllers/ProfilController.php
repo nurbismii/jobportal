@@ -43,7 +43,6 @@ class ProfilController extends Controller
 
         $user->name = $request->nama;
         $user->no_ktp = $request->no_ktp;
-        $user->email = $request->email;
 
         if ($request->filled('password')) {
             $user->password = bcrypt($request->password);
