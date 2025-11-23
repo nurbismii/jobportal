@@ -159,9 +159,9 @@
         </div>
     </div>
     @endif
-    
+
     <div class="mt-3">
-        <a href="{{ route('biodata.index') }}" class="btn btn-primary">Lengkapi Data</a>
+        <a href="{{ route('biodata.index') }}#step5" class="btn btn-primary">Lengkapi Data</a>
     </div>
 </div>
 
