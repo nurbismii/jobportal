@@ -68,9 +68,6 @@
                                         <a href="{{ route('permintaan-tenaga-kerja.edit', $permintaan->id) }}" class="btn btn-warning btn-sm">
                                             <i class="fas fa-edit"></i> Edit
                                         </a>
-                                        <a href="{{ route('permintaan-tenaga-kerja.destroy', $permintaan->id) }}" class="btn btn-danger btn-sm" data-confirm-delete="true">
-                                            <i class="fas fa-edit"></i> Hapus
-                                        </a>
                                     </td>
                                 </tr>
                                 @endforeach

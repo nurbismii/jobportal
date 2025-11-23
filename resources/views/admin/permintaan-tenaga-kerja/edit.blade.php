@@ -33,7 +33,7 @@
                                 <label for="no-surat-permintaan">No Surat Permintaan Tenaga Kerja
                                     <span class="text-danger">*</span>
                                 </label>
-                                <input type="text" name="no_surat_permintaan" class="form-control" id="no-surat-permintaan" value="{{ $permintaanTenagaKerja->no_surat_ptk }}" required readonly>
+                                <input type="text" name="no_surat_permintaan" class="form-control" id="no-surat-permintaan" value="{{ $permintaanTenagaKerja->no_surat_ptk }}" required>
                             </div>
                         </div>
                         <div class="row g-3">

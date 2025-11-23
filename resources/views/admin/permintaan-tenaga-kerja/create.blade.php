@@ -30,7 +30,7 @@
                                 <label for="no-surat-permintaan">No Surat Permintaan Tenaga Kerja
                                     <span class="text-danger">*</span>
                                 </label>
-                                <input type="text" name="no_surat_permintaan" class="form-control" id="no-surat-permintaan" value="02-000{{$total_ptk}}/PTK/HRD-VDNI/{{$month}}/2025" required readonly>
+                                <input type="text" name="no_surat_permintaan" class="form-control" id="no-surat-permintaan" required>
                             </div>
                         </div>
                         <div class="row g-3">
