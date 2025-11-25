@@ -48,4 +48,17 @@ class Biodata extends Model
         return $this->hasMany(Employee::class, 'no_ktp', 'no_ktp')
             ->select(['no_ktp', 'no_ktp as no_ktp_hris', 'nama_karyawan', 'tgl_resign', 'alasan_resign', 'posisi', 'status_resign', 'area_kerja']);
     }
+
+    public function getRiwayatLamaran()
+    {
+        return $this->hasMany(Lamaran::class, 'biodata_id', 'id')
+            ->with('lowongan');
+    }
+
+    public function getLatestRiwayatLamaran()
+    {
+        return $this->hasOne(Lamaran::class, 'biodata_id', 'id')
+            ->latest()
+            ->with('lowongan');
+    }
 }

@@ -22,6 +22,19 @@ class LamaranController extends Controller
 
         $lamaran = Lamaran::with('biodata', 'lowongan')->whereIn('id', $request->selected_ids)->get();
 
+        if (strtolower($request->status_proses) == 'kandidat potensial') {
+
+            foreach ($lamaran as $data) {
+
+                $biodata = $data->biodata;
+                $biodata->status_potensial = '1';
+                $biodata->save();
+
+                Alert::success('Berhasil', 'Kandidat berhasil ditambahkan ke kandidat potensial');
+                return back();
+            }
+        }
+
         foreach ($lamaran as $data) {
 
             $YES_BLAST = 'iya';

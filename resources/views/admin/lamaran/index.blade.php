@@ -574,6 +574,9 @@
                                         <option value="Tidak Lolos Medical Check-Up">Tidak Lolos Medical Check-Up (MCU)</option>
                                         <option value="Tidak Lolos Induksi Safety">Tidak Lolos Induksi Safety</option>
                                     </optgroup>
+                                    <optgroup label="Kandidat Potensial">
+                                        <option value="Kandidat Potensial">Kandidat Potensial</option>
+                                    </optgroup>
                                 </select>
                             </div>
                         </div>
@@ -765,30 +768,30 @@ return $order[$item->level_sp] ?? 99;
                                 $threshold = \Carbon\Carbon::create(2015, 4, 1);
                                 $showValue = false;
                                 if ($tglResignRaw) {
-                                    try {
-                                        $tglResignCarbon = \Carbon\Carbon::parse($tglResignRaw);
-                                        $showValue = $tglResignCarbon->gte($threshold);
-                                    } catch (\Exception $e) {
-                                        $showValue = false;
-                                    }
+                                try {
+                                $tglResignCarbon = \Carbon\Carbon::parse($tglResignRaw);
+                                $showValue = $tglResignCarbon->gte($threshold);
+                                } catch (\Exception $e) {
+                                $showValue = false;
+                                }
                                 }
                                 @endphp
                                 <td class="text-center">
                                     @if($showValue)
-                                        {{ tanggalIndo($tglResignCarbon) }}
+                                    {{ tanggalIndo($tglResignCarbon) }}
                                     @else
-                                        ---
+                                    ---
                                     @endif
                                 </td>
                                 <td>
                                     @if($showValue)
-                                        @php
-                                        $sekarang = \Carbon\Carbon::now();
-                                        $diff = $tglResignCarbon->diff($sekarang);
-                                        @endphp
-                                        {{ $diff->y }} Tahun {{ $diff->m }} Bulan
+                                    @php
+                                    $sekarang = \Carbon\Carbon::now();
+                                    $diff = $tglResignCarbon->diff($sekarang);
+                                    @endphp
+                                    {{ $diff->y }} Tahun {{ $diff->m }} Bulan
                                     @else
-                                        ---
+                                    ---
                                     @endif
                                 </td>
                                 <td>{{ $riwayat->status_resign }}</td>
@@ -865,6 +868,45 @@ return $order[$item->level_sp] ?? 99;
 
 <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<!-- Script non-aktifkan -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        const statusSelect = document.getElementById('pilih-status');
+        const tanggal = document.getElementById('tanggal-proses');
+        const jam = document.getElementById('jam');
+        const tempat = document.getElementById('tempat');
+        const pesanArea = document.getElementById('quill-editor-area');
+        const blastEmailYes = document.getElementById('blast-email-yes');
+        const blastEmailNo = document.getElementById('blast-email-no');
+
+        const fields = [tanggal, jam, tempat, pesanArea, blastEmailYes, blastEmailNo];
+
+        statusSelect.addEventListener('change', function() {
+            if (this.value === "Kandidat Potensial") {
+
+                // Hilangkan required
+                fields.forEach(field => field.removeAttribute('required'));
+
+                // Optional: kosongkan isinya
+                fields.forEach(field => field.value = "");
+
+            } else {
+
+                // Kembalikan menjadi required
+                tanggal.setAttribute('required', true);
+                jam.setAttribute('required', true);
+                tempat.setAttribute('required', true);
+                pesanArea.setAttribute('required', true);
+                blastEmailYes.setAttribute('required', true);
+                blastEmailNo.setAttribute('required', true);
+
+            }
+        });
+
+    });
+</script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {

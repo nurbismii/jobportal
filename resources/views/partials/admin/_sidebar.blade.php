@@ -47,6 +47,13 @@
         </a>
     </li>
 
+    <li class="nav-item {{ request()->routeIs('kandidat-potensial.**') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('kandidat-potensial.index') }}">
+            <i class="fas fa-fw fa-user-check"></i>
+            <span>Kandidat Potensial</span>
+        </a>
+    </li>
+
     <!-- Divider -->
     <hr class="sidebar-divider">
 
