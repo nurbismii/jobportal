@@ -44,9 +44,15 @@
             $step = calcutaionStep(auth()->user()->biodata ?? null);
 
             function disableIf($requiredStep, $currentStep) {
+            // Jika admin, tidak pernah disable
+            if (auth()->check() && auth()->user()->role === 'admin') {
+            return '';
+            }
+
+            // Default rule
             return $currentStep < $requiredStep ? 'disabled opacity-50 pointer-events-none' : '' ;
                 }
-                @endphp
+            @endphp
 
                 <div class="collapse navbar-collapse" id="navbarCollapse">
                 <div class="navbar-nav mx-0 mx-lg-auto">
@@ -78,7 +84,7 @@
                         Panduan Melamar
                     </a>
                 </div>
-            </div>
+    </div>
 
 
     <div class="d-none d-xl-flex align-items-center ps-4 dropdown">
