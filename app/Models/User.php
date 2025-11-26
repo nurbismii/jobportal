@@ -51,6 +51,11 @@ class User extends Authenticatable implements MustVerifyEmail
         'email_verified_at' => 'datetime',
     ];
 
+    public function biodataUser()
+    {
+        return $this->hasOne(Biodata::class, 'user_id', 'id')->select('id', 'user_id', 'no_ktp');
+    }
+
     public function biodata()
     {
         return $this->hasOne(Biodata::class, 'user_id', 'id');
@@ -59,5 +64,11 @@ class User extends Authenticatable implements MustVerifyEmail
     public function suratPeringatan()
     {
         return $this->hasMany(SuratPeringatan::class);
+    }
+
+    public function lamaran()
+    {
+        // ambil 1 data lamaran terbaru untuk user ini
+        return $this->hasOne(RiwayatProsesLamaran::class, 'user_id', 'id')->latestOfMany();
     }
 }

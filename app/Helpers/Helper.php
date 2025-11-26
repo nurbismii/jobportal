@@ -200,3 +200,45 @@ if (!function_exists('extractSimB2OnlyOCR')) {
         return ['success' => false, 'message' => 'File SIM B2 belum tersedia.'];
     }
 }
+
+if (!function_exists('calcutaionStep')) {
+    function calcutaionStep($biodata)
+    {
+        $dokumen = [
+            'cv' => $biodata ? $biodata->cv : null,
+            'foto' => $biodata ? $biodata->pas_foto : null,
+            'surat_lamaran' => $biodata ? $biodata->surat_lamaran : null,
+            'ijazah' => $biodata ? $biodata->ijazah : null,
+            'ktp' => $biodata ? $biodata->ktp : null,
+            'skck' => $biodata ? $biodata->skck : null,
+            'kartu_keluarga' => $biodata ? $biodata->kartu_keluarga : null,
+            'npwp' => $biodata ? $biodata->npwp : null,
+            'ak1' => $biodata ? $biodata->ak1 : null,
+        ];
+
+        if ($biodata) {
+            if ($biodata->berat_badan != null) {
+                $step = 1;
+            }
+            if ($biodata->tahun_lulus != null) {
+                $step = 2;
+            }
+            if ($biodata->status_pernikahan != null) {
+                $step = 3;
+            }
+            if ($biodata->status_hubungan != null) {
+                $step = 4;
+            }
+            if (count($dokumen) == 9 && !in_array(null, $dokumen)) {
+                $step = 5;
+            }
+            if ($step == 5) {
+                $step = 6;
+            }
+        } else {
+            $step = 0;
+        }
+
+        return $step;
+    }
+}

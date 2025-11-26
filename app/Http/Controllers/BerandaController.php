@@ -16,6 +16,8 @@ class BerandaController extends Controller
         $VDNI = 1;
         $VDNIP = 2;
 
+        $step = calcutaionStep(auth()->user()->biodata ?? null);
+
         $lowongans = Lowongan::select('*')
             ->selectRaw("IF(tanggal_berakhir < ?, 'Kadaluwarsa', 'Aktif') as status_lowongan", [Carbon::now()])
             ->where('tanggal_mulai', '<=', Carbon::now()) // hanya yang sudah mulai
@@ -32,6 +34,6 @@ class BerandaController extends Controller
         $count_user = User::count();
         $count_departemen = Departemen::whereIn('perusahaan_id', [$VDNI, $VDNIP])->count();
 
-        return view('beranda', compact('lowongans', 'pengumumans', 'count_karyawan', 'count_user', 'count_departemen'));
+        return view('beranda', compact('lowongans', 'pengumumans', 'count_karyawan', 'count_user', 'count_departemen', 'step'));
     }
 }

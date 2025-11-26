@@ -16,7 +16,7 @@ class PenggunaController extends Controller
     public function index()
     {
         // Logic to display the list of users
-        $penggunas = User::where('role', '!=', 'admin')->get();
+        $penggunas = User::with('biodataUser.getLatestRiwayatLamaran.lowongan')->where('role', '!=', 'admin')->get();
         $title = 'Hapus Pengguna!';
         $text = "Kamu yakin ingin menghapus pengguna ini?";
         confirmDelete($title, $text);
@@ -30,9 +30,13 @@ class PenggunaController extends Controller
         $pengguna = User::with('biodata')->findOrFail($id);
         $biodata = Biodata::where('user_id', $pengguna->id)->first();
 
-        $provinsis = Provinsi::all();
+        if ($biodata) {
+            $provinsis = Provinsi::all();
 
-        return view('admin.pengguna.edit', compact('pengguna', 'biodata', 'provinsis'));
+            return view('admin.pengguna.edit', compact('pengguna', 'biodata', 'provinsis'));
+        }
+        Alert::warning('Peringatan', 'Biodata pengguna belum tersedia.');
+        return back();
     }
 
     public function update(Request $request, $id)
@@ -58,7 +62,7 @@ class PenggunaController extends Controller
         if ($biodata) {
             Lamaran::where('biodata_id', $biodata->id)->delete();
         }
-        
+
         SuratPeringatan::where('user_id', $user->id)->delete();
 
         $user->delete();

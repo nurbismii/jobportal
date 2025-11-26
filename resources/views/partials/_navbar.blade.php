@@ -40,64 +40,85 @@
                 <span class="fa fa-bars"></span>
             </button>
 
-            <div class="collapse navbar-collapse" id="navbarCollapse">
+            @php
+            $step = calcutaionStep(auth()->user()->biodata ?? null);
+
+            function disableIf($requiredStep, $currentStep) {
+            return $currentStep < $requiredStep ? 'disabled opacity-50 pointer-events-none' : '' ;
+                }
+                @endphp
+
+                <div class="collapse navbar-collapse" id="navbarCollapse">
                 <div class="navbar-nav mx-0 mx-lg-auto">
+
                     <a href="/" class="nav-item nav-link {{ request()->is('/') ? 'active' : '' }}">Beranda</a>
-                    <a href="{{ route('biodata.index') }}" class="nav-item nav-link {{ request()->routeIs('biodata.*') ? 'active' : '' }}">Formulir Biodata</a>
-                    <a href="{{ route('lowongan-kerja.index') }}" class="nav-item nav-link {{ request()->routeIs('lowongan-kerja.*') ? 'active' : '' }}">Lowongan Kerja</a>
-                    <a href="{{ route('lamaran.index') }}" class="nav-item nav-link {{ request()->routeIs('lamaran.*') ? 'active' : '' }}">Lamaran</a>
-                    <a href="{{ route('pengumuman.index') }}" class="nav-item nav-link {{ request()->routeIs('pengumuman.*') ? 'active' : '' }}">Pengumuman</a>
-                </div>
 
-                <!-- Tambahan Mobile -->
-                <div class="d-xl-none d-flex flex-column mt-3">
-                    <a href="{{ route('profil.index') }}" class="btn btn-outline-primary rounded-pill mb-2">Profil</a>
-                    <a href="#" class="btn btn-outline-danger rounded-pill mb-2"
-                        onclick="event.preventDefault(); document.getElementById('logout-form-mobile').submit();">Keluar</a>
-                    <form id="logout-form-mobile" action="{{ route('logout') }}" method="POST" style="display: none;">
-                        @csrf
-                    </form>
-                </div>
-            </div>
+                    <a href="{{ route('biodata.index') }}"
+                        class="nav-item nav-link {{ request()->routeIs('biodata.*') ? 'active' : '' }}">
+                        Formulir Biodata
+                    </a>
 
-            <div class="d-none d-xl-flex align-items-center ps-4 dropdown">
-                <button class="btn btn-light btn-lg-square rounded-circle position-relative shadow-sm" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="fa fa-user fa-2x text-primary"></i>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow-sm rounded-3 mt-2" aria-labelledby="dropdownMenuButton1">
-                    @if(Auth::user()->role == 'user')
-                    <li>
-                        <a class="dropdown-item d-flex align-items-center" href="{{ route('profil.index') }}">
-                            <i class="fa fa-id-card me-2 text-primary"></i> Profil
-                        </a>
-                    </li>
-                    @else
-                    <li>
-                        <a class="dropdown-item d-flex align-items-center" href="{{ route('home') }}">
-                            <i class="fa fa-briefcase me-2 text-primary"></i> Kelola Job Portal
-                        </a>
-                    </li>
-                    @endif
-                    <li>
-                        <hr class="dropdown-divider">
-                    </li>
-                    <li>
-                        <a class="dropdown-item d-flex align-items-center" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                            <i class="fa fa-sign-out-alt me-2 text-danger"></i> Keluar
-                        </a>
-                    </li>
-                </ul>
-                <div class="d-flex flex-column ms-3">
-                    <span class="small text-muted">{{ Auth::user()->no_ktp }}</span>
-                    <a href="#" class="fw-bold text-dark text-decoration-none">{{ Auth::user()->name }}</a>
+                    <a href="{{ route('lowongan-kerja.index') }}"
+                        class="nav-item nav-link {{ request()->routeIs('lowongan-kerja.*') ? 'active' : '' }} {{ disableIf(6, $step) }}">
+                        Lowongan Kerja
+                    </a>
+
+                    <a href="{{ route('lamaran.index') }}"
+                        class="nav-item nav-link {{ request()->routeIs('lamaran.*') ? 'active' : '' }} {{ disableIf(6, $step) }}">
+                        Lamaran
+                    </a>
+
+                    <a href="{{ route('pengumuman.index') }}"
+                        class="nav-item nav-link {{ request()->routeIs('pengumuman.*') ? 'active' : '' }}">
+                        Pengumuman
+                    </a>
+
+                    <a href="{{ route('pengumuman.index') }}"
+                        class="nav-item nav-link {{ request()->routeIs('pengumuman.*') ? 'active' : '' }}">
+                        Panduan Melamar
+                    </a>
                 </div>
             </div>
 
-            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                {{ csrf_field() }}
-            </form>
 
+    <div class="d-none d-xl-flex align-items-center ps-4 dropdown">
+        <button class="btn btn-light btn-lg-square rounded-circle position-relative shadow-sm" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fa fa-user fa-2x text-primary"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm rounded-3 mt-2" aria-labelledby="dropdownMenuButton1">
+            @if(Auth::user()->role == 'user')
+            <li>
+                <a class="dropdown-item d-flex align-items-center" href="{{ route('profil.index') }}">
+                    <i class="fa fa-id-card me-2 text-primary"></i> Profil
+                </a>
+            </li>
+            @else
+            <li>
+                <a class="dropdown-item d-flex align-items-center" href="{{ route('home') }}">
+                    <i class="fa fa-briefcase me-2 text-primary"></i> Kelola Job Portal
+                </a>
+            </li>
             @endif
-        </nav>
+            <li>
+                <hr class="dropdown-divider">
+            </li>
+            <li>
+                <a class="dropdown-item d-flex align-items-center" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                    <i class="fa fa-sign-out-alt me-2 text-danger"></i> Keluar
+                </a>
+            </li>
+        </ul>
+        <div class="d-flex flex-column ms-3">
+            <span class="small text-muted">{{ Auth::user()->no_ktp }}</span>
+            <a href="#" class="fw-bold text-dark text-decoration-none">{{ Auth::user()->name }}</a>
+        </div>
     </div>
+
+    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+        {{ csrf_field() }}
+    </form>
+
+    @endif
+    </nav>
+</div>
 </div>

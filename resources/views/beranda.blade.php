@@ -3,6 +3,8 @@
 @section('content')
 
 @push('styles')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 <style>
     .service-item:hover {
         background-color: #007bff;
@@ -24,10 +26,24 @@
         background-color: #007bff;
         color: #fff;
     }
-</style>
 
+    .badge i {
+        font-size: 12px;
+    }
+
+    .hover-card {
+        transition: 0.3s ease;
+        border-radius: 15px;
+    }
+
+    .hover-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    }
+</style>
 @endpush
 
+@if(!Auth::check())
 <!-- Carousel Start -->
 <div class="header-carousel owl-carousel">
     <div class="header-carousel-item bg-primary">
@@ -55,76 +71,186 @@
         </div>
     </div>
 </div>
-<!-- Carousel End -->
+@else
 
-<!-- Lowongan Kerja Start -->
-<div class="container-fluid service py-5">
-    <div class="container py-5">
-        <h4 class="display-4 fw-bold mb-0">Lowongan</h4>
-        <p class="text-primary mb-3">Lihat daftar lowongan kerja terbaru dan kesempatan berkarir bersama kami.</p>
-        <div class="row g-4 justify-content-center">
+   @php
+    $steps = [
+    1 => 'Data Pribadi',
+    2 => 'Pendidikan',
+    3 => 'Data Keluarga',
+    4 => 'Kontak Darurat',
+    5 => 'Dokumen Pribadi',
+    6 => 'Selesai'
+    ];
 
-            @php
-            $shareUrl = route('lowongan-kerja.index');
-            @endphp
+    $maxStep = count($steps);
+    @endphp
 
-            @forelse($lowongans as $lowongan)
-            <div class="col-md-6 col-lg-4">
-                <div class="service-item h-100 d-flex flex-column"> <!-- h-100: biar tinggi seragam -->
-                    <div class="service-img">
-                        <img src="{{ asset('img/megapone-loker.jpg') }}" class="img-fluid rounded-top w-100" alt="">
-                        <div class="service-icon p-3">
-                            <i class="fa fa-users fa-2x"></i>
-                        </div>
-                    </div>
-                    <div class="service-content p-4 d-flex flex-column flex-grow-1">
-                        <div class="service-content-inner flex-grow-1 d-flex flex-column justify-content-between">
-                            <a href="{{ route('lowongan-kerja.show', $lowongan->id) }}" class="d-inline-block h4 mb-0">{{ $lowongan->nama_lowongan }}</a>
-                            <!-- Isian deskripsi lowongan kerja -->
-                            <p class="mb-4">
-                                {!! substr($lowongan->kualifikasi, 0, 409) !!}
-                            </p>
-
-                            <p class="fw-bold mb-1">Tanggal aktif</p>
-                            <p class="mb-1">{{ tanggalIndo($lowongan->tanggal_mulai) }} – {{ tanggalIndo($lowongan->tanggal_berakhir) }}</p>
-                            <!-- Isian deskripsi lowongan kerja end -->
-                            <div>
-                                @if(strtolower($lowongan->status_lowongan) == 'aktif')
-                                <span class="mb-1 badge bg-success">{{ $lowongan->status_lowongan }}</span>
-                                @else
-                                <span class="mb-1 badge bg-danger">{{ $lowongan->status_lowongan }}</span>
-                                @endif
-                            </div>
-
-                            <div class="d-flex justify-content-end gap-2 mt-auto pt-3">
-                                <a class="btn btn-primary btn-sm rounded-pill py-2 px-3" href="{{ route('lowongan-kerja.show', $lowongan->id) }}">Lihat</a>
-                                <a class="btn btn-primary btn-sm rounded-pill py-2 px-3" href="javascript:void(0)" onclick="copyToClipboard('{{ $shareUrl }}')">Bagikan</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            @empty
-            <div class="col-12">
-                <div class="text-center p-5 my-4 border rounded-3 shadow-sm bg-light wow fadeInRight" data-wow-delay="0.2s">
-                    <i class="fa fa-briefcase fa-3x text-primary mb-3"></i>
-                    <h4 class="fw-bold mb-2">Belum ada lowongan tersedia</h4>
-                    <p class="text-muted mb-3">Silakan cek kembali di lain waktu. Kami terus memperbarui informasi lowongan secara berkala.</p>
-                </div>
-            </div>
-            @endforelse
-
-        </div>
-        <div class="d-flex justify-content-end mt-3">
-            <a href="{{ route('lowongan-kerja.index') }}" class="text-primary fw-bold">
-                Lihat semua lowongan &gt;&gt;
-            </a>
-            <!-- Lowongan lihat semua end -->
-        </div>
-        <!-- Tombol lihat semua -->
+<div class="container py-4">
+     @if($step < $maxStep)
+    <div class="alert alert-warning d-flex align-items-center gap-2 mb-4">
+        <i class="fa fa-exclamation-triangle"></i>
+        <span>Silakan lengkapi <a href="{{ route('biodata.index') }}" class="">Formulir Biodata</a> untuk <b>melihat lowongan pekerjaan tersedia.</b></span>
     </div>
-    <!-- Lowongan Kerja End -->
+    @else
+    <div class="alert alert-success d-flex align-items-center gap-2 mb-4">
+        <i class="fa fa-check-circle"></i>
+        <span>Formulir lengkap! Kamu sudah bisa melamar pekerjaan <a href="" class="btn btn-sm btn-success">Lihat lowongan pekerjaan</a></span>
+    </div>
+    @endif
+    <div class="row g-3">
+        <!-- Card Formulir Biodata -->
+        <div class="col-12 col-md-6">
+            <a href="{{ route('biodata.index') }}" class="text-decoration-none">
+                <div class="card bg-light shadow-sm border-0 h-100 hover-card">
+                    <div class="card-body text-center py-4">
+                        <div class="icon-wrapper mb-3">
+                            <i class="fa-solid fa-id-card fa-3x text-primary"></i>
+                        </div>
+                        <h5 class="fw-bold text-dark">Formulir Biodata</h5>
+                        <p class="text-muted mb-0">Lengkapi data pribadi untuk melanjutkan proses lamaran.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
 
+        <!-- Card Panduan Melamar -->
+        <div class="col-12 col-md-6">
+            <a href="{{ asset('pdf/MANUAL BOOK V-HIRE (1).pdf') }}" target="_blank" class="text-decoration-none">
+                <div class="card bg-light shadow-sm border-0 h-100 hover-card">
+                    <div class="card-body text-center py-4">
+                        <div class="icon-wrapper mb-3">
+                            <i class="fa-solid fa-book-open-reader fa-3x text-success"></i>
+                        </div>
+                        <h5 class="fw-bold text-dark">Panduan Melamar Pekerjaan</h5>
+                        <p class="text-muted mb-0">Pelajari langkah-langkah sebelum mengajukan lamaran.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header fw-bold py-2">
+        Infomasi Pribadi yang Perlu Dilengkapi!
+    </div>
+    <div class="card-body">
+        <div class="border-start ps-3">
+
+            @foreach ($steps as $number => $label)
+            <div class="d-flex align-items-center mb-3 position-relative">
+
+                {{-- ICON --}}
+                <span class="me-3">
+                    @if($step >= $number)
+                    <span class="badge bg-success rounded-circle p-2">
+                        <i class="fa fa-check"></i>
+                    </span>
+                    @else
+                    <span class="badge bg-danger rounded-circle p-2">
+                        <i class="fa fa-times"></i>
+                    </span>
+                    @endif
+                </span>
+
+                {{-- LABEL --}}
+                <div class="{{ $step == $number ? 'fw-bold text-primary' : '' }}">
+                    {{ $label }}
+                </div>
+            </div>
+            @endforeach
+        </div>
+
+        {{-- Progress Bar --}}
+        <div class="mt-4">
+            <div class="progress" style="height: 10px;">
+                <div
+                    class="progress-bar bg-primary"
+                    role="progressbar"
+                    style="width: {{ ($step / $maxStep) * 100 }}%">
+                </div>
+            </div>
+            <small class="text-muted d-block mt-1">
+                Langkah {{ min($step, $maxStep) }} dari {{ $maxStep }}
+            </small>
+        </div>
+    </div>
+</div>
+
+@if($step != 6)
+<a href="{{ route('biodata.index') }}" class="btn btn-primary mb-3">Lengkapi Formulir Biodata</a>
+@endif
+
+@if($step == 6)
+<h4 class="display-4 fw-bold mb-0">Lowongan</h4>
+<p class="text-primary mb-3">Pilih lowongan kerja yang kamu minati dan kesempatan berkarir bersama kami.</p>
+<div class="row g-4 justify-content-center">
+
+    @php
+    $shareUrl = route('lowongan-kerja.index');
+    @endphp
+
+    @forelse($lowongans as $lowongan)
+    <div class="col-md-6 col-lg-4">
+        <div class="service-item h-100 d-flex flex-column"> <!-- h-100: biar tinggi seragam -->
+            <div class="service-img">
+                <img src="{{ asset('img/megapone-loker.jpg') }}" class="img-fluid rounded-top w-100" alt="">
+                <div class="service-icon p-3">
+                    <i class="fa fa-users fa-2x"></i>
+                </div>
+            </div>
+            <div class="service-content p-4 d-flex flex-column flex-grow-1">
+                <div class="service-content-inner flex-grow-1 d-flex flex-column justify-content-between">
+                    <a href="{{ route('lowongan-kerja.show', $lowongan->id) }}" class="d-inline-block h4 mb-0">{{ $lowongan->nama_lowongan }}</a>
+                    <!-- Isian deskripsi lowongan kerja -->
+                    <p class="mb-4">
+                        {!! substr($lowongan->kualifikasi, 0, 409) !!}
+                    </p>
+
+                    <p class="fw-bold mb-1">Tanggal aktif</p>
+                    <p class="mb-1">{{ tanggalIndo($lowongan->tanggal_mulai) }} – {{ tanggalIndo($lowongan->tanggal_berakhir) }}</p>
+                    <!-- Isian deskripsi lowongan kerja end -->
+                    <div>
+                        @if(strtolower($lowongan->status_lowongan) == 'aktif')
+                        <span class="mb-1 badge bg-success">{{ $lowongan->status_lowongan }}</span>
+                        @else
+                        <span class="mb-1 badge bg-danger">{{ $lowongan->status_lowongan }}</span>
+                        @endif
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-auto pt-3">
+                        <a class="btn btn-primary btn-sm rounded-pill py-2 px-3" href="{{ route('lowongan-kerja.show', $lowongan->id) }}">Lihat</a>
+                        <a class="btn btn-primary btn-sm rounded-pill py-2 px-3" href="javascript:void(0)" onclick="copyToClipboard('{{ $shareUrl }}')">Bagikan</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @empty
+    <div class="col-12">
+        <div class="text-center p-5 my-4 border rounded-3 shadow-sm bg-light wow fadeInRight" data-wow-delay="0.2s">
+            <i class="fa fa-briefcase fa-3x text-primary mb-3"></i>
+            <h4 class="fw-bold mb-2">Belum ada lowongan tersedia</h4>
+            <p class="text-muted mb-3">Silakan cek kembali di lain waktu. Kami terus memperbarui informasi lowongan secara berkala.</p>
+        </div>
+    </div>
+    @endforelse
+
+</div>
+<div class="d-flex justify-content-end mt-3">
+    <a href="{{ route('lowongan-kerja.index') }}" class="text-primary fw-bold">
+        Lihat semua lowongan &gt;&gt;
+    </a>
+</div>
+@endif
+</div>
+<!-- Lowongan Kerja End -->
+@endif
+
+<div class="container-fluid service py-2">
     <!-- Tentang Start -->
     <div class="container-fluid bg-light about pt-5 pb-5">
         <div class="container pb-5">

@@ -33,8 +33,14 @@ class PendaftaranController extends Controller
 
         // Validate the request data
         $validatedData = $request->validate([
-            'no_ktp' => 'required|string',
+            'no_ktp' => 'required|digits:16',
             'email' => 'required|email|max:255',
+        ], [
+            'no_ktp.required' => 'Nomor KTP wajib diisi.',
+            'no_ktp.digits' => 'Nomor KTP harus terdiri dari 16 digit.',
+            'email.required' => 'Alamat email wajib diisi.',
+            'email.email' => 'Format alamat email tidak valid.',
+            'email.max' => 'Panjang alamat email maksimal 255 karakter.',
         ]);
 
         // Cek KTP sudah terdaftar

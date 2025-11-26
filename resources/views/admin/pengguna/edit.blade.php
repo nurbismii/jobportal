@@ -152,46 +152,46 @@
                             </label>
                             <select name="jenis_kelamin" id="jenis_kelamin" class="form-control" required>
                                 @php
-                                    $jenisKelaminList = [
-                                        'M 男' => 'Laki-laki 男',
-                                        'F 女' => 'Perempuan 女',
-                                    ];
-                                    $selected = $biodata->jenis_kelamin ?? '';
+                                $jenisKelaminList = [
+                                'M 男' => 'Laki-laki 男',
+                                'F 女' => 'Perempuan 女',
+                                ];
+                                $selected = $biodata->jenis_kelamin ?? '';
                                 @endphp
                                 @if($selected)
-                                    <option value="{{ $selected }}">{{ $jenisKelaminList[$selected] }}</option>
+                                <option value="{{ $selected }}">{{ $jenisKelaminList[$selected] }}</option>
                                 @else
-                                    <option value="">Pilih jenis kelamin</option>
+                                <option value="">Pilih jenis kelamin</option>
                                 @endif
                                 @foreach($jenisKelaminList as $key => $label)
-                                    @if($key != $selected)
-                                        <option value="{{ $key }}">{{ $label }}</option>
-                                    @endif
+                                @if($key != $selected)
+                                <option value="{{ $key }}">{{ $label }}</option>
+                                @endif
                                 @endforeach
                             </select>
                         </div>
 
-                         <div class="col-md-6 mb-3">
+                        <div class="col-md-6 mb-3">
                             <label for="agama">Agama
                                 <span class="text-danger">*</span>
                             </label>
                             <select name="agama" id="agama" class="form-control" required>
                                 @php
-                                    $agamaOptions = [
-                                    'SD 小学' => 'SD 小学',
-                                    'SMP 初中' => 'SMP 初中',
-                                    'SMA 高中' => 'SMA 高中',
-                                    'SMK 高中' => 'SMK 高中',
-                                    'D3 大专三年' => 'D3 大专三年',
-                                    'D4 大专三年' => 'D4 大专三年',
-                                    'S1 本科' => 'S1 本科',
-                                    'S2 研究生' => 'S2 研究生',
+                                $agamaOptions = [
+                                'SD 小学' => 'SD 小学',
+                                'SMP 初中' => 'SMP 初中',
+                                'SMA 高中' => 'SMA 高中',
+                                'SMK 高中' => 'SMK 高中',
+                                'D3 大专三年' => 'D3 大专三年',
+                                'D4 大专三年' => 'D4 大专三年',
+                                'S1 本科' => 'S1 本科',
+                                'S2 研究生' => 'S2 研究生',
                                 ];
-                                    $selectedAgama = $biodata->agama ?? '';
+                                $selectedAgama = $biodata->agama ?? '';
                                 @endphp
                                 <option value="">Pilih agama</option>
                                 @foreach($agamaOptions as $agama)
-                                    <option value="{{ $agama }}" {{ $selectedAgama === $agama ? 'selected' : '' }}>{{ $agama }}</option>
+                                <option value="{{ $agama }}" {{ $selectedAgama === $agama ? 'selected' : '' }}>{{ $agama }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -316,18 +316,18 @@
                             </label>
                             <select name="golongan_darah" id="" class="form-control" required>
                                 @php
-                                    $golonganDarahList = ['A 型', 'B 型', 'O 型', 'AB 型'];
-                                    $selected = $biodata->golongan_darah ?? '';
+                                $golonganDarahList = ['A 型', 'B 型', 'O 型', 'AB 型'];
+                                $selected = $biodata->golongan_darah ?? '';
                                 @endphp
                                 @if($selected)
-                                    <option value="{{ $selected }}">{{ $selected }}</option>
+                                <option value="{{ $selected }}">{{ $selected }}</option>
                                 @else
-                                    <option value="">Pilih golongan darah</option>
+                                <option value="">Pilih golongan darah</option>
                                 @endif
                                 @foreach($golonganDarahList as $gol)
-                                    @if($gol != $selected)
-                                        <option value="{{ $gol }}">{{ $gol }}</option>
-                                    @endif
+                                @if($gol != $selected)
+                                <option value="{{ $gol }}">{{ $gol }}</option>
+                                @endif
                                 @endforeach
                             </select>
                         </div>
@@ -355,27 +355,27 @@
                             </label>
                             <select class="form-control" name="pendidikan_terakhir" required>
                                 @php
-                                    $pendidikanList = [
-                                    'SD 小学' => 'SD 小学',
-                                    'SMP 初中' => 'SMP 初中',
-                                    'SMA 高中' => 'SMA 高中',
-                                    'SMK 高中' => 'SMK 高中',
-                                    'D3 大专三年' => 'D3 大专三年',
-                                    'D4 大专三年' => 'D4 大专三年',
-                                    'S1 本科' => 'S1 本科',
-                                    'S2 研究生' => 'S2 研究生',
+                                $pendidikanList = [
+                                'SD 小学' => 'SD 小学',
+                                'SMP 初中' => 'SMP 初中',
+                                'SMA 高中' => 'SMA 高中',
+                                'SMK 高中' => 'SMK 高中',
+                                'D3 大专三年' => 'D3 大专三年',
+                                'D4 大专三年' => 'D4 大专三年',
+                                'S1 本科' => 'S1 本科',
+                                'S2 研究生' => 'S2 研究生',
                                 ];
-                                    $selected = $biodata->pendidikan_terakhir ?? '';
+                                $selected = $biodata->pendidikan_terakhir ?? '';
                                 @endphp
                                 @if($selected)
-                                    <option value="{{ $selected }}">{{ $selected }}</option>
+                                <option value="{{ $selected }}">{{ $selected }}</option>
                                 @else
-                                    <option value="">Pilih pendidikan terakhir</option>
+                                <option value="">Pilih pendidikan terakhir</option>
                                 @endif
                                 @foreach($pendidikanList as $pendidikan)
-                                    @if($pendidikan != $selected)
-                                        <option value="{{ $pendidikan }}">{{ $pendidikan }}</option>
-                                    @endif
+                                @if($pendidikan != $selected)
+                                <option value="{{ $pendidikan }}">{{ $pendidikan }}</option>
+                                @endif
                                 @endforeach
                             </select>
                         </div>
@@ -450,21 +450,21 @@
                                 <span class="text-danger">*</span>
                             </label>
                             @php
-                                $statusOptions = [
-                                    'Belum Kawin' => 'Belum Kawin',
-                                    'Kawin' => 'Kawin',
-                                    'Cerai Hidup' => 'Cerai Hidup',
-                                    'Cerai Mati' => 'Cerai Mati'
-                                ];
-                                $selectedStatus = $biodata->status_pernikahan ?? '';
+                            $statusOptions = [
+                            'Belum Kawin' => 'Belum Kawin',
+                            'Kawin' => 'Kawin',
+                            'Cerai Hidup' => 'Cerai Hidup',
+                            'Cerai Mati' => 'Cerai Mati'
+                            ];
+                            $selectedStatus = $biodata->status_pernikahan ?? '';
                             @endphp
-                            <select name="status_pernikahan" class="form-select" id="status_pernikahan" required>
+                            <select name="status_pernikahan" class="form-control" id="status_pernikahan" required>
                                 <option value="">Pilih status pernikahan</option>
                                 @if($selectedStatus && !array_key_exists($selectedStatus, $statusOptions))
-                                    <option value="{{ $selectedStatus }}" selected>{{ $selectedStatus }}</option>
+                                <option value="{{ $selectedStatus }}" selected>{{ $selectedStatus }}</option>
                                 @endif
                                 @foreach($statusOptions as $value => $label)
-                                    <option value="{{ $value }}" {{ $selectedStatus === $value ? 'selected' : '' }}>{{ $label }}</option>
+                                <option value="{{ $value }}" {{ $selectedStatus === $value ? 'selected' : '' }}>{{ $label }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -530,18 +530,18 @@
                             </label>
                             <select name="status_hubungan" id="status_hubungan" class="form-control" required>
                                 @php
-                                    $statusList = ['Orang Tua', 'Saudara', 'Sepupu', 'Teman Dekat'];
-                                    $selected = $biodata->status_hubungan ?? '';
+                                $statusList = ['Orang Tua', 'Saudara', 'Sepupu', 'Teman Dekat'];
+                                $selected = $biodata->status_hubungan ?? '';
                                 @endphp
                                 @if($selected)
-                                    <option value="{{ $selected }}">{{ $selected }}</option>
+                                <option value="{{ $selected }}">{{ $selected }}</option>
                                 @else
-                                    <option value="">Pilih status hubungan</option>
+                                <option value="">Pilih status hubungan</option>
                                 @endif
                                 @foreach($statusList as $status)
-                                    @if($status != $selected)
-                                        <option value="{{ $status }}">{{ $status }}</option>
-                                    @endif
+                                @if($status != $selected)
+                                <option value="{{ $status }}">{{ $status }}</option>
+                                @endif
                                 @endforeach
                             </select>
                         </div>
@@ -554,17 +554,17 @@
                             </label>
                             <select name="status_akun" id="status_akun" class="form-control" required>
                                 @php
-                                    $statusOptions = [
-                                        0 => 'Tidak aktif',
-                                        1 => 'Aktif'
-                                    ];
-                                    $currentStatus = $pengguna->status_akun;
+                                $statusOptions = [
+                                0 => 'Tidak aktif',
+                                1 => 'Aktif'
+                                ];
+                                $currentStatus = $pengguna->status_akun;
                                 @endphp
                                 <option value="{{ $currentStatus }}">{{ $statusOptions[$currentStatus] }}</option>
                                 @foreach($statusOptions as $value => $label)
-                                    @if($value != $currentStatus)
-                                        <option value="{{ $value }}">{{ $label }}</option>
-                                    @endif
+                                @if($value != $currentStatus)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                                @endif
                                 @endforeach
                             </select>
                         </div>

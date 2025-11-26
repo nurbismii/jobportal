@@ -23,6 +23,9 @@
                                     <th>KTP</th>
                                     <th>Email</th>
                                     <th>Akun</th>
+                                    <th>Lamaran</th>
+                                    <th>Lowongan</th>
+                                    <th>Rekomendasi</th>
                                     <th>Aksi</th>
                                 </tr>
                             </thead>
@@ -34,11 +37,14 @@
                                     <td>{{ $pengguna->email }}</td>
                                     <td>
                                         @if($pengguna->status_akun == '1')
-                                        <span class="badge badge-success">Aktif</span>
+                                        <span class="badge badge-success">AKTIF</span>
                                         @else
-                                        <span class="badge badge-danger">Non-Aktif</span>
+                                        <span class="badge badge-danger">TIDAK AKTIF</span>
                                         @endif
                                     </td>
+                                    <td>{{ $pengguna->biodataUser->getLatestRiwayatLamaran->status_proses ?? '-' }}</td>
+                                    <td>{{ substr($pengguna->biodataUser->getLatestRiwayatLamaran->lowongan->nama_lowongan ?? '-', 0, 15) }}</td>
+                                    <td></td>
                                     <td>
                                         <div class="d-flex">
                                             <a href="{{ route('pengguna.edit', $pengguna->id) }}" class="btn btn-success btn-sm btn-icon-split mr-2">
@@ -54,7 +60,6 @@
                                                 <span class="text">Hapus</span>
                                             </a>
                                         </div>
-
                                     </td>
                                 </tr>
                                 @endforeach
