@@ -44,19 +44,15 @@
             $step = calcutaionStep(auth()->user()->biodata ?? null);
 
             function disableIf($requiredStep, $currentStep) {
-            // Jika admin, tidak pernah disable
             if (auth()->check() && auth()->user()->role === 'admin') {
             return '';
             }
-
-            // Default rule
             return $currentStep < $requiredStep ? 'disabled opacity-50 pointer-events-none' : '' ;
                 }
-            @endphp
+                @endphp
 
                 <div class="collapse navbar-collapse" id="navbarCollapse">
                 <div class="navbar-nav mx-0 mx-lg-auto">
-
                     <a href="/" class="nav-item nav-link {{ request()->is('/') ? 'active' : '' }}">Beranda</a>
 
                     <a href="{{ route('biodata.index') }}"
@@ -83,15 +79,35 @@
                         class="nav-item nav-link {{ request()->routeIs('pengumuman.*') ? 'active' : '' }}">
                         Panduan Melamar
                     </a>
+
+                    {{-- 🔥 MENU USER VERSI MOBILE --}}
+                    <div class="d-xl-none mt-3 border-top pt-3">
+
+                        {{-- Profil / Admin --}}
+                        <a href="{{ Auth::user()->role == 'user' ? route('profil.index') : route('home') }}"
+                            class="nav-item nav-link btn btn-light d-flex align-items-center btn-sm">
+                            <i class="fa fa-user me-2 text-primary"></i>
+                            {{ Auth::user()->role == 'user' ? 'Profil Saya' : 'Kelola Job Portal' }}
+                        </a>
+
+                        {{-- Logout --}}
+                        <a href="#" class="nav-item nav-link text-danger btn btn-light d-flex align-items-center btn-sm"
+                            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                            <i class="fa fa-sign-out-alt me-2"></i> Keluar
+                        </a>
+                    </div>
+
                 </div>
     </div>
 
-
+    {{-- 🔥 VERSI DESKTOP --}}
     <div class="d-none d-xl-flex align-items-center ps-4 dropdown">
-        <button class="btn btn-light btn-lg-square rounded-circle position-relative shadow-sm" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+        <button class="btn btn-light btn-lg-square rounded-circle position-relative shadow-sm"
+            type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="fa fa-user fa-2x text-primary"></i>
         </button>
         <ul class="dropdown-menu dropdown-menu-end shadow-sm rounded-3 mt-2" aria-labelledby="dropdownMenuButton1">
+
             @if(Auth::user()->role == 'user')
             <li>
                 <a class="dropdown-item d-flex align-items-center" href="{{ route('profil.index') }}">
@@ -105,15 +121,19 @@
                 </a>
             </li>
             @endif
+
             <li>
                 <hr class="dropdown-divider">
             </li>
+
             <li>
-                <a class="dropdown-item d-flex align-items-center" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                <a class="dropdown-item d-flex align-items-center" href="#"
+                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                     <i class="fa fa-sign-out-alt me-2 text-danger"></i> Keluar
                 </a>
             </li>
         </ul>
+
         <div class="d-flex flex-column ms-3">
             <span class="small text-muted">{{ Auth::user()->no_ktp }}</span>
             <a href="#" class="fw-bold text-dark text-decoration-none">{{ Auth::user()->name }}</a>
@@ -121,10 +141,11 @@
     </div>
 
     <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-        {{ csrf_field() }}
+        @csrf
     </form>
 
     @endif
+
     </nav>
 </div>
 </div>

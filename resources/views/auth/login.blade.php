@@ -92,92 +92,105 @@
 <script>
     document.addEventListener("DOMContentLoaded", function() {
 
-        // Hanya tampil sekali
         if (!localStorage.getItem("vhire_tutorial_first_visit")) {
 
             const steps = [{
                     title: "👋 Selamat Datang di V-HIRE",
                     html: `
-                Platform resmi untuk melamar pekerjaan di <b>PT Virtue Dragon Nickel Industry</b>.<br><br>
-                Yuk ikuti panduan singkat ini agar kamu bisa menggunakan sistem dengan benar. 😊
-                `,
+                        Platform resmi untuk melamar pekerjaan di <b>PT Virtue Dragon Nickel Industry</b>.<br><br>
+                        Yuk ikuti panduan singkat ini agar kamu bisa menggunakan sistem dengan benar.
+                    `,
                     icon: "info"
                 },
                 {
-                    title: "📝 1. Buat Akun",
+                    title: "1. Buat Akun",
                     html: `
-                    Untuk mulai melamar, kamu perlu membuat akun :<br><br>
-                    • Klik tombol <b>Daftar</b><br>
-                    • Isi: Nomor KTP, Nama, Email & Kata Sandi<br>
-                    • Pastikan data kamu benar dan aktif<br><br>
-                    Setelah itu, cek email dan lakukan <b>verifikasi akun</b> untuk dapat login.
-                `,
+                        Untuk mulai melamar, kamu perlu membuat akun :<br><br>
+                        • Klik tombol <b>Daftar</b><br>
+                        • Isi: Nomor KTP, Nama, Email & Kata Sandi<br>
+                        • Pastikan data kamu benar dan aktif<br><br>
+                        Setelah itu, cek email dan lakukan <b>verifikasi akun</b> untuk dapat login.
+                    `,
                     icon: "info"
                 },
                 {
-                    title: "📄 2. Lengkapi Biodata",
+                    title: "⚠ Penting Dipahami!",
                     html: `
-                    Setelah login, kamu wajib melengkapi Formulir biodata ini:<br><br>
-                    ✔ Data Pribadi<br>
-                    ✔ Riwayat Pendidikan<br>
-                    ✔ Data Keluarga<br>
-                    ✔ Kontak Darurat<br>
-                    ✔ Dokumen (KTP, SIM, KK, dll jika ada)<br>
-                    ✔ Pemeriksaan Pernyataan (centang keaslian data)<br><br>
-                    <b>Catatan: Kamu tidak bisa melamar pekerjaan jika biodata belum 100% lengkap.</b>
-                `,
+                        <b>Membuat akun tidak otomatis berarti kamu sudah melamar pekerjaan.</b><br><br>
+                        Agar masuk proses seleksi, kamu harus:<br><br>
+                        ✔ Melengkapi semua biodata<br>
+                        ✔ Mengunggah dokumen<br>
+                        ✔ Memilih lowongan dan klik <b>"Lamar"</b><br><br>
+                        Jika belum menekan mengirim "Lamaran", sistem tidak menganggap kamu mengikuti rekrutmen.<br><br>
+                        <span id="countdown" style="font-size:14px;color:#d33;font-weight:bold;">Silakan baca dulu (15 detik)...</span>
+                    `,
+                    icon: "warning",
+                    lockTime: 15
+                },
+                {
+                    title: "2. Lengkapi Biodata",
+                    html: `
+                        Setelah login, kamu wajib melengkapi Formulir biodata ini:<br><br>
+                        ✔ Data Pribadi<br>
+                        ✔ Riwayat Pendidikan<br>
+                        ✔ Data Keluarga<br>
+                        ✔ Kontak Darurat<br>
+                        ✔ Dokumen (KTP, SIM, KK, dll jika ada)<br>
+                        ✔ Pemeriksaan Pernyataan (centang keaslian data)<br><br>
+                        <b>Catatan: Kamu tidak bisa melamar pekerjaan jika biodata belum 100% lengkap.</b>
+                    `,
                     icon: "warning"
                 },
                 {
-                    title: "📂 3. Upload Dokumen",
+                    title: "3. Upload Dokumen",
                     html: `
-                    Pastikan dokumen yang kamu unggah:<br><br>
-                    • Masih berlaku<br>
-                    • Foto jelas dan terbaca<br>
-                    • Format: JPG, PNG, atau PDF<br><br>
-                    <i>Dokumen yang tidak jelas dapat mempengaruhi proses seleksi.</i>
-                `,
+                        Pastikan dokumen yang kamu unggah:<br><br>
+                        • Masih berlaku<br>
+                        • Foto jelas dan terbaca<br>
+                        • Format: JPG, PNG, atau PDF<br><br>
+                        <i>Dokumen yang tidak jelas dapat mempengaruhi proses seleksi.</i>
+                    `,
                     icon: "info"
                 },
                 {
-                    title: "🎯 4. Melamar Lowongan",
+                    title: "4. Melamar Lowongan",
                     html: `
-                    Jika biodata lengkap, kamu bisa mulai melamar:<br><br>
-                    • Masuk ke menu <b>Lowongan Kerja</b><br>
-                    • Pilih posisi yang sesuai<br>
-                    • Klik <b>Lamar</b> lalu konfirmasi<br><br>
-                    Pastikan kamu membaca deskripsi pekerjaan terlebih dahulu.
-                `,
+                        Jika biodata lengkap, kamu bisa mulai melamar:<br><br>
+                        • Masuk ke menu <b>Lowongan Kerja</b><br>
+                        • Pilih posisi yang sesuai<br>
+                        • Klik <b>Lamar</b> lalu konfirmasi<br><br>
+                        Pastikan kamu membaca deskripsi pekerjaan terlebih dahulu.
+                    `,
                     icon: "info"
                 },
                 {
-                    title: "📌 5. Cek Status Lamaran",
+                    title: "5. Cek Status Lamaran",
                     html: `
-                    Proses rekrutmen terdiri dari beberapa tahap.<br><br>
-                    Status yang mungkin terlihat:<br>
-                    • 🟢 <b>Dalam proses</b> → kamu masih mengikuti proses seleksi<br>
-                    • 🔴 <b>Rekrutmen selesai</b> → kamu tidak berhasil di proses terakhir<br><br>
-                    Kamu dapat melihat detail progres melalui tombol <b>Baca Detail</b>.
-                `,
+                        Proses rekrutmen terdiri dari beberapa tahap.<br><br>
+                        Status yang mungkin terlihat:<br>
+                        • 🟢 <b>Dalam proses</b> → kamu masih mengikuti proses seleksi<br>
+                        • 🔴 <b>Rekrutmen selesai</b> → kamu tidak berhasil di proses terakhir<br><br>
+                        Kamu dapat melihat detail progres melalui tombol <b>Baca Detail</b>.
+                    `,
                     icon: "info"
                 },
                 {
-                    title: "📢 6. Pengumuman",
+                    title: "6. Pengumuman",
                     html: `
-                    Semua pengumuman resmi seperti:<br><br>
-                    • Lowongan baru<br>
-                    • Rekrutmen selesai<br><br>
-                    Akan muncul di menu <b>Pengumuman</b>. Pastikan kamu mengecek secara berkala.
-                `,
+                        Semua pengumuman resmi seperti:<br><br>
+                        • Lowongan baru<br>
+                        • Rekrutmen selesai<br><br>
+                        Akan muncul di menu <b>Pengumuman</b>. Pastikan kamu mengecek secara berkala.
+                    `,
                     icon: "info"
                 },
                 {
-                    title: "🎉 Semua Siap!",
+                    title: "Semua Siap!",
                     html: `
-                    Kamu sudah memahami cara penggunaan sistem.<br><br>
-                    Silakan klik <b>Daftar</b> atau <b>Login</b> untuk memulai proses lamaran.<br><br>
-                    Semoga sukses dan sampai jumpa di proses seleksi! 🍀
-                `,
+                        Kamu sudah memahami cara penggunaan sistem.<br><br>
+                        Silakan klik <b>Daftar</b> atau <b>Login</b> untuk memulai proses lamaran.<br><br>
+                        Semoga sukses dan sampai jumpa di proses seleksi! 
+                    `,
                     icon: "success"
                 }
             ];
@@ -185,6 +198,8 @@
             let index = 0;
 
             function showStep() {
+                const lockTime = steps[index].lockTime ?? 0;
+
                 Swal.fire({
                     title: steps[index].title,
                     html: steps[index].html,
@@ -194,7 +209,30 @@
                     cancelButtonText: "⬅ Kembali",
                     allowOutsideClick: false,
                     allowEscapeKey: false,
-                    width: 600
+                    width: 600,
+                    didOpen: () => {
+                        if (lockTime > 0) {
+                            const confirmBtn = Swal.getConfirmButton();
+                            const cancelBtn = Swal.getCancelButton();
+                            const countdownEl = document.getElementById("countdown");
+
+                            confirmBtn.disabled = true;
+                            if (cancelBtn) cancelBtn.disabled = true;
+
+                            let remaining = lockTime;
+                            const timer = setInterval(() => {
+                                remaining--;
+                                countdownEl.textContent = `Silakan baca dulu (${remaining} detik)...`;
+
+                                if (remaining <= 0) {
+                                    clearInterval(timer);
+                                    countdownEl.textContent = "Kamu bisa melanjutkan.";
+                                    confirmBtn.disabled = false;
+                                    if (cancelBtn) cancelBtn.disabled = false;
+                                }
+                            }, 1000);
+                        }
+                    }
                 }).then((result) => {
                     if (result.isConfirmed) {
                         index++;
@@ -214,6 +252,7 @@
         }
     });
 </script>
+
 
 
 @endsection

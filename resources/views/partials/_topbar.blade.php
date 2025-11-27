@@ -12,8 +12,8 @@
             <div class="col-lg-4 text-center text-lg-end">
                 <div class="d-flex justify-content-end">
                     <div class="d-flex border-end border-primary pe-3">
-                        <a class="btn p-0 text-primary me-3" href="https://www.instagram.com/hr_vdni?igsh=cTJ6Z2VkeDkwb2pp"><i class="fab fa-instagram"></i></a>
-                        <a class="btn p-0 text-primary me-0" href="https://www.linkedin.com/company/pt-virtue-dragon-nickel-industry/?viewAsMember=true"><i class="fab fa-linkedin-in"></i></a>
+                        <a class="btn p-0 text-primary me-3" href="https://www.instagram.com/hr_vdni?igsh=cTJ6Z2VkeDkwb2pp" target="_blank"><i class="fab fa-instagram"></i></a>
+                        <a class="btn p-0 text-primary me-0" href="https://www.linkedin.com/company/pt-virtue-dragon-nickel-industry/?viewAsMember=true" target="_blank"><i class="fab fa-linkedin-in"></i></a>
                     </div>
                 </div>
             </div>

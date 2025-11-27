@@ -673,5 +673,87 @@ $maxStep = count($steps);
         });
     }
 </script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const STORAGE_KEY = "vhire_tutorial_first_beranda";
+        const lastShown = localStorage.getItem(STORAGE_KEY);
+        const twelveHours = 12 * 60 * 60 * 1000; // 12 jam dalam milidetik
+        const now = Date.now();
+
+        // Cek apakah sudah lewat 12 jam sejak alert terakhir
+        if (!lastShown || (now - lastShown) > twelveHours) {
+
+            const steps = [{
+                title: "⚠ Penting Dipahami!",
+                html: `
+                        <b>Berhasil membuat akun pengguna tidak otomatis berarti kamu sudah melamar pekerjaan.</b><br><br>
+                        Agar masuk proses seleksi, kamu harus :<br><br>
+                        ✔ Melengkapi semua biodata<br>
+                        ✔ Mengunggah dokumen<br>
+                        ✔ Memilih lowongan dan klik <b>"Lamar"</b><br><br>
+                        Jika belum menekan tombol <b>"Ya, Lamar Sekarang"</b>, sistem tidak menganggap kamu mengikuti rekrutmen.<br><br>
+                        <span id="countdown" style="font-size:14px;color:#d33;font-weight:bold;">Silakan baca dulu (15 detik)...</span>
+                    `,
+                icon: "warning",
+                lockTime: 15
+            }];
+
+            let index = 0;
+
+            function showStep() {
+                let lockDuration = steps[index].lockTime ?? 0;
+
+                Swal.fire({
+                    title: steps[index].title,
+                    html: steps[index].html,
+                    icon: steps[index].icon,
+                    showCancelButton: false,
+                    confirmButtonText: "Saya Mengerti",
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    width: 600,
+                    didOpen: () => {
+
+                        const confirmBtn = Swal.getConfirmButton();
+                        const countdownEl = document.getElementById("countdown");
+
+                        confirmBtn.disabled = true;
+
+                        if (lockDuration > 0 && countdownEl) {
+                            let remaining = lockDuration;
+
+                            const timer = setInterval(() => {
+                                remaining--;
+                                countdownEl.textContent = `Silakan baca dulu (${remaining} detik)...`;
+
+                                if (remaining <= 0) {
+                                    clearInterval(timer);
+                                    countdownEl.textContent = "Kamu bisa lanjut sekarang.";
+                                    confirmBtn.disabled = false;
+                                }
+                            }, 1000);
+                        }
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        index++;
+                        if (index < steps.length) {
+                            showStep();
+                        } else {
+                            // simpan waktu terakhir popup muncul
+                            localStorage.setItem(STORAGE_KEY, Date.now());
+                        }
+                    }
+                });
+
+            }
+
+            showStep();
+        }
+    });
+</script>
+
 @endpush
 @endsection
