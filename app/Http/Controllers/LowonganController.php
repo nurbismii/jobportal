@@ -37,7 +37,7 @@ class LowonganController extends Controller
 
         $lowongan = Lowongan::selectRaw("*, IF(tanggal_berakhir < '$today', 'Kadaluwarsa', 'Aktif') as status_lowongan")->findOrFail($id);
         $biodata = Biodata::where('user_id', auth()->id())->first();
-        $fieldLabels = $this->getFieldLabels($lowongan->status_sim_b2);
+        $fieldLabels = $this->getFieldLabels($lowongan->status_sim_b2, $lowongan->status_sio);
 
         return view('user.lowongan-kerja.show', compact('lowongan', 'biodata', 'fieldLabels'));
     }
@@ -116,6 +116,11 @@ class LowonganController extends Controller
 
         $lowongan = Lowongan::selectRaw("*, IF(tanggal_berakhir < '$today', 'Kadaluwarsa', 'Aktif') as status_lowongan")->findOrFail($id);
 
+        if (!$lowongan) {
+            Alert::warning('Opps!', 'Lowongan tidak ditemukan, coba beberapa saat lagi');
+            return back();
+        }
+
         if (!Auth::user()) {
             Alert::info('Opps!', 'Silahkan login untuk melihat lowongan kerja.');
             return redirect()->route('login');
@@ -139,6 +144,13 @@ class LowonganController extends Controller
             $nama_sim = strtoupper($res_ocr_simb2['data']['nama'] ?? '');
             $tanggl_lahir_sim = $res_ocr_simb2['data']['tanggal_lahir'] ?? '';
             $berlaku_sim = $res_ocr_simb2['data']['berlaku_sampai'] ?? null;
+        }
+
+        if ($lowongan->status_sio == $aktif) {
+            if (empty($biodata->status_sio)) {
+                Alert::info('Opss!', 'Untuk melamar lowongan ini, silakan upload foto SIO terlebih dahulu.');
+                return redirect()->to(route('biodata.index') . '#step5');
+            }
         }
 
         // === Bagian Optimasi OCR (pakai cache file) ===
@@ -263,7 +275,7 @@ class LowonganController extends Controller
         }
 
         // Cek field kosong
-        $fieldLabels = $this->getFieldLabels($lowongan->status_sim_b2);
+        $fieldLabels = $this->getFieldLabels($lowongan->status_sim_b2, $lowongan->status_sio);
         $emptyFields = collect($fieldLabels)->filter(fn($label, $field) => empty($biodata->$field))->values()->all();
 
         $msg_no_ktp = $ocrResult['nik_ktp'] !== $biodata->no_ktp ? 'No KTP tidak sesuai dengan biodata anda.' : null;
@@ -658,124 +670,73 @@ class LowonganController extends Controller
     }
 
 
-    public function getFieldLabels($status_sim_b2)
+    public function getFieldLabels($status_sim_b2 = 0, $status_sio = 0)
     {
-        if ($status_sim_b2 == '0') {
+        $fieldLabels = [
+            // Identitas Pribadi
+            'no_ktp' => 'Nomor KTP',
+            'no_telp' => 'Nomor Telepon',
+            'no_kk' => 'Nomor Kartu Keluarga',
+            'jenis_kelamin' => 'Jenis Kelamin',
+            'tempat_lahir' => 'Tempat Lahir',
+            'tanggal_lahir' => 'Tanggal Lahir',
 
-            $fieldLabels = [
+            // Alamat Domisili
+            'provinsi' => 'Provinsi',
+            'kabupaten' => 'Kabupaten/Kota',
+            'kecamatan' => 'Kecamatan',
+            'kelurahan' => 'Kelurahan/Desa',
+            'alamat' => 'Alamat Lengkap',
+            'kode_pos' => 'Kode Pos',
+            'rt' => 'RT',
+            'rw' => 'RW',
 
-                // Identitas Pribadi
-                'no_ktp' => 'Nomor KTP',
-                'no_telp' => 'Nomor Telepon',
-                'no_kk' => 'Nomor Kartu Keluarga',
-                'jenis_kelamin' => 'Jenis Kelamin',
-                'tempat_lahir' => 'Tempat Lahir',
-                'tanggal_lahir' => 'Tanggal Lahir',
+            // Informasi Pribadi Tambahan
+            'hobi' => 'Hobi',
+            'golongan_darah' => 'Golongan Darah',
+            'tinggi_badan' => 'Tinggi Badan (cm)',
+            'berat_badan' => 'Berat Badan (kg)',
 
-                // Alamat Domisili
-                'provinsi' => 'Provinsi',
-                'kabupaten' => 'Kabupaten/Kota',
-                'kecamatan' => 'Kecamatan',
-                'kelurahan' => 'Kelurahan/Desa',
-                'alamat' => 'Alamat Lengkap',
-                'kode_pos' => 'Kode Pos',
-                'rt' => 'RT',
-                'rw' => 'RW',
+            // Riwayat Pendidikan
+            'pendidikan_terakhir' => 'Pendidikan Terakhir',
+            'nama_instansi' => 'Nama Instansi Pendidikan',
+            'jurusan' => 'Jurusan',
+            'nilai_ipk' => 'Nilai IPK/NEM',
+            'tahun_lulus' => 'Tahun Lulus',
 
-                // Informasi Pribadi Tambahan
-                'hobi' => 'Hobi',
-                'golongan_darah' => 'Golongan Darah',
-                'tinggi_badan' => 'Tinggi Badan (cm)',
-                'berat_badan' => 'Berat Badan (kg)',
+            // Data Keluarga
+            'nama_ayah' => 'Nama Ayah',
+            'nama_ibu' => 'Nama Ibu',
+            'status_pernikahan' => 'Status Pernikahan',
 
-                // Riwayat Pendidikan
-                'pendidikan_terakhir' => 'Pendidikan Terakhir',
-                'nama_instansi' => 'Nama Instansi Pendidikan',
-                'jurusan' => 'Jurusan',
-                'nilai_ipk' => 'Nilai IPK/NEM',
-                'tahun_lulus' => 'Tahun Lulus',
+            // Kontak Darurat
+            'nama_kontak_darurat' => 'Nama Kontak Darurat',
+            'no_telepon_darurat' => 'Nomor Telepon Darurat',
+            'status_hubungan' => 'Hubungan dengan Kontak Darurat',
 
-                // Data Keluarga
-                'nama_ayah' => 'Nama Ayah',
-                'nama_ibu' => 'Nama Ibu',
-                'status_pernikahan' => 'Status Pernikahan',
+            // Dokumen Wajib
+            'cv' => 'Curriculum Vitae (CV)',
+            'pas_foto' => 'Pas Foto',
+            'surat_lamaran' => 'Surat Lamaran',
+            'ijazah' => 'Ijazah',
+            'ktp' => 'KTP (Kartu Tanda Penduduk)',
+            'skck' => 'SKCK (Surat Keterangan Catatan Kepolisian)',
+            'sertifikat_vaksin' => 'Sertifikat Vaksin',
+            'kartu_keluarga' => 'Kartu Keluarga (KK)',
+            'npwp' => 'NPWP (Nomor Pokok Wajib Pajak)',
+            'ak1' => 'Kartu AK1 (Kartu Pencari Kerja)',
+        ];
 
-                // Kontak Darurat
-                'nama_kontak_darurat' => 'Nama Kontak Darurat',
-                'no_telepon_darurat' => 'Nomor Telepon Darurat',
-                'status_hubungan' => 'Hubungan dengan Kontak Darurat',
-
-                // Dokumen Wajib
-                'cv' => 'Curriculum Vitae (CV)',
-                'pas_foto' => 'Pas Foto',
-                'surat_lamaran' => 'Surat Lamaran',
-                'ijazah' => 'Ijazah',
-                'ktp' => 'KTP (Kartu Tanda Penduduk)',
-                'skck' => 'SKCK (Surat Keterangan Catatan Kepolisian)',
-                'sertifikat_vaksin' => 'Sertifikat Vaksin',
-                'kartu_keluarga' => 'Kartu Keluarga (KK)',
-                'npwp' => 'NPWP (Nomor Pokok Wajib Pajak)',
-                'ak1' => 'Kartu AK1 (Kartu Pencari Kerja)',
-            ];
-        } else {
-
-            $fieldLabels = [
-
-                // Identitas Pribadi
-                'no_ktp' => 'Nomor KTP',
-                'no_telp' => 'Nomor Telepon',
-                'no_kk' => 'Nomor Kartu Keluarga',
-                'jenis_kelamin' => 'Jenis Kelamin',
-                'tempat_lahir' => 'Tempat Lahir',
-                'tanggal_lahir' => 'Tanggal Lahir',
-
-                // Alamat Domisili
-                'provinsi' => 'Provinsi',
-                'kabupaten' => 'Kabupaten/Kota',
-                'kecamatan' => 'Kecamatan',
-                'kelurahan' => 'Kelurahan/Desa',
-                'alamat' => 'Alamat Lengkap',
-                'kode_pos' => 'Kode Pos',
-                'rt' => 'RT',
-                'rw' => 'RW',
-
-                // Informasi Pribadi Tambahan
-                'hobi' => 'Hobi',
-                'golongan_darah' => 'Golongan Darah',
-                'tinggi_badan' => 'Tinggi Badan (cm)',
-                'berat_badan' => 'Berat Badan (kg)',
-
-                // Riwayat Pendidikan
-                'pendidikan_terakhir' => 'Pendidikan Terakhir',
-                'nama_instansi' => 'Nama Instansi Pendidikan',
-                'jurusan' => 'Jurusan',
-                'nilai_ipk' => 'Nilai IPK/NEM',
-                'tahun_lulus' => 'Tahun Lulus',
-
-                // Data Keluarga
-                'nama_ayah' => 'Nama Ayah',
-                'nama_ibu' => 'Nama Ibu',
-                'status_pernikahan' => 'Status Pernikahan',
-
-                // Kontak Darurat
-                'nama_kontak_darurat' => 'Nama Kontak Darurat',
-                'no_telepon_darurat' => 'Nomor Telepon Darurat',
-                'status_hubungan' => 'Hubungan dengan Kontak Darurat',
-
-                // Dokumen Wajib
-                'cv' => 'Curriculum Vitae (CV)',
-                'pas_foto' => 'Pas Foto',
-                'surat_lamaran' => 'Surat Lamaran',
-                'ijazah' => 'Ijazah',
-                'ktp' => 'KTP (Kartu Tanda Penduduk)',
-                'sim_b_2' => 'SIM B II Umum',
-                'skck' => 'SKCK (Surat Keterangan Catatan Kepolisian)',
-                'sertifikat_vaksin' => 'Sertifikat Vaksin',
-                'kartu_keluarga' => 'Kartu Keluarga (KK)',
-                'npwp' => 'NPWP (Nomor Pokok Wajib Pajak)',
-                'ak1' => 'Kartu AK1 (Kartu Pencari Kerja)',
-            ];
+        // Tambahkan SIM B II jika status_sim_b2 aktif (= 1)
+        if ($status_sim_b2 == 1) {
+            $fieldLabels['sim_b_2'] = 'SIM B II Umum';
         }
+
+        // Tambahkan SIO jika status_sio aktif (= 1)
+        if ($status_sio == 1) {
+            $fieldLabels['status_sio'] = 'SIO (Surat Izin Operator)';
+        }
+
         return $fieldLabels;
     }
 }
