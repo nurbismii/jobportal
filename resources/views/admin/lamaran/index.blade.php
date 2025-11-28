@@ -573,6 +573,7 @@
                                         <option value="Tidak Lolos Tes Lapangan">Tidak Lolos Tes Lapangan</option>
                                         <option value="Tidak Lolos Medical Check-Up">Tidak Lolos Medical Check-Up (MCU)</option>
                                         <option value="Tidak Lolos Induksi Safety">Tidak Lolos Induksi Safety</option>
+                                        <option value="Tidak Tanda Tangan Kontrak">Tidak Tanda Tangan Kontrak</option>
                                     </optgroup>
                                     <optgroup label="Kandidat Potensial">
                                         <option value="Kandidat Potensial">Kandidat Potensial</option>
@@ -898,7 +899,6 @@ return $order[$item->level_sp] ?? 99;
                 tanggal.setAttribute('required', true);
                 jam.setAttribute('required', true);
                 tempat.setAttribute('required', true);
-                pesanArea.setAttribute('required', true);
                 blastEmailYes.setAttribute('required', true);
                 blastEmailNo.setAttribute('required', true);
 
