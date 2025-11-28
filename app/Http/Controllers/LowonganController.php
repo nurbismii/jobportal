@@ -133,6 +133,11 @@ class LowonganController extends Controller
             return redirect()->route('biodata.index');
         }
 
+        if ($biodata->vaksin == null) {
+            Alert::info('Opss!', 'Harap mengisi vaksinasi yang pernah dilakukan');
+            return redirect()->route('biodata.index');
+        }
+
         // Jika lowongan memerlukan SIM B2
         if ($lowongan->status_sim_b2 == $aktif) {
             if (empty($biodata->sim_b_2)) {
@@ -680,6 +685,7 @@ class LowonganController extends Controller
             'jenis_kelamin' => 'Jenis Kelamin',
             'tempat_lahir' => 'Tempat Lahir',
             'tanggal_lahir' => 'Tanggal Lahir',
+            'vaksin' => 'Vaksin',
 
             // Alamat Domisili
             'provinsi' => 'Provinsi',

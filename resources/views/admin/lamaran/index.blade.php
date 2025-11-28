@@ -418,7 +418,7 @@
                             <td>{{ $data->biodata->nama_anak_1 }}</td>
                             <td>{{ $data->biodata->nama_anak_2 }}</td>
                             <td>{{ $data->biodata->nama_anak_3 }}</td>
-                            <td>{{ $data->biodata->vaksinasi_covid }}</td>
+                            <td>{{ $data->biodata->vaksin }}</td>
                             <td>{{ $data->biodata->hobi }}</td>
                             <td>{{ $data->biodata->no_telepon_darurat }}</td>
                             <td>{{ $data->biodata->nama_kontak_darurat }}</td>

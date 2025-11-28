@@ -68,6 +68,7 @@ class BiodataController extends Controller
                 'tempat_lahir' => $request->tempat_lahir,
                 'tanggal_lahir' => $request->tanggal_lahir,
                 'agama' => $request->agama,
+                'vaksin' => $request->vaksin,
                 'provinsi' => $request->provinsi,
                 'kabupaten' => $request->kabupaten,
                 'kecamatan' => $request->kecamatan,

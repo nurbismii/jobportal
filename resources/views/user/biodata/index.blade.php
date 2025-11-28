@@ -367,9 +367,28 @@
                                 ];
                                 $selectedAgama = $biodata->agama ?? '';
                                 @endphp
-                                <option value="">Pilih agama</option>
+                                <option value="" disabled selected>Pilih agama</option>
                                 @foreach($agamaOptions as $agama)
                                 <option value="{{ $agama }}" {{ $selectedAgama === $agama ? 'selected' : '' }}>{{ $agama }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="vaksin">Vaksin
+                                <span class="text-danger">*</span>
+                            </label>
+                            <select name="vaksin" id="vaksin" class="form-select" required>
+                                @php
+                                $vaksinOptions = [
+                                'VAKSIN 1',
+                                'VAKSIN 2',
+                                'VAKSIN 3',
+                                ];
+                                $selectedVaksin = $biodata->vaksin ?? '';
+                                @endphp
+                                <option value="" disabled selected>Pilih Vaksin</option>
+                                @foreach($vaksinOptions as $vaksin)
+                                <option value="{{ $vaksin }}" {{ $selectedVaksin === $vaksin ? 'selected' : '' }}>{{ $vaksin }}</option>
                                 @endforeach
                             </select>
                         </div>
