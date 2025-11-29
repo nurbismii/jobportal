@@ -19,7 +19,7 @@ class LowonganController extends Controller
     {
         $today = Carbon::now()->toDateTimeString();
 
-        $query = Lowongan::selectRaw("*, IF(tanggal_berakhir < '$today', 'Kadaluwarsa', 'Aktif') as status_lowongan")->withCount('lamarans');
+        $query = Lowongan::selectRaw("*, IF(tanggal_berakhir < '$today', 'Kadaluwarsa', 'Aktif') as status_lowongan")->withCount('lamarans')->orderByRaw("IF(tanggal_berakhir < '$today', 1, 0)");
 
         $title = 'Hapus Lowongan!';
         $text = "Kamu yakin ingin menghapus lowongan ini?";
