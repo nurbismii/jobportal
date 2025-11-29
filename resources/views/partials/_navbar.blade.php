@@ -84,11 +84,24 @@
                     <div class="d-xl-none mt-3 border-top pt-3">
 
                         {{-- Profil / Admin --}}
-                        <a href="{{ Auth::user()->role == 'user' ? route('profil.index') : route('home') }}"
+                        @if(Auth::user()->role == 'user')
+                        <a href="{{ route('profil.index') }}"
                             class="nav-item nav-link btn btn-light d-flex align-items-center btn-sm">
                             <i class="fa fa-user me-2 text-primary"></i>
-                            {{ Auth::user()->role == 'user' ? 'Profil Saya' : 'Kelola Job Portal' }}
+                            Kelola Akun
                         </a>
+                        @else
+                        <a href="{{ route('profil.index') }}"
+                            class="nav-item nav-link btn btn-light d-flex align-items-center btn-sm">
+                            <i class="fa fa-user me-2 text-primary"></i>
+                            Kelola Akun
+                        </a>
+                        <a href="{{ route('home') }}"
+                            class="nav-item nav-link btn btn-light d-flex align-items-center btn-sm">
+                            <i class="fa fa-desktop me-2 text-primary"></i>
+                            Kelola Job Portal
+                        </a>
+                        @endif
 
                         {{-- Logout --}}
                         <a href="#" class="nav-item nav-link text-danger btn btn-light d-flex align-items-center btn-sm"
@@ -111,13 +124,18 @@
             @if(Auth::user()->role == 'user')
             <li>
                 <a class="dropdown-item d-flex align-items-center" href="{{ route('profil.index') }}">
-                    <i class="fa fa-id-card me-2 text-primary"></i> Profil
+                    <i class="fa fa-user me-2 text-primary"></i> Kelola Akun
                 </a>
             </li>
             @else
             <li>
+                <a class="dropdown-item d-flex align-items-center" href="{{ route('profil.index') }}">
+                    <i class="fa fa-user me-2 text-primary"></i> Kelola Akun
+                </a>
+            </li>
+            <li>
                 <a class="dropdown-item d-flex align-items-center" href="{{ route('home') }}">
-                    <i class="fa fa-briefcase me-2 text-primary"></i> Kelola Job Portal
+                    <i class="fa fa-desktop me-2 text-primary"></i> Kelola Job Portal
                 </a>
             </li>
             @endif
