@@ -33,11 +33,19 @@
         </a>
     </li>
 
-    <li class="nav-item {{ request()->routeIs('lowongan.**') ? 'active' : '' }}">
-        <a class="nav-link" href="{{ route('lowongan.index') }}">
+    <li class="nav-item {{ request()->routeIs('lowongan.**', 'peralihan.**') ? 'active' : '' }}">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseLowongan"
+            aria-expanded="true" aria-controls="collapseLowongan">
             <i class="fas fa-fw fa-street-view"></i>
             <span>Lowongan</span>
         </a>
+        <div id="collapseLowongan" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">Setting Lowongan:</h6>
+                <a class="collapse-item {{ request()->routeIs('lowongan.**') ? 'active' : '' }}" href="{{ route('lowongan.index') }}">Lowongan</a>
+                <a class="collapse-item {{ request()->routeIs('peralihan.**') ? 'active' : '' }}" href="{{ route('peralihan.index') }}">Peralihan Pelamar</a>
+            </div>
+        </div>
     </li>
 
     <li class="nav-item {{ request()->routeIs('permintaan-tenaga-kerja.**') ? 'active' : '' }}">

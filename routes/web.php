@@ -57,6 +57,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['redirect.role']], function 
     Route::resource('/pengguna', 'App\Http\Controllers\Admin\PenggunaController');
 
     Route::resource('/lowongan', 'App\Http\Controllers\Admin\LowonganController');
+    Route::resource('/peralihan', 'App\Http\Controllers\Admin\PeralihanPelamarController');
     Route::get('/lowongan/pendaftar/{loker_id}', [App\Http\Controllers\Admin\LowonganController::class, 'directToLamaran'])->name('directToLamaran');
 
     Route::resource('/lamarans', 'App\Http\Controllers\Admin\LamaranController');

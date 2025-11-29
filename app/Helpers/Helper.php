@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Lowongan;
 use App\Models\RiwayatProsesLamaran;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -240,5 +241,15 @@ if (!function_exists('calcutaionStep')) {
         }
 
         return $step;
+    }
+}
+
+if (!function_exists('getLamaranLama')) {
+    function getLamaranLama($id)
+    {
+        if (!$id) {
+            return '-';
+        }
+        return Lowongan::where('id', $id)->value('nama_lowongan');
     }
 }
