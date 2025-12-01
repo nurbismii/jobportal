@@ -5,16 +5,12 @@
 <!-- Lowongan Kerja Start -->
 <div class="container-fluid service py-4">
     <div class="container">
-        
-        @if(Auth::check) 
+        @if(Auth::user() && $fieldLabels)
         <div class="alert alert-warning alert-dismissible fade show mt-3" role="alert">
             <strong>Perhatian!</strong> Harap perbarui dokumen jika ada perubahan
             <a href="{{ route('biodata.index') }}#step5" class="btn btn-sm btn-warning mr-2"> Perbarui Dokumen </a>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
-        @endif
-
-        @if(Auth::user() && $fieldLabels)
         @php
         $dataKosong = [];
         foreach ($fieldLabels as $field => $label) {
