@@ -740,7 +740,7 @@ class LowonganController extends Controller
 
         // Tambahkan SIO jika status_sio aktif (= 1)
         if ($status_sio == 1) {
-            $fieldLabels['status_sio'] = 'SIO (Surat Izin Operator)';
+            $fieldLabels['sio'] = 'SIO (Surat Izin Operator)';
         }
 
         return $fieldLabels;
