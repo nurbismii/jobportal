@@ -266,12 +266,44 @@ class LowonganController extends Controller
         $msg_date_ktp_vs_sim_b2 = null;
 
         if ($lowongan->status_sim_b2) {
+
+            // ===== VALIDASI NAMA =====
             if (empty($nama_sim)) {
                 $msg_name_ktp_vs_sim_b2 = 'Nama pada SIM B II Umum tidak terbaca.';
-            } elseif ($ocrResult['nama_sim'] != $ocrResult['nama_ktp']) {
-                $msg_name_ktp_vs_sim_b2 = 'Nama pada SIM B2 tidak sesuai dengan KTP.';
+            } else {
+
+                $ktp = strtoupper(trim($ocrResult['nama_ktp']));
+                $sim = strtoupper(trim($ocrResult['nama_sim']));
+
+                $valid = false;
+
+                // Jika sama persis → valid
+                if ($ktp === $sim) {
+                    $valid = true;
+                } else {
+                    // Pecah nama
+                    $ktpParts = explode(' ', $ktp);
+                    $simParts = explode(' ', $sim);
+
+                    $ktpLast = end($ktpParts);
+                    $simLast = end($simParts);
+
+                    // Rule bidirectional initial validation
+                    if (
+                        (strlen($ktpLast) === 1 && $ktpLast[0] === $simLast[0]) || // KTP inisial
+                        (strlen($simLast) === 1 && $simLast[0] === $ktpLast[0])    // SIM inisial
+                    ) {
+                        $valid = true;
+                    }
+                }
+
+                // Result message
+                if (!$valid) {
+                    $msg_name_ktp_vs_sim_b2 = 'Nama pada SIM B2 tidak sesuai dengan KTP.';
+                }
             }
 
+            // ===== VALIDASI TANGGAL LAHIR =====
             if (empty($tanggl_lahir_sim)) {
                 $msg_date_ktp_vs_sim_b2 = 'Tanggal lahir pada SIM B II Umum tidak terbaca.';
             } elseif ($ocrResult['tgl_lahir_ktp'] != $ocrResult['tgl_lahir_sim']) {
