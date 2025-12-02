@@ -152,7 +152,7 @@ class LowonganController extends Controller
         }
 
         if ($lowongan->status_sio == $aktif) {
-            if (empty($biodata->status_sio)) {
+            if (empty($biodata->sio)) {
                 Alert::info('Opss!', 'Untuk melamar lowongan ini, silakan upload foto SIO terlebih dahulu.');
                 return redirect()->to(route('biodata.index') . '#step5');
             }
