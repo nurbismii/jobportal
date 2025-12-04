@@ -43,6 +43,11 @@ class PendaftaranController extends Controller
             'email.max' => 'Panjang alamat email maksimal 255 karakter.',
         ]);
 
+        if (User::where('email', $validatedData['email'])->exists()) {
+            Alert::error('Gagal', 'Email sudah terdaftar!');
+            return redirect()->back();
+        }
+
         // Cek KTP sudah terdaftar
         if (User::where('no_ktp', $validatedData['no_ktp'])->exists()) {
             Alert::error('Gagal', 'Nomor KTP sudah terdaftar!');
@@ -67,7 +72,7 @@ class PendaftaranController extends Controller
             // Buat akun user baru
             $user_baru = User::create([
                 'no_ktp' => $validatedData['no_ktp'],
-                'name' => strtoupper($request->first_name) . ' ' . strtoupper($request->last_name),
+                'name' => strtoupper($request->first_name) . (filled($request->last_name) ? ' ' . strtoupper($request->last_name) : ''),
                 'email' => $validatedData['email'],
                 'password' => bcrypt($request->password),
                 'status_akun' => $tidak_aktif,
