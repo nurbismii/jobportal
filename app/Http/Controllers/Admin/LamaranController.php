@@ -151,11 +151,13 @@ class LamaranController extends Controller
         $modelMap = [
             'biodata' => \App\Models\Biodata::class,
             'lamaran' => \App\Models\Lamaran::class,
+            'user' => \App\Models\User::class,
         ];
 
         $allowedFields = [
             'biodata' => ['status_ktp', 'status_skck', 'status_sim_b2', 'status_sio', 'status_sertifikat'],
             'lamaran' => ['rekomendasi'],
+            'user' => ['rekomendasi'],
         ];
 
         $fieldLabels = [

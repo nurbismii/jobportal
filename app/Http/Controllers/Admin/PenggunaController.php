@@ -52,6 +52,14 @@ class PenggunaController extends Controller
         return redirect()->route('pengguna.index')->with('success', 'Pengguna berhasil diperbarui.');
     }
 
+    public function show($id)
+    {
+        // Logic to show user details
+        $user = User::with('biodataUser.getRiwayatLamaran')->findOrFail($id);
+
+        return view('admin.pengguna.show', compact('user'));
+    }
+
     public function destroy($id)
     {
         // Logic to delete a user

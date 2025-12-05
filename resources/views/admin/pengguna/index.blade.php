@@ -4,6 +4,85 @@
 
 @push('styles')
 <link href="{{ asset('admin/vendor/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
+<!-- FixedColumns CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/fixedcolumns/4.3.0/css/fixedColumns.dataTables.min.css">
+
+<style>
+    td.editable {
+        cursor: text;
+        background-color: #f9f9f9;
+        border: 1px solid #ccc;
+        padding: 6px 8px;
+        border-radius: 4px;
+        font-family: inherit;
+        font-size: 14px;
+        transition: all 0.2s ease-in-out;
+    }
+
+    td.editable:focus,
+    td.editable[contenteditable="true"]:focus {
+        outline: none;
+        border: 1px solid #007bff;
+        background-color: #fff;
+        box-shadow: 0 0 3px rgba(0, 123, 255, 0.5);
+    }
+
+    td.editable[contenteditable="true"] {
+        background-color: #f9f9f9;
+    }
+
+    td.editable.editing {
+        background-color: #fffbe6;
+        /* kuning soft saat sedang diedit */
+    }
+
+    /* Gaya tombol DataTables */
+    .dt-button {
+        margin-right: 5px;
+        border-radius: 0.25rem;
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+    }
+
+    /* Dropdown Show entries */
+    .dataTables_length select {
+        width: auto;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        border: 1px solid #ced4da;
+    }
+
+    /* Search box styling */
+    .dataTables_filter input {
+        border-radius: 0.25rem;
+        padding: 0.25rem 0.5rem;
+        border: 1px solid #ced4da;
+    }
+
+    /* Pagination */
+    .dataTables_paginate .pagination .page-item .page-link {
+        border-radius: 0.25rem;
+        /* margin: 0 1px; */
+        color: #007bff;
+    }
+
+    .dataTables_paginate .pagination .page-item.active .page-link {
+        background-color: #007bff;
+        border-color: #007bff;
+        color: #fff;
+    }
+
+    /* Hover row effect */
+    #dataTable tbody tr:hover {
+        background-color: #f1f3f5;
+        cursor: pointer;
+    }
+
+    div.dataTables_wrapper div.dataTables_length {
+        margin-right: 1rem;
+        /* atau 16px, bisa ditambah sesuai kebutuhan */
+    }
+</style>
 @endpush
 <div class="container-fluid">
     <h1 class="h3 mb-4 text-gray-800">Pengguna</h1>
@@ -26,6 +105,7 @@
                                     <th>Lamaran</th>
                                     <th>Lowongan</th>
                                     <th>Rekomendasi</th>
+                                    <th>Riwayat</th>
                                     <th>Aksi</th>
                                 </tr>
                             </thead>
@@ -44,7 +124,20 @@
                                     </td>
                                     <td>{{ $pengguna->biodataUser->getLatestRiwayatLamaran->status_proses ?? '-' }}</td>
                                     <td>{{ substr($pengguna->biodataUser->getLatestRiwayatLamaran->lowongan->nama_lowongan ?? '-', 0, 15) }}</td>
-                                    <td></td>
+                                    <td class="editable"
+                                        data-id="{{ $pengguna->id }}"
+                                        data-model="user"
+                                        data-field="rekomendasi">
+                                        {{ $pengguna->rekomendasi}}
+                                    </td>
+                                    <td>
+                                        <a href="{{ route('pengguna.show', $pengguna->id) }}" target="_blank" class="btn btn-secondary btn-sm btn-icon-split mr-2">
+                                            <span class="icon text-white-50">
+                                                <i class="fas fa-history"></i>
+                                            </span>
+                                            <span class="text">Riwayat</span>
+                                        </a>
+                                    </td>
                                     <td>
                                         <div class="d-flex">
                                             <a href="{{ route('pengguna.edit', $pengguna->id) }}" class="btn btn-success btn-sm btn-icon-split mr-2">
@@ -77,9 +170,101 @@
 <!-- Page level plugins -->
 <script src="{{ asset('admin/vendor/datatables/jquery.dataTables.min.js') }}"></script>
 <script src="{{ asset('admin/vendor/datatables/dataTables.bootstrap4.min.js') }}"></script>
+<script src="https://cdn.datatables.net/fixedcolumns/4.3.0/js/dataTables.fixedColumns.min.js"></script>
 
-<!-- Page level custom scripts -->
-<script src="{{ asset('admin/js/demo/datatables-demo.js') }}"></script>
+<script>
+    $(document).ready(function() {
+        // Inisialisasi DataTable
+        const table = $('#dataTable').DataTable({
+            scrollX: true,
+            responsive: false,
+            autoWidth: false,
+            fixedHeader: true,
+        });
+    });
+</script>
+
+<script>
+    // Simpan nilai awal saat mulai edit
+    $('#dataTable').on('focus', 'td.editable', function() {
+        originalContent = $(this).text().trim();
+    });
+
+    // Aktifkan editable saat klik
+    $('#dataTable').on('click', 'td.editable', function() {
+        let $td = $(this);
+        if (!$td.is('[contenteditable="true"]')) {
+            $td.attr('contenteditable', 'true').focus();
+        }
+    });
+
+    $('#dataTable').on('blur', 'td.editable', function() {
+        let $td = $(this);
+        $td.attr('contenteditable', 'false');
+
+        const newValue = $td.text().trim();
+        const debounceTimers = {};
+        let originalContent = '';
+
+        // ⛔ Jika tidak ada perubahan, tidak perlu update
+        if (newValue === originalContent) {
+            return;
+        }
+
+        const id = $td.data('id');
+        const field = $td.data('field');
+        const model = $td.data('model');
+        const key = `${model}-${id}-${field}`;
+
+        if (debounceTimers[key]) {
+            clearTimeout(debounceTimers[key]);
+        }
+
+        debounceTimers[key] = setTimeout(() => {
+            $.ajax({
+                url: '{{ route("data.autoUpdate") }}',
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    id: id,
+                    model: model,
+                    field: field,
+                    value: newValue
+                },
+                success: function(res) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: res.message || 'Rekomendasi telah diperbarui.',
+                        timer: 2500,
+                        toast: true,
+                        showConfirmButton: false,
+                        position: 'bottom-end'
+                    });
+                },
+                error: function(xhr) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: xhr.responseJSON?.message || 'Terjadi kesalahan.',
+                        timer: 3000,
+                        toast: true,
+                        showConfirmButton: false,
+                        position: 'bottom-end'
+                    });
+                }
+            });
+        }, 1000);
+    });
+
+    // Tekan Enter untuk simpan cepat
+    $('#dataTable').on('keydown', 'td.editable', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            $(this).blur();
+        }
+    });
+</script>
 @endpush
 
 @endsection
