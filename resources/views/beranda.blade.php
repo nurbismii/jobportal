@@ -107,8 +107,8 @@ $maxStep = count($steps);
                             <div class="icon-wrapper mb-3">
                                 <i class="fa-solid fa-id-card fa-3x text-primary"></i>
                             </div>
-                            <h5 class="fw-bold text-dark">Formulir Biodata</h5>
-                            <p class="text-muted mb-0">Lengkapi data pribadi untuk melanjutkan proses lamaran.</p>
+                            <h5 class="fw-bold text-dark">Upload Berkas Lamaran</h5>
+                            <p class="text-muted mb-0">Lengkapi data pribadi dan berkas untuk melanjutkan proses lamaran.</p>
                         </div>
                     </div>
                 </a>

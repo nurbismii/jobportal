@@ -13,7 +13,7 @@
             <div class="collapse navbar-collapse" id="navbarCollapse">
                 <div class="navbar-nav mx-0 mx-lg-auto">
                     <a href="/" class="nav-item nav-link {{ request()->is('/') ? 'active' : '' }}">Beranda</a>
-                    <a href="{{ route('lowongan-kerja.index') }}" class="nav-item nav-link {{ request()->routeIs('lowongan-kerja.*') ? 'active' : '' }}">Lowongan Kerja</a>
+                    <a href="{{ route('lowongan-kerja.index') }}" class="nav-item nav-link {{ request()->routeIs('lowongan-kerja.*') ? 'active' : '' }}">Daftar Lowongan Kerja</a>
                     <a href="{{ route('pengumuman.index') }}" class="nav-item nav-link {{ request()->routeIs('pengumuman.*') ? 'active' : '' }}">Pengumuman</a>
                     <a href="{{ route('bantuan.index') }}" class="nav-item nav-link {{ request()->routeIs('bantuan.*') ? 'active' : '' }}">Bantuan</a>
 
@@ -57,17 +57,17 @@
 
                     <a href="{{ route('biodata.index') }}"
                         class="nav-item nav-link {{ request()->routeIs('biodata.*') ? 'active' : '' }}">
-                        Formulir Biodata
+                        Upload Berkas
                     </a>
 
                     <a href="{{ route('lowongan-kerja.index') }}"
                         class="nav-item nav-link {{ request()->routeIs('lowongan-kerja.*') ? 'active' : '' }} {{ disableIf(6, $step) }}">
-                        Lowongan Kerja
+                        Daftar Lowongan Kerja
                     </a>
 
                     <a href="{{ route('lamaran.index') }}"
                         class="nav-item nav-link {{ request()->routeIs('lamaran.*') ? 'active' : '' }} {{ disableIf(6, $step) }}">
-                        Lamaran
+                        Riwayat Proses Lamaran
                     </a>
 
                     <a href="{{ route('pengumuman.index') }}"
@@ -90,6 +90,9 @@
                             <i class="fa fa-user me-2 text-primary"></i>
                             Kelola Akun
                         </a>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
                         @else
                         <a href="{{ route('profil.index') }}"
                             class="nav-item nav-link btn btn-light d-flex align-items-center btn-sm">
@@ -133,6 +136,11 @@
                     <i class="fa fa-user me-2 text-primary"></i> Kelola Akun
                 </a>
             </li>
+
+            <li>
+                <hr class="dropdown-divider">
+            </li>
+
             <li>
                 <a class="dropdown-item d-flex align-items-center" href="{{ route('home') }}">
                     <i class="fa fa-desktop me-2 text-primary"></i> Kelola Job Portal
