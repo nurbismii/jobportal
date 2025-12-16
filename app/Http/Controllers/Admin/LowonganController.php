@@ -198,15 +198,23 @@ class LowonganController extends Controller
             return back();
         }
 
-        // Ambil semua user sekaligus berdasarkan list KTP
+        // Ambil semua user dengan no_ktp yang diberikan dan status pelamar yang perlu diperbarui
         $users = \App\Models\User::whereHas('biodata', function ($q) use ($noKtpArray) {
             $q->whereIn('no_ktp', $noKtpArray);
-        })->get();
+        })
+            ->where(function ($q) {
+                $q->whereNull('status_pelamar')
+                    ->orWhereRaw('LOWER(status_pelamar) != ?', ['aktif'])
+                    ->orWhereNull('ket_resign')
+                    ->orWhere('ket_resign', 'NOT LIKE', '%Aktif bekerja%');
+            })
+            ->get();
 
         foreach ($users as $user) {
 
             $noKtp = $user->biodata->no_ktp;
 
+            // Get data karyawan dari HRIS berdasarkan no_ktp
             $hrisEmployee = Employee::where('no_ktp', $noKtp)
                 ->orderByRaw('LEFT(nik, 4) DESC')
                 ->first();
@@ -219,7 +227,7 @@ class LowonganController extends Controller
                     'ket_resign' => $hrisEmployee->alasan_resign,
                 ]);
 
-                // Ambil SP sekaligus
+                // Get data peringatan dari HRIS berdasarkan nik_karyawan
                 $peringatanList = Peringatan::where('nik_karyawan', $hrisEmployee->nik)->get();
 
                 foreach ($peringatanList as $data) {
