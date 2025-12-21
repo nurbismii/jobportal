@@ -22,7 +22,9 @@
                 @csrf
 
                 <div class="mb-3">
-                    <label for="no_ktp" class="form-label">No KTP</label>
+                    <label for="no_ktp" class="form-label">No KTP
+                        <sup class="text-danger">*</sup>
+                    </label>
                     <input type="text" maxlength="16" id="no_ktp" name="no_ktp"
                         class="form-control form-control @error('no_ktp') is-invalid @enderror"
                         value="{{ old('no_ktp') }}" placeholder="16 digit NIK" required>
@@ -33,7 +35,9 @@
 
                 <div class="row g-3 mb-3">
                     <div class="col">
-                        <label for="first_name" class="form-label">Nama Depan</label>
+                        <label for="first_name" class="form-label">Nama Depan
+                            <sup class="text-danger">*</sup>
+                        </label>
                         <input type="text" id="first_name" name="first_name"
                             class="form-control form-control @error('first_name') is-invalid @enderror"
                             value="{{ old('first_name') }}" placeholder="Nama Depan" required>
@@ -42,7 +46,9 @@
                         @enderror
                     </div>
                     <div class="col">
-                        <label for="last_name" class="form-label">Nama Belakang</label>
+                        <label for="last_name" class="form-label">Nama Belakang
+                            <sup class="text-muted">(Opsional)</sup>
+                        </label>
                         <input type="text" id="last_name" name="last_name"
                             class="form-control form-control @error('last_name') is-invalid @enderror"
                             value="{{ old('last_name') }}" placeholder="Nama Belakang" required>
@@ -53,7 +59,9 @@
                 </div>
 
                 <div class="mb-3">
-                    <label for="email" class="form-label">Email</label>
+                    <label for="email" class="form-label">Email
+                        <sup class="text-danger">*</sup>
+                    </label>
                     <input type="email" id="email" name="email"
                         class="form-control form-control @error('email') is-invalid @enderror"
                         value="{{ old('email') }}" placeholder="contoh@email.com" required>
@@ -63,7 +71,9 @@
                 </div>
 
                 <div class="mb-3 position-relative">
-                    <label for="password" class="form-label">Kata Sandi</label>
+                    <label for="password" class="form-label">Kata Sandi
+                        <sub class="text-muted">(Minimal 8 karakter)</sub>
+                    </label>
                     <input type="password" id="password" name="password"
                         class="form-control form-control @error('password') is-invalid @enderror"
                         placeholder="Minimal 8 karakter" required>
@@ -73,7 +83,9 @@
                 </div>
 
                 <div class="mb-3 position-relative">
-                    <label for="password_confirmation" class="form-label">Konfirmasi Kata Sandi</label>
+                    <label for="password_confirmation" class="form-label">Konfirmasi Kata Sandi
+                        <sup class="text-danger">*</sup>
+                    </label>
                     <input type="password" id="password_confirmation" name="password_confirmation"
                         class="form-control form-control" placeholder="Ulangi kata sandi" required>
                 </div>
