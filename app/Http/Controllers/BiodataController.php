@@ -53,6 +53,9 @@ class BiodataController extends Controller
 
         $fileNames = interventionImg($dokumenFields, $biodata, $request);
 
+        $fileNames = $fileNames['files'];
+        $oldFiles  = $fileNames['oldFiles'] ?? [];
+
         $biodata = Biodata::updateOrCreate(
             [
                 'user_id' => auth()->id()
@@ -127,6 +130,13 @@ class BiodataController extends Controller
                 'status_pernyataan' => $syarat_ketentuan->syarat_ketentuan
             ]
         );
+
+        foreach ($oldFiles as $oldFile) {
+            $path = public_path(auth()->user()->no_ktp . '/dokumen/' . $oldFile);
+            if (is_file($path)) {
+                unlink($path);
+            }
+        }
 
         // Check if SIM B II file is available before processing OCR
         if (isset($fileNames['sim_b_2']) && $fileNames['sim_b_2']) {

@@ -50,68 +50,77 @@ if (!function_exists('tanggalIndo')) {
     }
 }
 
-function interventionImg($dokumenFields, $biodata, $request)
+function interventionImg(array $dokumenFields, $biodata, $request)
 {
-    $folderPath = public_path(Auth::user()->no_ktp . '/dokumen');
+    $basePath = public_path(Auth::user()->no_ktp . '/dokumen');
 
-    if (!file_exists($folderPath)) {
-        mkdir($folderPath, 0777, true);
+    if (!is_dir($basePath)) {
+        mkdir($basePath, 0755, true);
     }
 
-    $fileNames = []; // 💡 pastikan ini diinisialisasi
+    $fileNames = [];
+    $oldFiles  = []; // simpan file lama (untuk dihapus belakangan)
 
     foreach ($dokumenFields as $field => $label) {
-        if ($request->hasFile($field)) {
-            if ($biodata && $biodata->{$field}) {
-                $oldFilePath = $folderPath . '/' . $biodata->{$field};
-                if (file_exists($oldFilePath)) {
-                    unlink($oldFilePath);
-                }
-            }
 
-            $file = $request->file($field);
-            $slugName = Str::slug(Auth::user()->name, '_');
-            $timestamp = now()->format('mY');
-            $extension = strtolower($file->getClientOriginalExtension());
-            $fileName = "{$slugName}-{$label}-{$timestamp}.{$extension}";
-            $savePath = $folderPath . '/' . $fileName;
+        // default: pakai file lama
+        $fileNames[$field] = $biodata ? $biodata->{$field} : null;
 
-            if (in_array($extension, ['jpg', 'jpeg', 'png'])) {
-                $image = Image::make($file);
+        if (!$request->hasFile($field)) {
+            continue;
+        }
 
-                if ($image->width() > 1500) {
-                    $image->resize(1500, null, function ($constraint) {
-                        $constraint->aspectRatio();
-                        $constraint->upsize();
-                    });
-                }
+        $file = $request->file($field);
 
-                $quality = 85;
-                do {
-                    $image->encode($extension, $quality);
-                    $sizeKB = strlen((string)$image) / 1024;
-                    $quality -= 5;
-                } while ($sizeKB > 1024 && $quality > 10);
+        if (!$file->isValid()) {
+            continue;
+        }
 
-                $image->save($savePath);
+        // simpan nama file lama untuk dihapus
+        if ($biodata && $biodata->{$field}) {
+            $oldFiles[] = $biodata->{$field};
+        }
+
+        $extension = strtolower($file->getClientOriginalExtension());
+
+        // nama file unik & aman
+        $fileName = Str::uuid() . '_' . $field . '.' . $extension;
+        $savePath = $basePath . '/' . $fileName;
+
+        // ==== IMAGE ====
+        if (in_array($extension, ['jpg', 'jpeg', 'png'])) {
+
+            Image::make($file)
+                ->resize(1500, null, function ($c) {
+                    $c->aspectRatio();
+                    $c->upsize();
+                })
+                ->encode($extension, 80)
+                ->save($savePath);
+
+            $fileNames[$field] = $fileName;
+        }
+
+        // ==== PDF ====
+        elseif ($extension === 'pdf') {
+
+            // max 50MB
+            if ($file->getSize() <= 50 * 1024 * 1024) {
+                $file->move($basePath, $fileName);
                 $fileNames[$field] = $fileName;
-            } elseif ($extension === 'pdf') {
-                $sizeKB = $file->getSize() / 1024;
-                if ($sizeKB <= 51200) {
-                    $file->move($folderPath, $fileName);
-                    $fileNames[$field] = $fileName;
-                } else {
-                    $fileNames[$field] = null;
-                }
-            } else {
-                $fileNames[$field] = null;
             }
-        } else {
-            $fileNames[$field] = $biodata ? $biodata->{$field} : null;
         }
     }
 
-    return $fileNames;
+    /**
+     * ❗ Jangan hapus file lama di sini
+     * Hapus setelah DB sukses (controller / job)
+     */
+
+    return [
+        'files'    => $fileNames,
+        'oldFiles' => $oldFiles
+    ];
 }
 
 if (!function_exists('tanggalIndoHari')) {
