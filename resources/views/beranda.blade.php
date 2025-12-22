@@ -95,7 +95,7 @@ $maxStep = count($steps);
         @else
         <div class="alert alert-success d-flex align-items-center gap-2 mb-4">
             <i class="fa fa-check-circle"></i>
-            <span>Formulir lengkap! Kamu sudah bisa melamar pekerjaan <a href="" class="btn btn-sm btn-success">Lihat lowongan pekerjaan</a></span>
+            <span>Formulir lengkap! Kamu sudah bisa melamar pekerjaan <a href="{{ route('lowongan-kerja.index') }}" class="btn btn-sm btn-success">Lihat lowongan pekerjaan</a></span>
         </div>
         @endif
         <div class="row g-3">
