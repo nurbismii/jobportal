@@ -35,7 +35,7 @@ Route::resource('reset-password', 'App\Http\Controllers\ResetPasswordController'
 Route::get('reset-password-token/{token}', [ResetPasswordController::class, 'resetPassword']);
 
 // User harus login dan sudah verifikasi email untuk akses biodata dan profil
-Route::middleware(['verified.email'])->group(function () {
+Route::middleware(['auth', 'verified.email'])->group(function () {
 
     Route::resource('lamaran', 'App\Http\Controllers\LamaranController');
     Route::resource('profil', 'App\Http\Controllers\ProfilController');
