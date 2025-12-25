@@ -291,124 +291,112 @@
                 <!-- Step Biodata -->
                 <div class="tab-pane fade show active" id="step1">
                     <h6 class="text-primary">Biodata</h6>
+
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label>Nama
-                                <span class="text-danger">*</span>
-                            </label>
+                            <label>Nama <span class="text-danger">*</span></label>
                             <input type="text" name="nama" class="form-control" value="{{ Auth::user()->name }}" readonly>
                         </div>
+
                         <div class="col-md-6 mb-3">
-                            <label>No KTP
-                                <span class="text-danger">*</span>
-                            </label>
+                            <label>No KTP <span class="text-danger">*</span></label>
                             <input type="text" name="no_ktp" class="form-control" value="{{ Auth::user()->no_ktp }}" readonly>
-                        </div>
-                    </div>
-                    <div class="row g-3">
-                        <div class="col-md-6 mb-3">
-                            <label>No Telp
-                                <span class="text-danger">*</span>
-                            </label>
-                            <input type="tel"
-                                name="no_telp"
-                                class="form-control"
-                                value="{{ $biodata->no_telp ?? '' }}"
-                                pattern="^(?:\+62|62|0)[2-9][0-9]{7,11}$"
-                                title="Masukkan nomor telepon Indonesia yang valid (misalnya 08123456789 atau +628123456789)"
-                                required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label>No Kartu Keluarga
-                                <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" name="no_kk" class="form-control" maxlength="16" value="{{ $biodata->no_kk ?? '' }}" required>
-                        </div>
-                    </div>
-                    <div class="row g-3">
-                        <div class="col-md-6 mb-3">
-                            <label for="jenis_kelamin">Jenis Kelamin
-                                <span class="text-danger">*</span>
-                            </label>
-                            <select name="jenis_kelamin" id="jenis_kelamin" class="form-select" required>
-                                @php
-                                $genderOptions = [
-                                'M 男' => 'Laki-laki 男',
-                                'F 女' => 'Perempuan 女'
-                                ];
-                                $selectedGender = $biodata->jenis_kelamin ?? '';
-                                @endphp
-                                <option value="">Pilih jenis kelamin</option>
-                                @foreach($genderOptions as $value => $label)
-                                <option value="{{ $value }}" {{ $selectedGender === $value ? 'selected' : '' }}>{{ $label }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label>NPWP <span class="text-danger">*</span></label>
-                            <input type="text" id="npwp" name="no_npwp" class="form-control" value="{{ $biodata->no_npwp ?? '' }}" required maxlength="20">
                         </div>
                     </div>
 
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label for="agama">Agama
-                                <span class="text-danger">*</span>
-                            </label>
-                            <select name="agama" id="agama" class="form-select" required>
-                                @php
-                                $agamaOptions = [
-                                'ISLAM 伊斯兰教',
-                                'KRISTEN PROTESTAN 基督教新教',
-                                'KRISTEN KATHOLIK 天主教徒',
-                                'BUDHA 佛教',
-                                'HINDU 印度教',
-                                'KHONGHUCU 儒教',
-                                ];
-                                $selectedAgama = $biodata->agama ?? '';
-                                @endphp
-                                <option value="" disabled selected>Pilih agama</option>
-                                @foreach($agamaOptions as $agama)
-                                <option value="{{ $agama }}" {{ $selectedAgama === $agama ? 'selected' : '' }}>{{ $agama }}</option>
+                            <label>No Telp <span class="text-danger">*</span></label>
+                            <input type="tel" name="no_telp"
+                                class="form-control"
+                                value="{{ old('no_telp', $biodata->no_telp ?? '') }}"
+                                pattern="^(?:\+62|62|0)[2-9][0-9]{7,11}$"
+                                required>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label>No Kartu Keluarga <span class="text-danger">*</span></label>
+                            <input type="text" name="no_kk"
+                                class="form-control"
+                                maxlength="16"
+                                value="{{ old('no_kk', $biodata->no_kk ?? '') }}"
+                                required>
+                        </div>
+                    </div>
+
+                    @php
+                    $selectedGender = old('jenis_kelamin', $biodata->jenis_kelamin ?? '');
+                    @endphp
+                    <div class="row g-3">
+                        <div class="col-md-6 mb-3">
+                            <label>Jenis Kelamin <span class="text-danger">*</span></label>
+                            <select name="jenis_kelamin" class="form-select" required>
+                                <option value="">Pilih jenis kelamin</option>
+                                <option value="M 男" {{ $selectedGender == 'M 男' ? 'selected' : '' }}>Laki-laki 男</option>
+                                <option value="F 女" {{ $selectedGender == 'F 女' ? 'selected' : '' }}>Perempuan 女</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label>NPWP <span class="text-danger">*</span></label>
+                            <input type="text" name="no_npwp"
+                                class="form-control"
+                                maxlength="20"
+                                value="{{ old('no_npwp', $biodata->no_npwp ?? '') }}"
+                                required>
+                        </div>
+                    </div>
+
+                    @php
+                    $selectedAgama = old('agama', $biodata->agama ?? '');
+                    $selectedVaksin = old('vaksin', $biodata->vaksin ?? '');
+                    @endphp
+                    <div class="row g-3">
+                        <div class="col-md-6 mb-3">
+                            <label>Agama <span class="text-danger">*</span></label>
+                            <select name="agama" class="form-select" required>
+                                <option value="">Pilih agama</option>
+                                @foreach(['ISLAM 伊斯兰教','KRISTEN PROTESTAN 基督教新教','KRISTEN KATHOLIK 天主教徒','BUDHA 佛教','HINDU 印度教','KHONGHUCU 儒教'] as $agama)
+                                <option value="{{ $agama }}" {{ $selectedAgama == $agama ? 'selected' : '' }}>
+                                    {{ $agama }}
+                                </option>
                                 @endforeach
                             </select>
                         </div>
+
                         <div class="col-md-6 mb-3">
-                            <label for="vaksin">Vaksin
-                                <span class="text-danger">*</span>
-                            </label>
-                            <select name="vaksin" id="vaksin" class="form-select" required>
-                                @php
-                                $vaksinOptions = [
-                                'VAKSIN 1',
-                                'VAKSIN 2',
-                                'VAKSIN 3',
-                                ];
-                                $selectedVaksin = $biodata->vaksin ?? '';
-                                @endphp
-                                <option value="" disabled selected>Pilih Vaksin</option>
-                                @foreach($vaksinOptions as $vaksin)
-                                <option value="{{ $vaksin }}" {{ $selectedVaksin === $vaksin ? 'selected' : '' }}>{{ $vaksin }}</option>
+                            <label>Vaksin <span class="text-danger">*</span></label>
+                            <select name="vaksin" class="form-select" required>
+                                <option value="">Pilih vaksin</option>
+                                @foreach(['VAKSIN 1','VAKSIN 2','VAKSIN 3'] as $vaksin)
+                                <option value="{{ $vaksin }}" {{ $selectedVaksin == $vaksin ? 'selected' : '' }}>
+                                    {{ $vaksin }}
+                                </option>
                                 @endforeach
                             </select>
                         </div>
                     </div>
 
                     <h6 class="text-primary">Alamat KTP</h6>
+
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label>Tempat Lahir
-                                <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" name="tempat_lahir" class="form-control" value="{{ $biodata->tempat_lahir ?? '' }}" required>
+                            <label>Tempat Lahir <span class="text-danger">*</span></label>
+                            <input type="text" name="tempat_lahir"
+                                class="form-control"
+                                value="{{ old('tempat_lahir', $biodata->tempat_lahir ?? '') }}"
+                                required>
                         </div>
+
                         <div class="col-md-6 mb-3">
-                            <label>Tanggal Lahir
-                                <span class="text-danger">*</span>
-                            </label>
-                            <input type="date" name="tanggal_lahir" class="form-control" value="{{ $biodata->tanggal_lahir ?? '' }}" required>
+                            <label>Tanggal Lahir <span class="text-danger">*</span></label>
+                            <input type="date" name="tanggal_lahir"
+                                class="form-control"
+                                value="{{ old('tanggal_lahir', $biodata->tanggal_lahir ?? '') }}"
+                                required>
                         </div>
                     </div>
+
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
                             <label>Provinsi
@@ -425,6 +413,7 @@
                                 @endforeach
                             </select>
                         </div>
+
                         <div class="col-md-6 mb-3">
                             <label>Kabupaten
                                 <span class="text-danger">*</span>
@@ -468,84 +457,83 @@
 
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label for="alamat">Alamat Lengkap
-                                <span class="text-danger">*</span>
-                            </label>
-                            <textarea name="alamat" class="form-control" id="alamat" required>{{ $biodata->alamat ?? '' }}</textarea>
+                            <label>Alamat Lengkap <span class="text-danger">*</span></label>
+                            <textarea name="alamat" class="form-control" required>{{ old('alamat', $biodata->alamat ?? '') }}</textarea>
                         </div>
+
                         <div class="col-md-2 mb-3">
-                            <label>Kode Pos
-                                <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" name="kode_pos" class="form-control" maxlength="5" value="{{ $biodata->kode_pos ?? '' }}" required>
+                            <label>Kode Pos</label>
+                            <input type="text" name="kode_pos" maxlength="5"
+                                class="form-control"
+                                value="{{ old('kode_pos', $biodata->kode_pos ?? '') }}">
                         </div>
+
                         <div class="col-md-2 mb-3">
-                            <label>RT
-                                <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" name="rt" class="form-control" maxlength="3" value="{{ $biodata->rt ?? '' }}" required>
+                            <label>RT</label>
+                            <input type="text" name="rt" maxlength="3"
+                                class="form-control"
+                                value="{{ old('rt', $biodata->rt ?? '') }}">
                         </div>
+
                         <div class="col-md-2 mb-3">
-                            <label>RW
-                                <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" name="rw" class="form-control" maxlength="3" value="{{ $biodata->rw ?? '' }}" required>
+                            <label>RW</label>
+                            <input type="text" name="rw" maxlength="3"
+                                class="form-control"
+                                value="{{ old('rw', $biodata->rw ?? '') }}">
                         </div>
                     </div>
 
-                    <div class="col-md-12 mb-3">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="sesuaiAlamatKtp">
-                            <label for="sesuaiAlamatKtp" class="form-check-label">Alamat KTP sesuai dengan domisili</label>
-                        </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="sesuaiAlamatKtp">
+                        <label class="form-check-label">Alamat KTP sesuai dengan domisili</label>
                     </div>
 
-                    <div class="col-md-6 mb-3" id="alamatDomisiliField" style="display: none;">
-                        <label for="alamat">Alamat Domisili <span class="text-danger">*</span></label>
-                        <textarea name="alamat_domisili" class="form-control" id="alamat_domisili">{{ $biodata->alamat_domisili ?? '' }}</textarea>
+                    <div id="alamatDomisiliField" style="display:none">
+                        <label>Alamat Domisili</label>
+                        <textarea name="alamat_domisili" class="form-control">
+                        {{ old('alamat_domisili', $biodata->alamat_domisili ?? '') }}
+                        </textarea>
                     </div>
 
-                    <h6 class="text-primary">Lain-lain</h6>
+                    <h6 class="text-primary mt-3">Lain-lain</h6>
+
+                    @php
+                    $selectedGolongan = old('golongan_darah', $biodata->golongan_darah ?? '');
+                    @endphp
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label>Hobi
-                                <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" name="hobi" class="form-control" value="{{ $biodata->hobi ?? '' }}" required>
+                            <label>Hobi</label>
+                            <input type="text" name="hobi"
+                                class="form-control"
+                                value="{{ old('hobi', $biodata->hobi ?? '') }}">
                         </div>
+
                         <div class="col-md-6 mb-3">
-                            <label>Golongan Darah
-                                <span class="text-danger">*</span>
-                            </label>
-                            <select name="golongan_darah" id="" class="form-select" required>
-                                @php
-                                $golonganOptions = ['A 型', 'B 型', 'O 型', 'AB 型'];
-                                $selectedGolongan = $biodata->golongan_darah ?? '';
-                                @endphp
-                                <option value="">Pilih golongan darah</option>
-                                @if($selectedGolongan && in_array($selectedGolongan, $golonganOptions))
-                                <option value="{{ $selectedGolongan }}" selected>{{ $selectedGolongan }}</option>
-                                @endif
-                                @foreach($golonganOptions as $golongan)
-                                @if($golongan !== $selectedGolongan)
-                                <option value="{{ $golongan }}">{{ $golongan }}</option>
-                                @endif
+                            <label>Golongan Darah</label>
+                            <select name="golongan_darah" class="form-select">
+                                <option value="">Pilih</option>
+                                @foreach(['A 型','B 型','O 型','AB 型'] as $gol)
+                                <option value="{{ $gol }}" {{ $selectedGolongan == $gol ? 'selected' : '' }}>
+                                    {{ $gol }}
+                                </option>
                                 @endforeach
                             </select>
                         </div>
                     </div>
+
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label>Tinggi badan<sup>(cm)</sup>
-                                <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" name="tinggi_badan" maxlength="3" value="{{ $biodata->tinggi_badan ?? '' }}" class="form-control" required>
+                            <label>Tinggi Badan (cm)</label>
+                            <input type="text" name="tinggi_badan"
+                                class="form-control"
+                                value="{{ old('tinggi_badan', $biodata->tinggi_badan ?? '') }}">
                         </div>
+
                         <div class="col-md-6 mb-3">
-                            <label>Berat badan<sup>(kg)</sup>
-                                <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" name="berat_badan" maxlength="3" value="{{ $biodata->berat_badan ?? '' }}" class="form-control" required>
+                            <label>Berat Badan (kg)</label>
+                            <input type="text" name="berat_badan"
+                                class="form-control"
+                                value="{{ old('berat_badan', $biodata->berat_badan ?? '') }}">
                         </div>
                     </div>
                 </div>
@@ -554,9 +542,10 @@
                 <div class="tab-pane fade" id="step2">
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label for="pendidikan_terakhir" class="form-label">Pendidikan Terakhir
-                                <span class="text-danger">*</span>
+                            <label class="form-label">
+                                Pendidikan Terakhir <span class="text-danger">*</span>
                             </label>
+
                             @php
                             $pendidikanOptions = [
                             'SD 小学' => 'SD 小学',
@@ -568,165 +557,239 @@
                             'S1 本科' => 'S1 本科',
                             'S2 研究生' => 'S2 研究生',
                             ];
-                            $selectedPendidikan = $biodata->pendidikan_terakhir ?? '';
+
+                            $selectedPendidikan = old(
+                            'pendidikan_terakhir',
+                            $biodata->pendidikan_terakhir ?? ''
+                            );
                             @endphp
+
                             <select class="form-select" name="pendidikan_terakhir" required>
                                 <option value="">Pilih pendidikan terakhir</option>
                                 @foreach($pendidikanOptions as $value => $label)
-                                <option value="{{ $value }}" {{ $selectedPendidikan === $value ? 'selected' : '' }}>{{ $label }}</option>
+                                <option value="{{ $value }}"
+                                    {{ $selectedPendidikan === $value ? 'selected' : '' }}>
+                                    {{ $label }}
+                                </option>
                                 @endforeach
                             </select>
                         </div>
+
                         <div class="col-md-6 mb-3">
-                            <label for="nama_instansi" class="form-label">Nama Sekolah/Kampus
-                                <span class="text-danger">*</span>
+                            <label class="form-label">
+                                Nama Sekolah / Kampus <span class="text-danger">*</span>
                             </label>
-                            <input type="text" class="form-control" name="nama_instansi" value="{{ $biodata->nama_instansi ?? '' }}" required>
+                            <input type="text"
+                                class="form-control"
+                                name="nama_instansi"
+                                value="{{ old('nama_instansi', $biodata->nama_instansi ?? '') }}"
+                                required>
                         </div>
                     </div>
+
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label for="jurusan" class="form-label">Jurusan
-                                <span class="text-danger">*</span>
+                            <label class="form-label">
+                                Jurusan <span class="text-danger">*</span>
                             </label>
-                            <input type="text" class="form-control" name="jurusan" value="{{ $biodata->jurusan ?? '' }}" required>
+                            <input type="text"
+                                class="form-control"
+                                name="jurusan"
+                                value="{{ old('jurusan', $biodata->jurusan ?? '') }}"
+                                required>
                         </div>
+
                         <div class="col-md-6 mb-3">
-                            <label for="nilai_ipk" class="form-label">Nilai Akhir
-                                <span class="text-danger">*</span>
+                            <label class="form-label">
+                                Nilai Akhir / IPK <span class="text-danger">*</span>
                             </label>
-                            <input type="text" class="form-control" name="nilai_ipk" id="nilai_ipk" value="{{ $biodata->nilai_ipk ?? '' }}" required>
+                            <input type="text"
+                                class="form-control"
+                                name="nilai_ipk"
+                                id="nilai_ipk"
+                                value="{{ old('nilai_ipk', $biodata->nilai_ipk ?? '') }}"
+                                required>
                         </div>
                     </div>
+
                     <div class="row g-3">
-                        <div class="row g-3">
-                            <div class="col-md-6 mb-3">
-                                <label>Tahun lulus
-                                    <span class="text-danger">*</span>
-                                </label>
-                                <input type="date" name="tahun_lulus" class="form-control" value="{{ $biodata->tahun_lulus ?? '' }}" required>
-                            </div>
+                        <div class="col-md-6 mb-3">
+                            <label>
+                                Tahun Lulus <span class="text-danger">*</span>
+                            </label>
+                            <input type="date"
+                                name="tahun_lulus"
+                                class="form-control"
+                                value="{{ old('tahun_lulus', $biodata->tahun_lulus ?? '') }}"
+                                required>
                         </div>
                     </div>
 
                     <div class="col-md-12 mb-3">
                         <label>Prestasi</label>
-                        <textarea type="text" name="prestasi" rows="5" class="form-control">{{ $biodata->prestasi ?? '' }}</textarea>
+                        <textarea
+                            name="prestasi"
+                            rows="5"
+                            class="form-control">{{ old('prestasi', $biodata->prestasi ?? '') }}</textarea>
                     </div>
                 </div>
 
                 <!-- Step Keluarga -->
                 <div class="tab-pane fade" id="step3">
-                    <h6 class="text-primary">Nama orang tua</h6>
+                    <h6 class="text-primary">Nama Orang Tua</h6>
+
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label>Nama ibu
-                                <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" name="nama_ibu" class="form-control" value="{{ $biodata->nama_ibu ?? '' }}" required>
+                            <label>Nama Ibu <span class="text-danger">*</span></label>
+                            <input type="text"
+                                name="nama_ibu"
+                                class="form-control"
+                                value="{{ old('nama_ibu', $biodata->nama_ibu ?? '') }}"
+                                required>
                         </div>
+
                         <div class="col-md-6 mb-3">
-                            <label>Nama ayah
-                                <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" name="nama_ayah" class="form-control" value="{{ $biodata->nama_ayah ?? '' }}" required>
+                            <label>Nama Ayah <span class="text-danger">*</span></label>
+                            <input type="text"
+                                name="nama_ayah"
+                                class="form-control"
+                                value="{{ old('nama_ayah', $biodata->nama_ayah ?? '') }}"
+                                required>
                         </div>
                     </div>
-                    <h6 class="text-primary">Status pernikahan</h6>
+
+                    <h6 class="text-primary">Status Pernikahan</h6>
+
+                    @php
+                    $statusOptions = [
+                    'Belum Kawin' => 'Belum Kawin',
+                    'Kawin' => 'Kawin',
+                    'Cerai Hidup' => 'Cerai Hidup',
+                    'Cerai Mati' => 'Cerai Mati'
+                    ];
+
+                    $selectedStatus = old(
+                    'status_pernikahan',
+                    $biodata->status_pernikahan ?? ''
+                    );
+                    @endphp
+
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label for="status_pernikahan">Status pernikahan
-                                <span class="text-danger">*</span>
-                            </label>
-                            @php
-                            $statusOptions = [
-                            'Belum Kawin' => 'Belum Kawin',
-                            'Kawin' => 'Kawin',
-                            'Cerai Hidup' => 'Cerai Hidup',
-                            'Cerai Mati' => 'Cerai Mati'
-                            ];
-                            $selectedStatus = $biodata->status_pernikahan ?? '';
-                            @endphp
-                            <select name="status_pernikahan" class="form-select" id="status_pernikahan" required>
+                            <label>Status Pernikahan <span class="text-danger">*</span></label>
+                            <select name="status_pernikahan"
+                                id="status_pernikahan"
+                                class="form-select"
+                                required>
+
                                 <option value="">Pilih status pernikahan</option>
-                                @if($selectedStatus && !array_key_exists($selectedStatus, $statusOptions))
-                                <option value="{{ $selectedStatus }}" selected>{{ $selectedStatus }}</option>
-                                @endif
+
                                 @foreach($statusOptions as $value => $label)
-                                <option value="{{ $value }}" {{ $selectedStatus === $value ? 'selected' : '' }}>{{ $label }}</option>
+                                <option value="{{ $value }}"
+                                    {{ $selectedStatus === $value ? 'selected' : '' }}>
+                                    {{ $label }}
+                                </option>
                                 @endforeach
                             </select>
                         </div>
+
                         <div class="col-md-6 mb-3">
-                            <label for="tanggal_nikah">Tanggal pernikahan</label>
-                            <input type="date" name="tanggal_nikah" id="tanggal_nikah" value="{{ $biodata->tanggal_nikah ?? '' }}" class="form-control">
+                            <label>Tanggal Pernikahan</label>
+                            <input type="date"
+                                name="tanggal_nikah"
+                                id="tanggal_nikah"
+                                class="form-control"
+                                value="{{ old('tanggal_nikah', $biodata->tanggal_nikah ?? '') }}">
                         </div>
                     </div>
+
                     <div class="col-md-6 mb-3">
-                        <label>Nama Suami/Istri</label>
-                        <input type="text" name="nama_pasangan" class="form-control" value="{{ $biodata->nama_pasangan ?? '' }}">
+                        <label>Nama Suami / Istri</label>
+                        <input type="text"
+                            name="nama_pasangan"
+                            class="form-control"
+                            value="{{ old('nama_pasangan', $biodata->nama_pasangan ?? '') }}">
                     </div>
+
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label>Jumlah anak</label>
-                            <input type="number" name="jumlah_anak" maxlength="1" max="3" class="form-control" value="{{ $biodata->jumlah_anak ?? '' }}">
+                            <label>Jumlah Anak</label>
+                            <input type="number"
+                                name="jumlah_anak"
+                                class="form-control"
+                                max="3"
+                                value="{{ old('jumlah_anak', $biodata->jumlah_anak ?? '') }}">
                         </div>
                     </div>
+
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label>Nama anak ke-1</label>
-                            <input type="text" name="nama_anak_1" class="form-control" id="" value="{{ $biodata->nama_anak_1 ?? '' }}">
+                            <label>Nama Anak ke-1</label>
+                            <input type="text"
+                                name="nama_anak_1"
+                                class="form-control"
+                                value="{{ old('nama_anak_1', $biodata->nama_anak_1 ?? '') }}">
                         </div>
                     </div>
+
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label>Nama anak ke-2</label>
-                            <input type="text" name="nama_anak_2" class="form-control" id="" value="{{ $biodata->nama_anak_2 ?? '' }}">
+                            <label>Nama Anak ke-2</label>
+                            <input type="text"
+                                name="nama_anak_2"
+                                class="form-control"
+                                value="{{ old('nama_anak_2', $biodata->nama_anak_2 ?? '') }}">
                         </div>
                     </div>
+
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label>Nama anak ke-3</label>
-                            <input type="text" name="nama_anak_3" class="form-control" id="" value="{{ $biodata->nama_anak_3 ?? '' }}">
+                            <label>Nama Anak ke-3</label>
+                            <input type="text"
+                                name="nama_anak_3"
+                                class="form-control"
+                                value="{{ old('nama_anak_3', $biodata->nama_anak_3 ?? '') }}">
                         </div>
                     </div>
                 </div>
 
                 <!-- Step Kontak Darurat -->
                 <div class="tab-pane fade" id="step4">
+
                     <div class="col-md-6 mb-3">
-                        <label>Nama kontak darurat
-                            <span class="text-danger">*</span>
-                        </label>
-                        <input type="text" name="nama_kontak_darurat" class="form-control" value="{{ $biodata->nama_kontak_darurat ?? '' }}" required>
+                        <label>Nama kontak darurat <span class="text-danger">*</span></label>
+                        <input type="text"
+                            name="nama_kontak_darurat"
+                            class="form-control"
+                            value="{{ old('nama_kontak_darurat', $biodata->nama_kontak_darurat ?? '') }}"
+                            required>
                     </div>
+
                     <div class="col-md-6 mb-3">
-                        <label>No telepon
-                            <span class="text-danger">*</span>
-                        </label>
+                        <label>No telepon <span class="text-danger">*</span></label>
                         <input type="tel"
                             name="no_telp_darurat"
                             class="form-control"
-                            value="{{ $biodata->no_telepon_darurat ?? '' }}"
+                            value="{{ old('no_telp_darurat', $biodata->no_telepon_darurat ?? '') }}"
                             pattern="^(?:\+62|62|0)[2-9][0-9]{7,11}$"
                             title="Masukkan nomor telepon Indonesia yang valid (misalnya 08123456789 atau +628123456789)"
                             required>
                     </div>
+
                     <div class="col-md-6 mb-3">
-                        <label>Status hubungan
-                            <span class="text-danger">*</span>
-                        </label>
-                        <select name="status_hubungan" id="status_hubungan" class="form-select" required>
-                            @if($biodata)
-                            <option value="{{ $biodata->status_hubungan }}">{{ $biodata->status_hubungan }}</option>
-                            @else
+                        <label>Status hubungan <span class="text-danger">*</span></label>
+                        <select name="status_hubungan" class="form-select" required>
                             <option value="">Pilih status hubungan</option>
-                            @endif
-                            <option value="Orang Tua">Orang Tua</option>
-                            <option value="Pasangan">Pasangan</option>
-                            <option value="Saudara">Saudara</option>
-                            <option value="Sepupu">Sepupu</option>
-                            <option value="Teman Dekat">Teman</option>
+
+                            @php
+                            $statusHubungan = old('status_hubungan', $biodata->status_hubungan ?? '');
+                            @endphp
+
+                            <option value="Orang Tua" {{ $statusHubungan == 'Orang Tua' ? 'selected' : '' }}>Orang Tua</option>
+                            <option value="Pasangan" {{ $statusHubungan == 'Pasangan' ? 'selected' : '' }}>Pasangan</option>
+                            <option value="Saudara" {{ $statusHubungan == 'Saudara' ? 'selected' : '' }}>Saudara</option>
+                            <option value="Sepupu" {{ $statusHubungan == 'Sepupu' ? 'selected' : '' }}>Sepupu</option>
+                            <option value="Teman Dekat" {{ $statusHubungan == 'Teman Dekat' ? 'selected' : '' }}>Teman</option>
                         </select>
                     </div>
                 </div>
@@ -1667,10 +1730,15 @@
     }
 
     nextBtn.addEventListener('click', () => {
-        if (validateStep(currentStep)) {
-            currentStep++;
-            showStep(currentStep);
+        if (!validateStep(currentStep)) return;
+        // JIKA DARI STEP 4 (index 3) KE STEP 5
+        // MAKA SIMPAN DULU VIA AJAX
+        if (currentStep === 3) {
+            saveStep1to4Ajax();
+            return;
         }
+        currentStep++;
+        showStep(currentStep);
     });
 
     prevBtn.addEventListener('click', () => {
@@ -1760,6 +1828,38 @@
 
         e.target.value = formatted;
     });
+
+    function saveStep1to4Ajax() {
+
+        nextBtn.disabled = true;
+        nextBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Menyimpan...';
+
+        let formData = new FormData(document.getElementById('formWizard'));
+
+        fetch("{{ route('biodata.storeStep1to4') }}", {
+                method: "POST",
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: formData
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (res.status) {
+                    currentStep++;
+                    showStep(currentStep);
+                } else {
+                    alert(res.message || 'Gagal menyimpan data');
+                }
+            })
+            .catch(() => {
+                alert('Terjadi kesalahan server');
+            })
+            .finally(() => {
+                nextBtn.disabled = false;
+                nextBtn.innerHTML = 'Selanjutnya';
+            });
+    }
 </script>
 
 <script>

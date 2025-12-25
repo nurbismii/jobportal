@@ -28,8 +28,10 @@
     <!-- Template Stylesheet -->
     <link href="{{ asset('user/css/style.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    
+
     <link rel="icon" type="image/x-icon" href="{{ asset('img/logo-title.png') }}">
+
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     @stack('styles')
 </head>
 

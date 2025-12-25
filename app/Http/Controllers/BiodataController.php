@@ -63,56 +63,6 @@ class BiodataController extends Controller
                     'user_id' => auth()->id()
                 ],
                 [
-                    // Biodata Pribadi
-                    'user_id' => auth()->id(),
-                    'no_ktp' => $request->no_ktp,
-                    'no_telp' => $request->no_telp,
-                    'no_kk' => $request->no_kk,
-                    'no_npwp' => $request->no_npwp,
-                    'jenis_kelamin' => $request->jenis_kelamin,
-                    'tempat_lahir' => $request->tempat_lahir,
-                    'tanggal_lahir' => $request->tanggal_lahir,
-                    'agama' => $request->agama,
-                    'vaksin' => $request->vaksin,
-                    'provinsi' => $request->provinsi,
-                    'kabupaten' => $request->kabupaten,
-                    'kecamatan' => $request->kecamatan,
-                    'kelurahan' => $request->kelurahan,
-                    'alamat' => $request->alamat,
-                    'alamat_domisili' => $request->alamat_domisili,
-                    'kode_pos' => $request->kode_pos,
-                    'rt' => $request->rt,
-                    'rw' => $request->rw,
-                    'hobi' => $request->hobi,
-                    'golongan_darah' => $request->golongan_darah,
-                    'tinggi_badan' => $request->tinggi_badan,
-                    'berat_badan' => $request->berat_badan,
-
-                    // Pendidikan
-                    'pendidikan_terakhir' => $request->pendidikan_terakhir,
-                    'nama_instansi' => ucwords($request->nama_instansi),
-                    'jurusan' => ucwords($request->jurusan),
-                    'nilai_ipk' => $request->nilai_ipk,
-                    'tahun_masuk' => $request->tahun_masuk,
-                    'tahun_lulus' => $request->tahun_lulus,
-                    'prestasi' => $request->prestasi,
-
-                    // Keluarga
-                    'nama_ayah' => ucwords($request->nama_ayah),
-                    'nama_ibu' => ucwords($request->nama_ibu),
-                    'status_pernikahan' => $request->status_pernikahan,
-                    'tanggal_nikah' => $request->tanggal_nikah,
-                    'nama_pasangan' => ucwords($request->nama_pasangan),
-                    'jumlah_anak' => $request->jumlah_anak,
-                    'nama_anak_1' => $request->nama_anak_1,
-                    'nama_anak_2' => $request->nama_anak_2,
-                    'nama_anak_3' => $request->nama_anak_3,
-
-                    // Kontak darurat
-                    'nama_kontak_darurat' => ucwords($request->nama_kontak_darurat),
-                    'no_telepon_darurat' => $request->no_telp_darurat,
-                    'status_hubungan' => $request->status_hubungan,
-
                     // Dokumen (diambil dari array fileNames)
                     'cv' => $fileNames['cv'],
                     'pas_foto' => $fileNames['pas_foto'],
@@ -146,13 +96,83 @@ class BiodataController extends Controller
                 extractSimB2OnlyOCR($biodata);
             }
 
-            Alert::success('success', 'Biodata sudah diubah. Silakan pilih lowongan dan kirim lamaran');
+            Alert::success('success', 'Biodata sudah diperbarui, silakan pilih lowongan dan kirim lamaran');
             return redirect()->to(route('lowongan-kerja.index'));
         } catch (\Exception $e) {
             Alert::error('Error', 'Terjadi kesalahan, coba beberapa saat lagi');
             Log::info('BiodataController Store Error: ' . $e->getMessage());
             return redirect()->back()->withInput();
         }
+    }
+
+    public function storeStep1to4(Request $request)
+    {
+        $syarat_ketentuan = SyaratKetentuan::where('id', 1)->first();
+
+        Biodata::updateOrCreate(
+            [
+                'user_id' => auth()->id()
+            ],
+            [
+                // Biodata Pribadi
+                'user_id' => auth()->id(),
+                'no_ktp' => $request->no_ktp,
+                'no_telp' => $request->no_telp,
+                'no_kk' => $request->no_kk,
+                'no_npwp' => $request->no_npwp,
+                'jenis_kelamin' => $request->jenis_kelamin,
+                'tempat_lahir' => $request->tempat_lahir,
+                'tanggal_lahir' => $request->tanggal_lahir,
+                'agama' => $request->agama,
+                'vaksin' => $request->vaksin,
+                'provinsi' => $request->provinsi,
+                'kabupaten' => $request->kabupaten,
+                'kecamatan' => $request->kecamatan,
+                'kelurahan' => $request->kelurahan,
+                'alamat' => $request->alamat,
+                'alamat_domisili' => $request->alamat_domisili,
+                'kode_pos' => $request->kode_pos,
+                'rt' => $request->rt,
+                'rw' => $request->rw,
+                'hobi' => $request->hobi,
+                'golongan_darah' => $request->golongan_darah,
+                'tinggi_badan' => $request->tinggi_badan,
+                'berat_badan' => $request->berat_badan,
+
+                // Pendidikan
+                'pendidikan_terakhir' => $request->pendidikan_terakhir,
+                'nama_instansi' => ucwords($request->nama_instansi),
+                'jurusan' => ucwords($request->jurusan),
+                'nilai_ipk' => $request->nilai_ipk,
+                'tahun_masuk' => $request->tahun_masuk,
+                'tahun_lulus' => $request->tahun_lulus,
+                'prestasi' => $request->prestasi,
+
+                // Keluarga
+                'nama_ayah' => ucwords($request->nama_ayah),
+                'nama_ibu' => ucwords($request->nama_ibu),
+                'status_pernikahan' => $request->status_pernikahan,
+                'tanggal_nikah' => $request->tanggal_nikah,
+                'nama_pasangan' => ucwords($request->nama_pasangan),
+                'jumlah_anak' => $request->jumlah_anak,
+                'nama_anak_1' => $request->nama_anak_1,
+                'nama_anak_2' => $request->nama_anak_2,
+                'nama_anak_3' => $request->nama_anak_3,
+
+                // Kontak darurat
+                'nama_kontak_darurat' => ucwords($request->nama_kontak_darurat),
+                'no_telepon_darurat' => $request->no_telp_darurat,
+                'status_hubungan' => $request->status_hubungan,
+
+                // Tambahan
+                'status_pernyataan' => $syarat_ketentuan->syarat_ketentuan
+            ]
+        );
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Data kontak darurat tersimpan'
+        ]);
     }
 
     public function deleteFile($field)
