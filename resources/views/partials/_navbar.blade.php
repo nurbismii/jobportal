@@ -75,9 +75,9 @@
                         Pengumuman
                     </a>
 
-                    <a href="{{ route('pengumuman.index') }}"
-                        class="nav-item nav-link {{ request()->routeIs('pengumuman.*') ? 'active' : '' }}">
-                        Panduan Melamar
+                    <a href="{{ route('bantuan.index') }}"
+                        class="nav-item nav-link {{ request()->routeIs('bantuan.*') ? 'active' : '' }}">
+                        Bantuan
                     </a>
 
                     {{-- 🔥 MENU USER VERSI MOBILE --}}

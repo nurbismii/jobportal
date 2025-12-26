@@ -99,6 +99,31 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingSix">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSix" aria-expanded="false" aria-controls="collapseSix">
+                                    Siapa yang dapat dihubungi jika mengalami kendala teknis pada saat pendaftaran?
+                                </button>
+                            </h2>
+                            <div id="collapseSix" class="accordion-collapse collapse" aria-labelledby="headingSix" data-bs-parent="#accordionExample">
+                                <div class="accordion-body">
+                                    Apabila Anda mengalami kendala teknis selama proses pendaftaran, silakan menghubungi tim support kami melalui email
+                                    <a href="mailto:vdnirekrutmen88@gmail.com">vdnirekrutmen88@gmail.com</a>.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingSeven">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSeven" aria-expanded="false" aria-controls="collapseSeven">
+                                    Apakah saya dapat melamar untuk lebih dari satu posisi pekerjaan secara bersamaan?
+                                </button>
+                            </h2>
+                            <div id="collapseSeven" class="accordion-collapse collapse" aria-labelledby="headingSeven" data-bs-parent="#accordionExample">
+                                <div class="accordion-body">
+                                    Tidak bisa melakukan pelamaran untuk lebih dari satu posisi, tunggu sampai proses pelamaran anda selesai untuk posisi yang sedang dilamar sebelum mengajukan lamaran untuk posisi lainnya.
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
