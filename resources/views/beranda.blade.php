@@ -439,8 +439,8 @@ $maxStep = count($steps);
                 <div class="col-xl-6 wow fadeInLeft" data-wow-delay="0.2s">
                     <div class="h-100">
                         <div class="mb-5">
-                            <h4 class="text-primary">Beberapa Pertanyaan yang Sering Diajukan</h4>
-                            <h3 class="display-4 mb-0">Pertanyaan Umum yang Sering Diajukan</h3>
+                            <h4 class="text-primary">Bantuan</h4>
+                            <h1 class="display-4 mb-0">Pertanyaan umum yang sering diajukan</h1>
                         </div>
                         <div class="accordion" id="accordionExample">
                             <div class="accordion-item">
@@ -518,6 +518,31 @@ $maxStep = count($steps);
                                 <div id="collapseFive" class="accordion-collapse collapse" aria-labelledby="headingFive" data-bs-parent="#accordionExample">
                                     <div class="accordion-body">
                                         Waktu dan pengumuman seleksi setiap tahapan berbeda. Pemberitahuan lebih lanjut terkait hal ini akan disampaikan langsung kepada Peserta yang dinyatakan lolos di setiap tahapannya melalui sarana komunikasi tercepat.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingSix">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSix" aria-expanded="false" aria-controls="collapseSix">
+                                        Siapa yang dapat dihubungi jika mengalami kendala teknis pada saat pendaftaran?
+                                    </button>
+                                </h2>
+                                <div id="collapseSix" class="accordion-collapse collapse" aria-labelledby="headingSix" data-bs-parent="#accordionExample">
+                                    <div class="accordion-body">
+                                        Apabila Anda mengalami kendala teknis selama proses pendaftaran, silakan menghubungi tim support kami melalui email
+                                        <a href="mailto:vdnirekrutmen88@gmail.com">vdnirekrutmen88@gmail.com</a>.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingSeven">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSeven" aria-expanded="false" aria-controls="collapseSeven">
+                                        Apakah saya dapat melamar untuk lebih dari satu posisi pekerjaan secara bersamaan?
+                                    </button>
+                                </h2>
+                                <div id="collapseSeven" class="accordion-collapse collapse" aria-labelledby="headingSeven" data-bs-parent="#accordionExample">
+                                    <div class="accordion-body">
+                                        Tidak bisa melakukan pelamaran untuk lebih dari satu posisi, tunggu sampai proses pelamaran anda selesai untuk posisi yang sedang dilamar sebelum mengajukan lamaran untuk posisi lainnya.
                                     </div>
                                 </div>
                             </div>
