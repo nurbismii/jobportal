@@ -462,24 +462,24 @@
                         </div>
 
                         <div class="col-md-2 mb-3">
-                            <label>Kode Pos</label>
+                            <label>Kode Pos <span class="text-danger">*</span></label>
                             <input type="text" name="kode_pos" maxlength="5"
                                 class="form-control"
-                                value="{{ old('kode_pos', $biodata->kode_pos ?? '') }}">
+                                value="{{ old('kode_pos', $biodata->kode_pos ?? '') }}" required>
                         </div>
 
                         <div class="col-md-2 mb-3">
-                            <label>RT</label>
+                            <label>RT <span class="text-danger">*</span></label>
                             <input type="text" name="rt" maxlength="3"
                                 class="form-control"
-                                value="{{ old('rt', $biodata->rt ?? '') }}">
+                                value="{{ old('rt', $biodata->rt ?? '') }}" required>
                         </div>
 
                         <div class="col-md-2 mb-3">
-                            <label>RW</label>
+                            <label>RW <span class="text-danger">*</span></label>
                             <input type="text" name="rw" maxlength="3"
                                 class="form-control"
-                                value="{{ old('rw', $biodata->rw ?? '') }}">
+                                value="{{ old('rw', $biodata->rw ?? '') }}" required>
                         </div>
                     </div>
 
@@ -502,15 +502,15 @@
                     @endphp
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label>Hobi</label>
+                            <label>Hobi <span class="text-danger">*</span> </label>
                             <input type="text" name="hobi"
                                 class="form-control"
-                                value="{{ old('hobi', $biodata->hobi ?? '') }}">
+                                value="{{ old('hobi', $biodata->hobi ?? '') }}" required>
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label>Golongan Darah</label>
-                            <select name="golongan_darah" class="form-select">
+                            <label>Golongan Darah <span class="text-danger">*</span> </label>
+                            <select name="golongan_darah" class="form-select" required>
                                 <option value="">Pilih</option>
                                 @foreach(['A 型','B 型','O 型','AB 型'] as $gol)
                                 <option value="{{ $gol }}" {{ $selectedGolongan == $gol ? 'selected' : '' }}>
@@ -523,17 +523,19 @@
 
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label>Tinggi Badan (cm)</label>
-                            <input type="text" name="tinggi_badan"
+                            <label>Tinggi Badan (cm) <span class="text-danger">*</span> </label>
+                            <input type="number" name="tinggi_badan" maxlength="3"
                                 class="form-control"
-                                value="{{ old('tinggi_badan', $biodata->tinggi_badan ?? '') }}">
+                                value="{{ old('tinggi_badan', $biodata->tinggi_badan ?? '') }}"
+                                min="0" max="999" required>
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label>Berat Badan (kg)</label>
-                            <input type="text" name="berat_badan"
+                            <label>Berat Badan (kg) <span class="text-danger">*</span></label>
+                            <input type="number" name="berat_badan" maxlength="3"
                                 class="form-control"
-                                value="{{ old('berat_badan', $biodata->berat_badan ?? '') }}">
+                                value="{{ old('berat_badan', $biodata->berat_badan ?? '') }}"
+                                min="0" max="999" required>
                         </div>
                     </div>
                 </div>
