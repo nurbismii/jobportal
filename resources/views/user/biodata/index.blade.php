@@ -414,6 +414,9 @@
                                 <option value="{{ $item->id }}">{{ $item->provinsi }}</option>
                                 @endforeach
                             </select>
+                            @error('provinsi')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="col-md-6 mb-3">
@@ -427,6 +430,9 @@
                                 <option value="" disabled selected>Pilih kabupaten</option>
                                 @endif
                             </select>
+                            @error('kabupaten')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
                     </div>
 
@@ -442,7 +448,11 @@
                                 <option value="" disabled selected>Pilih kecamatan</option>
                                 @endif
                             </select>
+                            @error('kecamatan')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
+
                         <div class="col-md-6 mb-3">
                             <label>Kelurahan/Desa
                                 <span class="text-danger">*</span>
@@ -454,6 +464,9 @@
                                 <option value="" disabled selected>Pilih kelurahan</option>
                                 @endif
                             </select>
+                            @error('kelurahan')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
                     </div>
 

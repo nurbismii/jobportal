@@ -109,6 +109,26 @@ class BiodataController extends Controller
     {
         $syarat_ketentuan = SyaratKetentuan::where('id', 1)->first();
 
+        $validatedData = $request->validate(
+            [
+                'provinsi' => 'required|numeric',
+                'kabupaten' => 'required|numeric',
+                'kecamatan' => 'required|numeric',
+                'kelurahan' => 'required|numeric',
+            ],
+            [
+                'provinsi.required' => 'Provinsi wajib diisi.',
+                'kabupaten.required' => 'Kabupaten/Kota wajib diisi.',
+                'kecamatan.required' => 'Kecamatan wajib diisi.',
+                'kelurahan.required' => 'Kelurahan wajib diisi.',
+
+                'provinsi.numeric' => 'Provinsi tidak valid.',
+                'kabupaten.numeric' => 'Kabupaten/Kota tidak valid.',
+                'kecamatan.numeric' => 'Kecamatan tidak valid.',
+                'kelurahan.numeric' => 'Kelurahan tidak valid.',
+            ]
+        );
+
         Biodata::updateOrCreate(
             [
                 'user_id' => auth()->id()
@@ -125,10 +145,10 @@ class BiodataController extends Controller
                 'tanggal_lahir' => $request->tanggal_lahir,
                 'agama' => $request->agama,
                 'vaksin' => $request->vaksin,
-                'provinsi' => $request->provinsi,
-                'kabupaten' => $request->kabupaten,
-                'kecamatan' => $request->kecamatan,
-                'kelurahan' => $request->kelurahan,
+                'provinsi' => $validatedData['provinsi'],
+                'kabupaten' => $validatedData['kabupaten'],
+                'kecamatan' => $validatedData['kecamatan'],
+                'kelurahan' => $validatedData['kelurahan'],
                 'alamat' => $request->alamat,
                 'alamat_domisili' => $request->alamat_domisili,
                 'kode_pos' => $request->kode_pos,
