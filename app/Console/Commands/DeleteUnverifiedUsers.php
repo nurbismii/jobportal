@@ -9,11 +9,11 @@ use Carbon\Carbon;
 class DeleteUnverifiedUsers extends Command
 {
     protected $signature = 'users:cleanup-unverified';
-    protected $description = 'Delete users who did not verify their email within 24 hours';
+    protected $description = 'Delete users who did not verify their email within 1 hours';
 
     public function handle()
     {
-        $limit = Carbon::now()->subHours(24);
+        $limit = Carbon::now()->subHours(1);
 
         $users = User::whereNull('email_verified_at')
             ->where('created_at', '<=', $limit)
