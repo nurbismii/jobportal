@@ -419,7 +419,7 @@
                                 <span class="text-danger">*</span>
                             </label>
                             <select name="kabupaten" id="kabupaten_id" class="form-select" required>
-                                @if($biodata)
+                                @if($biodata && $biodata->kabupaten)
                                 <option value="{{ $biodata->kabupaten }}">{{ $biodata->getKabupaten->kabupaten }}</option>
                                 @else
                                 <option value="" disabled selected>Pilih kabupaten</option>
@@ -434,7 +434,7 @@
                                 <span class="text-danger">*</span>
                             </label>
                             <select name="kecamatan" id="kecamatan_id" class="form-select" required>
-                                @if($biodata)
+                                @if($biodata && $biodata->kecamatan)
                                 <option value="{{ $biodata->kecamatan }}">{{ $biodata->getKecamatan->kecamatan }}</option>
                                 @else
                                 <option value="" disabled selected>Pilih kecamatan</option>
@@ -446,7 +446,7 @@
                                 <span class="text-danger">*</span>
                             </label>
                             <select name="kelurahan" id="kelurahan_id" class="form-select" required>
-                                @if($biodata)
+                                @if($biodata && $biodata->kelurahan)
                                 <option value="{{ $biodata->kelurahan }}">{{ $biodata->getKelurahan->kelurahan }}</option>
                                 @else
                                 <option value="" disabled selected>Pilih kelurahan</option>
