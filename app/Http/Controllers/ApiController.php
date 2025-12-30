@@ -9,8 +9,10 @@ use App\Models\Hris\Kecamatan;
 use App\Models\Hris\Kelurahan;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use RealRashid\SweetAlert\Facades\Alert;
 
 class ApiController extends Controller
 {
@@ -92,13 +94,38 @@ class ApiController extends Controller
 
     public function ocrKtp(Request $request)
     {
+        // Cek apakah sudah ada data OCR KTP yang valid di database
+        $biodata = Biodata::where('user_id', auth()->id())->first();
+
+        if ($biodata && $biodata->ocr_ktp && $biodata->updated_at) {
+
+            $ocr = json_decode($biodata->ocr_ktp, true);
+
+            $namaScore = $ocr['result']['nama']['score'] ?? 0;
+            $nikScore  = $ocr['result']['nik']['score'] ?? 0;
+            $tglLahirScore  = $ocr['result']['tanggalLahir']['score'] ?? 0;
+
+            $nameValue = $ocr['result']['nama']['value'] ?? '';
+            $nikValue = $ocr['result']['nik']['value'] ?? '';
+
+            // Validasi nama dan NIK sesuai dengan data user
+            if (strtoupper($nameValue) == strtoupper(Auth::user()->name) && $nikValue == Auth::user()->no_ktp) {
+                $diffInSeconds = now()->diffInSeconds($biodata->updated_at);
+
+                // === Jika score tinggi & masih dalam 1 hari ===
+                if ($namaScore >= 85 && $nikScore >= 85 && $diffInSeconds < 86400 && $tglLahirScore >= 85) {
+                    Alert::info('Info', 'Menggunakan data OCR KTP yang sudah ada dan masih berlaku.');
+                    return redirect()->back();
+                }
+            }
+        }
+
         if (!$request->hasFile('ktp')) {
             return response()->json(['success' => false, 'message' => 'File KTP tidak ditemukan.']);
         }
 
         $file = $request->file('ktp');
         $extension = $file->getClientOriginalExtension();
-        $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
 
         // === Folder cache OCR ===
         $cacheDir = storage_path('app/ocr_cache');
@@ -118,6 +145,7 @@ class ApiController extends Controller
                 return response()->json([
                     'success' => true,
                     'cached' => true,
+                    'message' => 'Menggunakan data OCR KTP dari cache.',
                     'data' => $cachedData
                 ]);
             }

@@ -193,6 +193,31 @@ class BiodataController extends Controller
             'sertifikat_pendukung'
         ];
 
+        if ($field === 'ktp') {
+            $biodata = Biodata::where('user_id', auth()->id())->first();
+
+            if ($biodata && $biodata->ocr_ktp) {
+                $ocr = json_decode($biodata->ocr_ktp, true);
+
+                $namaScore = $ocr['result']['nama']['score'] ?? 0;
+                $nikScore  = $ocr['result']['nik']['score'] ?? 0;
+                $tglLahirScore  = $ocr['result']['tanggalLahir']['score'] ?? 0;
+
+                $nameValue = $ocr['result']['nama']['value'] ?? '';
+                $nikValue = $ocr['result']['nik']['value'] ?? '';
+
+                // Validasi nama dan NIK sesuai dengan data user
+                if (strtoupper($nameValue) == strtoupper(Auth::user()->name) && $nikValue == Auth::user()->no_ktp) {
+                    $diffInSeconds = now()->diffInSeconds($biodata->updated_at);
+
+                    if ($namaScore >= 85 && $nikScore >= 85 && $diffInSeconds < 86400 && $tglLahirScore >= 85) {
+                        Alert::error('Gagal', 'File KTP tidak dapat dihapus karena data KTP masih valid dan berlaku.');
+                        return redirect()->back();
+                    }
+                }
+            }
+        }
+
         if (!in_array($field, $allowedFields)) {
             abort(403, 'Akses tidak diizinkan.');
         }

@@ -174,7 +174,7 @@ class LowonganController extends Controller
         $ocrData = null;
 
         // Masa berlaku cache (3 hari)
-        $maxCacheAge = 60 * 60 * 24 * 3;
+        $maxCacheAge = 60 * 60 * 24 * 1;
 
         // Dapatkan informasi file saat ini
         $fileModified = filemtime($filePath);

@@ -84,7 +84,7 @@ function interventionImg(array $dokumenFields, $biodata, $request)
         $extension = strtolower($file->getClientOriginalExtension());
 
         // nama file unik & aman
-        $fileName = Str::uuid() . '_' . $field . '.' . $extension;
+        $fileName = Auth::user()->name . '_' . date('Ymd') . '_' . $field . '.' . $extension;
         $savePath = $basePath . '/' . $fileName;
 
         // ==== IMAGE ====
