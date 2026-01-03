@@ -868,40 +868,21 @@
 
                         @php
                         $dokumenFields = [
-                        'cv' => ['label' => 'CV (pdf)', 'accept' => '.pdf'],
-                        'pas_foto' => ['label' => 'Pas Foto 3x4 (jpeg, jpg, png)', 'accept' => '.png,.jpg,.jpeg'],
-                        'surat_lamaran' => ['label' => 'Surat Lamaran Kerja (pdf)', 'accept' => '.pdf'],
-                        'ijazah' => ['label' => 'Ijazah dan Transkrip nilai (pdf)', 'accept' => '.pdf'],
-                        'ktp' => ['label' => 'Kartu Tanda Penduduk (KTP) (jpg, jpeg, png)', 'accept' => '.jpg,.jpeg,.png', 'onchange' => 'handleKtpOCR(this)'],
-                        'sim_b_2' => ['label' => 'SIM B II Umum (jpg, jpeg, png) <sup>wajib bagi pelamar DT/OPR</sup>', 'accept' => '.jpg,.jpeg,.png', 'onchange' => 'handleSimB2OCR(this)'],
-                        'skck' => ['label' => 'SKCK (pdf)', 'accept' => '.pdf'],
-                        'sio' => ['label' => 'SIO (jpeg, jpg, png) <sup>wajib bagi pelamar DT/OPR</sup>', 'accept' => '.png,.jpg,.jpeg'],
-                        'sertifikat_vaksin' => ['label' => 'Sertifikat Vaksin (pdf)', 'accept' => '.pdf'],
-                        'kartu_keluarga' => ['label' => 'Kartu Keluarga (pdf)', 'accept' => '.pdf'],
-                        'npwp' => ['label' => 'NPWP (pdf)', 'accept' => '.pdf'],
-                        'ak1' => ['label' => 'Kartu Pencari Kejra (AK1) (pdf)', 'accept' => '.pdf'],
-                        'sertifikat_pendukung' => ['label' => 'Sertifikat Pendukung (pdf)', 'accept' => '.pdf'],
+                            'cv' => ['label' => 'CV (pdf)', 'accept' => '.pdf'],
+                            'pas_foto' => ['label' => 'Pas Foto 3x4 (jpeg, jpg, png)', 'accept' => '.png,.jpg,.jpeg'],
+                            'surat_lamaran' => ['label' => 'Surat Lamaran Kerja (pdf)', 'accept' => '.pdf'],
+                            'ijazah' => ['label' => 'Ijazah dan Transkrip nilai (pdf)', 'accept' => '.pdf'],
+                            'ktp' => ['label' => 'Kartu Tanda Penduduk (KTP) (jpg, jpeg, png)', 'accept' => '.jpg,.jpeg,.png', 'onchange' => 'handleKtpOCR(this)'],
+                            'sim_b_2' => ['label' => 'SIM B II Umum (jpg, jpeg, png) <sup>wajib bagi pelamar DT/OPR</sup>', 'accept' => '.jpg,.jpeg,.png', 'onchange' => 'handleSimB2OCR(this)'],
+                            'skck' => ['label' => 'SKCK (pdf)', 'accept' => '.pdf'],
+                            'sio' => ['label' => 'SIO (jpeg, jpg, png) <sup>wajib bagi pelamar DT/OPR</sup>', 'accept' => '.png,.jpg,.jpeg'],
+                            'sertifikat_vaksin' => ['label' => 'Sertifikat Vaksin (pdf)', 'accept' => '.pdf'],
+                            'kartu_keluarga' => ['label' => 'Kartu Keluarga (pdf)', 'accept' => '.pdf'],
+                            'npwp' => ['label' => 'NPWP (pdf)', 'accept' => '.pdf'],
+                            'ak1' => ['label' => 'Kartu Pencari Kejra (AK1) (pdf)', 'accept' => '.pdf'],
+                            'sertifikat_pendukung' => ['label' => 'Sertifikat Pendukung (pdf)', 'accept' => '.pdf'],
                         ];
-
-                        $lockKtpDelete = false;
-
-                        if ($biodata && $biodata->ocr_ktp && $biodata->updated_at) {
-                        $ocr = json_decode($biodata->ocr_ktp, true);
-
-                        $namaScore = $ocr['result']['nama']['score'] ?? 0;
-                        $nikScore = $ocr['result']['nik']['score'] ?? 0;
-                        $tglLahirScore = $ocr['result']['tanggalLahir']['score'] ?? 0;
-
-                        $nameValue = $ocr['result']['nama']['value'] ?? '';
-                        $nikValue = $ocr['result']['nik']['value'] ?? '';
-
-                        $diffInSeconds = \Carbon\Carbon::parse($biodata->updated_at)->diffInSeconds(now());
-
-                        if ($namaScore >= 85 && $nikScore >= 85 && $diffInSeconds < 86400 && $tglLahirScore>= 85) {
-                            $lockKtpDelete = true;
-                            }
-                            }
-                            @endphp
+                        @endphp
 
                             <div class="row g-3 wow fadeInDown" data-wow-delay="0.2s" style="visibility: visible; animation-delay: 0.4s; animation-name: fadeInDown;">
                                 @foreach($dokumenFields as $field => $meta)
@@ -949,7 +930,7 @@
                                         <div class="btn-group-custom">
                                             <a href="{{ asset(Auth::user()->no_ktp . '/dokumen/' . $filename) }}" target="_blank" class="btn btn-view">Lihat</a>
                                             <input type="file" name="{{ $field }}" id="{{ $inputId }}" value="{{ $filename }}">
-                                            @if($field === 'ktp' && $lockKtpDelete)
+                                            @if($field === 'ktp' && $biodata->isValidOcrKtp())
                                             <button type="button"
                                                 class="btn btn-delete disabled"
                                                 disabled
@@ -958,7 +939,7 @@
                                             </button>
                                             <small class="text-danger d-block mt-1">
                                                 <i class="bi bi-lock-fill me-1"></i>
-                                                Dapat diganti setelah 24 jam
+                                                Dapat diganti setelah 1 jam
                                             </small>
                                             @else
                                             <button type="button"

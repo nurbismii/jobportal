@@ -94,80 +94,65 @@ class ApiController extends Controller
 
     public function ocrKtp(Request $request)
     {
-        // Cek apakah sudah ada data OCR KTP yang valid di database
         $biodata = Biodata::where('user_id', auth()->id())->first();
 
-        if ($biodata && $biodata->ocr_ktp && $biodata->updated_at) {
-
-            $ocr = json_decode($biodata->ocr_ktp, true);
-
-            $namaScore = $ocr['result']['nama']['score'] ?? 0;
-            $nikScore  = $ocr['result']['nik']['score'] ?? 0;
-            $tglLahirScore  = $ocr['result']['tanggalLahir']['score'] ?? 0;
-
-            $nameValue = $ocr['result']['nama']['value'] ?? '';
-            $nikValue = $ocr['result']['nik']['value'] ?? '';
-
-            // Validasi nama dan NIK sesuai dengan data user
-            if (strtoupper($nameValue) == strtoupper(Auth::user()->name) && $nikValue == Auth::user()->no_ktp) {
-                $diffInSeconds = now()->diffInSeconds($biodata->updated_at);
-
-                // === Jika score tinggi & masih dalam 1 hari ===
-                if ($namaScore >= 85 && $nikScore >= 85 && $diffInSeconds < 86400 && $tglLahirScore >= 85) {
-                    Alert::info('Info', 'Menggunakan data OCR KTP yang sudah ada dan masih berlaku.');
-                    return redirect()->back();
-                }
-            }
+        // === Jika OCR masih valid ===
+        if ($biodata && $biodata->isValidOcrKtp()) {
+            Alert::info('Info', 'Menggunakan data OCR KTP yang sudah ada dan masih berlaku.');
+            return redirect()->back();
         }
 
         if (!$request->hasFile('ktp')) {
-            return response()->json(['success' => false, 'message' => 'File KTP tidak ditemukan.']);
+            return response()->json([
+                'success' => false,
+                'message' => 'File KTP tidak ditemukan.'
+            ]);
+        }
+
+        // === Validasi konfigurasi OCR ===
+        $url   = rtrim(config('services.ocr.link'), '/') . '/' . ltrim(config('services.ocr.type'), '/');
+        $token = config('services.ocr.token');
+
+        if (empty($url) || !filter_var($url, FILTER_VALIDATE_URL) || empty($token)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Konfigurasi OCR tidak valid.'
+            ]);
         }
 
         $file = $request->file('ktp');
-        $extension = $file->getClientOriginalExtension();
-
-        // === Folder cache OCR ===
         $cacheDir = storage_path('app/ocr_cache');
-        if (!is_dir($cacheDir)) mkdir($cacheDir, 0777, true);
 
-        // === Identitas unik file berdasarkan hash isi ===
-        $fileHash = md5_file($file->getRealPath());
-        $cacheFile = "{$cacheDir}/{$fileHash}.json";
-        $cacheExpireSeconds = 86400; // 1 hari
-
-        // === Cek apakah cache masih valid ===
-        if (file_exists($cacheFile)) {
-            $cacheAge = time() - filemtime($cacheFile);
-            if ($cacheAge < $cacheExpireSeconds) {
-                // Gunakan hasil cache (tidak perlu OCR ulang)
-                $cachedData = json_decode(file_get_contents($cacheFile), true);
-                return response()->json([
-                    'success' => true,
-                    'cached' => true,
-                    'message' => 'Menggunakan data OCR KTP dari cache.',
-                    'data' => $cachedData
-                ]);
-            }
+        if (!is_dir($cacheDir)) {
+            mkdir($cacheDir, 0777, true);
         }
 
-        // === Simpan sementara file ke storage/public/temp_ocr ===
-        $path = $file->storeAs('temp_ocr', uniqid() . '.' . $extension, 'public');
-        $fullPath = storage_path('app/public/' . $path);
+        $fileHash = md5_file($file->getRealPath()) ?: uniqid();
+        $cacheFile = "{$cacheDir}/{$fileHash}.json";
+
+        // === Gunakan cache jika ada ===
+        if (file_exists($cacheFile) && (time() - filemtime($cacheFile) < 86400)) {
+
+            $cachedData = json_decode(file_get_contents($cacheFile), true);
+
+            Biodata::where('user_id', auth()->id())->update([
+                'ocr_ktp'    => json_encode($cachedData, JSON_PRETTY_PRINT),
+                'ocr_ktp_at' => now(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'cached'  => true,
+                'data'    => $cachedData,
+            ]);
+        }
+
+        // === Upload sementara ===
+        $path = $file->storeAs('temp_ocr', uniqid() . '.' . $file->getClientOriginalExtension(), 'public');
 
         try {
-            // === Validasi konfigurasi OCR API ===
-            $url = rtrim(config('services.ocr.link'), '/') . '/' . ltrim(config('services.ocr.type'), '/');
-            $token = config('services.ocr.token');
-
-            if (empty($url) || !filter_var($url, FILTER_VALIDATE_URL) || empty($token)) {
-                return response()->json(['success' => false, 'message' => 'Konfigurasi OCR tidak valid.']);
-            }
-
-            // === Kirim ke API OCR ===
             $response = Http::withToken($token)
-                ->withHeaders(['Authentication' => 'bearer ' . $token])
-                ->attach('file', file_get_contents($fullPath), basename($fullPath))
+                ->attach('file', file_get_contents(storage_path('app/public/' . $path)), basename($path))
                 ->put($url);
 
             if (!$response->successful()) {
@@ -181,27 +166,26 @@ class ApiController extends Controller
 
             $ocrData = $response->json();
 
-            // === Simpan ke database ===
-            Biodata::where('user_id', auth()->id())->update(
-                ['ocr_ktp' => json_encode($ocrData, JSON_PRETTY_PRINT)]
-            );
+            Biodata::where('user_id', auth()->id())->update([
+                'ocr_ktp'    => json_encode($ocrData, JSON_PRETTY_PRINT),
+                'ocr_ktp_at' => now(),
+            ]);
 
-            // === Simpan hasil ke cache ===
             file_put_contents($cacheFile, json_encode($ocrData, JSON_PRETTY_PRINT));
 
             return response()->json([
                 'success' => true,
-                'cached' => false,
-                'data' => $ocrData,
+                'cached'  => false,
+                'data'    => $ocrData,
             ]);
         } catch (\Throwable $e) {
+
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat OCR.',
-                'error' => $e->getMessage(),
+                'error'   => $e->getMessage(),
             ]);
         } finally {
-            // Hapus file sementara
             Storage::disk('public')->delete($path);
         }
     }
