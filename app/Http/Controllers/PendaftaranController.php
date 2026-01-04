@@ -44,17 +44,6 @@ class PendaftaranController extends Controller
             'email.max' => 'Panjang alamat email maksimal 255 karakter.',
         ]);
 
-        if (User::where('email', $validatedData['email'])->exists()) {
-            Alert::error('Gagal', 'Email sudah terdaftar!');
-            return redirect()->back();
-        }
-
-        // Cek KTP sudah terdaftar
-        if (User::where('no_ktp', $validatedData['no_ktp'])->exists()) {
-            Alert::error('Gagal', 'Nomor KTP sudah terdaftar!');
-            return redirect()->back();
-        }
-
         // Cek konfirmasi password
         if ($request->password !== $request->password_confirmation) {
             Alert::error('Gagal', 'Konfirmasi password tidak sesuai!');
