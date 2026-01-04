@@ -78,4 +78,21 @@ class PenggunaController extends Controller
         Alert::success('Berhasil', 'Pengguna berhasil dihapus.');
         return redirect()->route('pengguna.index')->with('success', 'Pengguna berhasil dihapus.');
     }
+
+    public function updateStatusAkun(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:users,id',
+            'status_akun' => 'required|in:0,1',
+        ]);
+
+        User::where('id', $request->id)->update([
+            'status_akun' => $request->status_akun
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status akun berhasil diperbarui'
+        ]);
+    }
 }

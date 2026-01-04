@@ -82,6 +82,68 @@
         margin-right: 1rem;
         /* atau 16px, bisa ditambah sesuai kebutuhan */
     }
+
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 52px;
+        height: 26px;
+    }
+
+    .toggle-input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        inset: 0;
+        background-color: #d1d5db;
+        /* abu OFF */
+        border-radius: 20px;
+        transition: .3s;
+    }
+
+    .toggle-slider::before {
+        content: "";
+        position: absolute;
+        height: 20px;
+        width: 20px;
+        left: 3px;
+        bottom: 3px;
+        background-color: #fff;
+        border-radius: 50%;
+        transition: .3s;
+    }
+
+    /* Text ON */
+    .toggle-text {
+        position: absolute;
+        left: 9px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 11px;
+        font-weight: 600;
+        color: #fff;
+        opacity: 0;
+        transition: .3s;
+    }
+
+    /* ON state */
+    .toggle-input:checked+.toggle-slider {
+        background-color: #20c997;
+        /* hijau */
+    }
+
+    .toggle-input:checked+.toggle-slider::before {
+        transform: translateX(26px);
+    }
+
+    .toggle-input:checked+.toggle-slider .toggle-text {
+        opacity: 1;
+    }
 </style>
 @endpush
 <div class="container-fluid">
@@ -115,12 +177,18 @@
                                     <td>{{ $pengguna->name }}</td>
                                     <td>{{ $pengguna->no_ktp }}</td>
                                     <td>{{ $pengguna->email }}</td>
-                                    <td>
-                                        @if($pengguna->status_akun == '1')
-                                        <span class="badge badge-success">AKTIF</span>
-                                        @else
-                                        <span class="badge badge-danger">TIDAK AKTIF</span>
-                                        @endif
+                                    <td class="text-center">
+                                        <label class="toggle-switch">
+                                            <input
+                                                type="checkbox"
+                                                class="toggle-input toggle-status"
+                                                data-id="{{ $pengguna->id }}"
+                                                data-old="{{ $pengguna->status_akun }}"
+                                                {{ $pengguna->status_akun == 1 ? 'checked' : '' }}>
+                                            <span class="toggle-slider">
+                                                <span class="toggle-text">ON</span>
+                                            </span>
+                                        </label>
                                     </td>
                                     <td>{{ $pengguna->biodataUser->getLatestRiwayatLamaran->status_proses ?? '-' }}</td>
                                     <td>{{ substr($pengguna->biodataUser->getLatestRiwayatLamaran->lowongan->nama_lowongan ?? '-', 0, 15) }}</td>
@@ -171,6 +239,62 @@
 <script src="{{ asset('admin/vendor/datatables/jquery.dataTables.min.js') }}"></script>
 <script src="{{ asset('admin/vendor/datatables/dataTables.bootstrap4.min.js') }}"></script>
 <script src="https://cdn.datatables.net/fixedcolumns/4.3.0/js/dataTables.fixedColumns.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    document.addEventListener('change', function(e) {
+        if (!e.target.classList.contains('toggle-status')) return;
+
+        const toggle = e.target;
+        const userId = toggle.dataset.id;
+        const oldValue = toggle.dataset.old;
+        const newValue = toggle.checked ? 1 : 0;
+
+        Swal.fire({
+            title: 'Ubah status akun?',
+            text: newValue == 1 ? 'Akun akan diaktifkan' : 'Akun akan dinonaktifkan',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+
+            if (!result.isConfirmed) {
+                toggle.checked = oldValue == 1;
+                return;
+            }
+
+            fetch("{{ route('user.updateStatusAkun') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        id: userId,
+                        status_akun: newValue
+                    })
+                })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.success) {
+                        toggle.dataset.old = newValue;
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil',
+                            timer: 1200,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        toggle.checked = oldValue == 1;
+                    }
+                })
+                .catch(() => {
+                    toggle.checked = oldValue == 1;
+                });
+        });
+    });
+</script>
 
 <script>
     $(document).ready(function() {

@@ -1,11 +1,11 @@
 <?php
 
 use App\Http\Controllers\Admin\LamaranController;
-use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\BiodataController;
 use App\Http\Controllers\PendaftaranController;
 use App\Http\Controllers\ResetPasswordController;
 use App\Http\Controllers\Admin\LowonganController;
+use App\Http\Controllers\Admin\PenggunaController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -75,6 +75,8 @@ Route::group(['prefix' => 'admin', 'middleware' => ['redirect.role']], function 
     Route::resource('/permintaan-tenaga-kerja', 'App\Http\Controllers\Admin\PermintaanTenagaKerjaController');
     Route::resource('/email-blast-log', 'App\Http\Controllers\Admin\EmailBlastController');
     Route::resource('/kandidat-potensial', 'App\Http\Controllers\Admin\KandidatPotensialController');
+
+    Route::post('/user/update-status-akun', [PenggunaController::class, 'updateStatusAkun'])->name('user.updateStatusAkun');
 });
 
 // API route

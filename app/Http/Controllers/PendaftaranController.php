@@ -26,18 +26,19 @@ class PendaftaranController extends Controller
         return view('user.pendaftaran.index');
     }
 
-
     public function store(Request $request)
     {
         $tidak_aktif = 0;
 
         // Validate the request data
         $validatedData = $request->validate([
-            'no_ktp' => 'required|digits:16',
-            'email' => 'required|email|max:255',
+            'no_ktp' => 'required|digits:16|unique:users,no_ktp',
+            'email' => 'required|email|max:255|unique:users,email',
         ], [
             'no_ktp.required' => 'Nomor KTP wajib diisi.',
             'no_ktp.digits' => 'Nomor KTP harus terdiri dari 16 digit.',
+            'no_ktp.unique' => 'Nomor KTP sudah terdaftar.',
+            'email.unique' => 'Email sudah terdaftar.',
             'email.required' => 'Alamat email wajib diisi.',
             'email.email' => 'Format alamat email tidak valid.',
             'email.max' => 'Panjang alamat email maksimal 255 karakter.',

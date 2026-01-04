@@ -87,7 +87,7 @@ $maxStep = count($steps);
 @endphp
 
 <div class="container py-4">
-    @if(($step < $maxStep) || (Auth::user()->role == 'user'))
+        @if($step < $maxStep)
         <div class="alert alert-warning d-flex align-items-center gap-2 mb-4">
             <i class="fa fa-exclamation-triangle"></i>
             <span>Silakan lengkapi <a href="{{ route('biodata.index') }}" class="">Formulir Biodata</a> untuk <b>melihat lowongan pekerjaan tersedia.</b></span>
