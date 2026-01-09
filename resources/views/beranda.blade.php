@@ -719,10 +719,10 @@ $maxStep = count($steps);
                         ✔ Mengunggah dokumen<br>
                         ✔ Memilih lowongan dan klik <b>"Lamar"</b><br><br>
                         Jika belum menekan tombol <b>"Ya, Lamar Sekarang"</b>, sistem tidak menganggap kamu mengikuti rekrutmen.<br><br>
-                        <span id="countdown" style="font-size:14px;color:#d33;font-weight:bold;">Silakan baca dulu (15 detik)...</span>
+                        <span id="countdown" style="font-size:14px;color:#d33;font-weight:bold;">Silakan baca dulu (5 detik)...</span>
                     `,
                 icon: "warning",
-                lockTime: 15
+                lockTime: 5
             }];
 
             let index = 0;
