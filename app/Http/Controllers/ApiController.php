@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use RealRashid\SweetAlert\Facades\Alert;
 
@@ -86,7 +87,8 @@ class ApiController extends Controller
                 'data' => $parsedResult['data'],
             ]);
         } catch (\Throwable $e) {
-            return response()->json(['success' => false, 'message' => 'Terjadi kesalahan saat OCR.' . $e]);
+            Log::info('OCR SIM B2 Error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Terjadi kesalahan saat OCR.']);
         } finally {
             \Storage::disk('public')->delete($path);
         }
