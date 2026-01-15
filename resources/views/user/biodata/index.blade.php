@@ -1474,12 +1474,11 @@
                     </div>
                     `;
                 } else {
-                    resultElement.innerHTML = `<span class="text-danger">${result.message || 'Gagal membaca data OCR.'}</span>`;
+                    resultElement.innerHTML = `<span class="text-danger">${result.message || 'Gagal membaca data KTP.'}</span>`;
                 }
             })
             .catch(error => {
-                resultElement.innerHTML = `<span class="text-danger">Gagal OCR</span>`;
-                console.error("OCR error:", error);
+                resultElement.innerHTML = `<span class="text-danger">Gagal membaca data OCR</span>`;
             });
     }
 

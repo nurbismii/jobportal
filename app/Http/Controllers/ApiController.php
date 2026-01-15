@@ -182,11 +182,13 @@ class ApiController extends Controller
             ]);
         } catch (\Throwable $e) {
 
+            Log::info('OCR KTP Error: ' . $e->getMessage());
+
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat OCR.',
-                'error'   => $e->getMessage(),
             ]);
+
         } finally {
             Storage::disk('public')->delete($path);
         }
