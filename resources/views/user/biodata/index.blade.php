@@ -1489,30 +1489,32 @@
         const errors = [];
 
         /* =====================
-           VALIDASI NAMA
+           VALIDASI NAMA (OCR FRIENDLY)
         ===================== */
-        const simNamaRaw = (simData.nama || '').trim().toLowerCase();
-        const ktpNamaRaw = (ktpData.result.nama?.value || '').trim().toLowerCase();
+        const normalizeName = (name) =>
+            name
+            .toLowerCase()
+            .replace(/[^a-z\s]/g, '') // hapus titik & simbol
+            .trim()
+            .split(/\s+/);
 
-        const simParts = simNamaRaw.split(/\s+/);
-        const ktpParts = ktpNamaRaw.split(/\s+/);
+        const simParts = normalizeName(simData.nama || '');
+        const ktpParts = normalizeName(ktpData.result.nama?.value || '');
 
-        let namaSesuai = false;
+        let namaSesuai = true;
 
-        if (simParts.length > 0 && ktpParts.length > 0) {
-            // Nama depan wajib sama
-            if (simParts[0] === ktpParts[0]) {
-                // Jika sama persis
-                if (simNamaRaw === ktpNamaRaw) {
-                    namaSesuai = true;
-                } else {
-                    // Cocokkan inisial nama belakang
-                    const ktpInitials = ktpParts.slice(1).map(n => n[0]).join('');
-                    const simInitials = simParts.slice(1).join('');
+        // Nama depan wajib sama
+        if (!simParts[0] || !ktpParts[0] || simParts[0] !== ktpParts[0]) {
+            namaSesuai = false;
+        } else {
+            // Setiap kata SIM harus cocok (full / inisial) dengan KTP
+            for (let i = 0; i < simParts.length; i++) {
+                const simWord = simParts[i];
+                const ktpWord = ktpParts[i];
 
-                    if (simInitials === ktpInitials) {
-                        namaSesuai = true;
-                    }
+                if (!ktpWord || !ktpWord.startsWith(simWord)) {
+                    namaSesuai = false;
+                    break;
                 }
             }
         }
@@ -1561,6 +1563,7 @@
         `;
         }
     }
+
 
     // Fungsi bantu format tanggal jadi yyyy-mm-dd
     function formatTanggalIso(tanggal) {

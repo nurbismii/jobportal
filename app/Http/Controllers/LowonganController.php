@@ -272,32 +272,32 @@ class LowonganController extends Controller
                 $msg_name_ktp_vs_sim_b2 = 'Nama pada SIM B II Umum tidak terbaca.';
             } else {
 
-                $ktp = strtoupper(trim($ocrResult['nama_ktp']));
-                $sim = strtoupper(trim($ocrResult['nama_sim']));
+                $normalizeName = function ($name) {
+                    $name = strtoupper(trim($name));
+                    $name = preg_replace('/[^A-Z\s]/', '', $name); // hapus titik & simbol
+                    return array_values(array_filter(explode(' ', $name)));
+                };
 
-                $valid = false;
+                $ktpParts = $normalizeName($ocrResult['nama_ktp'] ?? '');
+                $simParts = $normalizeName($ocrResult['nama_sim'] ?? '');
 
-                // Jika sama persis → valid
-                if ($ktp === $sim) {
-                    $valid = true;
+                $valid = true;
+
+                // Nama depan wajib sama
+                if (empty($ktpParts[0]) || empty($simParts[0]) || $ktpParts[0] !== $simParts[0]) {
+                    $valid = false;
                 } else {
-                    // Pecah nama
-                    $ktpParts = explode(' ', $ktp);
-                    $simParts = explode(' ', $sim);
+                    // Setiap kata SIM harus cocok (full / inisial) dengan KTP
+                    foreach ($simParts as $i => $simWord) {
+                        $ktpWord = $ktpParts[$i] ?? null;
 
-                    $ktpLast = end($ktpParts);
-                    $simLast = end($simParts);
-
-                    // Rule bidirectional initial validation
-                    if (
-                        (strlen($ktpLast) === 1 && $ktpLast[0] === $simLast[0]) || // KTP inisial
-                        (strlen($simLast) === 1 && $simLast[0] === $ktpLast[0])    // SIM inisial
-                    ) {
-                        $valid = true;
+                        if (!$ktpWord || strpos($ktpWord, $simWord) !== 0) {
+                            $valid = false;
+                            break;
+                        }
                     }
                 }
 
-                // Result message
                 if (!$valid) {
                     $msg_name_ktp_vs_sim_b2 = 'Nama pada SIM B2 tidak sesuai dengan KTP.';
                 }
