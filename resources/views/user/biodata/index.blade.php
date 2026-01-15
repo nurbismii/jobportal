@@ -868,99 +868,99 @@
 
                         @php
                         $dokumenFields = [
-                            'cv' => ['label' => 'CV (pdf)', 'accept' => '.pdf'],
-                            'pas_foto' => ['label' => 'Pas Foto 3x4 (jpeg, jpg, png)', 'accept' => '.png,.jpg,.jpeg'],
-                            'surat_lamaran' => ['label' => 'Surat Lamaran Kerja (pdf)', 'accept' => '.pdf'],
-                            'ijazah' => ['label' => 'Ijazah dan Transkrip nilai (pdf)', 'accept' => '.pdf'],
-                            'ktp' => ['label' => 'Kartu Tanda Penduduk (KTP) (jpg, jpeg, png)', 'accept' => '.jpg,.jpeg,.png', 'onchange' => 'handleKtpOCR(this)'],
-                            'sim_b_2' => ['label' => 'SIM B II Umum (jpg, jpeg, png) <sup>wajib bagi pelamar DT/OPR</sup>', 'accept' => '.jpg,.jpeg,.png', 'onchange' => 'handleSimB2OCR(this)'],
-                            'skck' => ['label' => 'SKCK (pdf)', 'accept' => '.pdf'],
-                            'sio' => ['label' => 'SIO (jpeg, jpg, png) <sup>wajib bagi pelamar DT/OPR</sup>', 'accept' => '.png,.jpg,.jpeg'],
-                            'sertifikat_vaksin' => ['label' => 'Sertifikat Vaksin (pdf)', 'accept' => '.pdf'],
-                            'kartu_keluarga' => ['label' => 'Kartu Keluarga (pdf)', 'accept' => '.pdf'],
-                            'npwp' => ['label' => 'NPWP (pdf)', 'accept' => '.pdf'],
-                            'ak1' => ['label' => 'Kartu Pencari Kejra (AK1) (pdf)', 'accept' => '.pdf'],
-                            'sertifikat_pendukung' => ['label' => 'Sertifikat Pendukung (pdf)', 'accept' => '.pdf'],
+                        'cv' => ['label' => 'CV (pdf)', 'accept' => '.pdf'],
+                        'pas_foto' => ['label' => 'Pas Foto 3x4 (jpeg, jpg, png)', 'accept' => '.png,.jpg,.jpeg'],
+                        'surat_lamaran' => ['label' => 'Surat Lamaran Kerja (pdf)', 'accept' => '.pdf'],
+                        'ijazah' => ['label' => 'Ijazah dan Transkrip nilai (pdf)', 'accept' => '.pdf'],
+                        'ktp' => ['label' => 'Kartu Tanda Penduduk (KTP) (jpg, jpeg, png)', 'accept' => '.jpg,.jpeg,.png', 'onchange' => 'handleKtpOCR(this)'],
+                        'sim_b_2' => ['label' => 'SIM B II Umum (jpg, jpeg, png) <sup>wajib bagi pelamar DT/OPR</sup>', 'accept' => '.jpg,.jpeg,.png', 'onchange' => 'handleSimB2OCR(this)'],
+                        'skck' => ['label' => 'SKCK (pdf)', 'accept' => '.pdf'],
+                        'sio' => ['label' => 'SIO (jpeg, jpg, png) <sup>wajib bagi pelamar DT/OPR</sup>', 'accept' => '.png,.jpg,.jpeg'],
+                        'sertifikat_vaksin' => ['label' => 'Sertifikat Vaksin (pdf)', 'accept' => '.pdf'],
+                        'kartu_keluarga' => ['label' => 'Kartu Keluarga (pdf)', 'accept' => '.pdf'],
+                        'npwp' => ['label' => 'NPWP (pdf)', 'accept' => '.pdf'],
+                        'ak1' => ['label' => 'Kartu Pencari Kejra (AK1) (pdf)', 'accept' => '.pdf'],
+                        'sertifikat_pendukung' => ['label' => 'Sertifikat Pendukung (pdf)', 'accept' => '.pdf'],
                         ];
                         @endphp
 
-                            <div class="row g-3 wow fadeInDown" data-wow-delay="0.2s" style="visibility: visible; animation-delay: 0.4s; animation-name: fadeInDown;">
-                                @foreach($dokumenFields as $field => $meta)
-                                @php
-                                $filename = $biodata->$field ?? null;
-                                $label = $meta['label'];
-                                $accept = $meta['accept'];
-                                $inputId = $field . '-upload';
-                                $spanId = 'file-name-' . str_replace('_', '-', $field);
-                                $ocrResultId = 'ocr-result-' . str_replace('_', '-', $field); // Tambahan
-                                @endphp
+                        <div class="row g-3 wow fadeInDown" data-wow-delay="0.2s" style="visibility: visible; animation-delay: 0.4s; animation-name: fadeInDown;">
+                            @foreach($dokumenFields as $field => $meta)
+                            @php
+                            $filename = $biodata->$field ?? null;
+                            $label = $meta['label'];
+                            $accept = $meta['accept'];
+                            $inputId = $field . '-upload';
+                            $spanId = 'file-name-' . str_replace('_', '-', $field);
+                            $ocrResultId = 'ocr-result-' . str_replace('_', '-', $field); // Tambahan
+                            @endphp
 
-                                <div class="col-md-6 mb-2">
-                                    <label class="form-label">{!! strip_tags($label, '<sup>') !!}</label>
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label">{!! strip_tags($label, '<sup>') !!}</label>
 
-                                    @if(!$biodata || !$filename)
-                                    <div class="file-upload-box">
-                                        <div class="upload-label">
-                                            <i class="bi bi-file-earmark-text file-icon"></i>
-                                            <span id="{{ $spanId }}">{{ $filename ? $filename : 'Dokumen belum diunggah' }}</span>
-                                        </div>
-                                        <label for="{{ $inputId }}" class="btn btn-upload">Unggah</label>
-                                        <input type="file" name="{{ $field }}" id="{{ $inputId }}" accept="{{ $accept }}"
-                                            onchange="{{ $field == 'sim_b_2' ? 'handleSimB2OCR(this)' : ($field == 'ktp' ? 'handleKtpOcr(this)' : '') }}">
+                                @if(!$biodata || !$filename)
+                                <div class="file-upload-box">
+                                    <div class="upload-label">
+                                        <i class="bi bi-file-earmark-text file-icon"></i>
+                                        <span id="{{ $spanId }}">{{ $filename ? $filename : 'Dokumen belum diunggah' }}</span>
                                     </div>
-                                    @if($field === 'sertifikat_pendukung')
-                                    <span class="small text-muted fw-bold d-block mt-1">
-                                        <i class="bi bi-exclamation-circle me-1"></i>
-                                        Sertifikat lebih dari 1? Gabungkan semua dalam satu file PDF sebelum diunggah!
-                                    </span>
-                                    @endif
-                                    {{-- Tempat hasil OCR ditampilkan hanya untuk KTP dan SIM B2 --}}
-                                    @if(in_array($field, ['ktp', 'sim_b_2']))
-                                    <div id="{{ $ocrResultId }}" class="mt-2 small text-muted">Hasil baca dokumen akan muncul di sini.</div>
-                                    @endif
-                                    @else
-                                    <div class="file-box">
-                                        <div class="file-info">
-                                            <i class="bi bi-file-earmark-text file-icon"></i>
-                                            <div class="file-meta">
-                                                <span class="file-name-{{ str_replace('_', '-', $field) }}">{{ $filename }}</span>
-                                                <input type="hidden" name="{{ $field }}" value="{{ $filename }}">
-                                            </div>
-                                        </div>
-                                        <div class="btn-group-custom">
-                                            <a href="{{ asset(Auth::user()->no_ktp . '/dokumen/' . $filename) }}" target="_blank" class="btn btn-view">Lihat</a>
-                                            <input type="file" name="{{ $field }}" id="{{ $inputId }}" value="{{ $filename }}">
-                                            @if($field === 'ktp' && $biodata->isValidOcrKtp())
-                                            <button type="button"
-                                                class="btn btn-delete disabled"
-                                                disabled
-                                                title="Dokumen KTP tidak dapat dihapus karena OCR sudah valid">
-                                                Terkunci
-                                            </button>
-                                            <small class="text-danger d-block mt-1">
-                                                <i class="bi bi-lock-fill me-1"></i>
-                                                Dapat diganti setelah 1 jam
-                                            </small>
-                                            @else
-                                            <button type="button"
-                                                class="btn btn-delete btn-confirm-delete"
-                                                data-url="{{ route('biodata.deleteFile', ['field' => $field]) }}"
-                                                data-field="{{ $field }}">
-                                                Hapus
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </div>
-                                    @if($field === 'sertifikat_pendukung')
-                                    <span class="small text-muted fw-bold d-block mt-1">
-                                        <i class="bi bi-exclamation-circle me-1"></i>
-                                        Sertifikat lebih dari 1? Gabungkan semua dalam satu file PDF sebelum diunggah!
-                                    </span>
-                                    @endif
-                                    @endif
+                                    <label for="{{ $inputId }}" class="btn btn-upload">Unggah</label>
+                                    <input type="file" name="{{ $field }}" id="{{ $inputId }}" accept="{{ $accept }}"
+                                        onchange="{{ $field == 'sim_b_2' ? 'handleSimB2OCR(this)' : ($field == 'ktp' ? 'handleKtpOcr(this)' : '') }}">
                                 </div>
-                                @endforeach
+                                @if($field === 'sertifikat_pendukung')
+                                <span class="small text-muted fw-bold d-block mt-1">
+                                    <i class="bi bi-exclamation-circle me-1"></i>
+                                    Sertifikat lebih dari 1? Gabungkan semua dalam satu file PDF sebelum diunggah!
+                                </span>
+                                @endif
+                                {{-- Tempat hasil OCR ditampilkan hanya untuk KTP dan SIM B2 --}}
+                                @if(in_array($field, ['ktp', 'sim_b_2']))
+                                <div id="{{ $ocrResultId }}" class="mt-2 small text-muted">Hasil baca dokumen akan muncul di sini.</div>
+                                @endif
+                                @else
+                                <div class="file-box">
+                                    <div class="file-info">
+                                        <i class="bi bi-file-earmark-text file-icon"></i>
+                                        <div class="file-meta">
+                                            <span class="file-name-{{ str_replace('_', '-', $field) }}">{{ $filename }}</span>
+                                            <input type="hidden" name="{{ $field }}" value="{{ $filename }}">
+                                        </div>
+                                    </div>
+                                    <div class="btn-group-custom">
+                                        <a href="{{ asset(Auth::user()->no_ktp . '/dokumen/' . $filename) }}" target="_blank" class="btn btn-view">Lihat</a>
+                                        <input type="file" name="{{ $field }}" id="{{ $inputId }}" value="{{ $filename }}">
+                                        @if($field === 'ktp' && $biodata->isValidOcrKtp())
+                                        <button type="button"
+                                            class="btn btn-delete disabled"
+                                            disabled
+                                            title="Dokumen KTP tidak dapat dihapus karena OCR sudah valid">
+                                            Terkunci
+                                        </button>
+                                        <small class="text-danger d-block mt-1">
+                                            <i class="bi bi-lock-fill me-1"></i>
+                                            Dapat diganti setelah 1 jam
+                                        </small>
+                                        @else
+                                        <button type="button"
+                                            class="btn btn-delete btn-confirm-delete"
+                                            data-url="{{ route('biodata.deleteFile', ['field' => $field]) }}"
+                                            data-field="{{ $field }}">
+                                            Hapus
+                                        </button>
+                                        @endif
+                                    </div>
+                                </div>
+                                @if($field === 'sertifikat_pendukung')
+                                <span class="small text-muted fw-bold d-block mt-1">
+                                    <i class="bi bi-exclamation-circle me-1"></i>
+                                    Sertifikat lebih dari 1? Gabungkan semua dalam satu file PDF sebelum diunggah!
+                                </span>
+                                @endif
+                                @endif
                             </div>
+                            @endforeach
+                        </div>
                     </div>
                     <div id="ocr-compare-result" class="mt-3"></div>
                 </div>
@@ -1488,28 +1488,62 @@
 
         const errors = [];
 
-        // Normalisasi nama
-        const simNama = (simData.nama || '').trim().toLowerCase();
-        const ktpNama = (ktpData.result.nama?.value || '').trim().toLowerCase();
-        if (simNama !== ktpNama) {
+        /* =====================
+           VALIDASI NAMA
+        ===================== */
+        const simNamaRaw = (simData.nama || '').trim().toLowerCase();
+        const ktpNamaRaw = (ktpData.result.nama?.value || '').trim().toLowerCase();
+
+        const simParts = simNamaRaw.split(/\s+/);
+        const ktpParts = ktpNamaRaw.split(/\s+/);
+
+        let namaSesuai = false;
+
+        if (simParts.length > 0 && ktpParts.length > 0) {
+            // Nama depan wajib sama
+            if (simParts[0] === ktpParts[0]) {
+                // Jika sama persis
+                if (simNamaRaw === ktpNamaRaw) {
+                    namaSesuai = true;
+                } else {
+                    // Cocokkan inisial nama belakang
+                    const ktpInitials = ktpParts.slice(1).map(n => n[0]).join('');
+                    const simInitials = simParts.slice(1).join('');
+
+                    if (simInitials === ktpInitials) {
+                        namaSesuai = true;
+                    }
+                }
+            }
+        }
+
+        if (!namaSesuai) {
             errors.push('❌ Nama pada SIM tidak sesuai dengan nama pada KTP.');
         }
 
-        // Bandingkan tanggal lahir
+        /* =====================
+           VALIDASI TANGGAL LAHIR
+        ===================== */
         const simTanggal = formatTanggalIso(simData.tanggal_lahir);
         const ktpTanggal = formatTanggalIso(ktpData.result.tanggalLahir?.value);
+
         if (simTanggal !== ktpTanggal) {
             errors.push('❌ Tanggal lahir pada SIM tidak sesuai dengan KTP.');
         }
 
-        // Periksa masa berlaku SIM
+        /* =====================
+           VALIDASI MASA BERLAKU SIM
+        ===================== */
         const simBerlakuSampai = new Date(simData.berlaku_sampai);
         const today = new Date();
+
         if (simBerlakuSampai < today) {
             errors.push('❌ Tanggal berlaku SIM sudah kadaluarsa.');
         }
 
-        // Tampilkan hasil
+        /* =====================
+           TAMPILKAN HASIL
+        ===================== */
         if (errors.length > 0) {
             resultElement.innerHTML = `
             <div class="alert alert-warning" role="alert">
