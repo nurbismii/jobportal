@@ -81,6 +81,8 @@ class ApiController extends Controller
 
             // Gunakan parser
             $parsedResult = app()->call([new \App\Http\Controllers\LowonganController, 'parseSimB2'], ['biodata' => $biodata, 'save' => false]);
+            
+            Log::info('PARSE SIM B2 RESULT', $parsedResult);
 
             return response()->json([
                 'success' => true,
@@ -88,6 +90,7 @@ class ApiController extends Controller
             ]);
         } catch (\Throwable $e) {
             Log::info('OCR SIM B2 Error: ' . $e->getMessage());
+
             return response()->json(['success' => false, 'message' => 'Terjadi kesalahan saat OCR.']);
         } finally {
             \Storage::disk('public')->delete($path);
@@ -188,7 +191,6 @@ class ApiController extends Controller
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat OCR.',
             ]);
-
         } finally {
             Storage::disk('public')->delete($path);
         }
