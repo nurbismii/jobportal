@@ -1278,7 +1278,8 @@
                         <!-- Checkbox pernyataan -->
                         <div class="col-12">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="checkBox1" disabled>
+                                <input class="form-check-input" type="checkbox" id="checkBox1" 
+                                    {{ $biodata && $biodata->status_pernyataan ? 'checked' : 'disabled' }}>
                                 <label class="form-check-label" for="checkBox1">
                                     Saya memahami bahwa apabila terbukti melakukan pemalsuan data, saya bersedia menerima konsekuensinya, termasuk tidak diluluskan dalam proses rekrutmen.
                                 </label>
