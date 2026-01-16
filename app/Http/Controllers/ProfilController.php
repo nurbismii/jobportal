@@ -20,7 +20,7 @@ class ProfilController extends Controller
 
         $request->validate([
             'nama' => 'required|string|max:255',
-            'no_ktp' => 'required|string|max:16',
+            'no_ktp' => 'required|string|min:16|max:16',
             'email' => 'required|email|max:255|unique:users,email,' . auth()->id(),
             'password' => 'nullable|string|min:8|confirmed',
         ], [
@@ -31,6 +31,7 @@ class ProfilController extends Controller
             'no_ktp.required' => 'Nomor KTP wajib diisi.',
             'no_ktp.string' => 'Nomor KTP harus berupa teks.',
             'no_ktp.max' => 'Nomor KTP maksimal 16 karakter.',
+            'no_ktp.min' => 'Nomor KTP minimal 16 karakter.',
 
             'email.required' => 'Email wajib diisi.',
             'email.email' => 'Format email tidak valid.',
