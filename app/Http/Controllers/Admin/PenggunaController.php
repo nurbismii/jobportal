@@ -16,7 +16,7 @@ class PenggunaController extends Controller
     public function index()
     {
         // Logic to display the list of users
-        $penggunas = User::with('biodataUser.getLatestRiwayatLamaran.lowongan')->where('role', '!=', 'admin')->get();
+        $penggunas = User::with('biodataUser.getLatestRiwayatLamaran.lowongan')->where('role', '!=', 'admin')->lazy();
         $title = 'Hapus Pengguna!';
         $text = "Kamu yakin ingin menghapus pengguna ini?";
         confirmDelete($title, $text);
