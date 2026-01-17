@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Biodata;
 use App\Models\Hris\Provinsi;
 use App\Models\Lamaran;
+use App\Models\RiwayatProsesLamaran;
 use App\Models\SuratPeringatan;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -70,6 +71,8 @@ class PenggunaController extends Controller
         if ($biodata) {
             Lamaran::where('biodata_id', $biodata->id)->delete();
         }
+
+        RiwayatProsesLamaran::where('user_id', $user->id)->delete();
 
         SuratPeringatan::where('user_id', $user->id)->delete();
 
