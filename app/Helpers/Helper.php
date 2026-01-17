@@ -262,3 +262,21 @@ if (!function_exists('getLamaranLama')) {
         return Lowongan::where('id', $id)->value('nama_lowongan');
     }
 }
+
+
+if (!function_exists('compressImageTo1MB')) {
+    function compressImageTo1MB($sourcePath, $destinationPath)
+    {
+        $image = Image::make($sourcePath)->orientate();
+
+        $quality = 90; // mulai dari kualitas tinggi
+
+        do {
+            $image->save($destinationPath, $quality);
+            $size = filesize($destinationPath);
+            $quality -= 5;
+        } while ($size > 1024 * 1024 && $quality > 30);
+
+        return $destinationPath;
+    }
+}

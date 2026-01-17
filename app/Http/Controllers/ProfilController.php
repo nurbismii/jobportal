@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Biodata;
 use App\Models\Pengumuman;
 use Illuminate\Http\Request;
 use App\Models\User;
@@ -48,6 +49,10 @@ class ProfilController extends Controller
         if ($request->filled('password')) {
             $user->password = bcrypt($request->password);
         }
+
+        Biodata::where('user_id', auth()->id())->update([
+            'no_ktp' => $request->no_ktp,
+        ]);
 
         $user->save();
 

@@ -90,12 +90,6 @@ class BiodataController extends Controller
                 }
             }
 
-            // Check if SIM B II file is available before processing OCR
-            if (isset($fileNames['sim_b_2']) && $fileNames['sim_b_2']) {
-                // Langsung proses OCR saat file diunggah
-                extractSimB2OnlyOCR($biodata);
-            }
-
             Alert::success('success', 'Biodata sudah diperbarui, silakan pilih lowongan dan kirim lamaran');
             return redirect()->to(route('lowongan-kerja.index'));
         } catch (\Exception $e) {

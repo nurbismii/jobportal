@@ -7,9 +7,7 @@ use App\Models\Hris\Divisi;
 use App\Models\Hris\Kabupaten;
 use App\Models\Hris\Kecamatan;
 use App\Models\Hris\Kelurahan;
-use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -55,13 +53,19 @@ class ApiController extends Controller
         }
 
         $file = $request->file('sim_b_2');
+
         $path = $file->storeAs('temp_ocr', uniqid() . '.' . $file->getClientOriginalExtension(), 'public');
         $fullPath = storage_path('app/public/' . $path);
+
+        $compressedPath = storage_path('app/public/temp_ocr/compressed_' . basename($path));
+
+        // 🔥 KOMPRES FILE ≤ 1 MB
+        compressImageTo1MB($fullPath, $compressedPath);
 
         try {
             // Panggil API OCR
             $response = Http::timeout(30)
-                ->attach('file', file_get_contents($fullPath), basename($fullPath))
+                ->attach('file', file_get_contents($compressedPath), basename($compressedPath))
                 ->post('https://api.ocr.space/parse/image', [
                     'apikey' => 'K82052672988957',
                     'language' => 'eng',
@@ -79,6 +83,10 @@ class ApiController extends Controller
             $biodata = new \stdClass(); // dummy biodata
             $biodata->ocr_sim_b2 = $text;
 
+            Biodata::where('user_id', auth()->id())->update([
+                'ocr_sim_b2'    => $text,
+            ]);
+
             // Gunakan parser
             $parsedResult = app()->call([new \App\Http\Controllers\LowonganController, 'parseSimB2'], ['biodata' => $biodata, 'save' => false]);
 
@@ -90,7 +98,7 @@ class ApiController extends Controller
             Log::info('OCR SIM B2 Error: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'Terjadi kesalahan, coba beberapa saat lagi.']);
         } finally {
-            \Storage::disk('public')->delete($path);
+            \Storage::disk('public')->delete([$path, 'temp_ocr/' . basename($compressedPath)]);
         }
     }
 
