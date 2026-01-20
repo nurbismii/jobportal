@@ -32,7 +32,20 @@ class BiodataController extends Controller
     public function store(Request $request)
     {
         try {
+            $biodata = Biodata::where('user_id', auth()->id())->first();
             $syarat_ketentuan = SyaratKetentuan::where('id', 1)->first();
+
+            $dokumenFields = [
+                'sim_b_2' => 'SIM B II Umum'
+            ];
+
+            $fileNames = [];
+
+            $fileNames = interventionImg($dokumenFields, $biodata, $request);
+
+            $fileNames = $fileNames['files'];
+            $oldFiles  = $fileNames['oldFiles'] ?? [];
+
 
             Biodata::updateOrCreate(
                 [
@@ -42,6 +55,19 @@ class BiodataController extends Controller
                     'status_pernyataan' => $syarat_ketentuan->syarat_ketentuan
                 ]
             );
+
+            foreach ($oldFiles as $oldFile) {
+                $path = public_path(auth()->user()->no_ktp . '/dokumen/' . $oldFile);
+                if (is_file($path)) {
+                    unlink($path);
+                }
+            }
+
+            // Check if SIM B II file is available before processing OCR
+            if (isset($fileNames['sim_b_2']) && $fileNames['sim_b_2']) {
+                // Langsung proses OCR saat file diunggah
+                extractSimB2OnlyOCR($biodata);
+            }
 
             Alert::success('success', 'Biodata sudah diperbarui, silakan pilih lowongan dan kirim lamaran');
             return redirect()->to(route('lowongan-kerja.index'));
@@ -269,8 +295,7 @@ class BiodataController extends Controller
                 'path' => auth()->user()->no_ktp . '/dokumen/' . $fileName
             ]);
         } catch (\Exception $e) {
-            Log::error('Upload AJAX Error: ' . $e->getMessage());
-
+            Log::info('Upload AJAX Error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal upload dokumen'
