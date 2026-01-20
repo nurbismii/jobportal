@@ -48,8 +48,13 @@ class LowonganController extends Controller
 
         if ($lamaran) {
 
-            if ($lamaran->loker_id == $request->loker_id || $lamaran->status_lamaran == '1') {
-                Alert::warning('Peringatan', 'Saat ini kamu dalam proses lamaran, tidak dapat melamar lebih dari satu lowongan.');
+            if ($lamaran->loker_id == $request->loker_id) {
+                Alert::warning('Peringatan', 'Kamu telah melamar lowongan ini sebelumnya.');
+                return redirect()->route('lamaran.index');
+            }
+
+            if ($lamaran->status_lamaran == '1') {
+                Alert::warning('Peringatan', 'Lamaran kamu sedang dalam proses, harap tunggu hingga proses selesai sebelum melamar lagi.');
                 return redirect()->route('lamaran.index');
             }
         }

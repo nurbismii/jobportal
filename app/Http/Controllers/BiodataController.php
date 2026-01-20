@@ -64,7 +64,7 @@ class BiodataController extends Controller
             }
 
             // Check if SIM B II file is available before processing OCR
-            if (isset($fileNames['sim_b_2']) && $fileNames['sim_b_2']) {
+            if (isset($fileNames['sim_b_2']) && $fileNames['sim_b_2'] && $biodata->ocr_sim_b2 == null) {
                 // Langsung proses OCR saat file diunggah
                 extractSimB2OnlyOCR($biodata);
             }
@@ -243,6 +243,35 @@ class BiodataController extends Controller
     public function uploadDocument(Request $request)
     {
         try {
+            $rules = [
+                'cv' => 'required|mimes:pdf|max:2048',
+                'pas_foto' => 'required|image|mimes:jpeg,jpg,png|max:2048',
+                'surat_lamaran' => 'required|mimes:pdf|max:2048',
+                'ijazah' => 'required|mimes:pdf|max:2048',
+                'ktp' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+                'sim_b_2' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+                'skck' => 'required|mimes:pdf|max:2048',
+                'sio' => 'required|image|mimes:jpeg,jpg,png|max:2048',
+                'sertifikat_vaksin' => 'required|mimes:pdf|max:2048',
+                'kartu_keluarga' => 'required|mimes:pdf|max:2048',
+                'npwp' => 'required|mimes:pdf|max:2048',
+                'ak1' => 'required|mimes:pdf|max:2048',
+                'sertifikat_pendukung' => 'required|mimes:pdf|max:51200',
+            ];
+
+            $messages = [
+                'required' => ':attribute wajib diupload',
+                'mimes'    => 'Format :attribute tidak sesuai',
+                'image'    => ':attribute harus berupa gambar',
+                'max'      => 'Ukuran :attribute maksimal 2MB',
+            ];
+
+            // hanya validasi field yang dikirim (AJAX satu file)
+            $request->validate(
+                array_intersect_key($rules, $request->all()),
+                $messages
+            );
+
             $biodata = Biodata::where('user_id', auth()->id())->first();
 
             $dokumenFields = [
