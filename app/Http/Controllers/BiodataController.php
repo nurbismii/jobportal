@@ -268,7 +268,7 @@ class BiodataController extends Controller
 
             // hanya validasi field yang dikirim (AJAX satu file)
             $request->validate(
-                array_intersect_key($rules, $request->all()),
+                array_intersect_key($rules, $request->files->all()),
                 $messages
             );
 
