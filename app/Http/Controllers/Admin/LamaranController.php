@@ -108,14 +108,23 @@ class LamaranController extends Controller
         }
 
         // === Update Final Status Lamaran ===
-        $updateData = ['status_proses' => $request->status_proses];
+        $updateData = [
+            'status_proses' => $request->status_proses
+        ];
 
-        if (in_array($statusInput, ['aktif bekerja'])) {
+        // Status tidak lolos → tutup lamaran
+        if (in_array($statusInput, $statusTidakLolos)) {
+            $updateData['status_lamaran'] = 0;
+        }
+
+        // Aktif bekerja → tutup lamaran + update user
+        if ($statusInput === 'aktif bekerja') {
 
             $updateData['status_lamaran'] = 0;
+
             $userIds = $lamaran->pluck('biodata.user_id')->filter()->unique();
             User::whereIn('id', $userIds)->update([
-                'status_pelamar' => $statusInput == 'aktif bekerja' ? 'AKTIF' : null,
+                'status_pelamar' => 'AKTIF',
                 'ket_resign' => 'Aktif bekerja pada tanggal ' . $request->tanggal_proses,
                 'area_kerja' => 'VDNI'
             ]);
@@ -126,7 +135,6 @@ class LamaranController extends Controller
         Alert::success('Berhasil', 'Status proses berhasil diperbarui menjadi ' . $request->status_proses);
         return back();
     }
-
 
     public function update(Request $request, $id)
     {

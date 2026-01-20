@@ -905,8 +905,8 @@
                                         <span id="{{ $spanId }}">{{ $filename ? $filename : 'Dokumen belum diunggah' }}</span>
                                     </div>
                                     <label for="{{ $inputId }}" class="btn btn-upload">Unggah</label>
-                                    <input type="file" name="{{ $field }}" id="{{ $inputId }}" accept="{{ $accept }}"
-                                        onchange="{{ $field == 'sim_b_2' ? 'handleSimB2OCR(this)' : ($field == 'ktp' ? 'handleKtpOcr(this)' : '') }}">
+                                    <input type="file" name="{{ $field }}" id="{{ $inputId }}" accept="{{ $accept }}" data-accept="{{ $accept }}"
+                                        onchange="uploadDocumentAjax(this)">
                                 </div>
                                 @if($field === 'sertifikat_pendukung')
                                 <span class="small text-muted fw-bold d-block mt-1">
@@ -1278,7 +1278,7 @@
                         <!-- Checkbox pernyataan -->
                         <div class="col-12">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="checkBox1" 
+                                <input class="form-check-input" type="checkbox" id="checkBox1"
                                     {{ $biodata && $biodata->status_pernyataan ? 'checked' : 'disabled' }}>
                                 <label class="form-check-label" for="checkBox1">
                                     Saya memahami bahwa apabila terbukti melakukan pemalsuan data, saya bersedia menerima konsekuensinya, termasuk tidak diluluskan dalam proses rekrutmen.
@@ -1307,6 +1307,117 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+    function uploadDocumentAjax(input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        const field = input.name;
+        const container = input.closest('.col-md-6');
+        const uploadBox = container.querySelector('.file-upload-box');
+        const fileNameSpan = container.querySelector(`#file-name-${field.replaceAll('_', '-')}`);
+
+        // loading
+        fileNameSpan.innerHTML = '⏳ Mengunggah...';
+
+        const formData = new FormData();
+        formData.append(field, file);
+
+        fetch("{{ route('biodata.upload.document') }}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: formData
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (!res.success) {
+                    throw res.message || 'Upload gagal';
+                }
+
+                // ====== UPDATE UI TANPA RELOAD ======
+                uploadBox.innerHTML = `
+                <div class="file-box">
+                    <div class="file-info">
+                        <i class="bi bi-file-earmark-text file-icon"></i>
+                        <div class="file-meta">
+                            <span class="file-name-${field.replaceAll('_', '-')}">${res.file}</span>
+                            <input type="hidden" name="${field}" value="${res.file}">
+                        </div>
+                    </div>
+                    <div class="btn-group-custom">
+                        <a href="/${res.path}" target="_blank" class="btn btn-view">Lihat</a>
+                        <button type="button"
+                            class="btn btn-delete btn-confirm-delete"
+                            data-url="{{ url('biodata/delete-file') }}/${field}"
+                            data-field="${field}">
+                            Hapus
+                        </button>
+
+                    </div>
+                </div>`;
+
+                // ====== AUTO OCR ======
+                if (field === 'ktp') handleKtpOcr(input);
+                if (field === 'sim_b_2') handleSimB2OCR(input);
+            })
+            .catch(err => {
+                alert(err);
+                fileNameSpan.innerHTML = 'Dokumen belum diunggah';
+            });
+    }
+
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.btn-confirm-delete');
+        if (!btn) return;
+
+        e.preventDefault();
+
+        const container = btn.closest('.col-md-6');
+        const url = btn.dataset.url;
+        const field = btn.dataset.field;
+        const accept = container.dataset.accept;
+
+        if (!confirm('Yakin ingin menghapus dokumen ini?')) return;
+
+        fetch(url, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (!res.success) {
+                    throw res.message || 'Gagal menghapus dokumen';
+                }
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: 'Dokumen berhasil dihapus',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+
+                // ====== KEMBALIKAN KE UPLOAD BOX ======
+                const container = btn.closest('.col-md-6');
+                container.querySelector('.file-upload-box').innerHTML = `
+                <div class="upload-label">
+                    <i class="bi bi-file-earmark-text file-icon"></i>
+                    <span>Dokumen belum diunggah</span>
+                </div>
+                <label class="btn btn-upload">
+                    Unggah
+                    <input type="file" name="${field}" accept="${accept}" onchange="uploadDocumentAjax(this)" hidden>
+                </label>
+            `;
+            });
+    });
+</script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -1341,7 +1452,6 @@
         }
     });
 </script>
-
 
 <script>
     function handleSimB2OCR(input) {

@@ -32,63 +32,16 @@ class BiodataController extends Controller
     public function store(Request $request)
     {
         try {
-            $biodata = Biodata::where('user_id', auth()->id())->first();
             $syarat_ketentuan = SyaratKetentuan::where('id', 1)->first();
 
-            $dokumenFields = [
-                'cv' => 'CV',
-                'pas_foto' => 'Pas Foto',
-                'surat_lamaran' => 'Surat Lamaran',
-                'ijazah' => 'Ijazah',
-                'ktp' => 'KTP',
-                'sim_b_2' => 'SIM B II Umum',
-                'sio' => 'Surat Izin Operator',
-                'skck' => 'SKCK',
-                'sertifikat_vaksin' => 'Sertifikat Vaksin',
-                'kartu_keluarga' => 'Kartu Keluarga',
-                'npwp' => 'NPWP',
-                'ak1' => 'Kartu AK1',
-                'sertifikat_pendukung' => 'Sertifikat Pendukung'
-            ];
-
-            $fileNames = [];
-
-            $fileNames = interventionImg($dokumenFields, $biodata, $request);
-
-            $fileNames = $fileNames['files'];
-            $oldFiles  = $fileNames['oldFiles'] ?? [];
-
-            $biodata = Biodata::updateOrCreate(
+            Biodata::updateOrCreate(
                 [
                     'user_id' => auth()->id()
                 ],
                 [
-                    // Dokumen (diambil dari array fileNames)
-                    'cv' => $fileNames['cv'],
-                    'pas_foto' => $fileNames['pas_foto'],
-                    'surat_lamaran' => $fileNames['surat_lamaran'],
-                    'ijazah' => $fileNames['ijazah'],
-                    'ktp' => $fileNames['ktp'],
-                    'sim_b_2' => $fileNames['sim_b_2'],
-                    'sio' => $fileNames['sio'],
-                    'skck' => $fileNames['skck'],
-                    'sertifikat_vaksin' => $fileNames['sertifikat_vaksin'],
-                    'kartu_keluarga' => $fileNames['kartu_keluarga'],
-                    'npwp' => $fileNames['npwp'],
-                    'ak1' => $fileNames['ak1'],
-                    'sertifikat_pendukung' => $fileNames['sertifikat_pendukung'],
-
-                    // Tambahan
                     'status_pernyataan' => $syarat_ketentuan->syarat_ketentuan
                 ]
             );
-
-            foreach ($oldFiles as $oldFile) {
-                $path = public_path(auth()->user()->no_ktp . '/dokumen/' . $oldFile);
-                if (is_file($path)) {
-                    unlink($path);
-                }
-            }
 
             Alert::success('success', 'Biodata sudah diperbarui, silakan pilih lowongan dan kirim lamaran');
             return redirect()->to(route('lowongan-kerja.index'));
@@ -207,20 +160,26 @@ class BiodataController extends Controller
             'sertifikat_pendukung'
         ];
 
-        if ($field === 'ktp') {
-            $biodata = Biodata::where('user_id', auth()->id())->first();
-
-            if ($biodata && $biodata->isValidOcrKtp()) {
-                Alert::error('Gagal', 'KTP tidak dapat dihapus karena data OCR masih valid.');
-                return redirect()->to(route('biodata.index') . '#step5');
-            }
-        }
-
         if (!in_array($field, $allowedFields)) {
-            abort(403, 'Akses tidak diizinkan.');
+            return request()->expectsJson()
+                ? response()->json(['success' => false, 'message' => 'Field tidak valid'], 403)
+                : abort(403);
         }
 
         $biodata = Biodata::where('user_id', auth()->id())->firstOrFail();
+
+        // 🔒 KTP terkunci OCR
+        if ($field === 'ktp' && $biodata->isValidOcrKtp()) {
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'KTP tidak dapat dihapus karena data OCR masih valid'
+                ], 422);
+            }
+
+            Alert::error('Gagal', 'KTP tidak dapat dihapus karena data OCR masih valid.');
+            return redirect()->to(route('biodata.index') . '#step5');
+        }
 
         $fileName = $biodata->{$field};
 
@@ -231,12 +190,10 @@ class BiodataController extends Controller
                 File::delete($filePath);
             }
 
-            // Reset OCR data if SIM KTP Umum is deleted
             if ($field === 'ktp') {
                 $biodata->ocr_ktp = null;
             }
 
-            // Reset OCR data if SIM B II Umum is deleted
             if ($field === 'sim_b_2') {
                 $biodata->ocr_sim_b2 = null;
                 $biodata->parsed_sim_b2 = null;
@@ -246,7 +203,78 @@ class BiodataController extends Controller
             $biodata->save();
         }
 
-        Alert::success('Berhasil', ucfirst(str_replace('_', ' ', $field)) . ' berhasil dihapus.');
+        // RESPONSE AJAX
+        if (request()->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'field' => $field
+            ]);
+        }
+
         return redirect()->to(route('biodata.index') . '#step5');
+    }
+
+    public function uploadDocument(Request $request)
+    {
+        try {
+            $biodata = Biodata::where('user_id', auth()->id())->first();
+
+            $dokumenFields = [
+                'cv',
+                'pas_foto',
+                'surat_lamaran',
+                'ijazah',
+                'ktp',
+                'sim_b_2',
+                'sio',
+                'skck',
+                'sertifikat_vaksin',
+                'kartu_keluarga',
+                'npwp',
+                'ak1',
+                'sertifikat_pendukung'
+            ];
+
+            // cari field yang dikirim
+            $uploadedField = collect($dokumenFields)->first(fn($f) => $request->hasFile($f));
+
+            if (!$uploadedField) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada file yang dikirim'
+                ], 422);
+            }
+
+            // pakai helper lama
+            $result = interventionImg([$uploadedField => $uploadedField], $biodata, $request);
+
+            $fileName = $result['files'][$uploadedField] ?? null;
+            $oldFiles = $result['oldFiles'] ?? [];
+
+            Biodata::updateOrCreate(
+                ['user_id' => auth()->id()],
+                [$uploadedField => $fileName]
+            );
+
+            // hapus file lama
+            foreach ($oldFiles as $old) {
+                $path = public_path(auth()->user()->no_ktp . '/dokumen/' . $old);
+                if (is_file($path)) unlink($path);
+            }
+
+            return response()->json([
+                'success' => true,
+                'field'   => $uploadedField,
+                'file'    => $fileName,
+                'path' => auth()->user()->no_ktp . '/dokumen/' . $fileName
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Upload AJAX Error: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal upload dokumen'
+            ], 500);
+        }
     }
 }
