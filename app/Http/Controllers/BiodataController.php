@@ -12,6 +12,7 @@ use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 use Intervention\Image\Facades\Image;
 
 class BiodataController extends Controller
@@ -323,11 +324,14 @@ class BiodataController extends Controller
                 'file'    => $fileName,
                 'path' => auth()->user()->no_ktp . '/dokumen/' . $fileName
             ]);
+        } catch (ValidationException $e) {
+            // BIARKAN LARAVEL HANDLE (422)
+            throw $e;
         } catch (\Exception $e) {
             Log::info('Upload AJAX Error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal upload dokumen'
+                'message' => 'Pastikan file sesuai ketentuan'
             ], 500);
         }
     }
