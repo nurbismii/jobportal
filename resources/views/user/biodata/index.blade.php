@@ -1331,41 +1331,54 @@
                 },
                 body: formData
             })
-            .then(res => res.json())
-            .then(res => {
-                if (!res.success) {
-                    throw res.message || 'Upload gagal';
+            .then(async response => {
+                const data = await response.json();
+
+                // VALIDATION / SERVER ERROR
+                if (!response.ok) {
+                    if (data.errors) {
+                        // ambil pesan validasi pertama
+                        throw Object.values(data.errors)[0][0];
+                    }
+                    throw data.message || 'Upload gagal';
                 }
 
+                return data;
+            })
+            .then(res => {
                 // ====== UPDATE UI TANPA RELOAD ======
                 uploadBox.innerHTML = `
-                <div class="file-box">
-                    <div class="file-info">
-                        <i class="bi bi-file-earmark-text file-icon"></i>
-                        <div class="file-meta">
-                            <span class="file-name-${field.replaceAll('_', '-')}">${res.file}</span>
-                            <input type="hidden" name="${field}" value="${res.file}">
-                        </div>
-                    </div>
-                    <div class="btn-group-custom">
-                        <a href="/${res.path}" target="_blank" class="btn btn-view">Lihat</a>
-                        <button type="button"
-                            class="btn btn-delete btn-confirm-delete"
-                            data-url="{{ url('biodata/delete-file') }}/${field}"
-                            data-field="${field}">
-                            Hapus
-                        </button>
-
-                    </div>
-                </div>`;
+        <div class="file-box">
+            <div class="file-info">
+                <i class="bi bi-file-earmark-text file-icon"></i>
+                <div class="file-meta">
+                    <span class="file-name-${field.replaceAll('_', '-')}">${res.file}</span>
+                    <input type="hidden" name="${field}" value="${res.file}">
+                </div>
+            </div>
+            <div class="btn-group-custom">
+                <a href="/${res.path}" target="_blank" class="btn btn-view">Lihat</a>
+                <button type="button"
+                    class="btn btn-delete btn-confirm-delete"
+                    data-url="{{ url('biodata/delete-file') }}/${field}"
+                    data-field="${field}">
+                    Hapus
+                </button>
+            </div>
+        </div>`;
 
                 // ====== AUTO OCR ======
                 if (field === 'ktp') handleKtpOcr(input);
                 if (field === 'sim_b_2') handleSimB2OCR(input);
             })
-            .catch(err => {
-                alert(err);
+            .catch(errorMessage => {
+                Swal.fire({
+                    icon: 'warning',
+                    text: errorMessage
+                });
+
                 fileNameSpan.innerHTML = 'Dokumen belum diunggah';
+                input.value = ''; // reset input
             });
     }
 
