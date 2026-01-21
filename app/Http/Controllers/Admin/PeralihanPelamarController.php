@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Biodata;
 use App\Models\Lamaran;
 use App\Models\Lowongan;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
 
@@ -22,7 +23,12 @@ class PeralihanPelamarController extends Controller
     {
         $biodata = Biodata::with('user', 'getLatestRiwayatLamaran')->where('id', $id)->first(['id', 'user_id', 'no_ktp']);
 
-        $lowongans = Lowongan::where('tanggal_berakhir', '<=', now())->get();
+        $lowongans = Lowongan::select('*')
+            ->selectRaw("IF(tanggal_berakhir < ?, 'Kadaluwarsa', 'Aktif') as status_lowongan", [Carbon::now()])
+            ->where('tanggal_mulai', '<=', Carbon::now()) // hanya yang sudah mulai
+            ->having('status_lowongan', '=', 'Aktif')
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         return view('admin.peralihan-pelamar.edit', compact('biodata', 'lowongans'))->with('no');
     }

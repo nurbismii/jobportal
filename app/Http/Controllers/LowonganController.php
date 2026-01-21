@@ -25,7 +25,6 @@ class LowonganController extends Controller
             ->where('tanggal_mulai', '<=', Carbon::now()) // hanya yang sudah mulai
             ->having('status_lowongan', '=', 'Aktif')
             ->orderBy('created_at', 'desc')
-            ->take(12)
             ->get();
 
         return view('user.lowongan-kerja.index', compact('lowongans'));
