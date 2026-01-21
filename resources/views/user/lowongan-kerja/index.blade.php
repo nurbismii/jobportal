@@ -50,7 +50,7 @@
             @forelse($lowongans as $lowongan)
             <div class="col">
                 <div class="service-item h-100 d-flex flex-column">
-                    
+
                     <div class="service-content p-4 d-flex flex-column flex-grow-1">
                         <div class="service-content-inner flex-grow-1 d-flex flex-column justify-content-between">
 
@@ -60,7 +60,7 @@
                             </a>
 
                             <p class="mb-4">
-                                {!! Str::limit(strip_tags($lowongan->kualifikasi), 409) !!}
+                                {!! substr($lowongan->kualifikasi, 0, 409) !!}
                             </p>
 
                             <p class="fw-bold mb-1">Tanggal aktif</p>

@@ -206,7 +206,7 @@ $maxStep = count($steps);
                         </a>
 
                         <p class="mb-4">
-                            {!! Str::limit(strip_tags($lowongan->kualifikasi), 409) !!}
+                            {!! substr($lowongan->kualifikasi, 0, 409) !!}
                         </p>
 
                         <p class="fw-bold mb-1">Tanggal aktif</p>
@@ -284,7 +284,7 @@ $maxStep = count($steps);
                         </a>
 
                         <p class="mb-4">
-                            {!! Str::limit(strip_tags($lowongan->kualifikasi), 409) !!}
+                            {!! substr($lowongan->kualifikasi, 0, 409) !!}
                         </p>
 
                         <p class="fw-bold mb-1">Tanggal aktif</p>
