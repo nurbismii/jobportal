@@ -1313,6 +1313,16 @@
         const file = input.files[0];
         if (!file) return;
 
+        if (file && file.type === '' && file.size > 0) {
+            Swal.fire({
+                icon: 'warning',
+                text: 'File dari Google Drive tidak didukung. Silakan download file ke HP terlebih dahulu lalu upload ulang.'
+            });
+
+            input.value = '';
+            return;
+        }
+
         const field = input.name;
         const container = input.closest('.col-md-6');
         const uploadBox = container.querySelector('.file-upload-box');
@@ -1324,69 +1334,78 @@
         const formData = new FormData();
         formData.append(field, file);
 
-        fetch("{{ route('biodata.upload.document') }}", {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: formData
-            })
-            .then(async response => {
-                const data = await response.json();
+        try {
+            fetch("{{ route('biodata.upload.document') }}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: formData
+                })
+                .then(async response => {
+                    const data = await response.json();
 
-                // VALIDATION / SERVER ERROR
-                if (!response.ok) {
-                    if (data.errors) {
-                        // ambil pesan validasi pertama
-                        throw Object.values(data.errors)[0][0];
+                    // VALIDATION / SERVER ERROR
+                    if (!response.ok) {
+                        if (data.errors) {
+                            // ambil pesan validasi pertama
+                            throw Object.values(data.errors)[0][0];
+                        }
+                        throw data.message || 'Upload gagal';
                     }
-                    throw data.message || 'Upload gagal';
-                }
 
-                return data;
-            })
-            .then(res => {
-                // ====== UPDATE UI TANPA RELOAD ======
-                uploadBox.innerHTML = `
-        <div class="file-box">
-            <div class="file-info">
-                <i class="bi bi-file-earmark-text file-icon"></i>
-                <div class="file-meta">
-                    <span class="file-name-${field.replaceAll('_', '-')}">${res.file}</span>
-                    <input type="hidden" name="${field}" value="${res.file}">
-                </div>
-            </div>
-            <div class="btn-group-custom">
-                <a href="/${res.path}" target="_blank" class="btn btn-view">Lihat</a>
-                <button type="button"
-                    class="btn btn-delete btn-confirm-delete"
-                    data-url="{{ url('biodata/delete-file') }}/${field}"
-                    data-field="${field}">
-                    Hapus
-                </button>
-            </div>
-        </div>`;
+                    return data;
+                })
+                .then(res => {
+                    // ====== UPDATE UI TANPA RELOAD ======
+                    uploadBox.innerHTML = `
+                    <div class="file-box">
+                        <div class="file-info">
+                            <i class="bi bi-file-earmark-text file-icon"></i>
+                            <div class="file-meta">
+                                <span class="file-name-${field.replaceAll('_', '-')}">${res.file}</span>
+                                <input type="hidden" name="${field}" value="${res.file}">
+                            </div>
+                        </div>
+                        <div class="btn-group-custom">
+                            <a href="/${res.path}" target="_blank" class="btn btn-view">Lihat</a>
+                            <button type="button"
+                                class="btn btn-delete btn-confirm-delete"
+                                data-url="{{ url('biodata/delete-file') }}/${field}"
+                                data-field="${field}">
+                                Hapus
+                            </button>
+                        </div>
+                    </div>`;
 
-                // ====== AUTO OCR ======
-                if (field === 'ktp') handleKtpOcr(input);
-                if (field === 'sim_b_2') handleSimB2OCR(input);
-            })
-            .catch(errorMessage => {
+                    // ====== AUTO OCR ======
+                    if (field === 'ktp') handleKtpOcr(input);
+                    if (field === 'sim_b_2') handleSimB2OCR(input);
+                })
+                .catch(errorMessage => {
 
-                let msg = errorMessage;
+                    let msg = errorMessage;
 
-                if (typeof errorMessage === 'string' && errorMessage.toLowerCase().includes('format')) {
-                    msg = 'File dari Google Drive tidak terbaca dengan baik. Silakan download dulu ke HP lalu upload ulang.';
-                }
+                    if (typeof errorMessage === 'string' && errorMessage.toLowerCase().includes('format')) {
+                        msg = 'File dari Google Drive tidak terbaca dengan baik. Silakan download dulu ke HP lalu upload ulang.';
+                    }
 
-                Swal.fire({
-                    icon: 'warning',
-                    text: msg
+                    Swal.fire({
+                        icon: 'warning',
+                        text: msg
+                    });
+
+                    fileNameSpan.innerHTML = 'Dokumen belum diunggah';
+                    input.value = '';
                 });
 
-                fileNameSpan.innerHTML = 'Dokumen belum diunggah';
-                input.value = '';
+        } catch (err) {
+            Swal.fire({
+                icon: 'error',
+                text: 'Upload gagal. Pastikan file berasal dari penyimpanan HP, bukan Google Drive.'
             });
+        }
+
     }
 
     document.addEventListener('click', function(e) {
