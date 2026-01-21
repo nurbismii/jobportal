@@ -23,11 +23,11 @@ class BerandaController extends Controller
             ->where('tanggal_mulai', '<=', Carbon::now()) // hanya yang sudah mulai
             ->having('status_lowongan', '=', 'Aktif')
             ->orderBy('created_at', 'desc')
-            ->take(5)
+            ->take(6)
             ->get();
 
         $pengumumans = Pengumuman::orderBy('created_at', 'desc')
-            ->take(5)
+            ->take(6)
             ->get();
 
         $count_karyawan = Employee::where('status_resign', 'Aktif')->whereIn('area_kerja', ['VDNI', 'VDNIP'])->count();
