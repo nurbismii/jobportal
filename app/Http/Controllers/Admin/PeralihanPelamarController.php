@@ -22,7 +22,7 @@ class PeralihanPelamarController extends Controller
     {
         $biodata = Biodata::with('user', 'getLatestRiwayatLamaran')->where('id', $id)->first(['id', 'user_id', 'no_ktp']);
 
-        $lowongans = Lowongan::all();
+        $lowongans = Lowongan::where('tanggal_berakhir', '<=', now())->get();
 
         return view('admin.peralihan-pelamar.edit', compact('biodata', 'lowongans'))->with('no');
     }
