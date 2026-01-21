@@ -1309,16 +1309,16 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
-    function uploadDocumentAjax(input) {
+    async function uploadDocumentAjax(input) {
         const file = input.files[0];
         if (!file) return;
 
-        if (file && file.type === '' && file.size > 0) {
+        // ==== DETEKSI GOOGLE DRIVE ====
+        if (file.type === '' && file.size > 0) {
             Swal.fire({
                 icon: 'warning',
                 text: 'File dari Google Drive tidak didukung. Silakan download file ke HP terlebih dahulu lalu upload ulang.'
             });
-
             input.value = '';
             return;
         }
@@ -1328,85 +1328,79 @@
         const uploadBox = container.querySelector('.file-upload-box');
         const fileNameSpan = container.querySelector(`#file-name-${field.replaceAll('_', '-')}`);
 
-        // loading
         fileNameSpan.innerHTML = '⏳ Mengunggah...';
 
         const formData = new FormData();
         formData.append(field, file);
 
         try {
-            fetch("{{ route('biodata.upload.document') }}", {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: formData
-                })
-                .then(async response => {
-                    const data = await response.json();
+            const response = await fetch("{{ route('biodata.upload.document') }}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: formData
+            });
 
-                    // VALIDATION / SERVER ERROR
-                    if (!response.ok) {
-                        if (data.errors) {
-                            // ambil pesan validasi pertama
-                            throw Object.values(data.errors)[0][0];
-                        }
-                        throw data.message || 'Upload gagal';
-                    }
+            // ===== FETCH GAGAL TOTAL (FAILED TO FETCH) =====
+            if (!response) {
+                throw 'Upload gagal. Pastikan file berasal dari penyimpanan HP, bukan Google Drive.';
+            }
 
-                    return data;
-                })
-                .then(res => {
-                    // ====== UPDATE UI TANPA RELOAD ======
-                    uploadBox.innerHTML = `
-                    <div class="file-box">
-                        <div class="file-info">
-                            <i class="bi bi-file-earmark-text file-icon"></i>
-                            <div class="file-meta">
-                                <span class="file-name-${field.replaceAll('_', '-')}">${res.file}</span>
-                                <input type="hidden" name="${field}" value="${res.file}">
-                            </div>
-                        </div>
-                        <div class="btn-group-custom">
-                            <a href="/${res.path}" target="_blank" class="btn btn-view">Lihat</a>
-                            <button type="button"
-                                class="btn btn-delete btn-confirm-delete"
-                                data-url="{{ url('biodata/delete-file') }}/${field}"
-                                data-field="${field}">
-                                Hapus
-                            </button>
-                        </div>
-                    </div>`;
+            const data = await response.json();
 
-                    // ====== AUTO OCR ======
-                    if (field === 'ktp') handleKtpOcr(input);
-                    if (field === 'sim_b_2') handleSimB2OCR(input);
-                })
-                .catch(errorMessage => {
+            // ===== VALIDATION ERROR =====
+            if (!response.ok) {
+                if (data.errors) {
+                    throw Object.values(data.errors)[0][0];
+                }
+                throw data.message || 'Upload gagal';
+            }
 
-                    let msg = errorMessage;
+            // ===== SUCCESS =====
+            uploadBox.innerHTML = `
+        <div class="file-box">
+            <div class="file-info">
+                <i class="bi bi-file-earmark-text file-icon"></i>
+                <div class="file-meta">
+                    <span class="file-name-${field.replaceAll('_', '-')}">${data.file}</span>
+                    <input type="hidden" name="${field}" value="${data.file}">
+                </div>
+            </div>
+            <div class="btn-group-custom">
+                <a href="/${data.path}" target="_blank" class="btn btn-view">Lihat</a>
+                <button type="button"
+                    class="btn btn-delete btn-confirm-delete"
+                    data-url="{{ url('biodata/delete-file') }}/${field}"
+                    data-field="${field}">
+                    Hapus
+                </button>
+            </div>
+        </div>`;
 
-                    if (typeof errorMessage === 'string' && errorMessage.toLowerCase().includes('format')) {
-                        msg = 'File dari Google Drive tidak terbaca dengan baik. Silakan download dulu ke HP lalu upload ulang.';
-                    }
-
-                    Swal.fire({
-                        icon: 'warning',
-                        text: msg
-                    });
-
-                    fileNameSpan.innerHTML = 'Dokumen belum diunggah';
-                    input.value = '';
-                });
+            if (field === 'ktp') handleKtpOcr(input);
+            if (field === 'sim_b_2') handleSimB2OCR(input);
 
         } catch (err) {
-            Swal.fire({
-                icon: 'error',
-                text: 'Upload gagal. Pastikan file berasal dari penyimpanan HP, bukan Google Drive.'
-            });
-        }
+            let msg = err;
 
+            if (
+                err instanceof TypeError ||
+                (typeof err === 'string' && err.toLowerCase().includes('fetch'))
+            ) {
+                msg = 'Upload gagal. File dari Google Drive tidak didukung. Silakan download file ke HP terlebih dahulu.';
+            }
+
+            Swal.fire({
+                icon: 'warning',
+                text: msg
+            });
+
+            fileNameSpan.innerHTML = 'Dokumen belum diunggah';
+            input.value = '';
+        }
     }
+
 
     document.addEventListener('click', function(e) {
         const btn = e.target.closest('.btn-confirm-delete');
