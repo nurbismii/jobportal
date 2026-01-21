@@ -80,8 +80,6 @@ class BiodataController extends Controller
 
     public function storeStep1to4(Request $request)
     {
-        $syarat_ketentuan = SyaratKetentuan::where('id', 1)->first();
-
         $validatedData = $request->validate(
             [
                 'provinsi' => 'required|numeric',
@@ -156,15 +154,12 @@ class BiodataController extends Controller
                 'nama_kontak_darurat' => ucwords($request->nama_kontak_darurat),
                 'no_telepon_darurat' => $request->no_telp_darurat,
                 'status_hubungan' => $request->status_hubungan,
-
-                // Tambahan
-                'status_pernyataan' => $syarat_ketentuan->syarat_ketentuan
             ]
         );
 
         return response()->json([
             'status' => true,
-            'message' => 'Data kontak darurat tersimpan'
+            'message' => 'Data berhasil disimpan.',
         ]);
     }
 
@@ -262,9 +257,31 @@ class BiodataController extends Controller
             $messages = [
                 'required' => ':attribute wajib diupload',
                 'mimes'    => 'Format :attribute tidak sesuai',
-                'image'    => ':attribute harus berupa gambar',
+                'image'    => ':attribute harus berupa foto/gambar',
                 'max'      => 'Ukuran :attribute maksimal 2MB',
             ];
+
+            $attributes = [
+                'cv' => 'CV',
+                'pas_foto' => 'Pas Foto',
+                'surat_lamaran' => 'Surat Lamaran',
+                'ijazah' => 'Ijazah',
+                'ktp' => 'KTP',
+                'sim_b_2' => 'SIM B II',
+                'sio' => 'SIO',
+                'skck' => 'SKCK',
+                'sertifikat_vaksin' => 'Sertifikat Vaksin',
+                'kartu_keluarga' => 'Kartu Keluarga',
+                'npwp' => 'NPWP',
+                'ak1' => 'AK1',
+                'sertifikat_pendukung' => 'Sertifikat Pendukung',
+            ];
+
+            $request->validate(
+                array_intersect_key($rules, $request->files->all()),
+                $messages,
+                $attributes
+            );
 
             // hanya validasi field yang dikirim (AJAX satu file)
             $request->validate(
@@ -323,6 +340,12 @@ class BiodataController extends Controller
                 'file'    => $fileName,
                 'path' => auth()->user()->no_ktp . '/dokumen/' . $fileName
             ]);
+        } catch (\Illuminate\Validation\ValidationException $ve) {
+            Log::info('Upload AJAX Validation Error: ' . json_encode($ve->errors()));
+            return response()->json([
+                'success' => false,
+                'errors' => $ve->errors()
+            ], 422);
         } catch (\Exception $e) {
             Log::info('Upload AJAX Error: ' . $e->getMessage());
             return response()->json([
