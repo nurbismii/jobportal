@@ -321,7 +321,7 @@ class LowonganController extends Controller
         $emptyFields = collect($fieldLabels)->filter(fn($label, $field) => empty($biodata->$field))->values()->all();
 
         $msg_no_ktp = $ocrResult['nik_ktp'] !== $biodata->no_ktp ? 'No KTP tidak sesuai dengan biodata anda.' : null;
-        $msg_no_ktp_score = ($ocrResult['nik_score_ktp'] < 80) ? 'KTP tidak jelas, blur, atau tidak dapat dibaca. Silakan perbarui KTP pada dokumen biodata anda.' : null;
+        $msg_no_ktp_score = ($ocrResult['nik_score_ktp'] < 50) ? 'KTP tidak jelas, blur, atau tidak dapat dibaca. Silakan perbarui KTP pada dokumen biodata anda.' : null;
         $nikScoreKtp = ($biodata->status_ktp == null && $ocrResult['nik_score_ktp'] < 70) ? 'Verifikasi kepemilikan KTP.' : null;
 
         if (count($emptyFields) || $msg_no_ktp || $msg_no_ktp_score || $nikScoreKtp || $msg_name_ktp_vs_sim_b2 || $msg_date_ktp_vs_sim_b2) {

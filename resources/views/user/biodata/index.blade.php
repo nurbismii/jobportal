@@ -1372,13 +1372,20 @@
                 if (field === 'sim_b_2') handleSimB2OCR(input);
             })
             .catch(errorMessage => {
+
+                let msg = errorMessage;
+
+                if (typeof errorMessage === 'string' && errorMessage.toLowerCase().includes('format')) {
+                    msg = 'File dari Google Drive tidak terbaca dengan baik. Silakan download dulu ke HP lalu upload ulang.';
+                }
+
                 Swal.fire({
                     icon: 'warning',
-                    text: errorMessage
+                    text: msg
                 });
 
                 fileNameSpan.innerHTML = 'Dokumen belum diunggah';
-                input.value = ''; // reset input
+                input.value = '';
             });
     }
 
