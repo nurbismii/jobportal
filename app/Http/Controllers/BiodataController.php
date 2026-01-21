@@ -256,7 +256,7 @@ class BiodataController extends Controller
 
             $messages = [
                 'required' => ':attribute wajib diupload',
-                'mimes'    => 'Format :attribute tidak sesuai',
+                'mimes'    => 'Format :attribute harus berupa file pdf',
                 'image'    => ':attribute harus berupa foto/gambar',
                 'max'      => 'Ukuran :attribute maksimal 2MB',
             ];
