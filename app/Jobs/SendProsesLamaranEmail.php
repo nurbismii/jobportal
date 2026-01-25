@@ -2,6 +2,9 @@
 
 namespace App\Jobs;
 
+use App\Models\EmailBlastLog;
+use App\Models\Lamaran;
+use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Queue\SerializesModels;
@@ -11,9 +14,9 @@ use Illuminate\Foundation\Bus\Dispatchable;
 
 class SendProsesLamaranEmail implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable, Queueable, SerializesModels, InteractsWithQueue;
 
-    public $user;
+    public $userId;
     public $status;
     public $lamaranId;
     public $logId;
@@ -21,7 +24,7 @@ class SendProsesLamaranEmail implements ShouldQueue
 
     public function __construct($userId, $status, $lamaranId, $logId, $pesan)
     {
-        $this->user = $userId; // simpan ID saja
+        $this->userId = $userId;
         $this->status = $status;
         $this->lamaranId = $lamaranId;
         $this->logId = $logId;
@@ -31,21 +34,34 @@ class SendProsesLamaranEmail implements ShouldQueue
     public function handle()
     {
         try {
-            $user = \App\Models\User::findOrFail($this->user);
-            $lamaran = \App\Models\Lamaran::with('lowongan')->findOrFail($this->lamaranId);
+            $user = User::find($this->userId);
+            $lamaran = Lamaran::with('lowongan')->find($this->lamaranId);
 
-            Mail::to($user->email)->send(new \App\Mail\StatusLamaran($user, $this->status, $lamaran, $this->pesan));
+            if (!$user || !$lamaran) {
+                EmailBlastLog::where('id', $this->logId)->update([
+                    'status_kirim' => 'gagal_data_hilang'
+                ]);
+                return;
+            }
 
-            \App\Models\EmailBlastLog::find($this->logId)->update([
+            Mail::to($user->email)
+                ->send(new \App\Mail\StatusLamaran($user, $this->status, $lamaran, $this->pesan));
+
+            // throttle mailtrap
+            sleep(10);
+
+            EmailBlastLog::where('id', $this->logId)->update([
                 'status_kirim' => 'berhasil',
                 'updated_at' => now()
             ]);
-        } catch (\Exception $e) {
-            \App\Models\EmailBlastLog::find($this->logId)->update([
+        } catch (\Throwable $e) {
+
+            EmailBlastLog::where('id', $this->logId)->update([
                 'status_kirim' => 'gagal',
                 'updated_at' => now()
             ]);
-            report($e);
+
+            throw $e;
         }
     }
 }
