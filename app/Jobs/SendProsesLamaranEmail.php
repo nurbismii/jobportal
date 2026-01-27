@@ -17,7 +17,7 @@ class SendProsesLamaranEmail implements ShouldQueue
     use Dispatchable, Queueable, SerializesModels, InteractsWithQueue;
 
     public $timeout = 120;
-    public $tries = 3;
+    public $tries = 2;
 
     public $userId;
     public $status;

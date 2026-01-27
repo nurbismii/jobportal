@@ -60,7 +60,7 @@ class ProcessLamaranEmailJob implements ShouldQueue
 
     private function dispatchEmail($userId, $lamaranId)
     {
-        $limitPerHour = 50;
+        $limitPerHour = 25;
 
         // Hitung email 1 jam terakhir
         $counter = EmailBlastLog::where('created_at', '>=', now()->subHour())->count();
@@ -69,7 +69,7 @@ class ProcessLamaranEmailJob implements ShouldQueue
         $batchKe = floor($counter / $limitPerHour) + 1;
 
         // Hitung delay
-        $delaySeconds = (($batchKe - 1) * 3600) + (($counter % $limitPerHour) * 70);
+        $delaySeconds = (($batchKe - 1) * 3600) + (($counter % $limitPerHour) * 180);
 
         // Simpan log
         $log = EmailBlastLog::create([
