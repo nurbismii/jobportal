@@ -16,6 +16,9 @@ class SendProsesLamaranEmail implements ShouldQueue
 {
     use Dispatchable, Queueable, SerializesModels, InteractsWithQueue;
 
+    public $timeout = 120;
+    public $tries = 3;
+
     public $userId;
     public $status;
     public $lamaranId;
@@ -46,9 +49,6 @@ class SendProsesLamaranEmail implements ShouldQueue
 
             Mail::to($user->email)
                 ->send(new \App\Mail\StatusLamaran($user, $this->status, $lamaran, $this->pesan));
-
-            // throttle mailtrap
-            sleep(10);
 
             EmailBlastLog::where('id', $this->logId)->update([
                 'status_kirim' => 'berhasil',

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Jobs\ProcessLamaranEmail;
+use App\Jobs\ProcessLamaranMasterJob;
 use App\Models\Biodata;
 use App\Models\Lamaran;
 use Illuminate\Http\Request;
@@ -15,21 +15,6 @@ class LamaranController extends Controller
     {
         $statusInput = strtolower($request->status_proses);
 
-        $statusTidakLolos = [
-            'belum sesuai kriteria',
-            'tidak lolos verifikasi online',
-            'tidak lolos verifikasi berkas',
-            'tidak lolos tes kesehatan',
-            'tidak lolos tes lapangan',
-            'tidak lolos medical check-up',
-            'tidak lolos induksi safety',
-            'tidak lolos tanda tangan kontrak',
-            'tidak tanda tangan kontrak'
-        ];
-
-        $pesan = $request->pesanEmail;
-
-        // === KHUSUS KANDIDAT POTENSIAL ===
         if ($statusInput === 'kandidat potensial') {
             Biodata::whereIn('id', Lamaran::whereIn('id', $request->selected_ids)->pluck('biodata_id'))
                 ->update(['status_potensial' => 1]);
@@ -38,31 +23,22 @@ class LamaranController extends Controller
             return back();
         }
 
-        // === UPDATE STATUS LAMARAN (FAST) ===
-        $updateData = ['status_proses' => $request->status_proses];
+        Lamaran::whereIn('id', $request->selected_ids)->update([
+            'status_proses' => $request->status_proses,
+            'status_lamaran' => $this->isTidakLolos($statusInput) ? 0 : 1
+        ]);
 
-        if (in_array($statusInput, $statusTidakLolos)) {
-            $updateData['status_lamaran'] = 0;
-        }
-
-        if ($statusInput === 'aktif bekerja') {
-            $updateData['status_lamaran'] = 0;
-        }
-
-        Lamaran::whereIn('id', $request->selected_ids)->update($updateData);
-
-        // === PROSES RIWAYAT + EMAIL VIA QUEUE JOB ===
-        ProcessLamaranEmail::dispatch(
+        ProcessLamaranMasterJob::dispatch(
             $request->selected_ids,
             $request->status_proses,
             $request->tanggal_proses,
             $request->jam,
             $request->tempat,
-            $pesan,
+            $request->pesanEmail,
             $request->blast_email
         );
 
-        Alert::success('Berhasil', 'Update diproses di background. Email dikirim bertahap.');
+        Alert::success('Diproses', 'Blast email berjalan di background.');
         return back();
     }
 
@@ -134,5 +110,20 @@ class LamaranController extends Controller
     function getBatchDelayJam($counter, $limitPerJam = 50)
     {
         return intdiv($counter, $limitPerJam);
+    }
+
+    private function isTidakLolos($status)
+    {
+        return in_array(strtolower($status), [
+            'belum sesuai kriteria',
+            'tidak lolos verifikasi online',
+            'tidak lolos verifikasi berkas',
+            'tidak lolos tes kesehatan',
+            'tidak lolos tes lapangan',
+            'tidak lolos medical check-up',
+            'tidak lolos induksi safety',
+            'tidak lolos tanda tangan kontrak',
+            'tidak tanda tangan kontrak'
+        ]);
     }
 }
