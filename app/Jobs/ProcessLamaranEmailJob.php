@@ -60,18 +60,21 @@ class ProcessLamaranEmailJob implements ShouldQueue
 
     private function dispatchEmail($userId, $lamaranId)
     {
-        $limitPerHour = 25;
+        $limitPerHour = 20; // JagoanHosting SAFE LIMIT
 
-        // Hitung email 1 jam terakhir
-        $counter = EmailBlastLog::where('created_at', '>=', now()->subHour())->count();
+        $sentLastHour = EmailBlastLog::where('created_at', '>=', now()->subHour())->count();
 
-        // Tentukan batch ke-
-        $batchKe = floor($counter / $limitPerHour) + 1;
+        // Delay logic ultra slow
+        if ($sentLastHour >= $limitPerHour) {
+            // lempar ke jam berikutnya
+            $delaySeconds = 3600 + rand(120, 600);
+        } else {
+            // 1 email tiap 4 menit
+            $delaySeconds = $sentLastHour * 240;
+        }
 
-        // Hitung delay
-        $delaySeconds = (($batchKe - 1) * 3600) + (($counter % $limitPerHour) * 180);
+        $batchKe = floor($sentLastHour / $limitPerHour) + 1;
 
-        // Simpan log
         $log = EmailBlastLog::create([
             'user_id' => $userId,
             'lamaran_id' => $lamaranId,
@@ -81,7 +84,6 @@ class ProcessLamaranEmailJob implements ShouldQueue
             'status_kirim' => 'pending'
         ]);
 
-        // Dispatch email job dengan delay
         SendProsesLamaranEmail::dispatch(
             $userId,
             $this->status,
