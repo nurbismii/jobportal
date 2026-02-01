@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\EmailBlastLog;
 use App\Models\Lamaran;
+use App\Models\PermintaanTenagaKerja;
 use App\Models\RiwayatProsesLamaran;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
@@ -31,7 +32,7 @@ class ProcessLamaranEmailJob implements ShouldQueue
 
     public function handle()
     {
-        Lamaran::with('biodata:id,user_id', 'lowongan:id')
+        Lamaran::with('biodata:id,user_id', 'lowongan:id,permintaan_tenaga_kerja_id')
             ->whereIn('id', $this->ids)
             ->get()
             ->each(function ($lamaran) {
@@ -51,6 +52,27 @@ class ProcessLamaranEmailJob implements ShouldQueue
                     'tempat' => $this->tempat ?: '-',
                     'pesan' => $this->pesan ?: '-'
                 ]);
+
+                $data = [
+                    'user_id'        => $userId,
+                    'lamaran_id'     => $lamaran->id,
+                    'status_proses'  => $this->status,
+                ];
+
+                RiwayatProsesLamaran::firstOrCreate(
+                    $data,
+                    [
+                        'status_lolos'   => $this->isTidakLolos($this->status) ? 'Tidak Lolos' : null,
+                        'tanggal_proses' => $this->tanggal,
+                        'jam'            => $this->jam,
+                        'tempat'         => $this->tempat ?? '-',
+                        'pesan'          => $this->pesan ?? '-',
+                    ]
+                );
+
+                if (strtolower($this->status) === 'aktif bekerja') {
+                    PermintaanTenagaKerja::where('id', $lamaran->lowongan->permintaan_tenaga_kerja_id)->increment('jumlah_masuk');
+                }
 
                 if ($this->blast === 'iya') {
                     $this->dispatchEmail($userId, $lamaran->id);
