@@ -38,7 +38,7 @@ class LamaranController extends Controller
             $request->blast_email
         );
 
-        Alert::success('Diproses', 'Blast email berjalan di background.');
+        Alert::success('Berhasil', 'Status lamaran berhasil diperbarui dan email sedang diproses untuk dikirim.');
         return back();
     }
 
