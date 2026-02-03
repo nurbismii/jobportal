@@ -18,6 +18,11 @@ class Biodata extends Model
 
     protected $table = 'biodata';
 
+    protected $casts = [
+        'ocr_ktp' => 'array',
+        'parsed_sim_b2' => 'array',
+    ];
+
     protected $guarded = [];
 
     public function user()

@@ -189,19 +189,6 @@ class BiodataController extends Controller
 
         $biodata = Biodata::where('user_id', auth()->id())->firstOrFail();
 
-        // 🔒 KTP terkunci OCR
-        if ($field === 'ktp' && $biodata->isValidOcrKtp()) {
-            if (request()->expectsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'KTP tidak dapat dihapus karena data OCR masih valid'
-                ], 422);
-            }
-
-            Alert::error('Gagal', 'KTP tidak dapat dihapus karena data OCR masih valid.');
-            return redirect()->to(route('biodata.index') . '#step5');
-        }
-
         $fileName = $biodata->{$field};
 
         if ($fileName) {
@@ -281,12 +268,6 @@ class BiodataController extends Controller
                 array_intersect_key($rules, $request->files->all()),
                 $messages,
                 $attributes
-            );
-
-            // hanya validasi field yang dikirim (AJAX satu file)
-            $request->validate(
-                array_intersect_key($rules, $request->files->all()),
-                $messages
             );
 
             $biodata = Biodata::where('user_id', auth()->id())->first();

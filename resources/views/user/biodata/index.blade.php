@@ -930,25 +930,12 @@
                                     <div class="btn-group-custom">
                                         <a href="{{ asset(Auth::user()->no_ktp . '/dokumen/' . $filename) }}" target="_blank" class="btn btn-view">Lihat</a>
                                         <input type="file" name="{{ $field }}" id="{{ $inputId }}" value="{{ $filename }}">
-                                        @if($field === 'ktp' && $biodata->isValidOcrKtp())
-                                        <button type="button"
-                                            class="btn btn-delete disabled"
-                                            disabled
-                                            title="Dokumen KTP tidak dapat dihapus karena OCR sudah valid">
-                                            Terkunci
-                                        </button>
-                                        <small class="text-danger d-block mt-1">
-                                            <i class="bi bi-lock-fill me-1"></i>
-                                            Dapat diganti setelah 1 jam
-                                        </small>
-                                        @else
                                         <button type="button"
                                             class="btn btn-delete btn-confirm-delete"
                                             data-url="{{ route('biodata.deleteFile', ['field' => $field]) }}"
                                             data-field="{{ $field }}">
                                             Hapus
                                         </button>
-                                        @endif
                                     </div>
                                 </div>
                                 @if($field === 'sertifikat_pendukung')
@@ -1530,8 +1517,7 @@
                             <div class="card-header fw-bold">Hasil Baca SIM :</div>
                             <div class="card-body">
                                 <p><strong>Nama Lengkap:</strong> ${data.nama}</p>
-                                <p><strong>Tempat Lahir:</strong> ${data.tempat_lahir}</p>
-                                <p><strong>Tanggal Lahir:</strong> ${formatTanggal(data.tanggal_lahir)}</p>
+                                <p><strong>Tempat & Tanggal Lahir:</strong>${data.tempat_lahir}, ${formatTanggal(data.tanggal_lahir)}</p>
                                 <p><strong>Jenis Kelamin:</strong> ${formatJenisKelamin(data.jenis_kelamin)}</p>
                                 <p><strong>Alamat:</strong> ${data.alamat}</p>
                                 <p><strong>Pekerjaan:</strong> ${data.pekerjaan}</p>
@@ -1593,25 +1579,14 @@
                                 <div class="col-md-6">
                                     <p><strong>NIK:</strong> ${data.result.nik?.value || '-'}</p>
                                     <p><strong>Nama Lengkap:</strong> ${data.result.nama?.value || '-'}</p>
-                                    <p><strong>Tempat Lahir:</strong> ${data.result.tempatLahir?.value || '-'}</p>
-                                    <p><strong>Tanggal Lahir:</strong> ${data.result.tanggalLahir?.value || '-'}</p>
+                                    <p><strong>Tempat & Tanggal Lahir:</strong> ${data.result.tempatLahir?.value || '-'}, ${formatTanggal(data.result.tanggalLahir?.value || '-')}</p>
                                     <p><strong>Jenis Kelamin:</strong> ${data.result.jenisKelamin?.value || '-'}</p>
+                                </div>
+                                <div class="col-md-6">
                                     <p><strong>Golongan Darah:</strong> ${data.result.golonganDarah?.value || '-'}</p>
                                     <p><strong>Status Perkawinan:</strong> ${data.result.statusPerkawinan?.value || '-'}</p>
                                     <p><strong>Agama:</strong> ${data.result.agama?.value || '-'}</p>
                                     <p><strong>Pekerjaan:</strong> ${data.result.pekerjaan?.value || '-'}</p>
-                                </div>
-                                <div class="col-md-6">
-                                    <p><strong>Kewarganegaraan:</strong> ${data.result.kewarganegaraan?.value || '-'}</p>
-                                    <p><strong>Alamat:</strong> ${data.result.alamat?.value || '-'}</p>
-                                    <p><strong>RT/RW:</strong> ${data.result.rt?.value || '-'} / ${data.rw?.value || '-'}</p>
-                                    <p><strong>Kelurahan/Desa:</strong> ${data.result.kelurahanDesa?.value || '-'}</p>
-                                    <p><strong>Kecamatan:</strong> ${data.result.kecamatan?.value || '-'}</p>
-                                    <p><strong>Kabupaten/Kota:</strong> ${data.result.kabupatenKota?.value || '-'}</p>
-                                    <p><strong>Provinsi:</strong> ${data.result.provinsi?.value || '-'}</p>
-                                    <p><strong>Diterbitkan di:</strong> ${data.result.tempatDiterbitkan?.value || '-'}</p>
-                                    <p><strong>Tanggal Diterbitkan:</strong> ${data.result.tanggalDiterbitkan?.value || '-'}</p>
-                                    <p><strong>Berlaku Hingga:</strong> ${data.result.berlakuHingga?.value || '-'}</p>
                                 </div>
                             </div>
                         </div>

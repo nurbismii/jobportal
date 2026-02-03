@@ -7,6 +7,8 @@ use App\Models\Hris\Divisi;
 use App\Models\Hris\Kabupaten;
 use App\Models\Hris\Kecamatan;
 use App\Models\Hris\Kelurahan;
+use App\Services\Ocr\ParsedKtp;
+use App\Services\Ocr\ParsedSimB2;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -15,6 +17,8 @@ use RealRashid\SweetAlert\Facades\Alert;
 
 class ApiController extends Controller
 {
+    protected string $text;
+
     public function fetchKabupaten($id)
     {
         $kabupaten = Kabupaten::where('id_provinsi', $id)->get();
@@ -46,6 +50,7 @@ class ApiController extends Controller
         return response()->json($query);
     }
 
+    // OCR SPACE SIM B2 V2
     public function ocrSimB2(Request $request)
     {
         if (!$request->hasFile('sim_b_2')) {
@@ -83,12 +88,14 @@ class ApiController extends Controller
             $biodata = new \stdClass(); // dummy biodata
             $biodata->ocr_sim_b2 = $text;
 
-            Biodata::where('user_id', auth()->id())->update([
-                'ocr_sim_b2'    => $text,
-            ]);
-
             // Gunakan parser
-            $parsedResult = app()->call([new \App\Http\Controllers\LowonganController, 'parseSimB2'], ['biodata' => $biodata, 'save' => false]);
+            $parsedSimB2 = new ParsedSimB2();
+            $parsedResult = $parsedSimB2->parse($biodata, false);
+
+            Biodata::where('user_id', auth()->id())->update([
+                'ocr_sim_b2' => $text,
+                'parsed_sim_b2' => $parsedResult['data'],
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -102,15 +109,10 @@ class ApiController extends Controller
         }
     }
 
+    // OCR KTP AKSARAKAN
     public function ocrKtp(Request $request)
     {
         $biodata = Biodata::where('user_id', auth()->id())->first();
-
-        // === Jika OCR masih valid ===
-        if ($biodata && $biodata->isValidOcrKtp()) {
-            Alert::info('Info', 'Menggunakan data OCR KTP yang sudah ada dan masih berlaku.');
-            return redirect()->back();
-        }
 
         if (!$request->hasFile('ktp')) {
             return response()->json([
@@ -198,6 +200,105 @@ class ApiController extends Controller
             ]);
         } finally {
             Storage::disk('public')->delete($path);
+        }
+    }
+
+    // OCR SPACE KTP v3
+    public function ocrSpaceKtp(Request $request)
+    {
+        if (!$request->hasFile('ktp')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'File KTP tidak ditemukan.'
+            ]);
+        }
+
+        $file = $request->file('ktp');
+
+        // ================== SIMPAN FILE ==================
+        $path = $file->storeAs(
+            'temp_ocr',
+            uniqid() . '.' . $file->getClientOriginalExtension(),
+            'public'
+        );
+
+        $fullPath = storage_path('app/public/' . $path);
+        $compressedPath = storage_path('app/public/temp_ocr/compressed_' . basename($path));
+
+        // ================== KOMPRES ≤ 1MB ==================
+        compressImageTo1MB($fullPath, $compressedPath);
+
+        try {
+            // ================== OCR API ==================
+            $response = Http::timeout(30)
+                ->attach(
+                    'file',
+                    file_get_contents($compressedPath),
+                    basename($compressedPath)
+                )
+                ->post('https://api.ocr.space/parse/image', [
+                    'apikey'             => 'K82052672988957', // taruh di config
+                    'language'           => 'eng',
+                    'OCREngine'          => '3',
+                    'scale'              => 'true',
+                    'detectOrientation'  => 'true',
+                    'isOverlayRequired'  => 'false',
+                ]);
+
+            if (!$response->successful() || data_get($response->json(), 'IsErroredOnProcessing') === true) {
+                Log::warning('OCR Space gagal, fallback ke OCR internal', [
+                    'user_id' => auth()->id()
+                ]);
+
+                return $this->ocrKtp($request);
+            }
+
+            $ocrData   = $response->json();
+            $parsedText = $ocrData['ParsedResults'][0]['ParsedText'] ?? '';
+
+            if (empty($parsedText)) {
+                Log::warning('OCR Space hasil kosong, fallback', [
+                    'user_id' => auth()->id()
+                ]);
+
+                return $this->ocrKtp($request);
+            }
+
+            // ================== PARSER KTP ==================
+            $parsedResult = null;
+
+            if (!empty($parsedText)) {
+
+                $parser = new ParsedKtp();
+                $parsedResult = $parser->parse($parsedText);
+
+                Biodata::where('user_id', auth()->id())->update([
+                    'ocr_ktp' => json_encode($parsedResult, JSON_PRETTY_PRINT),
+                    'ocr_ktp_at' => now(),
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'cached'  => false,
+                'data'  => $parsedResult,
+            ]);
+        } catch (\Throwable $e) {
+
+            Log::error('OCR KTP Error', [
+                'user_id' => auth()->id(),
+                'error'   => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan, coba beberapa saat lagi.'
+            ]);
+        } finally {
+            Storage::disk('public')->delete([
+                $path,
+                'temp_ocr/' . basename($compressedPath)
+            ]);
         }
     }
 }

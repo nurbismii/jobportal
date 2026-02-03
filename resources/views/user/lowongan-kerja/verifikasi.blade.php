@@ -84,37 +84,7 @@
     </div>
     @endif
 
-    @if($msg_nik_score)
-    <div class="alert border-1 border-primary shadow-sm rounded-3 p-4">
-        <div class="d-flex align-items-start">
-            <div class="me-3">
-                <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
-            </div>
-            <div>
-                <h4 class="mb-2 text-dark fw-bold">Verifikasi kepemilikan KTP!</h4>
-                <p class="mb-3 text-danger fw-bold">
-                    Silahkan input NIK anda untuk melanjutkan proses verifikasi.
-                </p>
-                <form action="{{ route('lowongan-kerja.update', $biodata->id) }}" method="post">
-                    @csrf
-                    {{ method_field('PUT') }}
-                    <div class="row g-3">
-                        <div class="col-md-6 mb-3">
-                            <label>NO KTP
-                                <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" name="status_ktp" class="form-control">
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Kirim</button>
-                </form>
-            </div>
-        </div>
-    </div>
-    @endif
-
-
-    @if($msg_no_ktp || $msg_no_ktp_score)
+    @if($msg_no_ktp)
     <div class="alert border-1 border-primary shadow-sm rounded-3 p-4">
         <div class="d-flex align-items-start">
             <div class="me-3">
@@ -126,13 +96,7 @@
                     Perbaiki dokumen KTP anda sebelum melamar. Pastikan KTP anda sudah sesuai dengan format yang ditentukan :
                 </p>
                 <ul class="mb-0 ps-3">
-                    @if($msg_no_ktp)
                     <li class="mb-1">{{ $msg_no_ktp }}</li>
-                    @endif
-
-                    @if($msg_no_ktp_score)
-                    <li class="mb-1">{{ $msg_no_ktp_score }}</li>
-                    @endif
                 </ul>
             </div>
         </div>
