@@ -37,7 +37,7 @@ class StatusLamaran extends Mailable
      */
     public function build()
     {
-        return $this->from('no-reply@vdni.top')
+        return $this->from('no-reply@vdnisite.com')
             ->subject('Informasi Rekrutmen PT VDNI')
             ->view('emails.status-lamaran')
             ->text('emails.status-lamaran_plain') // Plain text version

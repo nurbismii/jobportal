@@ -34,7 +34,7 @@ class EmailResetPassword extends Mailable
             'token' => $this->detail['email_verifikasi_token'],
             'email' => $this->detail['email']
         ];
-        return $this->from('no-reply@vdni.top')->view('auth.reset-password-email', compact('data'))->with([
+        return $this->from('no-reply@vdnisite.com')->view('auth.reset-password-email', compact('data'))->with([
             'data' => $data
         ]);
     }
