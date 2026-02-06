@@ -1516,13 +1516,20 @@
                         <div class="card mt-1">
                             <div class="card-header fw-bold">Hasil Baca SIM :</div>
                             <div class="card-body">
-                                <p><strong>Nama Lengkap:</strong> ${data.nama}</p>
-                                <p><strong>Tempat & Tanggal Lahir:</strong>${data.tempat_lahir}, ${formatTanggal(data.tanggal_lahir)}</p>
-                                <p><strong>Jenis Kelamin:</strong> ${formatJenisKelamin(data.jenis_kelamin)}</p>
-                                <p><strong>Alamat:</strong> ${data.alamat}</p>
-                                <p><strong>Pekerjaan:</strong> ${data.pekerjaan}</p>
-                                <p><strong>Wilayah Penerbit:</strong> ${data.wilayah}</p>
-                                <p><strong>Berlaku Sampai:</strong> ${formatTanggal(data.berlaku_sampai)}</p>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>Nama Lengkap:</strong> ${data.nama}</p>
+                                        <p><strong>Tempat Lahir:</strong>${data.tempat_lahir}</p>
+                                        <p><strong>Tanggal Lahir:</strong> ${formatTanggal(data.tanggal_lahir)}</p>
+                                        <p><strong>Jenis Kelamin:</strong> ${formatJenisKelamin(data.jenis_kelamin)}</p>
+                                        <p><strong>Alamat:</strong> ${data.alamat}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>Pekerjaan:</strong> ${data.pekerjaan}</p>
+                                        <p><strong>Wilayah Penerbit:</strong> ${data.wilayah}</p>
+                                        <p><strong>Berlaku Sampai:</strong> ${formatTanggal(data.berlaku_sampai)}</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -1572,14 +1579,15 @@
                     }
 
                     resultElement.innerHTML = `
-                    <div class="card mt-3">
+                    <div class="card mt-1">
                         <div class="card-header fw-bold">Hasil baca KTP :</div>
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-6">
                                     <p><strong>NIK:</strong> ${data.result.nik?.value || '-'}</p>
                                     <p><strong>Nama Lengkap:</strong> ${data.result.nama?.value || '-'}</p>
-                                    <p><strong>Tempat & Tanggal Lahir:</strong> ${data.result.tempatLahir?.value || '-'}, ${formatTanggal(data.result.tanggalLahir?.value || '-')}</p>
+                                    <p><strong>Tempat Lahir:</strong> ${data.result.tempatLahir?.value || '-'}</p>
+                                    <p><strong>Tanggal Lahir:</strong> ${formatTanggal(data.result.tanggalLahir?.value || '-')}</p>
                                     <p><strong>Jenis Kelamin:</strong> ${data.result.jenisKelamin?.value || '-'}</p>
                                 </div>
                                 <div class="col-md-6">
