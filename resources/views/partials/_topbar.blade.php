@@ -5,7 +5,7 @@
             <div class="col-lg-8 text-center text-lg-start mb-lg-0">
                 <div class="d-flex flex-wrap">
                     <div class="ps-3">
-                        <a href="mailto:vdnirekrutmen88@gmail.com" class="text-muted small"><i class="fas fa-envelope text-primary me-2"></i>rekrutmen@vdni.co.id</a>
+                        <a href="mailto:recruitment@vdnisite.com" class="text-muted small"><i class="fas fa-envelope text-primary me-2"></i>recruitment@vdnisite.com</a>
                     </div>
                 </div>
             </div>
