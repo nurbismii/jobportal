@@ -68,6 +68,8 @@ class PenggunaController extends Controller
 
         $biodata = Biodata::where('user_id', $user->id)->first();
 
+        deleteImageBiodata($biodata);
+
         if ($biodata) {
             Lamaran::where('biodata_id', $biodata->id)->delete();
         }

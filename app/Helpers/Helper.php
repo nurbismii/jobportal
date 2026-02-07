@@ -280,3 +280,36 @@ if (!function_exists('compressImageTo1MB')) {
         return $destinationPath;
     }
 }
+
+if (!function_exists('deleteImageBiodata')) {
+    function deleteImageBiodata($biodata)
+    {
+        if ($biodata) {
+            $dokumenFields = [
+                'cv',
+                'pas_foto',
+                'surat_lamaran',
+                'ijazah',
+                'ktp',
+                'skck',
+                'kartu_keluarga',
+                'npwp',
+                'ak1',
+                'sim_b_2',
+                'sio'
+            ];
+
+            $basePath = public_path($biodata->no_ktp . '/dokumen');
+
+            foreach ($dokumenFields as $field) {
+                $fileName = $biodata->{$field};
+                if ($fileName) {
+                    $filePath = $basePath . '/' . $fileName;
+                    if (file_exists($filePath)) {
+                        unlink($filePath);
+                    }
+                }
+            }
+        }
+    }
+}
