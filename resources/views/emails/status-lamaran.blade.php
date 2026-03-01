@@ -14,7 +14,7 @@
         <!-- Header Logo -->
         <tr>
             <td style="padding:25px;text-align:center;">
-                <img src="https://recruitment.vdni.top/img/logo-vdni1.png" width="120" alt="VDNI Logo" style="display:block;margin:auto;">
+                <img src="https://recruitment.vdnisite.com/img/logo-vdni1.png" width="120" alt="VDNI Logo" style="display:block;margin:auto;">
             </td>
         </tr>
 
