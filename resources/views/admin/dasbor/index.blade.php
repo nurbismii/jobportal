@@ -125,7 +125,7 @@
 
     {{-- Visualisasi Data --}}
     <div class="row mb-4">
-        <div class="col-md-12 mb-4">
+        <div class="col-md-8 mb-4">
             <div class="card shadow">
                 <div class="card-body">
                     <h5 class="card-title font-weight-bold">Rekapan Proses Lamaran</h5>
@@ -133,14 +133,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-8 mb-4">
-            <div class="card shadow">
-                <div class="card-body" style="height: 400px;">
-                    <h5 class="card-title font-weight-bold">Jumlah Lamaran Per Rekrutmen</h5>
-                    <canvas id="chartLowongan"></canvas>
-                </div>
-            </div>
-        </div>
+
         <div class="col-md-4 mb-4">
             <div class="card shadow">
                 <div class="card-body">
@@ -167,61 +160,6 @@
 
 <script>
     const filterSelectors = '#filter-ptk, #filter-lowongan, #filter-tgl-mulai, #filter-tgl-berakhir, #filter-sim-b2';
-
-    const chartLowongan = new Chart($('#chartLowongan'), {
-        type: 'bar',
-        data: {
-            labels: [],
-            datasets: [{
-                label: 'Jumlah Pelamar',
-                data: [],
-                backgroundColor: 'rgba(54, 162, 235, 0.7)',
-                borderRadius: 5,
-                barThickness: 20
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false, // penting agar div wrapper mengatur tinggi
-            indexAxis: 'y',
-            scales: {
-                x: {
-                    stacked: true,
-                    title: {
-                        display: true,
-                        text: 'Jumlah Kandidat'
-                    },
-                    ticks: {
-                        precision: 0
-                    }
-                },
-                y: {
-                    stacked: true,
-                    ticks: {
-                        autoSkip: false,
-                        font: {
-                            size: 12
-                        },
-                        callback: function(value) {
-                            if (value.length > 40) {
-                                return value.substr(0, 40) + '...';
-                            }
-                            return value;
-                        }
-                    }
-                }
-            },
-            plugins: {
-                tooltip: {
-                    mode: 'index',
-                    intersect: false
-                },
-                legend: {
-                    position: 'top'
-                }
-            }
-        }
-    });
 
     const chartStatus = new Chart($('#chartStatus'), {
         type: 'pie',
@@ -302,15 +240,6 @@
             let tinggiPerBar = 45;
             let tinggiMinimal = 200;
             let tinggiChart = Math.max(tinggiMinimal, jumlahBar * tinggiPerBar);
-
-            $('#chartLowongan').parent().css('height', tinggiChart + 'px');
-
-            // chartLowongan
-            chartLowongan.data.labels = res.chart_posisi.labels;
-            chartLowongan.data.datasets[0].label = res.chart_posisi.datasets[0].label;
-            chartLowongan.data.datasets[0].backgroundColor = res.chart_posisi.datasets[0].backgroundColor;
-            chartLowongan.data.datasets[0].data = res.chart_posisi.datasets[0].data;
-            chartLowongan.update();
 
             // chartStatus
             chartStatus.data.labels = res.chart_status.labels;

@@ -78,10 +78,10 @@
                 </div>
                 <div id="collapseDept" class="collapse">
                     <div class="card-body">
-                        <p><i class="fa fa-industry"></i> <strong>Departemen:</strong> {{ $permintaanTenagaKerja->departemen->departemen }} ({{ $permintaanTenagaKerja->departemen->status_pengeluaran }})</p>
+                        <p><i class="fa fa-industry"></i> <strong>Departemen:</strong> {{ optional($permintaanTenagaKerja->departemen)->departemen }} ({{ optional($permintaanTenagaKerja->departemen)->status_pengeluaran }})</p>
                         <p><i class="fa fa-sitemap"></i> <strong>Divisi:</strong> {{ $permintaanTenagaKerja->divisi->nama_divisi }}</p>
-                        <p><i class="fa fa-user-tie"></i> <strong>Kepala Departemen:</strong> {{ $permintaanTenagaKerja->departemen->kepala_dept }}</p>
-                        <p><i class="fa fa-phone"></i> <strong>Telp:</strong> {{ $permintaanTenagaKerja->departemen->no_telp_departemen }}</p>
+                        <p><i class="fa fa-user-tie"></i> <strong>Kepala Departemen:</strong> {{ optional($permintaanTenagaKerja->departemen)->kepala_dept }}</p>
+                        <p><i class="fa fa-phone"></i> <strong>Telp:</strong> {{ optional($permintaanTenagaKerja->departemen)->no_telp_dept }}</p>
                     </div>
                 </div>
             </div>

@@ -25,7 +25,14 @@ class DasborController extends Controller
         $formatted = [];
 
         foreach ($groupedPtk as $deptId => $divisis) {
-            $departemen = $ptks->firstWhere('departemen_id', $deptId)->departemen;
+
+            $ptk = $ptks->firstWhere('departemen_id', $deptId);
+
+            if (!$ptk || !$ptk->departemen) {
+                continue;
+            }
+
+            $departemen = $ptk->departemen;
 
             $deptGroup = [
                 'departemen_id' => $deptId,
@@ -34,15 +41,18 @@ class DasborController extends Controller
             ];
 
             foreach ($divisis as $divisiId => $items) {
+
                 $divisi = $items->first()->divisi;
 
                 $deptGroup['divisis'][] = [
                     'divisi_id' => $divisiId,
-                    'nama_divisi' => $divisi->nama_divisi,
-                    'lowongans' => $items->map(fn($i) => [
-                        'id' => $i->id,
-                        'posisi' => $i->posisi
-                    ])->values()
+                    'nama_divisi' => $divisi ? $divisi->nama_divisi : null,
+                    'lowongans' => $items->map(function ($i) {
+                        return [
+                            'id' => $i->id,
+                            'posisi' => $i->posisi
+                        ];
+                    })->values()
                 ];
             }
 

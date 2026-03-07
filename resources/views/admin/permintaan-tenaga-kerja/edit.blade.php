@@ -40,7 +40,7 @@
                             <div class="col-md-6 mb-3">
                                 <label for="departemen">Departemen <span class="text-danger">*</span></label>
                                 <select name="departemen" class="form-control" id="departemen">
-                                    <option value="{{ $permintaanTenagaKerja->departemen->id }}">{{ $permintaanTenagaKerja->departemen->departemen }}</option>
+                                    <option value="{{ optional($permintaanTenagaKerja->departemen)->departemen }}">{{ optional($permintaanTenagaKerja->departemen)->departemen }}</option>
 
                                     @php
                                     $grouped = $departemens->groupBy('perusahaan_id');
