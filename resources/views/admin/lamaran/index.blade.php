@@ -490,6 +490,38 @@
         </div>
     </div>
 
+    <div class="modal fade" id="modalPreviewDokumen" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Preview Dokumen</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body text-center">
+
+                    <iframe id="previewPdf"
+                        style="width:100%; height:600px; display:none;"
+                        frameborder="0"></iframe>
+
+                    <img id="previewImage"
+                        style="max-width:100%; max-height:600px; display:none;" />
+
+                </div>
+
+                <div class="modal-footer">
+                    <a id="btnDownloadDokumen" class="btn btn-primary" target="_blank">
+                        Download
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
     <div class="accordion" id="accordionStatusProses">
         <div class="card shadow border-primary mb-3">
             <div class="card-header" id="headingStatus" style="cursor: pointer;" data-toggle="collapse" data-target="#collapseStatus" aria-expanded="true" aria-controls="collapseStatus">
@@ -1078,6 +1110,31 @@ return $order[$item->level_sp] ?? 99;
 
     $('#formStatusProses').on('hidden.bs.collapse', function() {
         $('[data-target="#formStatusProses"]').text('Buka Form Update Status Lamaran');
+    });
+</script>
+
+<script>
+    $(document).on('click', '.preview-dokumen', function() {
+
+        let file = $(this).data('file');
+        let ext = $(this).data('ext');
+
+        $('#previewPdf').hide();
+        $('#previewImage').hide();
+
+        if (ext === 'pdf') {
+            $('#previewPdf')
+                .attr('src', file)
+                .show();
+        } else {
+            $('#previewImage')
+                .attr('src', file)
+                .show();
+        }
+
+        $('#btnDownloadDokumen').attr('href', file);
+
+        $('#modalPreviewDokumen').modal('show');
     });
 </script>
 @endpush

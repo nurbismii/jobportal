@@ -333,6 +333,12 @@ if (!function_exists('dokumenIcon')) {
             $icon = '<i class="fas fa-file"></i>';
         }
 
-        return '<a href="' . $url . '" target="_blank">' . $icon . ' ' . $file . '</a>';
+        return '
+    <a href="javascript:void(0)" 
+        class="preview-dokumen"
+        data-file="' . $url . '"
+        data-ext="' . $ext . '">
+        ' . $icon . ' ' . $file . '
+    </a>';
     }
 }
