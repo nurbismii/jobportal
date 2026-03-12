@@ -11,18 +11,94 @@ use App\Models\SuratPeringatan;
 use App\Models\User;
 use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
+use Yajra\DataTables\Facades\DataTables;
 
 class PenggunaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Logic to display the list of users
-        $penggunas = User::with('biodataUser.getLatestRiwayatLamaran.lowongan')->where('role', '!=', 'admin')->lazy();
         $title = 'Hapus Pengguna!';
         $text = "Kamu yakin ingin menghapus pengguna ini?";
         confirmDelete($title, $text);
 
-        return view('admin.pengguna.index', compact('penggunas'))->with('no');
+        if ($request->ajax()) {
+            $query = User::with('biodataUser.getLatestRiwayatLamaran.lowongan')
+                ->where('role', '!=', 'admin');
+
+            return DataTables::of($query)
+
+                ->addColumn('status', function ($pengguna) {
+                    $checked = $pengguna->status_akun == 1 ? 'checked' : '';
+
+                    return '
+            <label class="toggle-switch">
+                <input type="checkbox"
+                    class="toggle-input toggle-status"
+                    data-id="' . $pengguna->id . '"
+                    data-old="' . $pengguna->status_akun . '"
+                    ' . $checked . '>
+                <span class="toggle-slider">
+                    <span class="toggle-text">ON</span>
+                </span>
+            </label>';
+                })
+
+                ->addColumn('status_proses', function ($pengguna) {
+                    return $pengguna->biodataUser->getLatestRiwayatLamaran->status_proses ?? '-';
+                })
+
+                ->addColumn('lowongan', function ($pengguna) {
+                    return substr($pengguna->biodataUser->getLatestRiwayatLamaran->lowongan->nama_lowongan ?? '-', 0, 15);
+                })
+
+                ->addColumn('rekomendasi', function ($pengguna) {
+                    return '
+            <td class="editable"
+                data-id="' . $pengguna->id . '"
+                data-model="user"
+                data-field="rekomendasi">
+                ' . $pengguna->rekomendasi . '
+            </td>';
+                })
+
+                ->addColumn('riwayat', function ($pengguna) {
+                    return '
+            <a href="' . route('pengguna.show', $pengguna->id) . '" target="_blank"
+            class="btn btn-secondary btn-sm btn-icon-split mr-2">
+                <span class="icon text-white-50">
+                    <i class="fas fa-history"></i>
+                </span>
+                <span class="text">Riwayat</span>
+            </a>';
+                })
+
+                ->addColumn('aksi', function ($pengguna) {
+                    return '
+            <div class="d-flex">
+                <a href="' . route('pengguna.edit', $pengguna->id) . '"
+                class="btn btn-success btn-sm btn-icon-split mr-2">
+                    <span class="icon text-white-50">
+                        <i class="fas fa-pen"></i>
+                    </span>
+                    <span class="text">Edit</span>
+                </a>
+
+                <a href="' . route('pengguna.destroy', $pengguna->id) . '"
+                class="btn btn-danger btn-sm btn-icon-split"
+                data-confirm-delete="true">
+                    <span class="icon text-white-50">
+                        <i class="fas fa-trash"></i>
+                    </span>
+                    <span class="text">Hapus</span>
+                </a>
+            </div>';
+                })
+
+                ->rawColumns(['status', 'rekomendasi', 'riwayat', 'aksi'])
+                ->make(true);
+        }
+
+        return view('admin.pengguna.index');
     }
 
     public function edit($id)

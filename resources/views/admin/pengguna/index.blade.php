@@ -171,61 +171,6 @@
                                     <th>Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                @foreach($penggunas as $pengguna)
-                                <tr>
-                                    <td>{{ $pengguna->name }}</td>
-                                    <td>{{ $pengguna->no_ktp }}</td>
-                                    <td>{{ $pengguna->email }}</td>
-                                    <td class="text-center">
-                                        <label class="toggle-switch">
-                                            <input
-                                                type="checkbox"
-                                                class="toggle-input toggle-status"
-                                                data-id="{{ $pengguna->id }}"
-                                                data-old="{{ $pengguna->status_akun }}"
-                                                {{ $pengguna->status_akun == 1 ? 'checked' : '' }}>
-                                            <span class="toggle-slider">
-                                                <span class="toggle-text">ON</span>
-                                            </span>
-                                        </label>
-                                    </td>
-                                    <td>{{ $pengguna->biodataUser->getLatestRiwayatLamaran->status_proses ?? '-' }}</td>
-                                    <td>{{ substr($pengguna->biodataUser->getLatestRiwayatLamaran->lowongan->nama_lowongan ?? '-', 0, 15) }}</td>
-                                    <td class="editable"
-                                        data-id="{{ $pengguna->id }}"
-                                        data-model="user"
-                                        data-field="rekomendasi">
-                                        {{ $pengguna->rekomendasi}}
-                                    </td>
-                                    <td>
-                                        <a href="{{ route('pengguna.show', $pengguna->id) }}" target="_blank" class="btn btn-secondary btn-sm btn-icon-split mr-2">
-                                            <span class="icon text-white-50">
-                                                <i class="fas fa-history"></i>
-                                            </span>
-                                            <span class="text">Riwayat</span>
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex">
-                                            <a href="{{ route('pengguna.edit', $pengguna->id) }}" class="btn btn-success btn-sm btn-icon-split mr-2">
-                                                <span class="icon text-white-50">
-                                                    <i class="fas fa-pen"></i>
-                                                </span>
-                                                <span class="text">Edit</span>
-                                            </a>
-                                            <a href="{{ route('pengguna.destroy', $pengguna->id) }}" class="btn btn-danger btn-sm btn-icon-split" data-confirm-delete="true">
-                                                <span class="icon text-white-50">
-                                                    <i class="fas fa-trash"></i>
-                                                </span>
-                                                <span class="text">Hapus</span>
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
-                                @endforeach
-                                <!-- Add more rows as needed -->
-                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -298,13 +243,58 @@
 
 <script>
     $(document).ready(function() {
-        // Inisialisasi DataTable
-        const table = $('#dataTable').DataTable({
+
+        $('#dataTable').DataTable({
+            processing: true,
+            serverSide: true,
             scrollX: true,
-            responsive: false,
             autoWidth: false,
             fixedHeader: true,
+
+            ajax: "{{ route('pengguna.index') }}",
+
+            columns: [{
+                    data: 'name',
+                    name: 'name'
+                },
+                {
+                    data: 'no_ktp',
+                    name: 'no_ktp'
+                },
+                {
+                    data: 'email',
+                    name: 'email'
+                },
+                {
+                    data: 'status',
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'status_proses',
+                    name: 'status_proses'
+                },
+                {
+                    data: 'lowongan',
+                    name: 'lowongan'
+                },
+                {
+                    data: 'rekomendasi',
+                    orderable: false
+                },
+                {
+                    data: 'riwayat',
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'aksi',
+                    orderable: false,
+                    searchable: false
+                },
+            ]
         });
+
     });
 </script>
 

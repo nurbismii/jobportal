@@ -122,13 +122,13 @@
                             <label>Nama
                                 <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="nama" class="form-control" value="{{ Auth::user()->name }}" readonly>
+                            <input type="text" name="nama" class="form-control" value="{{ $biodata->user->name }}" readonly>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label>No KTP
                                 <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="no_ktp" class="form-control" value="{{ Auth::user()->no_ktp }}" readonly>
+                            <input type="text" name="no_ktp" class="form-control" value="{{ $biodata->no_ktp }}" readonly>
                         </div>
                     </div>
                     <div class="row g-3">
