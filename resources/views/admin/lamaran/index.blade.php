@@ -425,9 +425,22 @@
                             <td>{{ $data->biodata->status_hubungan }}</td>
                             <td>{{ $data->biodata->tinggi_badan  }}</td>
                             <td>{{ $data->biodata->berat_badan  }}</td>
-                            <td>{!! dokumenIcon($data->biodata->surat_lamaran,$data->biodata->no_ktp) !!}</td>
-                            <td>{!! dokumenIcon($data->biodata->cv,$data->biodata->no_ktp) !!}</td>
-                            <td>{!! dokumenIcon($data->biodata->ktp,$data->biodata->no_ktp) !!}</td>
+
+                            <td>
+                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->surat_lamaran) }}" target="_blank">
+                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->surat_lamaran) }}
+                                </a>
+                            </td>
+                            <td>
+                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->cv) }}" target="_blank">
+                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->cv) }}
+                                </a>
+                            </td>
+                            <td>
+                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->ktp) }}" target="_blank">
+                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->ktp) }}
+                                </a>
+                            </td>
                             <td class="editable"
                                 data-id="{{ $data->biodata_id }}"
                                 data-model="biodata"
@@ -435,7 +448,11 @@
                                 {{ $data->biodata->status_ktp }}
                             </td>
                             @if($lowongan->status_sim_b2 == 1)
-                            <td>{!! dokumenIcon($data->biodata->sim_b_2,$data->biodata->no_ktp) !!}</td>
+                            <td>
+                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sim_b_2) }}" target="_blank">
+                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sim_b_2) }}
+                                </a>
+                            </td>
                             <td class="editable"
                                 data-id="{{ $data->biodata_id }}"
                                 data-model="biodata"
@@ -444,7 +461,11 @@
                             </td>
                             @endif
                             @if($lowongan->status_sio == 1)
-                            <td>{!! dokumenIcon($data->biodata->sio,$data->biodata->no_ktp) !!}</td>
+                            <td>
+                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sio) }}" target="_blank">
+                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sio) }}
+                                </a>
+                            </td>
                             <td class="editable"
                                 data-id="{{ $data->biodata_id }}"
                                 data-model="biodata"
@@ -452,30 +473,58 @@
                                 {{ $data->biodata->status_sio }}
                             </td>
                             @endif
-                            <td>{!! dokumenIcon($data->biodata->kartu_keluarga,$data->biodata->no_ktp) !!}</td>
-                            <td>{!! dokumenIcon($data->biodata->ijazah,$data->biodata->no_ktp) !!}</td>
-
-                            <td>{!! dokumenIcon($data->biodata->skck,$data->biodata->no_ktp) !!}</td>
+                            <td>
+                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->kartu_keluarga) }}" target="_blank">
+                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->kartu_keluarga) }}
+                                </a>
+                            </td>
+                            <td>
+                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->ijazah) }}" target="_blank">
+                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->ijazah) }}
+                                </a>
+                            </td>
+                            <td>
+                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->skck) }}" target="_blank">
+                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->skck) }}
+                                </a>
+                            </td>
                             <td class="editable"
                                 data-id="{{ $data->biodata_id }}"
                                 data-model="biodata"
                                 data-field="status_skck">
                                 {{ $data->biodata->status_skck }}
                             </td>
-
-                            <td>{!! dokumenIcon($data->biodata->ak1,$data->biodata->no_ktp) !!}</td>
-                            <td>{!! dokumenIcon($data->biodata->sertifikat_vaksin,$data->biodata->no_ktp) !!}</td>
-                            <td>{!! dokumenIcon($data->biodata->npwp,$data->biodata->no_ktp) !!}</td>
-                            <td>{!! dokumenIcon($data->biodata->pas_foto,$data->biodata->no_ktp) !!}</td>
-
-                            <td>{!! dokumenIcon($data->biodata->sertifikat_pendukung,$data->biodata->no_ktp) !!}</td>
+                            <td>
+                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->ak1) }}" target="_blank">
+                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->ak1) }}
+                                </a>
+                            </td>
+                            <td>
+                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sertifikat_vaksin) }}" target="_blank">
+                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sertifikat_vaksin) }}
+                                </a>
+                            </td>
+                            <td>
+                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->npwp) }}" target="_blank">
+                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->npwp) }}
+                                </a>
+                            </td>
+                            <td>
+                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->pas_foto) }}" target="_blank">
+                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->pas_foto) }}
+                                </a>
+                            </td>
+                            <td>
+                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sertifikat_pendukung) }}" target="_blank">
+                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sertifikat_pendukung) }}
+                                </a>
+                            </td>
                             <td class="editable"
                                 data-id="{{ $data->biodata_id }}"
                                 data-model="biodata"
                                 data-field="status_sertifikat">
                                 {{ $data->biodata->status_sertifikat }}
                             </td>
-
                             <td class="editable"
                                 data-id="{{ $data->id }}"
                                 data-model="lamaran"
@@ -486,38 +535,6 @@
                         @endforeach
                     </tbody>
                 </table>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="modalPreviewDokumen" tabindex="-1">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-
-                <div class="modal-header">
-                    <h5 class="modal-title">Preview Dokumen</h5>
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span>&times;</span>
-                    </button>
-                </div>
-
-                <div class="modal-body text-center">
-
-                    <iframe id="previewPdf"
-                        style="width:100%; height:600px; display:none;"
-                        frameborder="0"></iframe>
-
-                    <img id="previewImage"
-                        style="max-width:100%; max-height:600px; display:none;" />
-
-                </div>
-
-                <div class="modal-footer">
-                    <a id="btnDownloadDokumen" class="btn btn-primary" target="_blank">
-                        Download
-                    </a>
-                </div>
-
             </div>
         </div>
     </div>
@@ -1110,31 +1127,6 @@ return $order[$item->level_sp] ?? 99;
 
     $('#formStatusProses').on('hidden.bs.collapse', function() {
         $('[data-target="#formStatusProses"]').text('Buka Form Update Status Lamaran');
-    });
-</script>
-
-<script>
-    $(document).on('click', '.preview-dokumen', function() {
-
-        let file = $(this).data('file');
-        let ext = $(this).data('ext');
-
-        $('#previewPdf').hide();
-        $('#previewImage').hide();
-
-        if (ext === 'pdf') {
-            $('#previewPdf')
-                .attr('src', file)
-                .show();
-        } else {
-            $('#previewImage')
-                .attr('src', file)
-                .show();
-        }
-
-        $('#btnDownloadDokumen').attr('href', file);
-
-        $('#modalPreviewDokumen').modal('show');
     });
 </script>
 @endpush
