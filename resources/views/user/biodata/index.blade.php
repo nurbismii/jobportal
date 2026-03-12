@@ -709,6 +709,9 @@
                                 @endforeach
                             </select>
                         </div>
+                    </div>
+
+                    <div id="keluarga_section">
 
                         <div class="col-md-6 mb-3">
                             <label>Tanggal Pernikahan</label>
@@ -718,28 +721,26 @@
                                 class="form-control"
                                 value="{{ old('tanggal_nikah', $biodata->tanggal_nikah ?? '') }}">
                         </div>
-                    </div>
 
-                    <div class="col-md-6 mb-3">
-                        <label>Nama Suami / Istri</label>
-                        <input type="text"
-                            name="nama_pasangan"
-                            class="form-control"
-                            value="{{ old('nama_pasangan', $biodata->nama_pasangan ?? '') }}">
-                    </div>
-
-                    <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label>Jumlah Anak</label>
-                            <input type="number"
-                                name="jumlah_anak"
+                            <label>Nama Suami / Istri</label>
+                            <input type="text"
+                                name="nama_pasangan"
                                 class="form-control"
-                                max="3"
-                                value="{{ old('jumlah_anak', $biodata->jumlah_anak ?? '') }}">
+                                value="{{ old('nama_pasangan', $biodata->nama_pasangan ?? '') }}">
                         </div>
-                    </div>
 
-                    <div class="row g-3">
+                        <div class="row g-3">
+                            <div class="col-md-6 mb-3">
+                                <label>Jumlah Anak</label>
+                                <input type="number"
+                                    name="jumlah_anak"
+                                    class="form-control"
+                                    max="3"
+                                    value="{{ old('jumlah_anak', $biodata->jumlah_anak ?? '') }}">
+                            </div>
+                        </div>
+
                         <div class="col-md-6 mb-3">
                             <label>Nama Anak ke-1</label>
                             <input type="text"
@@ -747,9 +748,7 @@
                                 class="form-control"
                                 value="{{ old('nama_anak_1', $biodata->nama_anak_1 ?? '') }}">
                         </div>
-                    </div>
 
-                    <div class="row g-3">
                         <div class="col-md-6 mb-3">
                             <label>Nama Anak ke-2</label>
                             <input type="text"
@@ -757,9 +756,7 @@
                                 class="form-control"
                                 value="{{ old('nama_anak_2', $biodata->nama_anak_2 ?? '') }}">
                         </div>
-                    </div>
 
-                    <div class="row g-3">
                         <div class="col-md-6 mb-3">
                             <label>Nama Anak ke-3</label>
                             <input type="text"
@@ -767,6 +764,7 @@
                                 class="form-control"
                                 value="{{ old('nama_anak_3', $biodata->nama_anak_3 ?? '') }}">
                         </div>
+
                     </div>
                 </div>
 
@@ -2120,6 +2118,30 @@
                 }
             });
         });
+    });
+</script>
+
+<script>
+    function toggleKeluarga() {
+
+        let status = document.getElementById('status_pernikahan').value;
+        let section = document.getElementById('keluarga_section');
+
+        if (status === 'Belum Kawin' || status === '') {
+            section.style.display = 'none';
+        } else {
+            section.style.display = 'block';
+        }
+
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+
+        toggleKeluarga();
+
+        document.getElementById('status_pernikahan')
+            .addEventListener('change', toggleKeluarga);
+
     });
 </script>
 
