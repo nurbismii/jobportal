@@ -45,81 +45,37 @@
                                     <th>NPWP</th>
                                     <th>Pas Foto</th>
                                     <th>Pendukung</th>
+                                    <th>Zip</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                @foreach($biodata as $bio)
-                                <tr>
-                                    <td>{{ ++$no }}</td>
-                                    <td>{{ $bio->user->name ?? '-' }}</td>
-                                    <td>{{ $bio->no_ktp }}</td>
-                                    <td>
-                                        <a href="{{ asset($bio->no_ktp . '/dokumen/' . $bio->surat_lamaran) }}" target="_blank">
-                                            {{ $bio->surat_lamaran }}
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <a href="{{ asset($bio->no_ktp . '/dokumen/' . $bio->cv) }}" target="_blank">
-                                            {{ $bio->cv }}
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <a href="{{ asset($bio->no_ktp . '/dokumen/' . $bio->ktp) }}" target="_blank">
-                                            {{ $bio->ktp }}
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <a href="{{ asset($bio->no_ktp . '/dokumen/' . $bio->sim_b_2) }}" target="_blank">
-                                            {{ $bio->sim_b_2 }}
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <a href="{{ asset($bio->no_ktp . '/dokumen/' . $bio->kk) }}" target="_blank">
-                                            {{ $bio->kartu_keluarga }}
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <a href="{{ asset($bio->no_ktp . '/dokumen/' . $bio->ijazah) }}" target="_blank">
-                                            {{ $bio->ijazah }}
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <a href="{{ asset($bio->no_ktp . '/dokumen/' . $bio->skck) }}" target="_blank">
-                                            {{ $bio->skck }}
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <a href="{{ asset($bio->no_ktp . '/dokumen/' . $bio->ak1) }}" target="_blank">
-                                            {{ $bio->ak1 }}
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <a href="{{ asset($bio->no_ktp . '/dokumen/' . $bio->vaksin) }}" target="_blank">
-                                            {{ $bio->sertifikat_vaksin }}
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <a href="{{ asset($bio->no_ktp . '/dokumen/' . $bio->ijazah) }}" target="_blank">
-                                            {{ $bio->npwp }}
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <a href="{{ asset($bio->no_ktp . '/dokumen/' . $bio->pas_foto) }}" target="_blank">
-                                            {{ $bio->pas_foto }}
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <a href="{{ asset($bio->no_ktp . '/dokumen/' . $bio->sertifikat_pendukung) }}" target="_blank">
-                                            {{ $bio->sertifikat_pendukung }}
-                                        </a>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
                         </table>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="previewModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 id="previewTitle"></h5>
+                <button class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body text-center">
+
+                <img id="previewImage"
+                    style="max-width:100%;display:none">
+
+                <iframe id="previewPdf"
+                    style="width:100%;height:80vh;border:none;display:none">
+                </iframe>
+
+            </div>
+
         </div>
     </div>
 </div>
@@ -140,16 +96,102 @@
 
 <script>
     $(document).ready(function() {
-        // Inisialisasi DataTable
+
         const table = $('#dataTable').DataTable({
+            processing: true,
+            serverSide: true,
             scrollX: true,
-            responsive: false,
             autoWidth: false,
             fixedHeader: true,
+
+            ajax: "{{ route('personal-file.index') }}",
+
+
             dom: 'lBfrtip',
             lengthMenu: [
                 [10, 50, 100, -1], // Nilai jumlah baris
-                [10, 50, 100, 'Semua'] // Label yang tampil di dropdown
+                [10, 50, 100] // Label yang tampil di dropdown
+            ],
+
+            columns: [{
+                    data: 'DT_RowIndex',
+                    name: 'DT_RowIndex',
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'nama',
+                    name: 'nama'
+                },
+                {
+                    data: 'no_ktp',
+                    name: 'no_ktp'
+                },
+                {
+                    data: 'surat_lamaran',
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'cv',
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'ktp',
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'sim_b_2',
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'kk',
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'ijazah',
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'skck',
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'ak1',
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'vaksin',
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'npwp',
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'pas_foto',
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'sertifikat_pendukung',
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'download',
+                    orderable: false,
+                    searchable: false
+                }
             ],
             buttons: [{
                 extend: 'colvis',
@@ -161,6 +203,30 @@
             }
         });
     });
+</script>
+
+<script>
+    $(document).on('click', '.preview-file', function() {
+
+        let file = $(this).data('file')
+        let title = $(this).data('title')
+
+        $('#previewTitle').text(title)
+
+        let ext = file.split('.').pop().toLowerCase()
+
+        $('#previewImage').hide()
+        $('#previewPdf').hide()
+
+        if (ext === 'pdf') {
+            $('#previewPdf').attr('src', file).show()
+        } else {
+            $('#previewImage').attr('src', file).show()
+        }
+
+        $('#previewModal').modal('show')
+
+    })
 </script>
 @endpush
 

@@ -78,6 +78,8 @@ Route::group(['prefix' => 'admin', 'middleware' => ['redirect.role']], function 
     Route::resource('/kandidat-potensial', 'App\Http\Controllers\Admin\KandidatPotensialController');
 
     Route::post('/user/update-status-akun', [PenggunaController::class, 'updateStatusAkun'])->name('user.updateStatusAkun');
+
+    Route::get('/pelamar/download/{id}', [App\Http\Controllers\Admin\PersonalController::class, 'downloadZip'])->name('pelamar.download');
 });
 
 // API route

@@ -313,3 +313,26 @@ if (!function_exists('deleteImageBiodata')) {
         }
     }
 }
+
+if (!function_exists('dokumenIcon')) {
+    function dokumenIcon($file, $ktp)
+    {
+
+        if (!$file) {
+            return '-';
+        }
+
+        $url = asset($ktp . '/dokumen/' . $file);
+        $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+
+        if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) {
+            $icon = '<i class="fas fa-image text-success"></i>';
+        } elseif ($ext == 'pdf') {
+            $icon = '<i class="fas fa-file-pdf text-danger"></i>';
+        } else {
+            $icon = '<i class="fas fa-file"></i>';
+        }
+
+        return '<a href="' . $url . '" target="_blank">' . $icon . ' ' . $file . '</a>';
+    }
+}

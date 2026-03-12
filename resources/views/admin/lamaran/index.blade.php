@@ -425,22 +425,9 @@
                             <td>{{ $data->biodata->status_hubungan }}</td>
                             <td>{{ $data->biodata->tinggi_badan  }}</td>
                             <td>{{ $data->biodata->berat_badan  }}</td>
-
-                            <td>
-                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->surat_lamaran) }}" target="_blank">
-                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->surat_lamaran) }}
-                                </a>
-                            </td>
-                            <td>
-                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->cv) }}" target="_blank">
-                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->cv) }}
-                                </a>
-                            </td>
-                            <td>
-                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->ktp) }}" target="_blank">
-                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->ktp) }}
-                                </a>
-                            </td>
+                            <td>{!! dokumenIcon($data->biodata->surat_lamaran,$data->biodata->no_ktp) !!}</td>
+                            <td>{!! dokumenIcon($data->biodata->cv,$data->biodata->no_ktp) !!}</td>
+                            <td>{!! dokumenIcon($data->biodata->ktp,$data->biodata->no_ktp) !!}</td>
                             <td class="editable"
                                 data-id="{{ $data->biodata_id }}"
                                 data-model="biodata"
@@ -448,11 +435,7 @@
                                 {{ $data->biodata->status_ktp }}
                             </td>
                             @if($lowongan->status_sim_b2 == 1)
-                            <td>
-                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sim_b_2) }}" target="_blank">
-                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sim_b_2) }}
-                                </a>
-                            </td>
+                            <td>{!! dokumenIcon($data->biodata->sim_b_2,$data->biodata->no_ktp) !!}</td>
                             <td class="editable"
                                 data-id="{{ $data->biodata_id }}"
                                 data-model="biodata"
@@ -461,11 +444,7 @@
                             </td>
                             @endif
                             @if($lowongan->status_sio == 1)
-                            <td>
-                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sio) }}" target="_blank">
-                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sio) }}
-                                </a>
-                            </td>
+                            <td>{!! dokumenIcon($data->biodata->sio,$data->biodata->no_ktp) !!}</td>
                             <td class="editable"
                                 data-id="{{ $data->biodata_id }}"
                                 data-model="biodata"
@@ -473,58 +452,30 @@
                                 {{ $data->biodata->status_sio }}
                             </td>
                             @endif
-                            <td>
-                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->kartu_keluarga) }}" target="_blank">
-                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->kartu_keluarga) }}
-                                </a>
-                            </td>
-                            <td>
-                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->ijazah) }}" target="_blank">
-                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->ijazah) }}
-                                </a>
-                            </td>
-                            <td>
-                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->skck) }}" target="_blank">
-                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->skck) }}
-                                </a>
-                            </td>
+                            <td>{!! dokumenIcon($data->biodata->kartu_keluarga,$data->biodata->no_ktp) !!}</td>
+                            <td>{!! dokumenIcon($data->biodata->ijazah,$data->biodata->no_ktp) !!}</td>
+
+                            <td>{!! dokumenIcon($data->biodata->skck,$data->biodata->no_ktp) !!}</td>
                             <td class="editable"
                                 data-id="{{ $data->biodata_id }}"
                                 data-model="biodata"
                                 data-field="status_skck">
                                 {{ $data->biodata->status_skck }}
                             </td>
-                            <td>
-                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->ak1) }}" target="_blank">
-                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->ak1) }}
-                                </a>
-                            </td>
-                            <td>
-                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sertifikat_vaksin) }}" target="_blank">
-                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sertifikat_vaksin) }}
-                                </a>
-                            </td>
-                            <td>
-                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->npwp) }}" target="_blank">
-                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->npwp) }}
-                                </a>
-                            </td>
-                            <td>
-                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->pas_foto) }}" target="_blank">
-                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->pas_foto) }}
-                                </a>
-                            </td>
-                            <td>
-                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sertifikat_pendukung) }}" target="_blank">
-                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sertifikat_pendukung) }}
-                                </a>
-                            </td>
+
+                            <td>{!! dokumenIcon($data->biodata->ak1,$data->biodata->no_ktp) !!}</td>
+                            <td>{!! dokumenIcon($data->biodata->sertifikat_vaksin,$data->biodata->no_ktp) !!}</td>
+                            <td>{!! dokumenIcon($data->biodata->npwp,$data->biodata->no_ktp) !!}</td>
+                            <td>{!! dokumenIcon($data->biodata->pas_foto,$data->biodata->no_ktp) !!}</td>
+
+                            <td>{!! dokumenIcon($data->biodata->sertifikat_pendukung,$data->biodata->no_ktp) !!}</td>
                             <td class="editable"
                                 data-id="{{ $data->biodata_id }}"
                                 data-model="biodata"
                                 data-field="status_sertifikat">
                                 {{ $data->biodata->status_sertifikat }}
                             </td>
+
                             <td class="editable"
                                 data-id="{{ $data->id }}"
                                 data-model="lamaran"
