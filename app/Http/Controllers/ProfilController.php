@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Biodata;
-use App\Models\Pengumuman;
 use Illuminate\Http\Request;
 use App\Models\User;
 use RealRashid\SweetAlert\Facades\Alert;
+use Illuminate\Support\Facades\File;
 
 class ProfilController extends Controller
 {
@@ -44,6 +44,9 @@ class ProfilController extends Controller
             'password.confirmed' => 'Konfirmasi password tidak cocok.',
         ]);
 
+        $oldKtp = $user->no_ktp;
+        $newKtp = $request->no_ktp;
+
         $user->name = $request->nama;
         $user->no_ktp = $request->no_ktp;
 
@@ -54,6 +57,20 @@ class ProfilController extends Controller
         Biodata::where('user_id', auth()->id())->update([
             'no_ktp' => $request->no_ktp,
         ]);
+
+        $oldPath = public_path($oldKtp);
+        $newPath = public_path($newKtp);
+
+        if (File::exists($oldPath)) {
+
+            if (!File::exists($newPath)) {
+                File::moveDirectory($oldPath, $newPath);
+            } else {
+                \Log::warning('Folder tujuan sudah ada', [
+                    'path' => $newPath
+                ]);
+            }
+        }
 
         $user->save();
 

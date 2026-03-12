@@ -177,21 +177,13 @@
                             </label>
                             <select name="agama" id="agama" class="form-control" required>
                                 @php
-                                $agamaOptions = [
-                                'SD 小学' => 'SD 小学',
-                                'SMP 初中' => 'SMP 初中',
-                                'SMA 高中' => 'SMA 高中',
-                                'SMK 高中' => 'SMK 高中',
-                                'D3 大专三年' => 'D3 大专三年',
-                                'D4 大专三年' => 'D4 大专三年',
-                                'S1 本科' => 'S1 本科',
-                                'S2 研究生' => 'S2 研究生',
-                                ];
-                                $selectedAgama = $biodata->agama ?? '';
+                                $selectedAgama = old('agama', $biodata->agama ?? '');
                                 @endphp
                                 <option value="">Pilih agama</option>
-                                @foreach($agamaOptions as $agama)
-                                <option value="{{ $agama }}" {{ $selectedAgama === $agama ? 'selected' : '' }}>{{ $agama }}</option>
+                                @foreach(['ISLAM 伊斯兰教','KRISTEN PROTESTAN 基督教新教','KRISTEN KATHOLIK 天主教徒','BUDHA 佛教','HINDU 印度教','KHONGHUCU 儒教'] as $agama)
+                                <option value="{{ $agama }}" {{ $selectedAgama == $agama ? 'selected' : '' }}>
+                                    {{ $agama }}
+                                </option>
                                 @endforeach
                             </select>
                         </div>

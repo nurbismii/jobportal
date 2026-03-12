@@ -33,7 +33,7 @@
                             <label for="no_ktp" class="form-label">No. KTP</label>
                             <input type="text" id="no_ktp" name="no_ktp" class="form-control @error('no_ktp') is-invalid @enderror"
                                 value="{{ old('no_ktp', auth()->user()->no_ktp) }}"
-                                maxlength="16" required autocomplete="off" readonly>
+                                maxlength="16" required autocomplete="off">
                             @error('no_ktp')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
