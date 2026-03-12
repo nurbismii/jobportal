@@ -4,16 +4,57 @@
 
 @push('styles')
 <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" />
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />\
+<style>
+    .quill-mobile {
+        height: 300px;
+    }
+
+    @media (max-width:768px) {
+
+        .quill-mobile {
+            height: 180px;
+        }
+
+        .ql-toolbar {
+            font-size: 12px;
+        }
+
+    }
+
+    @media (max-width:768px) {
+
+        .alert {
+            font-size: 13px;
+            padding: 10px;
+        }
+
+    }
+
+    .select2-container .select2-selection--single {
+        height: 38px;
+    }
+
+    .select2-selection__rendered {
+        line-height: 38px !important;
+    }
+
+    .select2-selection__arrow {
+        height: 38px !important;
+    }
+</style>
 @endpush
 <div class="container-fluid">
 
-    <h3 class="h3 mb-3 text-gray-800">Tambah lowongan
-        <a href="{{ route('lowongan.index') }}" class="btn btn-primary btn-sm btn-icon-split float-right">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
+        <h3 class="text-gray-800 mb-2 mb-md-0">Tambah Lowongan</h3>
+
+        <a href="{{ route('lowongan.index') }}"
+            class="btn btn-primary btn-sm btn-icon-split">
             <span class="icon text-white-50"><i class="fas fa-arrow-left"></i></span>
             <span class="text">Kembali</span>
         </a>
-    </h3>
+    </div>
 
     <div class="row mb-3">
 
@@ -69,32 +110,32 @@
                                     </div>
                                     <div class="card-body py-2">
                                         <div class="row mb-2">
-                                            <div class="col-5 font-weight-bold">No Surat</div>
-                                            <div class="col-7" id="laporan-no-surat"></div>
+                                            <div class="col-12 col-md-5 font-weight-bold">No Surat</div>
+                                            <div class="col-12 col-md-7" id="laporan-no-surat"></div>
                                         </div>
                                         <div class="row mb-2">
-                                            <div class="col-5 font-weight-bold">Departemen</div>
-                                            <div class="col-7" id="laporan-departemen"></div>
+                                            <div class="col-12 col-md-5 font-weight-bold">Departemen</div>
+                                            <div class="col-12 col-md-7" id="laporan-departemen"></div>
                                         </div>
                                         <div class="row mb-2">
-                                            <div class="col-5 font-weight-bold">Divisi</div>
-                                            <div class="col-7" id="laporan-divisi"></div>
+                                            <div class="col-12 col-md-5 font-weight-bold">Divisi</div>
+                                            <div class="col-12 col-md-7" id="laporan-divisi"></div>
                                         </div>
                                         <div class="row mb-2">
-                                            <div class="col-5 font-weight-bold">Posisi</div>
-                                            <div class="col-7" id="laporan-posisi"></div>
+                                            <div class="col-12 col-md-5 font-weight-bold">Posisi</div>
+                                            <div class="col-12 col-md-7" id="laporan-posisi"></div>
                                         </div>
                                         <div class="row mb-2">
-                                            <div class="col-5 font-weight-bold">Jumlah Permintaan</div>
-                                            <div class="col-7" id="laporan-jumlah-permintaan"></div>
+                                            <div class="col-12 col-md-5 font-weight-bold">Jumlah Permintaan</div>
+                                            <div class="col-12 col-md-7" id="laporan-jumlah-permintaan"></div>
                                         </div>
                                         <div class="row mb-2">
-                                            <div class="col-5 font-weight-bold">Jumlah Terpenuhi</div>
-                                            <div class="col-7" id="laporan-jumlah-terpenuhi"></div>
+                                            <div class="col-12 col-md-5 font-weight-bold">Jumlah Terpenuhi</div>
+                                            <div class="col-12 col-md-7" id="laporan-jumlah-terpenuhi"></div>
                                         </div>
                                         <div class="row">
-                                            <div class="col-5 font-weight-bold">Status</div>
-                                            <div class="col-7" id="laporan-status"></div>
+                                            <div class="col-12 col-md-5 font-weight-bold">Status</div>
+                                            <div class="col-12 col-md-7" id="laporan-status"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -110,13 +151,13 @@
                     <div class="card-body">
 
                         <div class="row g-3">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-12 col-md-6 mb-3">
                                 <label for="nama-lowongan">Nama Lowongan Kerja
                                     <span class="text-danger">*</span>
                                 </label>
                                 <input type="text" name="nama_lowongan" id="nama-lowongan" class="form-control" required>
                             </div>
-                            <div class="col-md-6 mb-3">
+                            <div class="col-12 col-md-6 mb-3">
                                 <label for="status-sim">Status SIM B2
                                     <span class="text-danger">*</span>
                                 </label>
@@ -128,7 +169,7 @@
                             </div>
                         </div>
                         <div class="row g-3">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-12 col-md-6 mb-3">
                                 <label for="status-sio">Status SIO
                                     <span class="text-danger">*</span>
                                 </label>
@@ -140,13 +181,13 @@
                             </div>
                         </div>
                         <div class="row g-3">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-12 col-md-6 mb-3">
                                 <label for="tanggal-mulai">Tanggal Mulai
                                     <span class="text-danger">*</span>
                                 </label>
                                 <input type="datetime-local" name="tanggal_mulai" id="tanggal-mulai" class="form-control" required>
                             </div>
-                            <div class="col-md-6 mb-3">
+                            <div class="col-12 col-md-6 mb-3">
                                 <label for="tanggal-berakhir">Tanggal Berakhir
                                     <span class="text-danger">*</span>
                                 </label>
@@ -157,13 +198,16 @@
                                 <label class="form-label" for="inputEmail">Kualifikasi
                                     <span class="text-danger">*</span>
                                 </label>
-                                <div id="quill-editor" class="mb-3" style="height: 300px;"></div>
+                                <div id="quill-editor" class="mb-3 quill-mobile"></div>
                                 <textarea rows="3" class="mb-3 d-none" name="kualifikasi" id="quill-editor-area"></textarea>
 
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-primary float-right">Simpan</button>
-
+                        <div class="text-md-right text-center">
+                            <button type="submit" class="btn btn-primary px-4">
+                                Simpan
+                            </button>
+                        </div>
                     </div>
                 </div>
             </form>

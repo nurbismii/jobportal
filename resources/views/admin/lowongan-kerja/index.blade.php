@@ -13,17 +13,24 @@
     nav .pagination {
         gap: 6px;
     }
+
+    .input-group input {
+        font-size: 14px;
+    }
 </style>
 @endpush
 
 <div class="container-fluid">
 
-    <h1 class="h3 mb-3 text-gray-800">Lowongan Pekerjaan
-        <a href="{{ route('lowongan.create') }}" class="btn btn-primary btn-sm btn-icon-split float-right">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
+        <h1 class="h3 text-gray-800 mb-2 mb-md-0">Lowongan Pekerjaan</h1>
+
+        <a href="{{ route('lowongan.create') }}"
+            class="btn btn-primary btn-sm btn-icon-split">
             <span class="icon text-white-50"><i class="fas fa-plus"></i></span>
             <span class="text">Lowongan</span>
         </a>
-    </h1>
+    </div>
 
     <div class="row mb-3">
         <div class="col-12">
@@ -41,19 +48,40 @@
             <!-- Lowongan Cards -->
             <div class="row">
                 @forelse($lowongans as $data)
-                <div class="col-md-6 col-lg-4 mb-4">
+                <div class="col-12 col-sm-6 col-lg-4 mb-3">
                     <div class="card h-100 shadow border-left-primary">
                         <div class="card-body d-flex flex-column">
-                            <h4 class="card-title fw-bold text-primary">{{ $data->nama_lowongan }}</h4>
-                            <h5 class="card-title text-primary">Jumlah Pelamar saat ini : {{$data->lamarans_count}}</h5>
-                            <p class="mb-1"><strong>SIM B2 :</strong> {{ $data->status_sim_b2 == 1 ? 'Dibutuhkan' : 'Tidak dibutuhkan' }}</p>
-                            <p class="mb-1"><strong>Mulai :</strong> {{ tanggalIndo($data->tanggal_mulai) }}</p>
-                            <p class="mb-3"><strong>Berakhir :</strong> {{ tanggalIndo($data->tanggal_berakhir) }}</p>
+
+                            <h5 class="card-title font-weight-bold text-primary mb-2">
+                                {{ $data->nama_lowongan }}
+                            </h5>
+
+                            <p class="mb-2 small text-muted">
+                                Pelamar: <strong>{{$data->lamarans_count}}</strong>
+                            </p>
+
+                            <p class="mb-1 small">
+                                <strong>SIM B2 :</strong>
+                                {{ $data->status_sim_b2 == 1 ? 'Dibutuhkan' : 'Tidak' }}
+                            </p>
+
+                            <p class="mb-1 small">
+                                <strong>Mulai :</strong> {{ tanggalIndo($data->tanggal_mulai) }}
+                            </p>
+
+                            <p class="mb-2 small">
+                                <strong>Berakhir :</strong> {{ tanggalIndo($data->tanggal_berakhir) }}
+                            </p>
+
                             <div class="mb-3">
                                 @if($data->status_lowongan == 'Aktif')
-                                <span class="badge badge-success"><i class="fa fa-check-circle me-1"></i> {{ $data->status_lowongan }}</span>
+                                <span class="badge badge-success">
+                                    <i class="fa fa-check-circle"></i> Aktif
+                                </span>
                                 @else
-                                <span class="badge badge-danger"><i class="fa fa-times-circle me-1"></i> {{ $data->status_lowongan }}</span>
+                                <span class="badge badge-danger">
+                                    <i class="fa fa-times-circle"></i> Nonaktif
+                                </span>
                                 @endif
                             </div>
                             <div class="mt-auto">
