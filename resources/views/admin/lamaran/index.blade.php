@@ -391,11 +391,7 @@
                             <td>{{ $data->biodata->tanggal_lahir }}</td>
                             <td>{{ hitungUmur($data->biodata->tanggal_lahir) }}</td>
                             <td>{{ $data->biodata->status_pernikahan }}</td>
-                            <td>
-                                {{ is_null($data->biodata->jumlah_anak) || $data->biodata->jumlah_anak == 0 
-                                    ? 'TK' 
-                                    : 'K' . $data->biodata->jumlah_anak }}
-                            </td>
+                            <td>{{ strtolower($data->biodata->status_pernikahan) == 'belum kawin' ? 'TK' : 'K' . ($data->biodata->jumlah_anak ?? 0) }}</td>
                             <td>{{ $data->biodata->rt }}/{{ $data->biodata->rt }}</td>
                             <td>{{ $data->biodata->kode_pos }}</td>
                             <td>{{ $data->biodata->getProvinsi->provinsi ?? '-' }}</td>
