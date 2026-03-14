@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Imports\ImportStatusLamaran;
 use App\Jobs\ProcessLamaranMasterJob;
 use App\Models\Biodata;
 use App\Models\Lamaran;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 use RealRashid\SweetAlert\Facades\Alert;
 
 class LamaranController extends Controller
@@ -105,6 +107,28 @@ class LamaranController extends Controller
         return response()->json([
             'message' => "Berhasil memperbarui {$label}.",
         ]);
+    }
+
+    public function importStatusLamaran(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xls,xlsx|max:2048',
+        ]);
+
+        try {
+            $import = new ImportStatusLamaran;
+            Excel::import($import, $request->file('file'));
+
+            if ($import->failures()->isNotEmpty()) {
+                return back()->with('errors_import', $import->failures());
+            }
+
+            Alert::success('Berhasil', 'Data berhasil diupdate!');
+            return back();
+        } catch (\Exception $e) {
+            Alert::error('Gagal', $e->getMessage());
+            return back();
+        }
     }
 
     function getBatchDelayJam($counter, $limitPerJam = 50)

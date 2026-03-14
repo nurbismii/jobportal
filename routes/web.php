@@ -63,12 +63,13 @@ Route::group(['prefix' => 'admin', 'middleware' => ['redirect.role']], function 
     Route::get('/lowongan/pendaftar/{loker_id}', [App\Http\Controllers\Admin\LowonganController::class, 'directToLamaran'])->name('directToLamaran');
 
     Route::resource('/lamarans', 'App\Http\Controllers\Admin\LamaranController');
+    
     Route::post('/lamaran/update-status-massal', [LamaranController::class, 'updateStatusMassal'])->name('lamaran.updateStatusMassal');
     Route::get('/lamaran-data', [LamaranController::class, 'getLamaranData'])->name('lamaran.data');
+    Route::post('/auto-update-field', [LamaranController::class, 'autoUpdate'])->name('data.autoUpdate');
+    Route::post('/import-status-lamaran', [LamaranController::class, 'importStatusLamaran'])->name('import.status-lamaran');
 
     Route::resource('/pengumumans', 'App\Http\Controllers\Admin\PengumumanController');
-
-    Route::post('/auto-update-field', [LamaranController::class, 'autoUpdate'])->name('data.autoUpdate');
 
     Route::post('/refresh-data-pelamar', [LowonganController::class, 'refreshDataPelamar'])->name('refreshData');
 
