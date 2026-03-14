@@ -65,17 +65,20 @@ class ProcessLamaranEmailJob implements ShouldQueue
 
     private function dispatchEmail($userId, $lamaranId)
     {
-        $limitPerHour = 20; // JagoanHosting SAFE LIMIT
+        $limitPerHour = 20;
+        $delayPerEmail = 35; // lebih cepat dari 120 detik
 
         $sentLastHour = EmailBlastLog::where('created_at', '>=', now()->subHour())->count();
 
-        // Delay logic ultra slow
         if ($sentLastHour >= $limitPerHour) {
-            // lempar ke jam berikutnya
-            $delaySeconds = 3600 + rand(120, 600);
+
+            // jika limit tercapai, kirim di jam berikutnya
+            $nextHour = now()->addHour()->startOfHour();
+            $delaySeconds = now()->diffInSeconds($nextHour) + rand(60, 180);
         } else {
-            // 1 email tiap 4 menit
-            $delaySeconds = $sentLastHour * 240;
+
+            // delay normal antar email
+            $delaySeconds = ($sentLastHour * $delayPerEmail) + rand(5, 15);
         }
 
         $batchKe = floor($sentLastHour / $limitPerHour) + 1;
