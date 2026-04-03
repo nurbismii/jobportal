@@ -53,14 +53,28 @@
                     <div class="col-lg-7 animated fadeInLeft">
                         <div class="text-sm-center text-md-start">
                             <h1 class="text-white text-uppercase fw-bold mb-2">V-HIRE</h1>
-                            <h4 class="display-2 text-white mb-4">Rekrutmen Online</h4>
-                            <p class="mb-5 fs-5">Selamat Datang di Website Rekrutmen Resmi PT VDNI</p>
+                            <h4 class="display-4 text-white mb-3">Rekrutmen Online</h4>
+
+                            <p class="text-white mb-4" style="line-height: 1.5; text-align: justify;">
+                                PT Virtue Dragon Nickel Industry (PT VDNI) tidak pernah memungut biaya dalam proses rekrutmen.
+                                Waspadai penipuan yang mengatasnamakan perusahaan.
+                                Rekrutmen resmi hanya melalui
+                                <u><a href="https://recruitment.vdnisite.com" class="text-white" target="_blank">recruitment.vdnisite.com</a></u>,
+                                bukan melalui media sosial atau pihak ketiga.
+                                Pastikan selalu memverifikasi informasi melalui sumber resmi.
+                            </p>
+
                             <div class="d-flex justify-content-center justify-content-md-start flex-shrink-0 mb-4">
-                                <a class="btn btn-light rounded-pill py-3 px-4 px-md-5 me-2" href="{{ route('login') }}"><i class="fas fa-arrow-circle-right me-2"></i> Masuk</a>
-                                <a class="btn btn-dark rounded-pill py-3 px-4 px-md-5 ms-2" href="{{ asset('pdf/MANUAL BOOK V-HIRE (1).pdf') }}" target="_blank">Panduan Melamar Pekerjaan</a>
+                                <a class="btn btn-light rounded-pill py-3 px-4 px-md-5 me-2" href="{{ route('login') }}">
+                                    <i class="fas fa-arrow-circle-right me-2"></i> Masuk
+                                </a>
+                                <a class="btn btn-dark rounded-pill py-3 px-4 px-md-5 ms-2" href="{{ asset('pdf/MANUAL BOOK V-HIRE (1).pdf') }}" target="_blank">
+                                    Panduan Melamar Pekerjaan
+                                </a>
                             </div>
                         </div>
                     </div>
+
                     <div class="col-lg-5 animated fadeInRight">
                         <div class="calrousel-img" style="object-fit: cover;">
                             <img src="{{ asset('user/img/carousel-2.png') }}" class="img-fluid w-100" alt="">
