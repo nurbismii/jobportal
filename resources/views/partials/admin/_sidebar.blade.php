@@ -92,25 +92,14 @@
     </li>
 
     <li class="nav-item {{ request()->routeIs('account-recovery-requests.*') ? 'active' : '' }}">
-        <a class="nav-link d-flex align-items-center" href="{{ route('account-recovery-requests.index') }}">
-
-            <!-- Icon Wrapper -->
-            <div class="position-relative mr-2">
-
-                <i class="fas fa-fw fa-unlock-alt"></i>
-
+        <a class="nav-link" href="{{ route('account-recovery-requests.index') }}">
+            <i class="fas fa-fw fa-unlock-alt"></i>
+            <span>
+                Request Lupa Akun
                 @if(($pendingAccountRecoveryRequests ?? 0) > 0)
-                <span class="badge badge-danger"
-                    style="position: absolute; top: -5px; right: -10px; font-size: 10px;">
-                    {{ $pendingAccountRecoveryRequests }}
-                </span>
+                <span class="badge badge-danger badge-counter ml-1">{{ $pendingAccountRecoveryRequests }}</span>
                 @endif
-
-            </div>
-
-            <!-- Text -->
-            <span>Request Lupa Akun</span>
-
+            </span>
         </a>
     </li>
 
