@@ -94,7 +94,12 @@
     <li class="nav-item {{ request()->routeIs('account-recovery-requests.*') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('account-recovery-requests.index') }}">
             <i class="fas fa-fw fa-unlock-alt"></i>
-            <span>Request Lupa Akun</span>
+            <span>
+                Request Lupa Akun
+                @if(($pendingAccountRecoveryRequests ?? 0) > 0)
+                <span class="badge badge-danger badge-counter ml-1">{{ $pendingAccountRecoveryRequests }}</span>
+                @endif
+            </span>
         </a>
     </li>
 
