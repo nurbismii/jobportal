@@ -48,7 +48,22 @@ class PenggunaController extends Controller
                 })
 
                 ->addColumn('lowongan', function ($pengguna) {
-                    return substr($pengguna->biodataUser->getLatestRiwayatLamaran->lowongan->nama_lowongan ?? '-', 0, 15);
+
+                    $riwayat = $pengguna->biodataUser->getLatestRiwayatLamaran ?? null;
+
+                    if (!$riwayat || !$riwayat->lowongan) {
+                        return '-';
+                    }
+
+                    $lowongan = $riwayat->lowongan;
+                    $nama = substr($lowongan->nama_lowongan, 0, 15);
+
+                    $url = route('directToLamaran', [
+                        'loker_id' => $lowongan->id,
+                        'user_id' => $pengguna->id
+                    ]);
+
+                    return '<a href="' . $url . '" target="_blank">' . $nama . '</a>';
                 })
 
                 ->addColumn('rekomendasi', function ($pengguna) {
@@ -94,7 +109,7 @@ class PenggunaController extends Controller
             </div>';
                 })
 
-                ->rawColumns(['status', 'rekomendasi', 'riwayat', 'aksi'])
+                ->rawColumns(['status', 'rekomendasi', 'riwayat', 'lowongan', 'aksi'])
                 ->make(true);
         }
 

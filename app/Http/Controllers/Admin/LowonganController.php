@@ -99,6 +99,8 @@ class LowonganController extends Controller
     {
         $lowongan = Lowongan::select('id', 'nama_lowongan', 'status_sim_b2', 'status_sio')->where('id', $loker_id)->first();
 
+        $userId = $request->user_id;
+
         $query = Lamaran::with([
             'lowongan',
             'biodata.user',
@@ -109,6 +111,12 @@ class LowonganController extends Controller
             'biodata.getKelurahan',
             'biodata.user.suratPeringatan',
         ])->where('loker_id', $loker_id);
+
+        if ($userId) {
+            $query->whereHas('biodata.user', function ($q) use ($userId) {
+                $q->where('id', $userId);
+            });
+        }
 
         // Filter status proses (multiple)
         if ($request->filled('status')) {
@@ -185,7 +193,7 @@ class LowonganController extends Controller
 
         $lamarans = $query->get();
 
-        return view('admin.lamaran.index', compact('lamarans', 'lowongan'))->with('no');
+        return view('admin.lamaran.index', compact('lamarans', 'lowongan', 'userId'))->with('no');
     }
 
     // Refresh status pelamar berdasarkan data dari HRIS

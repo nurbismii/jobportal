@@ -315,7 +315,7 @@
                     </thead>
                     <tbody>
                         @foreach($lamarans as $data)
-                        <tr>
+                        <tr class="{{ $userId == $data->biodata->user->id ? 'table-warning' : '' }}">
                             <td>{{ ++$no }}</td>
                             <td>
                                 @if($data->biodata->user->suratPeringatan->isNotEmpty())
