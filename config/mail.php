@@ -96,6 +96,11 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    'recovery_recipient' => [
+        'address' => env('MAIL_RECOVERY_TO_ADDRESS', 'recruitment@vdnisite.com'),
+        'name' => env('MAIL_RECOVERY_TO_NAME', 'Tim Recruitment'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Markdown Mail Settings

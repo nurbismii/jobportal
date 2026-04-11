@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\LamaranController;
+use App\Http\Controllers\Admin\AccountRecoveryRequestController;
 use App\Http\Controllers\BiodataController;
 use App\Http\Controllers\PendaftaranController;
 use App\Http\Controllers\ResetPasswordController;
@@ -31,7 +32,17 @@ Route::resource('pendaftaran', 'App\Http\Controllers\PendaftaranController');
 Route::get('konfirmasi-email/{id}', [PendaftaranController::class, 'konfirmasiEmail']);
 Route::get('konfirmasi-email-token/{token}', [PendaftaranController::class, 'konfirmasiEmailToken']);
 
-Route::resource('reset-password', 'App\Http\Controllers\ResetPasswordController');
+Route::get('lupa-akun', [ResetPasswordController::class, 'index'])->name('lupa-akun.index');
+Route::post('lupa-akun', [ResetPasswordController::class, 'store'])->name('lupa-akun.store');
+Route::post('lupa-akun/permintaan', [ResetPasswordController::class, 'submitRecoveryRequest'])
+    ->middleware('throttle:3,10')
+    ->name('lupa-akun.request');
+Route::get('lupa-akun/token/{token}', [ResetPasswordController::class, 'resetPassword'])->name('lupa-akun.edit');
+Route::patch('lupa-akun/{token}', [ResetPasswordController::class, 'update'])->name('lupa-akun.update');
+
+Route::get('reset-password', [ResetPasswordController::class, 'index'])->name('reset-password.index');
+Route::post('reset-password', [ResetPasswordController::class, 'store'])->name('reset-password.store');
+Route::patch('reset-password/{token}', [ResetPasswordController::class, 'update'])->name('reset-password.update');
 Route::get('reset-password-token/{token}', [ResetPasswordController::class, 'resetPassword']);
 
 // User harus login dan sudah verifikasi email untuk akses biodata dan profil
@@ -77,6 +88,9 @@ Route::group(['prefix' => 'admin', 'middleware' => ['redirect.role']], function 
     Route::resource('/permintaan-tenaga-kerja', 'App\Http\Controllers\Admin\PermintaanTenagaKerjaController');
     Route::resource('/email-blast-log', 'App\Http\Controllers\Admin\EmailBlastController');
     Route::resource('/kandidat-potensial', 'App\Http\Controllers\Admin\KandidatPotensialController');
+    Route::get('/request-lupa-akun', [AccountRecoveryRequestController::class, 'index'])->name('account-recovery-requests.index');
+    Route::post('/request-lupa-akun/{id}/approve', [AccountRecoveryRequestController::class, 'approve'])->name('account-recovery-requests.approve');
+    Route::post('/request-lupa-akun/{id}/reject', [AccountRecoveryRequestController::class, 'reject'])->name('account-recovery-requests.reject');
 
     Route::post('/user/update-status-akun', [PenggunaController::class, 'updateStatusAkun'])->name('user.updateStatusAkun');
 

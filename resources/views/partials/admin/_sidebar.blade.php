@@ -91,6 +91,13 @@
         </a>
     </li>
 
+    <li class="nav-item {{ request()->routeIs('account-recovery-requests.*') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('account-recovery-requests.index') }}">
+            <i class="fas fa-fw fa-unlock-alt"></i>
+            <span>Request Lupa Akun</span>
+        </a>
+    </li>
+
     <!-- Divider -->
     <hr class="sidebar-divider d-none d-md-block">
 

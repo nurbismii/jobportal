@@ -115,24 +115,8 @@ class PendaftaranController extends Controller
 
     public function konfirmasiEmail($id)
     {
-        $check = User::where('id', $id)->first();
-
-        if (!$check) {
-            Alert::error('Opps!', 'Akun tidak ditemukan silakan daftar ulang');
-            return redirect('login');
-        }
-
-        if ($check->status_akun == 1) {
-            Alert::error('Opps!', 'Akun kamu telah aktif silakan login');
-            return redirect('login');
-        }
-
-        User::where('id', $id)->update([
-            'email_verified_at' => Carbon::now(),
-            'status_akun' => 1
-        ]);
-
-        return view('verifikasi-berhasil');
+        Alert::warning('Tautan Lama Tidak Berlaku', 'Silakan gunakan tautan verifikasi terbaru yang lengkap dari email Anda.');
+        return redirect()->route('login');
     }
 
     public function konfirmasiEmailToken($token)

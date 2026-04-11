@@ -52,7 +52,7 @@
                             Ingat Saya
                         </label>
                     </div>
-                    <a href="{{ route('reset-password.index') }}" class="small text-decoration-none text-primary">Lupa Kata Sandi?</a>
+                    <a href="{{ route('lupa-akun.index') }}" class="small text-decoration-none text-primary">Lupa Akun?</a>
                 </div>
 
                 <div class="d-grid mb-3">

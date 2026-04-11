@@ -52,6 +52,8 @@
     <script src="{{ asset('user/lib/counterup/counterup.min.js') }}"></script>
     <script src="{{ asset('user/lib/lightbox/js/lightbox.min.js') }}"></script>
     <script src="{{ asset('user/lib/owlcarousel/owl.carousel.min.js') }}"></script>
+
+    @stack('scripts')
 </body>
 
 </html>

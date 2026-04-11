@@ -24,8 +24,12 @@
                 <div class="mb-3">
                     <label for="no_ktp" class="form-label">No KTP <sup class="text-danger">*</sup></label>
                     <input type="text" maxlength="16" id="no_ktp" name="no_ktp"
-                        class="form-control form-control @error('no_ktp') is-invalid @enderror"
-                        value="{{ old('no_ktp') }}" placeholder="16 digit NIK" required>
+                        class="form-control @error('no_ktp') is-invalid @enderror"
+                        value="{{ old('no_ktp') }}"
+                        placeholder="16 digit NIK"
+                        inputmode="numeric"
+                        pattern="[0-9]*"
+                        required>
                     @error('no_ktp')
                     <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
@@ -84,4 +88,11 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.getElementById('no_ktp').addEventListener('input', function(e) {
+        this.value = this.value.replace(/[^0-9]/g, '');
+    });
+</script>
+
 @endsection

@@ -110,13 +110,6 @@
             Refresh Status Pelamar
         </button>
 
-        <button data-toggle="modal" data-target="#import-status" class="btn btn-success mr-2 btn-sm btn-icon-split">
-            <span class="icon text-white-50">
-                <i class="fas fa-file-excel"></i>
-            </span>
-            <span class="text">Import Status</span>
-        </button>
-
         <a href="{{ route('lowongan.index') }}" class="btn btn-danger btn-sm btn-icon-split">
             <span class="icon text-white-50">
                 <i class="fas fa-arrow-left"></i>
@@ -852,58 +845,6 @@ return $order[$item->level_sp] ?? 99;
 </div>
 @endif
 @endforeach
-
-<div class="modal fade" id="import-status" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-md modal-dialog-centered">
-        <div class="modal-content shadow-lg border-0">
-
-            <!-- HEADER -->
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">
-                    <i class="fas fa-file-excel me-2"></i> Import Data Excel
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-dismiss="modal"></button>
-            </div>
-
-            <!-- BODY -->
-            <form action="{{ route('import.status-lamaran') }}" method="POST" enctype="multipart/form-data">
-                @csrf
-
-                <div class="modal-body">
-
-                    <div class="alert alert-info d-flex align-items-center">
-                        <i class="fas fa-info-circle me-2 mr-2"></i>
-                        Pastikan format excel sesuai template sistem.
-                    </div>
-
-                    <label class="fw-semibold mb-1">Pilih File Excel <span class="text-danger">*</span></label>
-                    <div class="input-group mb-3">
-                        <input type="file" name="file" id="fileExcel" class="form-control" accept=".xlsx, .xls" required>
-                        <span class="input-group-text bg-success text-white">
-                            <i class="fas fa-upload"></i>
-                        </span>
-                    </div>
-
-                    <!-- Preview nama file -->
-                    <small id="fileName" class="text-muted fst-italic">Belum ada file dipilih...</small>
-
-                    <hr>
-                </div>
-
-                <!-- FOOTER -->
-                <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                        <i class="fas fa-times me-1"></i> Tutup
-                    </button>
-
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-paper-plane me-1"></i> Import
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 
 @push('scripts')
 <!-- Page level plugins -->

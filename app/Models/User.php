@@ -29,7 +29,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'ket_resign',
         'password',
         'area_kerja',
-        'email_verifikasi_token'
+        'email_verifikasi_token',
+        'email_verified_at',
     ];
 
     /**
@@ -70,5 +71,10 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         // ambil 1 data lamaran terbaru untuk user ini
         return $this->hasOne(RiwayatProsesLamaran::class, 'user_id', 'id')->latestOfMany();
+    }
+
+    public function accountRecoveryRequests()
+    {
+        return $this->hasMany(AccountRecoveryRequest::class);
     }
 }
