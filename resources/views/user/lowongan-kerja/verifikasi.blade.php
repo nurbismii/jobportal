@@ -75,10 +75,11 @@
                     @endif
                 </ul>
                 <span>
-                    <small class="text-danger mt-2 d-block">
+                    <small class="text-danger mt-2 mb-3 d-block">
                         Mohon periksa kembali KTP atau SIM Anda karena dokumen tersebut belum terbaca dengan baik. Silakan perbaiki agar sesuai dengan format yang ditentukan sebelum melamar.
                     </small>
                 </span>
+                <a href="{{ route('biodata.index') }}#step5" class="btn btn-primary mb-0">Perbarui KTP atau SIM</a>
             </div>
         </div>
     </div>
@@ -98,6 +99,26 @@
                 <ul class="mb-0 ps-3">
                     <li class="mb-1">{{ $msg_no_ktp }}</li>
                 </ul>
+                <a href="{{ route('biodata.index') }}#step5" class="btn btn-primary mb-0">Perbarui KTP</a>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    @if($msg_nama_ktp)
+    <div class="alert border-1 border-primary shadow-sm rounded-3 p-4">
+        <div class="d-flex align-items-start">
+            <div class="me-3">
+                <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
+            </div>
+            <div>
+                <h4 class="mb-2 text-dark fw-bold">Pemeriksaan KTP!</h4>
+                <p class="mb-3 text-danger fw-bold">
+                    Nama pada KTP tidak sesuai dengan nama akun. Pastikan nama pada KTP sudah sesuai dengan nama akun yang digunakan untuk melamar.
+                </p>
+                <ul class="mb-3 ps-3">
+                    <li class="mb-1">{{ $msg_nama_ktp }}</li>
+                </ul>
             </div>
         </div>
     </div>
@@ -114,19 +135,16 @@
                 <p class="mb-3 text-danger fw-bold">
                     Beberapa informasi wajib belum lengkap. Mohon lengkapi data berikut terlebih dahulu:
                 </p>
-                <ul class="mb-0 ps-3">
+                <ul class="mb-3 ps-3">
                     @foreach ($emptyFields as $field)
                     <li class="mb-1">{{ $field }}</li>
                     @endforeach
                 </ul>
+                <a href="{{ route('biodata.index') }}#step5" class="btn btn-primary mb-0">Lengkapi Data</a>
             </div>
         </div>
     </div>
     @endif
-
-    <div class="mt-3">
-        <a href="{{ route('biodata.index') }}#step5" class="btn btn-primary">Lengkapi Data</a>
-    </div>
 </div>
 
 @push('scripts')

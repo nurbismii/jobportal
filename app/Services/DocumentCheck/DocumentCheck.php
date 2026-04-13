@@ -166,11 +166,13 @@ class DocumentCheck
         $emptyFields = collect($fieldLabels)->filter(fn($label, $field) => empty($biodata->$field))->values()->all();
 
         $msg_no_ktp = $ocrResult['nik_ktp'] !== $biodata->no_ktp ? 'No KTP tidak sesuai dengan biodata anda.' : null;
+        $msg_nama_ktp = $ocrResult['nama_ktp'] !== strtoupper(Auth::user()->name) ? 'Nama pada KTP tidak sesuai dengan nama pada biodata anda.' : null;
 
         if (count($emptyFields) || $msg_no_ktp || $msg_name_ktp_vs_sim_b2 || $msg_date_ktp_vs_sim_b2) {
             return view('user.lowongan-kerja.verifikasi', [
                 'emptyFields' => $emptyFields,
                 'msg_no_ktp' => $msg_no_ktp,
+                'msg_nama_ktp' => $msg_nama_ktp,
                 'msg_name_ktp_vs_sim_b2' => $msg_name_ktp_vs_sim_b2,
                 'msg_date_ktp_vs_sim_b2' => $msg_date_ktp_vs_sim_b2,
                 'biodata' => $biodata,
