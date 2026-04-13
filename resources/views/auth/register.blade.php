@@ -43,6 +43,7 @@
                     @error('name')
                     <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
+                    <small class="form-text text-muted">Sesuai dengan KTP</small>
                 </div>
 
                 <div class="mb-3">
