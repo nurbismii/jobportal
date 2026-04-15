@@ -3,44 +3,10 @@
 @section('content')
 
 @push('styles')
+
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-<style>
-    .service-item:hover {
-        background-color: #007bff;
-        color: #fff;
-    }
-
-    .service-item:hover *:not(.btn):not(.btn *) {
-        color: #fff !important;
-    }
-
-    .service-item .btn {
-        background-color: #fff;
-        color: #007bff;
-        border: 2px solid #007bff;
-        transition: all 0.3s ease;
-    }
-
-    .service-item .btn:hover {
-        background-color: #007bff;
-        color: #fff;
-    }
-
-    .badge i {
-        font-size: 12px;
-    }
-
-    .hover-card {
-        transition: 0.3s ease;
-        border-radius: 15px;
-    }
-
-    .hover-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-    }
-</style>
+@include('partials.lowongan.styles')
 @endpush
 
 @if(Auth::guest())
@@ -112,32 +78,54 @@ $maxStep = count($steps);
     <span>Formulir lengkap! Kamu sudah bisa melamar pekerjaan <a href="{{ route('lowongan-kerja.index') }}" class="btn btn-sm btn-success">Lihat lowongan pekerjaan</a></span>
 </div>
 @endif
-<div class="row g-3">
+<div class="row g-3 quick-access-grid">
     <!-- Card Formulir Biodata -->
-    <div class="col-12 col-md-6">
-        <a href="{{ route('biodata.index') }}" class="text-decoration-none">
-            <div class="card bg-light shadow-sm border-0 h-100 hover-card">
-                <div class="card-body text-center py-4">
-                    <div class="icon-wrapper mb-3">
-                        <i class="fa-solid fa-id-card fa-3x text-primary"></i>
+    <div class="col-6 col-md-6">
+        <a href="{{ route('biodata.index') }}" class="d-block h-100 text-decoration-none">
+            <div class="card quick-access-card border-0 h-100">
+                <div class="quick-access-card__body">
+                    <div class="quick-access-card__top">
+                        <div class="quick-access-card__icon quick-access-card__icon--primary">
+                            <i class="fa-solid fa-id-card"></i>
+                        </div>
+                        <span class="quick-access-card__chip">Persiapan</span>
                     </div>
-                    <h5 class="fw-bold text-dark">Upload Berkas Lamaran</h5>
-                    <p class="text-muted mb-0">Lengkapi data pribadi dan berkas untuk melanjutkan proses lamaran.</p>
+
+                    <div class="quick-access-card__content">
+                        <h5 class="quick-access-card__title">Upload Berkas Lamaran</h5>
+                        <p class="quick-access-card__text">Lengkapi data pribadi dan dokumen agar proses lamaran bisa dilanjutkan.</p>
+                    </div>
+
+                    <div class="quick-access-card__footer">
+                        <span>Lengkapi Sekarang</span>
+                        <i class="fa fa-arrow-right"></i>
+                    </div>
                 </div>
             </div>
         </a>
     </div>
 
     <!-- Card Panduan Melamar -->
-    <div class="col-12 col-md-6">
-        <a href="{{ asset('pdf/MANUAL BOOK V-HIRE (1).pdf') }}" target="_blank" class="text-decoration-none">
-            <div class="card bg-light shadow-sm border-0 h-100 hover-card">
-                <div class="card-body text-center py-4">
-                    <div class="icon-wrapper mb-3">
-                        <i class="fa-solid fa-book-open-reader fa-3x text-success"></i>
+    <div class="col-6 col-md-6">
+        <a href="{{ asset('pdf/MANUAL BOOK V-HIRE (1).pdf') }}" target="_blank" class="d-block h-100 text-decoration-none">
+            <div class="card quick-access-card border-0 h-100">
+                <div class="quick-access-card__body">
+                    <div class="quick-access-card__top">
+                        <div class="quick-access-card__icon quick-access-card__icon--success">
+                            <i class="fa-solid fa-book-open-reader"></i>
+                        </div>
+                        <span class="quick-access-card__chip">Panduan</span>
                     </div>
-                    <h5 class="fw-bold text-dark">Panduan Melamar Pekerjaan</h5>
-                    <p class="text-muted mb-0">Pelajari langkah-langkah sebelum mengajukan lamaran.</p>
+
+                    <div class="quick-access-card__content">
+                        <h5 class="quick-access-card__title">Panduan Melamar</h5>
+                        <p class="quick-access-card__text">Pelajari langkah penting sebelum mengajukan lamaran kerja.</p>
+                    </div>
+
+                    <div class="quick-access-card__footer">
+                        <span>Buka Panduan</span>
+                        <i class="fa fa-arrow-right"></i>
+                    </div>
                 </div>
             </div>
         </a>
@@ -147,60 +135,140 @@ $maxStep = count($steps);
 
 <div class="container">
 
-    <div class="card shadow-sm mb-4">
-        <div class="card-header fw-bold py-2">
-            Infomasi Pribadi yang Perlu Dilengkapi!
+    @php
+    $completedStep = min($step, $maxStep);
+    $progressPercent = $maxStep > 0 ? ($completedStep / $maxStep) * 100 : 0;
+    $activeStep = $completedStep < $maxStep ? $completedStep + 1 : $maxStep;
+    $remainingSteps = max($maxStep - $completedStep, 0);
+    $stepDescriptions = [
+    1 => 'Lengkapi data dasar dan identitas diri untuk memulai proses pendaftaran.',
+    2 => 'Tambahkan informasi pendidikan agar profil Anda lebih lengkap.',
+    3 => 'Masukkan data keluarga untuk kebutuhan administrasi.',
+    4 => 'Isi kontak darurat yang dapat dihubungi jika diperlukan.',
+    5 => 'Unggah dokumen pribadi dan berkas pendukung lamaran.',
+    6 => 'Profil selesai dan siap digunakan untuk melamar pekerjaan.',
+    ];
+    @endphp
+
+    <div class="card profile-progress-card mb-4">
+        <div class="profile-progress-card__header">
+            <div class="profile-progress-card__title-wrap">
+                <div class="profile-progress-card__icon">
+                    <i class="fa fa-user-check"></i>
+                </div>
+                <div>
+                    <span class="profile-progress-card__eyebrow">Progres Profil</span>
+                    <h5 class="profile-progress-card__title">Informasi Pribadi dan Dokumen</h5>
+                    <p class="profile-progress-card__subtitle">
+                        Lengkapi setiap tahap agar akun Anda siap digunakan untuk melihat lowongan dan mengirim lamaran.
+                    </p>
+                </div>
+            </div>
+
+            <span class="profile-progress-card__status {{ $completedStep >= $maxStep ? 'profile-progress-card__status--done' : 'profile-progress-card__status--progress' }}">
+                <i class="fa {{ $completedStep >= $maxStep ? 'fa-check-circle' : 'fa-hourglass-half' }}"></i>
+                {{ $completedStep >= $maxStep ? 'Siap Melamar' : 'Dalam Proses' }}
+            </span>
         </div>
-        <div class="card-body">
-            <div class="border-start ps-3">
 
+        <div class="profile-progress-card__body">
+            <div class="profile-progress-card__summary">
+                <div class="profile-progress-card__summary-top">
+                    <div>
+                        <div class="profile-progress-card__summary-label">Ringkasan Progres</div>
+                        <p class="profile-progress-card__summary-title">
+                            @if($completedStep >= $maxStep)
+                            Profil Anda sudah lengkap dan siap digunakan untuk melamar.
+                            @else
+                            Selesaikan {{ $remainingSteps }} tahap lagi untuk membuka akses penuh ke lowongan pekerjaan.
+                            @endif
+                        </p>
+                    </div>
+
+                    <div class="profile-progress-card__summary-count">
+                        {{ $completedStep }}/{{ $maxStep }} Tahap
+                    </div>
+                </div>
+
+                <div class="progress profile-progress-card__progress">
+                    <div
+                        class="progress-bar"
+                        role="progressbar"
+                        style="width: {{ $progressPercent }}%"
+                        aria-valuenow="{{ $completedStep }}"
+                        aria-valuemin="0"
+                        aria-valuemax="{{ $maxStep }}">
+                    </div>
+                </div>
+
+                <p class="profile-progress-card__helper">
+                    @if($completedStep >= $maxStep)
+                    Semua tahapan sudah terisi. Anda dapat langsung menuju daftar lowongan untuk memilih posisi yang sesuai.
+                    @else
+                    Langkah berikutnya yang perlu Anda selesaikan adalah <strong>{{ $steps[$activeStep] }}</strong>. Progres akan tersimpan secara otomatis saat data dilengkapi.
+                    @endif
+                </p>
+            </div>
+
+            <div class="profile-progress-card__steps">
                 @foreach ($steps as $number => $label)
-                <div class="d-flex align-items-center mb-3 position-relative">
-
-                    {{-- ICON --}}
-                    <span class="me-3">
-                        @if($step >= $number)
-                        <span class="badge bg-success rounded-circle p-2">
-                            <i class="fa fa-check"></i>
-                        </span>
-                        @else
-                        <span class="badge bg-danger rounded-circle p-2">
-                            <i class="fa fa-times"></i>
-                        </span>
-                        @endif
-                    </span>
-
-                    {{-- LABEL --}}
-                    <div class="{{ $step == $number ? 'fw-bold text-primary' : '' }}">
-                        {{ $label }}
+                @php
+                if ($completedStep >= $number) {
+                $state = 'done';
+                $stateLabel = 'Selesai';
+                $icon = 'fa-check';
+                } elseif ($number === $activeStep) {
+                $state = 'current';
+                $stateLabel = 'Langkah Berikutnya';
+                $icon = 'fa-pen';
+                } else {
+                $state = 'upcoming';
+                $stateLabel = 'Menunggu';
+                $icon = 'fa-clock';
+                }
+                @endphp
+                <div class="profile-progress-step">
+                    <div class="profile-progress-step__icon profile-progress-step__icon--{{ $state }}">
+                        <i class="fa {{ $icon }}"></i>
+                    </div>
+                    <div class="profile-progress-step__content">
+                        <div class="profile-progress-step__meta profile-progress-step__meta--{{ $state }}">
+                            Tahap {{ $number }} &middot; {{ $stateLabel }}
+                        </div>
+                        <span class="profile-progress-step__title">{{ $label }}</span>
+                        <p class="profile-progress-step__description">{{ $stepDescriptions[$number] }}</p>
                     </div>
                 </div>
                 @endforeach
             </div>
 
-            {{-- Progress Bar --}}
-            <div class="mt-4">
-                <div class="progress" style="height: 10px;">
-                    <div
-                        class="progress-bar bg-primary"
-                        role="progressbar"
-                        style="width: {{ ($step / $maxStep) * 100 }}%">
-                    </div>
-                </div>
-                <small class="text-muted d-block mt-1">
-                    Langkah {{ min($step, $maxStep) }} dari {{ $maxStep }}
-                </small>
+            <div class="profile-progress-card__footer">
+                <p class="profile-progress-card__footer-text">
+                    @if($completedStep >= $maxStep)
+                    Profil Anda sudah memenuhi semua tahapan. Lanjutkan untuk memilih lowongan yang ingin dilamar.
+                    @else
+                    Luangkan beberapa menit untuk melengkapi data sekarang agar proses lamaran Anda berjalan lebih lancar.
+                    @endif
+                </p>
+
+                @if($completedStep >= $maxStep)
+                <a href="{{ route('lowongan-kerja.index') }}" class="btn btn-success rounded-pill px-4 py-2">
+                    Lihat Lowongan
+                </a>
+                @else
+                <a href="{{ route('biodata.index') }}" class="btn btn-primary rounded-pill px-4 py-2">
+                    Lengkapi Informasi Pribadi
+                </a>
+                @endif
             </div>
         </div>
     </div>
 
-    @if($step != 6)
-    <a href="{{ route('biodata.index') }}" class="btn btn-primary mb-3">Lengkapi Formulir Biodata</a>
-    @endif
-
     @if(($step == 6) || (Auth::check() && Auth::user()->role == 'admin'))
     <h4 class="display-4 fw-bold mb-0">Lowongan</h4>
     <p class="text-primary mb-3">Pilih lowongan kerja yang kamu minati dan kesempatan berkarir bersama kami.</p>
+    @include('partials.lowongan.list', ['lowongans' => $lowongans])
+    {{--
     <div class="row g-4 justify-content-center">
 
         @php
@@ -210,12 +278,6 @@ $maxStep = count($steps);
         @forelse($lowongans as $lowongan)
         <div class="col-md-6 col-lg-4">
             <div class="service-item h-100 d-flex flex-column"> <!-- h-100: biar tinggi seragam -->
-                <div class="service-img">
-                    <img src="{{ asset('img/megapone-loker.jpg') }}" class="img-fluid rounded-top w-100" alt="">
-                    <div class="service-icon p-3">
-                        <i class="fa fa-users fa-2x"></i>
-                    </div>
-                </div>
                 <div class="service-content p-4 d-flex flex-column flex-grow-1">
                     <div class="service-content-inner flex-grow-1 d-flex flex-column justify-content-between">
                         <a href="{{ route('lowongan-kerja.show', $lowongan->id) }}" class="d-inline-block h4 mb-0">{{ $lowongan->nama_lowongan }}</a>
@@ -254,6 +316,7 @@ $maxStep = count($steps);
         @endforelse
 
     </div>
+    --}}
     <div class="d-flex justify-content-end mt-3">
         <a href="{{ route('lowongan-kerja.index') }}" class="text-primary fw-bold">
             Lihat semua lowongan &gt;&gt;
@@ -267,6 +330,8 @@ $maxStep = count($steps);
 <div class="container py-5">
     <h4 class="display-4 fw-bold mb-0">Lowongan</h4>
     <p class="text-primary mb-3">Pilih lowongan kerja yang kamu minati dan kesempatan berkarir bersama kami.</p>
+    @include('partials.lowongan.list', ['lowongans' => $lowongans])
+    {{--
     <div class="row g-4 justify-content-center">
 
         @php
@@ -320,6 +385,7 @@ $maxStep = count($steps);
         @endforelse
 
     </div>
+    --}}
     <div class="d-flex justify-content-end mt-3">
         <a href="{{ route('lowongan-kerja.index') }}" class="text-primary fw-bold">
             Lihat semua lowongan &gt;&gt;

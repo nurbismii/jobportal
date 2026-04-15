@@ -2,6 +2,14 @@
 
 @section('content')
 
+@push('styles')
+@include('partials.lowongan.styles')
+@endpush
+
+@php
+    $isActive = strtolower($lowongan->status_lowongan) === 'aktif';
+@endphp
+
 <!-- Lowongan Kerja Start -->
 <div class="container-fluid service py-4">
     <div class="container">
@@ -32,34 +40,79 @@
         @endif
         @endif
 
-        <div class="alert border-2 border-primary shadow-sm rounded-3">
-            <div class="mx-auto pb-2 wow fadeInUp" data-wow-delay="0.2s">
-                <h1 class="fw-bold text-primary mb-4">{{ $lowongan->nama_lowongan}}</h1>
-                <p class="mb-0">{!! $lowongan->kualifikasi !!}</p>
+        <article class="job-detail-card">
+            <div class="job-detail-card__body">
+                <div class="job-detail-card__header">
+                    <div class="job-detail-card__heading">
+                        <div class="job-detail-card__icon">
+                            <i class="fa fa-briefcase"></i>
+                        </div>
+                        <div>
+                            <span class="job-detail-card__eyebrow">Detail Lowongan</span>
+                            <h1 class="job-detail-card__title">{{ $lowongan->nama_lowongan }}</h1>
+                            <p class="job-detail-card__subtitle">
+                                Tinjau kualifikasi posisi ini dengan saksama. Jika sudah sesuai dengan profil Anda, lanjutkan untuk mengajukan lamaran.
+                            </p>
+                        </div>
+                    </div>
+
+                    <span class="job-card__badge {{ $isActive ? 'job-card__badge--active' : 'job-card__badge--inactive' }}">
+                        {{ $lowongan->status_lowongan }}
+                    </span>
+                </div>
+
+                <div class="job-detail-card__meta-grid">
+                    <div class="job-detail-card__meta-item">
+                        <span class="job-detail-card__meta-icon">
+                            <i class="fa fa-calendar-alt"></i>
+                        </span>
+                        <div>
+                            <span class="job-detail-card__meta-label">Periode Lowongan</span>
+                            <span class="job-detail-card__meta-value">
+                                {{ tanggalIndo($lowongan->tanggal_mulai) }} &ndash; {{ tanggalIndo($lowongan->tanggal_berakhir) }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="job-detail-card__meta-item">
+                        <span class="job-detail-card__meta-icon">
+                            <i class="fa fa-info-circle"></i>
+                        </span>
+                        <div>
+                            <span class="job-detail-card__meta-label">Status Pendaftaran</span>
+                            <span class="job-detail-card__meta-value">
+                                {{ $isActive ? 'Pendaftaran sedang dibuka untuk posisi ini.' : 'Pendaftaran untuk posisi ini sudah ditutup.' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="job-detail-card__section">
+                    <span class="job-detail-card__section-label">Kualifikasi dan Persyaratan</span>
+                    <div class="job-detail-card__content">
+                        {!! $lowongan->kualifikasi !!}
+                    </div>
+                </div>
+
+                <div class="job-detail-card__actions">
+                    <a class="btn btn-light" href="{{ route('lowongan-kerja.index') }}">
+                        <i class="fa fa-arrow-left me-2"></i>Kembali
+                    </a>
+
+                    @if($isActive)
+                        @if(!Auth::user())
+                        <a class="btn btn-primary" href="{{ route('login') }}">
+                            <i class="fa fa-sign-in-alt me-2"></i>Masuk / Buat Akun
+                        </a>
+                        @else
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#konfirmasi-lamaran">
+                            <i class="fa fa-paper-plane me-2"></i>Lamar Posisi Ini
+                        </button>
+                        @endif
+                    @endif
+                </div>
             </div>
-            <div class="d-flex justify-content-end mt-3 mx-auto">
-                <p class="mb-1 text-primary">Aktif lamaran : {{ tanggalIndo($lowongan->tanggal_mulai) }} – {{ tanggalIndo($lowongan->tanggal_berakhir) }}</p>
-            </div>
-            <div class="d-flex justify-content-end mx-auto">
-                @if(strtolower($lowongan->status_lowongan) == 'aktif')
-                <span class="mb-4 badge bg-success">{{ $lowongan->status_lowongan }}</span>
-                @else
-                <span class="mb-4 badge bg-danger">{{ $lowongan->status_lowongan }}</span>
-                @endif
-            </div>
-            <div class="d-flex justify-content-end mt-3 mx-auto">
-                <a class="btn btn-light rounded-pill py-2 px-3 me-2" href="{{ route('lowongan-kerja.index') }}">Kembali</a>
-                @if(strtolower($lowongan->status_lowongan) == 'aktif')
-                <!-- Lowongan lihat semua start -->
-                @if(!Auth::user())
-                <a class="btn btn-primary rounded-pill py-2 px-3 me-2" href="{{ route('login') }}">Masuk/Buat Akun?</a>
-                @else
-                <a class="btn btn-primary rounded-pill py-2 px-3 me-2" data-bs-toggle="modal" data-bs-target="#konfirmasi-lamaran">Lamar</a>
-                @endif
-                @endif
-                <!-- Lowongan lihat semua end -->
-            </div>
-        </div>
+        </article>
     </div>
 </div>
 <!-- Lowongan Kerja End -->
@@ -75,7 +128,7 @@
             <form id="form-lamaran" action="{{ route('lowongan-kerja.store') }}" method="post">
                 @csrf
                 <div class="modal-body">
-                    <p class="text-primary fw-bold">Kamu yakin ingin melamar posisi {{$lowongan->nama_lowongan}}?</p>
+                    <p class="text-primary fw-bold">Kamu yakin ingin melamar posisi {{ $lowongan->nama_lowongan }}?</p>
                     <input type="hidden" name="loker_id" value="{{ $lowongan->id }}" readonly>
                     <input type="hidden" name="biodata_id" value="{{ $biodata->id ?? '' }}" readonly>
                 </div>
@@ -88,6 +141,7 @@
     </div>
 </div>
 
+@push('scripts')
 <script>
     document.getElementById('form-lamaran').addEventListener('submit', function(e) {
         const submitBtn = document.getElementById('btn-submit-lamaran');
@@ -95,5 +149,6 @@
         submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mengirim...';
     });
 </script>
+@endpush
 
 @endsection

@@ -3,28 +3,7 @@
 @section('content')
 
 @push('styles')
-<style>
-    .service-item:hover {
-        background-color: #007bff;
-        color: #fff;
-    }
-
-    .service-item:hover *:not(.btn):not(.btn *) {
-        color: #fff !important;
-    }
-
-    .service-item .btn {
-        background-color: #fff;
-        color: #007bff;
-        border: 2px solid #007bff;
-        transition: all 0.3s ease;
-    }
-
-    .service-item .btn:hover {
-        background-color: #007bff;
-        color: #fff;
-    }
-</style>
+@include('partials.lowongan.styles')
 @endpush
 
 <!-- Header Start -->
@@ -40,6 +19,8 @@
     <div class="container py-5">
         <h4 class="display-4 mb-4">Lowongan</h4>
         <p class="text-primary mb-3">Pilih lowongan kerja yang kamu minati dan kesempatan berkarir bersama kami.</p>
+        @include('partials.lowongan.list', ['lowongans' => $lowongans, 'showBackHomeButton' => true])
+        {{--
         <div class="row g-4 justify-content-center">
 
             @php
@@ -49,12 +30,6 @@
             @forelse($lowongans as $lowongan)
             <div class="col-md-6 col-lg-4">
                 <div class="service-item h-100 d-flex flex-column"> <!-- h-100: biar tinggi seragam -->
-                    <div class="service-img">
-                        <img src="{{ asset('img/megapone-loker.jpg') }}" class="img-fluid rounded-top w-100" alt="">
-                        <div class="service-icon p-3">
-                            <i class="fa fa-users fa-2x"></i>
-                        </div>
-                    </div>
                     <div class="service-content p-4 d-flex flex-column flex-grow-1">
                         <div class="service-content-inner flex-grow-1 d-flex flex-column justify-content-between">
                             <a href="{{ route('lowongan-kerja.show', $lowongan->id) }}" class="d-inline-block h4 mb-0">{{ $lowongan->nama_lowongan }}</a>
@@ -93,6 +68,7 @@
             </div>
             @endforelse
         </div>
+        --}}
     </div>
 </div>
 <!-- Lowongan Kerja End -->

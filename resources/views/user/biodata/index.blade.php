@@ -310,8 +310,11 @@
                             <input type="tel" name="no_telp"
                                 class="form-control"
                                 value="{{ old('no_telp', $biodata->no_telp ?? '') }}"
-                                pattern="^(?:\+62|62|0)[2-9][0-9]{7,11}$"
-                                required>
+                                pattern="[0-9]{11,13}"
+                                inputmode="numeric"
+                                required
+                                oninvalid="this.setCustomValidity('Nomor HP harus 11 sampai 13 digit angka')"
+                                oninput="this.setCustomValidity(''); this.value = this.value.replace(/[^0-9]/g, '')">
                         </div>
 
                         <div class="col-md-6 mb-3">
@@ -782,13 +785,15 @@
 
                     <div class="col-md-6 mb-3">
                         <label>No telepon <span class="text-danger">*</span></label>
-                        <input type="tel"
-                            name="no_telp_darurat"
+
+                        <input type="tel" name="no_telp_darurat"
                             class="form-control"
-                            value="{{ old('no_telp_darurat', $biodata->no_telepon_darurat ?? '') }}"
-                            pattern="^(?:\+62|62|0)[2-9][0-9]{7,11}$"
-                            title="Masukkan nomor telepon Indonesia yang valid (misalnya 08123456789 atau +628123456789)"
-                            required>
+                            value="{{ old('no_telp_darurat', $biodata->no_telp_darurat ?? '') }}"
+                            pattern="[0-9]{11,13}"
+                            inputmode="numeric"
+                            required
+                            oninvalid="this.setCustomValidity('Nomor HP harus 11 sampai 13 digit angka')"
+                            oninput="this.setCustomValidity(''); this.value = this.value.replace(/[^0-9]/g, '')">
                     </div>
 
                     <div class="col-md-6 mb-3">
