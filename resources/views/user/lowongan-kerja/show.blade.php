@@ -7,7 +7,7 @@
 @endpush
 
 @php
-    $isActive = strtolower($lowongan->status_lowongan) === 'aktif';
+$isActive = strtolower($lowongan->status_lowongan) === 'aktif';
 @endphp
 
 <!-- Lowongan Kerja Start -->
@@ -87,10 +87,17 @@
                     </div>
                 </div>
 
-                <div class="job-detail-card__section">
+                <div class="job-detail-card__section mb-3">
                     <span class="job-detail-card__section-label">Kualifikasi dan Persyaratan</span>
                     <div class="job-detail-card__content">
                         {!! $lowongan->kualifikasi !!}
+                    </div>
+                </div>
+
+                <div class="job-detail-card__section">
+                    <span class="job-detail-card__section-label">WASPADA PENIPUAN!</span>
+                    <div class="job-detail-card__content">
+                        PT Virtue Dragon Nickel Industry TIDAK pernah memungut biaya apapun dan TIDAK bekerja sama dengan Lembaga/Institusi lain.
                     </div>
                 </div>
 
@@ -100,15 +107,15 @@
                     </a>
 
                     @if($isActive)
-                        @if(!Auth::user())
-                        <a class="btn btn-primary" href="{{ route('login') }}">
-                            <i class="fa fa-sign-in-alt me-2"></i>Masuk / Buat Akun
-                        </a>
-                        @else
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#konfirmasi-lamaran">
-                            <i class="fa fa-paper-plane me-2"></i>Lamar Posisi Ini
-                        </button>
-                        @endif
+                    @if(!Auth::user())
+                    <a class="btn btn-primary" href="{{ route('login') }}">
+                        <i class="fa fa-sign-in-alt me-2"></i>Masuk / Buat Akun
+                    </a>
+                    @else
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#konfirmasi-lamaran">
+                        <i class="fa fa-paper-plane me-2"></i>Lamar Posisi Ini
+                    </button>
+                    @endif
                     @endif
                 </div>
             </div>
