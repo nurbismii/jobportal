@@ -211,45 +211,96 @@ if (!function_exists('extractSimB2OnlyOCR')) {
     }
 }
 
+if (!function_exists('hasFilledFields')) {
+    function hasFilledFields($source, array $fields)
+    {
+        foreach ($fields as $field) {
+            if (blank(data_get($source, $field))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+}
+
 if (!function_exists('calcutaionStep')) {
     function calcutaionStep($biodata)
     {
-        $dokumen = [
-            'cv' => $biodata ? $biodata->cv : null,
-            'foto' => $biodata ? $biodata->pas_foto : null,
-            'surat_lamaran' => $biodata ? $biodata->surat_lamaran : null,
-            'ijazah' => $biodata ? $biodata->ijazah : null,
-            'ktp' => $biodata ? $biodata->ktp : null,
-            'skck' => $biodata ? $biodata->skck : null,
-            'kartu_keluarga' => $biodata ? $biodata->kartu_keluarga : null,
-            'npwp' => $biodata ? $biodata->npwp : null,
-            'ak1' => $biodata ? $biodata->ak1 : null,
-        ];
-
-        if ($biodata) {
-            if ($biodata->berat_badan != null) {
-                $step = 1;
-            }
-            if ($biodata->tahun_lulus != null) {
-                $step = 2;
-            }
-            if ($biodata->status_pernikahan != null) {
-                $step = 3;
-            }
-            if ($biodata->status_hubungan != null) {
-                $step = 4;
-            }
-            if (count($dokumen) == 9 && !in_array(null, $dokumen)) {
-                $step = 5;
-            }
-            if ($step == 5) {
-                $step = 6;
-            }
-        } else {
-            $step = 0;
+        if (!$biodata) {
+            return 0;
         }
 
-        return $step;
+        $stepFields = [
+            1 => [
+                'no_ktp',
+                'no_telp',
+                'no_kk',
+                'no_npwp',
+                'jenis_kelamin',
+                'agama',
+                'vaksin',
+                'tempat_lahir',
+                'tanggal_lahir',
+                'provinsi',
+                'kabupaten',
+                'kecamatan',
+                'kelurahan',
+                'alamat',
+                'kode_pos',
+                'rt',
+                'rw',
+                'hobi',
+                'golongan_darah',
+                'tinggi_badan',
+                'berat_badan',
+            ],
+            2 => [
+                'pendidikan_terakhir',
+                'nama_instansi',
+                'jurusan',
+                'nilai_ipk',
+                'tahun_lulus',
+            ],
+            3 => [
+                'nama_ayah',
+                'nama_ibu',
+                'status_pernikahan',
+            ],
+            4 => [
+                'nama_kontak_darurat',
+                'no_telepon_darurat',
+                'status_hubungan',
+            ],
+        ];
+
+        $requiredDocuments = [
+            'cv',
+            'pas_foto',
+            'surat_lamaran',
+            'ijazah',
+            'ktp',
+            'skck',
+            'kartu_keluarga',
+            'npwp',
+            'ak1',
+        ];
+
+        $step = 0;
+
+        foreach ($stepFields as $stepNumber => $fields) {
+            if (!hasFilledFields($biodata, $fields)) {
+                return $step;
+            }
+
+            $step = $stepNumber;
+        }
+
+        if (!hasFilledFields($biodata, $requiredDocuments)) {
+            return $step;
+        }
+
+        return 6;
     }
 }
 

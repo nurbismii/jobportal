@@ -3,291 +3,99 @@
 @section('content')
 
 @push('styles')
-<style>
-    .file-upload-box {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background-color: #f4f4f4;
-        padding: 12px 16px;
-        border-radius: 12px;
-        font-size: 14px;
-    }
-
-    .file-icon {
-        color: #009de0;
-        margin-right: 10px;
-        font-size: 1.5rem;
-    }
-
-    .upload-label {
-        display: flex;
-        align-items: center;
-        color: #adb5bd;
-    }
-
-    .btn-upload {
-        background: linear-gradient(90deg, #bcbcbc, #a0a0a0);
-        color: white;
-        border: none;
-        border-radius: 6px;
-        padding: 6px 16px;
-        font-weight: 600;
-    }
-
-    input[type="file"] {
-        display: none;
-    }
-
-    .file-box {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background-color: #f4f4f4;
-        padding: 12px 16px;
-        border-radius: 12px;
-        font-size: 14px;
-    }
-
-    .file-info {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        color: #333;
-    }
-
-    .file-icon {
-        font-size: 1.5rem;
-        color: #009de0;
-    }
-
-    .file-meta {
-        display: flex;
-        flex-direction: column;
-        color: #6c757d;
-    }
-
-    .file-meta .filename {
-        color: #495057;
-        font-weight: 500;
-    }
-
-    .btn-view {
-        background: linear-gradient(90deg, #0072b5, #5fc1e8);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        padding: 6px 16px;
-        font-weight: 600;
-    }
-
-    .btn-delete {
-        background: linear-gradient(90deg, #83332d, #f2a293);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        padding: 6px 16px;
-        font-weight: 600;
-    }
-
-    .btn-group-custom {
-        display: flex;
-        gap: 10px;
-    }
-
-    .sticky-tabs {
-        position: sticky;
-        top: 96px;
-        /* Atur sesuai tinggi navbar/header Anda */
-        z-index: 1030;
-        /* Pastikan di atas konten lain */
-        background: #fff;
-        /* Agar tidak transparan */
-        border-radius: 0.5rem 0.5rem 0 0;
-    }
-
-    .check-pasif {
-        pointer-events: none;
-    }
-
-    .header {
-        text-align: center;
-        border-bottom: 3px solid #2c3e50;
-        padding-bottom: 20px;
-        margin-bottom: 30px;
-    }
-
-    .header h1 {
-        color: #2c3e50;
-        font-size: 24px;
-        font-weight: bold;
-        margin-bottom: 10px;
-    }
-
-    .section {
-        margin-bottom: 30px;
-    }
-
-    .section-title {
-        background: linear-gradient(135deg, #2c3e50, #3498db);
-        color: white;
-        padding: 12px 20px;
-        font-size: 16px;
-        font-weight: bold;
-        margin-bottom: 15px;
-        border-radius: 5px;
-    }
-
-    .subsection {
-        margin-bottom: 20px;
-    }
-
-    .subsection-title {
-        background-color: #ecf0f1;
-        color: #2c3e50;
-        padding: 8px 15px;
-        font-weight: bold;
-        margin-bottom: 10px;
-        border-left: 4px solid #3498db;
-    }
-
-    .requirement-list {
-        margin-left: 20px;
-        margin-bottom: 15px;
-    }
-
-    .requirement-list li {
-        margin-bottom: 8px;
-        text-align: justify;
-    }
-
-    .legal-text {
-        background-color: #fafafa;
-        border-left: 4px solid #e74c3c;
-        padding: 15px;
-        margin: 15px 0;
-        font-style: italic;
-        border-radius: 0 5px 5px 0;
-    }
-
-    .checkbox-section {
-        background-color: #f8f9fa;
-        border: 2px solid #dee2e6;
-        padding: 20px;
-        margin: 15px 0;
-        border-radius: 8px;
-    }
-
-    .checkbox-item {
-        display: flex;
-        align-items: flex-start;
-        margin-bottom: 15px;
-        padding: 10px;
-        background: white;
-        border-radius: 5px;
-        border: 1px solid #e9ecef;
-    }
-
-    .checkbox-item input[type="checkbox"] {
-        margin-right: 15px;
-        margin-top: 5px;
-        transform: scale(1.2);
-    }
-
-    .checkbox-item label {
-        cursor: pointer;
-        text-align: justify;
-        flex: 1;
-    }
-
-    .warning-box {
-        background: linear-gradient(135deg, #e74c3c, #c0392b);
-        color: white;
-        padding: 20px;
-        border-radius: 8px;
-        margin: 20px 0;
-    }
-
-    .warning-box h3 {
-        margin-bottom: 10px;
-        font-size: 18px;
-    }
-
-    .article-reference {
-        background-color: #e8f4f8;
-        border: 1px solid #bee5eb;
-        padding: 15px;
-        margin: 10px 0;
-        border-radius: 5px;
-        font-size: 14px;
-    }
-
-    .signature-section {
-        margin-top: 40px;
-        padding-top: 30px;
-        border-top: 2px solid #2c3e50;
-    }
-
-    .signature-box {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 40px;
-        margin-top: 30px;
-    }
-
-    .signature-field {
-        text-align: center;
-        padding: 20px;
-        border: 2px dashed #bdc3c7;
-        border-radius: 8px;
-    }
-
-    .signature-field h4 {
-        margin-bottom: 60px;
-        color: #2c3e50;
-    }
-
-    .signature-line {
-        border-top: 2px solid #2c3e50;
-        margin-top: 20px;
-        padding-top: 10px;
-    }
-</style>
+<link rel="stylesheet" href="{{ asset('user/css/vhire-custom.css') }}">
 
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 @endpush
 
 <div class="container-fluid service py-2">
-    <div class="container py-5">
-        <div class="mx-auto pb-5 wow fadeInUp" data-wow-delay="0.2s">
-            <h4 class="text-primary" id="start">Formulir Biodata</h4>
+    <div class="container py-4 py-lg-5 biodata-wizard">
+        <div class="mx-auto pb-4 wow fadeInUp" data-wow-delay="0.2s">
+            <div class="wizard-hero" id="start">
+                <div>
+                    <span class="wizard-hero__eyebrow">Profil Pelamar</span>
+                    <h1 class="wizard-hero__title">Lengkapi biodata dan dokumen dalam beberapa langkah</h1>
+                </div>
+
+                <div class="wizard-hero__progress">
+                    <div class="wizard-hero__progress-top">
+                        <span id="wizardCurrentStep">Langkah 1</span>
+                        <span id="wizardProgressText">1 dari 6 langkah</span>
+                    </div>
+                    <span class="wizard-hero__progress-label" id="wizardStepLabel">Data Pribadi</span>
+                    <div class="wizard-progress" aria-hidden="true">
+                        <span class="wizard-progress__bar" id="wizardProgressBar"></span>
+                    </div>
+                </div>
+            </div>
         </div>
         <form id="formWizard" method="POST" action="{{ route('biodata.store') }}" enctype="multipart/form-data">
             @csrf
-            <!-- Step Indicators -->
-            <ul class="nav nav-tabs mb-4 sticky-tabs bg-white z-3" id="formTabs" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#step1" type="button">Data Pribadi</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#step2" type="button">Pendidikan</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#step3" type="button">Data Keluarga</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#step4" type="button">Kontak Darurat</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#step5" type="button">Dokumen Pribadi</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#step6" type="button">Syarat dan Ketentuan</button>
-                </li>
-            </ul>
+            <div class="wizard-shell">
+                <!-- Step Indicators -->
+                <div class="sticky-tabs">
+                    <ul class="nav nav-tabs form-steps" id="formTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#step1" type="button">
+                                <span class="wizard-step__number">01</span>
+                                <span class="wizard-step__content">
+                                    <span class="wizard-step__title">Data Pribadi</span>
+                                    <span class="wizard-step__caption">Identitas dan alamat utama</span>
+                                </span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#step2" type="button">
+                                <span class="wizard-step__number">02</span>
+                                <span class="wizard-step__content">
+                                    <span class="wizard-step__title">Pendidikan</span>
+                                    <span class="wizard-step__caption">Riwayat pendidikan terakhir</span>
+                                </span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#step3" type="button">
+                                <span class="wizard-step__number">03</span>
+                                <span class="wizard-step__content">
+                                    <span class="wizard-step__title">Data Keluarga</span>
+                                    <span class="wizard-step__caption">Informasi keluarga inti</span>
+                                </span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#step4" type="button">
+                                <span class="wizard-step__number">04</span>
+                                <span class="wizard-step__content">
+                                    <span class="wizard-step__title">Kontak Darurat</span>
+                                    <span class="wizard-step__caption">Kontak yang bisa dihubungi</span>
+                                </span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#step5" type="button">
+                                <span class="wizard-step__number">05</span>
+                                <span class="wizard-step__content">
+                                    <span class="wizard-step__title">Dokumen Pribadi</span>
+                                    <span class="wizard-step__caption">Unggah berkas wajib</span>
+                                </span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#step6" type="button">
+                                <span class="wizard-step__number">06</span>
+                                <span class="wizard-step__content">
+                                    <span class="wizard-step__title">Syarat dan Ketentuan</span>
+                                    <span class="wizard-step__caption">Review akhir dan ajukan</span>
+                                </span>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
 
-            <!-- Tab Content -->
-            <div class="tab-content">
+                <div class="wizard-panel">
+                    <div class="wizard-panel__body">
+                        <!-- Tab Content -->
+                        <div class="tab-content">
                 <!-- Step Biodata -->
                 <div class="tab-pane fade show active" id="step1">
                     <h6 class="text-primary">Biodata</h6>
@@ -788,7 +596,7 @@
 
                         <input type="tel" name="no_telp_darurat"
                             class="form-control"
-                            value="{{ old('no_telp_darurat', $biodata->no_telp_darurat ?? '') }}"
+                            value="{{ old('no_telp_darurat', $biodata->no_telepon_darurat ?? '') }}"
                             pattern="[0-9]{11,13}"
                             inputmode="numeric"
                             required
@@ -1277,17 +1085,18 @@
                         </div>
                     </div>
                 </div>
-            </div>
+                        </div>
+                    </div>
+                </div>
 
-            <!-- Navigation Buttons -->
-            <div class="mt-4 d-flex justify-content-between">
-                <!-- Tombol Sebelumnya di kiri -->
-                <button type="button" class="btn btn-dark" id="prevBtn" disabled>Sebelumnya</button>
+                <!-- Navigation Buttons -->
+                <div class="wizard-actions">
+                    <button type="button" class="btn btn-dark" id="prevBtn" disabled>Sebelumnya</button>
 
-                <!-- Tombol Selanjutnya dan Submit di kanan -->
-                <div class="d-flex gap-2 ms-auto">
-                    <button type="submit" class="btn btn-success" id="submitBtn">Ajukan</button>
-                    <button type="button" class="btn btn-primary" id="nextBtn">Selanjutnya</button>
+                    <div class="wizard-actions__next">
+                        <button type="submit" class="btn btn-success d-none" id="submitBtn">Ajukan</button>
+                        <button type="button" class="btn btn-primary" id="nextBtn">Selanjutnya</button>
+                    </div>
                 </div>
             </div>
         </form>
@@ -1868,12 +1677,18 @@
 
 <script>
     const tabs = Array.from(document.querySelectorAll('#formTabs .nav-link'));
+    const stepPanes = Array.from(document.querySelectorAll('#formWizard .tab-pane'));
 
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
     const submitBtn = document.getElementById('submitBtn');
     const form = document.getElementById('formWizard');
+    const wizardCurrentStep = document.getElementById('wizardCurrentStep');
+    const wizardProgressText = document.getElementById('wizardProgressText');
+    const wizardStepLabel = document.getElementById('wizardStepLabel');
+    const wizardProgressBar = document.getElementById('wizardProgressBar');
     let formSubmitting = false;
+    let currentStep = 0;
 
     // Tampilkan loading spinner saat form disubmit, dan cegah double-submit
     form.addEventListener('submit', function(e) {
@@ -1893,52 +1708,69 @@
         if (typeof prevBtn !== 'undefined' && prevBtn) prevBtn.disabled = true;
     });
 
-    let currentStep = 0;
-
     document.addEventListener('DOMContentLoaded', () => {
-
-        var hash = window.location.hash;
-        if (hash) {
-            var tabTriggerEl = document.querySelector('[data-bs-target="' + hash + '"]');
-            if (tabTriggerEl) {
-                var tab = new bootstrap.Tab(tabTriggerEl);
-                tab.show();
-
-                // Update currentStep sesuai index tab hash
-                tabs.forEach((t, i) => {
-                    if (t.getAttribute('data-bs-target') === hash) {
-                        currentStep = i;
-                    }
-                });
-            }
-        }
-
-        showStep(currentStep);
-
-        // Mencegah klik langsung pada tab selain currentStep
         tabs.forEach((tab, index) => {
-            tab.addEventListener('show.bs.tab', function(e) {
-                if (index > currentStep) {
-                    if (!validateStep(currentStep)) {
-                        e.preventDefault();
-                        return;
-                    }
+            tab.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                if (index === currentStep) {
+                    return;
                 }
-                currentStep = index;
-                updateNavButtons();
+
+                if (index > currentStep) {
+                    goToNextStep(index);
+                    return;
+                }
+
+                setActiveStep(index);
             });
         });
 
+        const hash = window.location.hash;
+        const initialIndex = tabs.findIndex(tab => tab.getAttribute('data-bs-target') === hash);
+        setActiveStep(initialIndex >= 0 ? initialIndex : 0, false);
     });
 
-    function showStep(index) {
-        tabs[index].click(); // Trigger tab change
-        updateNavButtons(); // Perbarui tombol
+    function setActiveStep(index, shouldScroll = true) {
+        if (!tabs.length || !stepPanes.length) {
+            return;
+        }
 
-        // Scroll ke field/input/form teratas pada tab-pane aktif
+        const boundedIndex = Math.max(0, Math.min(index, tabs.length - 1));
+        currentStep = boundedIndex;
+
+        tabs.forEach((tab, tabIndex) => {
+            const isActive = tabIndex === boundedIndex;
+            tab.classList.toggle('active', isActive);
+            tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        });
+
+        stepPanes.forEach((pane, paneIndex) => {
+            const isActive = paneIndex === boundedIndex;
+            pane.classList.toggle('show', isActive);
+            pane.classList.toggle('active', isActive);
+        });
+
+        const targetTab = tabs[boundedIndex];
+        const targetHash = targetTab?.getAttribute('data-bs-target');
+        if (targetHash) {
+            history.replaceState(null, '', targetHash);
+        }
+
+        updateNavButtons();
+
+        if (!shouldScroll) {
+            return;
+        }
+
         setTimeout(() => {
+            targetTab?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest',
+                inline: 'center'
+            });
+
             const startElement = document.getElementById('start');
-            // Atau jika ingin scroll ke elemen tersebut:
             if (startElement) {
                 startElement.scrollIntoView({
                     behavior: 'smooth',
@@ -1949,7 +1781,11 @@
     }
 
     function validateStep(index) {
-        const stepPane = document.querySelectorAll('.tab-pane')[index];
+        const stepPane = stepPanes[index];
+        if (!stepPane) {
+            return true;
+        }
+
         const inputs = stepPane.querySelectorAll('input, select');
         for (const input of inputs) {
             if (!input.checkValidity()) {
@@ -1960,30 +1796,58 @@
         return true;
     }
 
-    nextBtn.addEventListener('click', () => {
+    function goToNextStep(targetIndex = currentStep + 1) {
         if (!validateStep(currentStep)) return;
-        // JIKA DARI STEP 4 (index 3) KE STEP 5
-        // MAKA SIMPAN DULU VIA AJAX
+
         if (currentStep === 3) {
-            saveStep1to4Ajax();
+            saveStep1to4Ajax(targetIndex);
             return;
         }
-        currentStep++;
-        showStep(currentStep);
+
+        setActiveStep(targetIndex);
+    }
+
+    nextBtn.addEventListener('click', () => {
+        goToNextStep(currentStep + 1);
     });
 
     prevBtn.addEventListener('click', () => {
-        currentStep--;
-        showStep(currentStep);
+        if (currentStep === 0) {
+            return;
+        }
+
+        setActiveStep(currentStep - 1);
     });
 
     function updateNavButtons() {
         prevBtn.disabled = currentStep === 0;
         nextBtn.classList.toggle('d-none', currentStep === tabs.length - 1);
         submitBtn.classList.toggle('d-none', currentStep !== tabs.length - 1);
+        updateWizardProgress();
     }
 
-    document.addEventListener('DOMContentLoaded', () => showStep(currentStep));
+    function updateWizardProgress() {
+        const totalSteps = tabs.length;
+        const activeTab = tabs[currentStep];
+        const activeTitle = activeTab?.querySelector('.wizard-step__title')?.textContent?.trim() || `Langkah ${currentStep + 1}`;
+        const progressWidth = totalSteps > 0 ? ((currentStep + 1) / totalSteps) * 100 : 0;
+
+        if (wizardCurrentStep) {
+            wizardCurrentStep.textContent = `Langkah ${currentStep + 1}`;
+        }
+
+        if (wizardProgressText) {
+            wizardProgressText.textContent = `${currentStep + 1} dari ${totalSteps} langkah`;
+        }
+
+        if (wizardStepLabel) {
+            wizardStepLabel.textContent = activeTitle;
+        }
+
+        if (wizardProgressBar) {
+            wizardProgressBar.style.width = `${progressWidth}%`;
+        }
+    }
 
     const scrollBox = document.getElementById('termsBox');
     const checkBox = document.getElementById('checkBox1');
@@ -2060,7 +1924,7 @@
         e.target.value = formatted;
     });
 
-    function saveStep1to4Ajax() {
+    function saveStep1to4Ajax(targetStep = currentStep + 1) {
 
         nextBtn.disabled = true;
         nextBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Menyimpan...';
@@ -2077,8 +1941,7 @@
             .then(res => res.json())
             .then(res => {
                 if (res.status) {
-                    currentStep++;
-                    showStep(currentStep);
+                    setActiveStep(targetStep);
                 } else {
                     alert(res.message || 'Gagal menyimpan data');
                 }
@@ -2153,3 +2016,4 @@
 @endpush
 
 @endsection
+

@@ -76,13 +76,7 @@ class PenggunaController extends Controller
                 })
 
                 ->addColumn('rekomendasi', function ($pengguna) {
-                    return '
-            <td class="editable"
-                data-id="' . $pengguna->id . '"
-                data-model="user"
-                data-field="rekomendasi">
-                ' . $pengguna->rekomendasi . '
-            </td>';
+                    return $pengguna->rekomendasi ?? '';
                 })
 
                 ->addColumn('riwayat', function ($pengguna) {
@@ -118,7 +112,7 @@ class PenggunaController extends Controller
             </div>';
                 })
 
-                ->rawColumns(['status', 'rekomendasi', 'riwayat', 'lowongan', 'aksi'])
+                ->rawColumns(['status', 'riwayat', 'lowongan', 'aksi'])
                 ->make(true);
         }
 

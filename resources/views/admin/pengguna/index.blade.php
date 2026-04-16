@@ -286,7 +286,16 @@
                 },
                 {
                     data: 'rekomendasi',
-                    orderable: false
+                    name: 'rekomendasi',
+                    orderable: false,
+                    createdCell: function(td, cellData, rowData) {
+                        $(td)
+                            .addClass('editable')
+                            .attr('data-id', rowData.id)
+                            .attr('data-model', 'user')
+                            .attr('data-field', 'rekomendasi')
+                            .text(cellData || '');
+                    }
                 },
                 {
                     data: 'riwayat',
@@ -305,6 +314,9 @@
 </script>
 
 <script>
+    let originalContent = '';
+    const debounceTimers = {};
+
     // Simpan nilai awal saat mulai edit
     $('#dataTable').on('focus', 'td.editable', function() {
         originalContent = $(this).text().trim();
@@ -323,8 +335,6 @@
         $td.attr('contenteditable', 'false');
 
         const newValue = $td.text().trim();
-        const debounceTimers = {};
-        let originalContent = '';
 
         // ⛔ Jika tidak ada perubahan, tidak perlu update
         if (newValue === originalContent) {
