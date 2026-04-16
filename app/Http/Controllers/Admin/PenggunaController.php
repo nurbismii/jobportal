@@ -22,7 +22,12 @@ class PenggunaController extends Controller
         confirmDelete($title, $text);
 
         if ($request->ajax()) {
-            $query = User::with('biodataUser.getLatestRiwayatLamaran.lowongan')
+            $query = User::with([
+                'biodataUser' => function ($query) {
+                    $query->with('getLatestRiwayatLamaran.lowongan')
+                        ->withCount('getRiwayatLamaran');
+                }
+            ])
                 ->where('role', '!=', 'admin');
 
             return DataTables::of($query)
@@ -44,12 +49,12 @@ class PenggunaController extends Controller
                 })
 
                 ->addColumn('status_proses', function ($pengguna) {
-                    return $pengguna->biodataUser->getLatestRiwayatLamaran->status_proses ?? '-';
+                    return optional(optional($pengguna->biodataUser)->getLatestRiwayatLamaran)->status_proses ?? '-';
                 })
 
                 ->addColumn('lowongan', function ($pengguna) {
 
-                    $riwayat = $pengguna->biodataUser->getLatestRiwayatLamaran ?? null;
+                    $riwayat = optional($pengguna->biodataUser)->getLatestRiwayatLamaran;
 
                     if (!$riwayat || !$riwayat->lowongan) {
                         return '-';
@@ -64,6 +69,10 @@ class PenggunaController extends Controller
                     ]);
 
                     return '<a href="' . $url . '" target="_blank">' . $nama . '</a>';
+                })
+
+                ->addColumn('jumlah_melamar', function ($pengguna) {
+                    return optional($pengguna->biodataUser)->get_riwayat_lamaran_count ?? 0;
                 })
 
                 ->addColumn('rekomendasi', function ($pengguna) {

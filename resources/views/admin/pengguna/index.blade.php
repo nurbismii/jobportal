@@ -166,6 +166,7 @@
                                     <th>Akun</th>
                                     <th>Lamaran</th>
                                     <th>Lowongan</th>
+                                    <th>Jumlah Melamar</th>
                                     <th>Rekomendasi</th>
                                     <th>Riwayat</th>
                                     <th>Aksi</th>
@@ -277,6 +278,11 @@
                 {
                     data: 'lowongan',
                     name: 'lowongan'
+                },
+                {
+                    data: 'jumlah_melamar',
+                    orderable: false,
+                    searchable: false
                 },
                 {
                     data: 'rekomendasi',

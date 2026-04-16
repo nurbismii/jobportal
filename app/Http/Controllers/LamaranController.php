@@ -27,8 +27,8 @@ class LamaranController extends Controller
     {
         try {
             $lamaran = Lamaran::with('lowongan', 'biodata')->where('id', $id)->first();
-            #$riwayat_proses = RiwayatProsesLamaran::where('lamaran_id', $lamaran->id)->where('status_lolos', null)->orderBy('created_at', 'desc')->get();
-            $riwayat_proses = RiwayatProsesLamaran::where('lamaran_id', $lamaran->id)->orderBy('created_at', 'desc')->get();
+            $riwayat_proses = RiwayatProsesLamaran::where('lamaran_id', $lamaran->id)->where('status_lolos', null)->orderBy('created_at', 'desc')->get();
+            #$riwayat_proses = RiwayatProsesLamaran::where('lamaran_id', $lamaran->id)->orderBy('created_at', 'desc')->get();
 
             return view('user.lamaran.show', compact('lamaran', 'riwayat_proses'));
         } catch (Exception $e) {
