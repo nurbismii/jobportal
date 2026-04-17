@@ -36,7 +36,7 @@ class EmailRecoverAccount extends Mailable
             'token' => $this->detail['email_verifikasi_token'],
         ];
 
-        return $this->from('no-reply@vdnisite.com')
+        return $this->from(config('mail.from.address'), config('mail.from.name'))
             ->subject('Pemulihan Akun V-HIRE')
             ->view('auth.recover-account-email', compact('data'))
             ->with([

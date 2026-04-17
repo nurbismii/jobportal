@@ -2,11 +2,12 @@
 
 namespace App\Jobs;
 
+use App\Mail\StatusLamaran;
 use App\Models\EmailBlastLog;
 use App\Models\Lamaran;
 use App\Models\User;
+use App\Services\FallbackMailService;
 use Illuminate\Bus\Queueable;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -47,8 +48,8 @@ class SendProsesLamaranEmail implements ShouldQueue
                 return;
             }
 
-            Mail::to($user->email)
-                ->send(new \App\Mail\StatusLamaran($user, $this->status, $lamaran, $this->pesan));
+            app(FallbackMailService::class)
+                ->send($user->email, new StatusLamaran($user, $this->status, $lamaran, $this->pesan));
 
             EmailBlastLog::where('id', $this->logId)->update([
                 'status_kirim' => 'berhasil',

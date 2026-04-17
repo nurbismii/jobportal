@@ -6,11 +6,11 @@ use App\Models\AccountRecoveryRequest;
 use App\Mail\EmailRecoverAccount;
 use App\Mail\EmailRecoveryRequest;
 use App\Mail\EmailVerification;
+use App\Services\FallbackMailService;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Str;
 
@@ -74,7 +74,7 @@ class ResetPasswordController extends Controller
             'email_verifikasi_token' => $token,
         ]);
 
-        Mail::to($user->email)->send(new EmailRecoverAccount($user));
+        app(FallbackMailService::class)->send($user->email, new EmailRecoverAccount($user));
 
         Alert::success('Berhasil', 'Tautan pemulihan akun telah dikirim ke email lama yang terdaftar.');
         return redirect()->route('login');
@@ -127,8 +127,7 @@ class ResetPasswordController extends Controller
                 ]
             );
 
-            Mail::to(config('mail.recovery_recipient.address'))
-                ->send(new EmailRecoveryRequest([
+            app(FallbackMailService::class)->send(config('mail.recovery_recipient.address'), new EmailRecoveryRequest([
                     'request_id' => $accountRecoveryRequest->id,
                     'input_name' => $validatedData['name_manual'],
                     'input_no_ktp' => $validatedData['no_ktp_manual'],
@@ -206,7 +205,7 @@ class ResetPasswordController extends Controller
             ->where('email', $emailLama)
             ->delete();
 
-        Mail::to($validatedData['email'])->send(new EmailVerification($user->fresh()));
+        app(FallbackMailService::class)->send($validatedData['email'], new EmailVerification($user->fresh()));
 
         Alert::success('Berhasil', 'Email dan kata sandi berhasil diperbarui. Silakan verifikasi email baru Anda sebelum login.');
         return redirect()->route('login');

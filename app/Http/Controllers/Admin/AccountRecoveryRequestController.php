@@ -4,11 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Mail\EmailApprovedRecoveryAccount;
+use App\Services\FallbackMailService;
 use App\Models\AccountRecoveryRequest;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use RealRashid\SweetAlert\Facades\Alert;
 
@@ -81,7 +81,7 @@ class AccountRecoveryRequestController extends Controller
                 'admin_notes' => 'Email akun diganti dan password acak baru telah dikirim ke email terbaru.',
             ]);
 
-            Mail::to($emailBaru)->send(new EmailApprovedRecoveryAccount([
+            app(FallbackMailService::class)->send($emailBaru, new EmailApprovedRecoveryAccount([
                 'name' => $user->name,
                 'no_ktp' => $user->no_ktp,
                 'email' => $emailBaru,

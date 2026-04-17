@@ -34,7 +34,7 @@ class EmailVerification extends Mailable
             'no_ktp' => $this->detail['no_ktp'],
             'email_verifikasi_token' => $this->detail['email_verifikasi_token'],
         ];
-        return $this->from('no-reply@vdnisite.com')->view('auth.verify-email', compact('data'))->with([
+        return $this->from(config('mail.from.address'), config('mail.from.name'))->view('auth.verify-email', compact('data'))->with([
             'data' => $data 
         ]);
     }

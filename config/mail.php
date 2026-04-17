@@ -46,7 +46,7 @@ return [
         ],
 
         'smtp_second' => [
-            'transport' => env('MAIL_MAILER_SECOND', 'smtp'),
+            'transport' => 'smtp',
             'host' => env('MAIL_HOST_SECOND'),
             'port' => env('MAIL_PORT_SECOND', 587),
             'encryption' => env('MAIL_ENCRYPTION_SECOND', 'tls'),
@@ -107,6 +107,13 @@ return [
         'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
+
+    'from_second' => [
+        'address' => env('MAIL_FROM_ADDRESS_SECOND', env('MAIL_FROM_ADDRESS', 'hello@example.com')),
+        'name' => env('MAIL_FROM_NAME_SECOND', env('MAIL_FROM_NAME', 'Example')),
+    ],
+
+    'secondary_mailer' => env('MAIL_SECONDARY_MAILER', 'smtp_second'),
 
     'recovery_recipient' => [
         'address' => env('MAIL_RECOVERY_TO_ADDRESS', 'recruitment@vdnisite.com'),

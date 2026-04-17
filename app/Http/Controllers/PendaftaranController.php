@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\EmailVerification;
+use App\Services\FallbackMailService;
 use App\Models\Hris\Employee;
 use App\Models\Hris\Peringatan;
 use App\Models\SuratPeringatan;
@@ -13,7 +14,6 @@ use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 
 class PendaftaranController extends Controller
 {
@@ -91,7 +91,7 @@ class PendaftaranController extends Controller
             });
 
             // Kirim email setelah commit (lebih aman)
-            Mail::to($validatedData['email'])->send(new EmailVerification($user_baru));
+            app(FallbackMailService::class)->send($validatedData['email'], new EmailVerification($user_baru));
 
             Alert::success('Berhasil', 'Pendaftaran berhasil! Silakan verifikasi email kamu.');
             return redirect()->route('login');
