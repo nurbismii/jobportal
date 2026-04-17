@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'default' => env('MAIL_MAILER', 'smtp'),
+    'default' => env('MAIL_MAILER', 'failover'),
 
     /*
     |--------------------------------------------------------------------------
@@ -41,6 +41,17 @@ return [
             'encryption' => env('MAIL_ENCRYPTION', 'tls'),
             'username' => env('MAIL_USERNAME'),
             'password' => env('MAIL_PASSWORD'),
+            'timeout' => null,
+            'auth_mode' => null,
+        ],
+
+        'smtp_second' => [
+            'transport' => env('MAIL_MAILER_SECOND', 'smtp'),
+            'host' => env('MAIL_HOST_SECOND'),
+            'port' => env('MAIL_PORT_SECOND', 587),
+            'encryption' => env('MAIL_ENCRYPTION_SECOND', 'tls'),
+            'username' => env('MAIL_USERNAME_SECOND'),
+            'password' => env('MAIL_PASSWORD_SECOND'),
             'timeout' => null,
             'auth_mode' => null,
         ],
@@ -73,10 +84,11 @@ return [
 
         'failover' => [
             'transport' => 'failover',
-            'mailers' => [
+            'mailers' => array_values(array_filter([
                 'smtp',
+                env('MAIL_HOST_SECOND') ? 'smtp_second' : null,
                 'log',
-            ],
+            ])),
         ],
     ],
 
