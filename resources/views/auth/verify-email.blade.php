@@ -60,7 +60,7 @@
                             <p style="margin:0;">Email ini dikirim oleh HR Site VDNI | Konawe, Sulawesi Tenggara</p>
                             <p style="margin:5px 0 0;">Jika Anda tidak merasa melakukan pendaftaran, Anda bisa mengabaikan email ini.</p>
                             <p style="margin:15px 0 0;">
-                                Hubungi kami di <a href="mailto:recruitment@vdni.co.id" style="color:#999;text-decoration:underline;">recruitment@vdni.co.id</a>
+                                Hubungi kami di <a href="mailto:recruitment@vdnisite.com" style="color:#999;text-decoration:underline;">recruitment@vdnisite.com</a>
                             </p>
                             <p style="margin:15px 0 0;">
                                 <a href="https://www.instagram.com/hr_vdni?igsh=cTJ6Z2VkeDkwb2pp" target="_blank">
