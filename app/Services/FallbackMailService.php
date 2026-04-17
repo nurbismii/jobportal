@@ -31,7 +31,19 @@ class FallbackMailService
                 'error' => $exception->getMessage(),
             ]);
 
-            $this->sendViaMailer($secondaryMailer, $to, clone $mailable, true);
+            try {
+                $this->sendViaMailer($secondaryMailer, $to, clone $mailable, true);
+            } catch (Throwable $secondaryException) {
+                Log::error('Secondary mailer also failed.', [
+                    'primary_mailer' => $primaryMailer,
+                    'secondary_mailer' => $secondaryMailer,
+                    'recipient' => $this->stringifyRecipient($to),
+                    'primary_error' => $exception->getMessage(),
+                    'secondary_error' => $secondaryException->getMessage(),
+                ]);
+
+                throw $secondaryException;
+            }
         }
     }
 
@@ -46,6 +58,7 @@ class FallbackMailService
         }
 
         try {
+            Mail::purge($mailer);
             Mail::mailer($mailer)->to($to)->send($mailable);
         } finally {
             config([

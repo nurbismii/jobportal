@@ -44,6 +44,7 @@ class AppServiceProvider extends ServiceProvider
         }
 
         config([
+            'mail.driver' => null,
             'mail.default' => env('MAIL_MAILER', config('mail.default', 'failover')),
             'mail.secondary_mailer' => env('MAIL_SECONDARY_MAILER', config('mail.secondary_mailer', 'smtp_second')),
             'mail.from_second' => [
