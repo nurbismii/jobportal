@@ -393,3 +393,28 @@ if (!function_exists('dokumenIcon')) {
     </a>';
     }
 }
+
+if (!function_exists('versioned_asset')) {
+    function versioned_asset($path, $fallbackVersion = null)
+    {
+        $path = ltrim($path, '/');
+        [$cleanPath] = explode('?', $path, 2);
+
+        $version = null;
+        $publicPath = public_path($cleanPath);
+
+        if (is_file($publicPath)) {
+            $version = filemtime($publicPath);
+        }
+
+        $version = $version ?: $fallbackVersion ?: config('app.asset_version');
+
+        $url = asset($path);
+
+        if (blank($version)) {
+            return $url;
+        }
+
+        return $url . (Str::contains($url, '?') ? '&' : '?') . 'v=' . rawurlencode((string) $version);
+    }
+}

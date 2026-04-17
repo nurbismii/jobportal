@@ -3,7 +3,7 @@
 @section('content-admin')
 
 @push('styles')
-<link href="{{ asset('admin/vendor/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
+<link href="{{ versioned_asset('admin/vendor/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
 
 @endpush
 <div class="container-fluid">

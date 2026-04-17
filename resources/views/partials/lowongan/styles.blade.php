@@ -1,1 +1,1 @@
-<link rel="stylesheet" href="{{ asset('user/css/vhire-custom.css') }}">
+<link rel="stylesheet" href="{{ versioned_asset('user/css/vhire-custom.css') }}">
