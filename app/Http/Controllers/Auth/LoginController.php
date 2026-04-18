@@ -67,7 +67,7 @@ class LoginController extends Controller
     protected function sendFailedLoginResponse(Request $request)
     {
         throw ValidationException::withMessages([
-            $this->username() => ['Email atau kata sandi salah, atau akun belum aktif.'],
+            $this->username() => ['Email atau kata sandi salah atau akun belum aktif.'],
         ]);
     }
 }

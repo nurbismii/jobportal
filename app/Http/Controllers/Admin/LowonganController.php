@@ -4,22 +4,30 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Hris\Employee;
-use App\Models\Hris\Peringatan;
 use App\Models\Lamaran;
 use App\Models\Lowongan;
 use App\Models\PermintaanTenagaKerja;
-use App\Models\SuratPeringatan;
+use App\Services\EmploymentStatusRefreshService;
 use Illuminate\Http\Request;
-use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Carbon;
+use RealRashid\SweetAlert\Facades\Alert;
 
 class LowonganController extends Controller
 {
+    protected $employmentStatusRefreshService;
+
+    public function __construct(EmploymentStatusRefreshService $employmentStatusRefreshService)
+    {
+        $this->employmentStatusRefreshService = $employmentStatusRefreshService;
+    }
+
     public function index(Request $request)
     {
         $today = Carbon::now()->toDateTimeString();
 
-        $query = Lowongan::selectRaw("*, IF(tanggal_berakhir < '$today', 'Kadaluwarsa', 'Aktif') as status_lowongan")->withCount('lamarans')->orderByRaw("IF(tanggal_berakhir < '$today', 1, 0)");
+        $query = Lowongan::selectRaw("*, IF(tanggal_berakhir < '$today', 'Kadaluwarsa', 'Aktif') as status_lowongan")
+            ->withCount('lamarans')
+            ->orderByRaw("IF(tanggal_berakhir < '$today', 1, 0)");
 
         $title = 'Hapus Lowongan!';
         $text = "Kamu yakin ingin menghapus lowongan ini?";
@@ -36,14 +44,15 @@ class LowonganController extends Controller
 
     public function create()
     {
-        $permintaanTenagaKerjas = PermintaanTenagaKerja::where('status_ptk', '!=', 'Selesai')->orderBy('created_at', 'desc')->get();
+        $permintaanTenagaKerjas = PermintaanTenagaKerja::where('status_ptk', '!=', 'Selesai')
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         return view('admin.lowongan-kerja.create', compact('permintaanTenagaKerjas'));
     }
 
     public function store(Request $request)
     {
-        // Buat data lowongan kerja baru
         Lowongan::create([
             'permintaan_tenaga_kerja_id' => $request->ptk_id,
             'nama_lowongan' => $request->nama_lowongan,
@@ -67,7 +76,6 @@ class LowonganController extends Controller
 
     public function update(Request $request, $id)
     {
-        // Update data lowongan kerja
         $lowongan = Lowongan::findOrFail($id);
         $lowongan->update([
             'nama_lowongan' => $request->nama_lowongan,
@@ -84,11 +92,9 @@ class LowonganController extends Controller
 
     public function destroy($id)
     {
-        // Hapus data lowongan kerja
         $lowongan = Lowongan::findOrFail($id);
 
         Lamaran::where('loker_id', $lowongan->id)->delete();
-
         $lowongan->delete();
 
         Alert::success('Berhasil', 'Lowongan kerja berhasil dihapus!');
@@ -97,7 +103,9 @@ class LowonganController extends Controller
 
     public function directToLamaran(Request $request, $loker_id)
     {
-        $lowongan = Lowongan::select('id', 'nama_lowongan', 'status_sim_b2', 'status_sio')->where('id', $loker_id)->first();
+        $lowongan = Lowongan::select('id', 'nama_lowongan', 'status_sim_b2', 'status_sio')
+            ->where('id', $loker_id)
+            ->first();
 
         $userId = $request->user_id;
 
@@ -118,15 +126,16 @@ class LowonganController extends Controller
             });
         }
 
-        // Filter status proses (multiple)
         if ($request->filled('status')) {
             $statusArray = is_array($request->status) ? $request->status : [$request->status];
             $query->whereIn('status_proses', $statusArray);
         }
 
-        // Filter pendidikan (multiple)
         if ($request->filled('pendidikan')) {
-            $pendidikanArray = is_array($request->pendidikan) ? $request->pendidikan : explode(',', $request->pendidikan);
+            $pendidikanArray = is_array($request->pendidikan)
+                ? $request->pendidikan
+                : explode(',', $request->pendidikan);
+
             $query->whereHas('biodata', function ($q) use ($pendidikanArray) {
                 $q->whereIn('pendidikan_terakhir', $pendidikanArray);
             });
@@ -138,36 +147,36 @@ class LowonganController extends Controller
             });
         }
 
-        // Filter umur
         if ($request->filled('umur_min') || $request->filled('umur_max')) {
             $query->whereHas('biodata', function ($q) use ($request) {
                 if ($request->filled('umur_min')) {
                     $q->whereRaw('TIMESTAMPDIFF(YEAR, tanggal_lahir, CURDATE()) >= ?', [$request->umur_min]);
                 }
+
                 if ($request->filled('umur_max')) {
                     $q->whereRaw('TIMESTAMPDIFF(YEAR, tanggal_lahir, CURDATE()) <= ?', [$request->umur_max]);
                 }
             });
         }
 
-        // Filter status resign (multiple)
         if ($request->filled('status_resign')) {
-            $statusResignArray = is_array($request->status_resign) ? $request->status_resign : [$request->status_resign];
+            $statusResignArray = is_array($request->status_resign)
+                ? $request->status_resign
+                : [$request->status_resign];
 
             $containsPendaftar = in_array('PENDAFTAR BERSIH', $statusResignArray);
-            $otherStatuses = array_filter($statusResignArray, function ($s) {
-                return $s !== 'PENDAFTAR BERSIH';
+            $otherStatuses = array_filter($statusResignArray, function ($status) {
+                return $status !== 'PENDAFTAR BERSIH';
             });
 
             $noKtpList = [];
             if (count($otherStatuses) > 0) {
-                $noKtpList = \App\Models\Hris\Employee::whereIn('status_resign', $otherStatuses)
+                $noKtpList = Employee::whereIn('status_resign', $otherStatuses)
                     ->pluck('no_ktp')
                     ->toArray();
             }
 
             if ($containsPendaftar && count($noKtpList) > 0) {
-                // Gabungkan pendaftar bersih (status_pelamar NULL) dan karyawan dengan status_resign tertentu
                 $query->where(function ($q) use ($noKtpList) {
                     $q->whereHas('biodata.user', function ($q2) {
                         $q2->whereNull('status_pelamar');
@@ -176,17 +185,14 @@ class LowonganController extends Controller
                     });
                 });
             } elseif ($containsPendaftar) {
-                // Hanya pendaftar bersih
                 $query->whereHas('biodata.user', function ($q) {
                     $q->whereNull('status_pelamar');
                 });
             } elseif (count($noKtpList) > 0) {
-                // Hanya status_resign lainnya
                 $query->whereHas('biodata', function ($q) use ($noKtpList) {
                     $q->whereIn('no_ktp', $noKtpList);
                 });
             } else {
-                // Tidak ada status yang valid — tidak mengembalikan hasil
                 $query->whereRaw('0 = 1');
             }
         }
@@ -196,7 +202,6 @@ class LowonganController extends Controller
         return view('admin.lamaran.index', compact('lamarans', 'lowongan', 'userId'))->with('no');
     }
 
-    // Refresh status pelamar berdasarkan data dari HRIS
     public function refreshDataPelamar(Request $request)
     {
         $noKtpArray = array_filter((array) $request->input('no_ktp', []));
@@ -206,70 +211,13 @@ class LowonganController extends Controller
             return back();
         }
 
-        // Ambil semua user dengan no_ktp yang diberikan dan status pelamar yang perlu diperbarui
-        $users = \App\Models\User::whereHas('biodata', function ($q) use ($noKtpArray) {
-            $q->whereIn('no_ktp', $noKtpArray);
-        })
-            ->where(function ($q) {
-                $q->whereNull('status_pelamar')
-                    ->orWhereRaw('LOWER(status_pelamar) != ?', ['aktif'])
-                    ->orWhereNull('ket_resign')
-                    ->orWhere('ket_resign', 'NOT LIKE', '%Aktif bekerja%');
-            })
-            ->get();
+        $summary = $this->employmentStatusRefreshService->refreshUsersByNoKtp($noKtpArray);
 
-        foreach ($users as $user) {
+        Alert::success(
+            'Berhasil',
+            "Status pelamar berhasil di-refresh. Diproses {$summary['processed']} akun, diupdate {$summary['updated']}, direset {$summary['reset']}."
+        );
 
-            $noKtp = $user->biodata->no_ktp;
-
-            // Get data karyawan dari HRIS berdasarkan no_ktp
-            $hrisEmployee = Employee::where('no_ktp', $noKtp)
-                ->orderByRaw('LEFT(nik, 4) DESC')
-                ->first();
-
-            if ($hrisEmployee) {
-                $user->update([
-                    'status_pelamar' => $hrisEmployee->status_resign,
-                    'area_kerja' => $hrisEmployee->area_kerja,
-                    'tanggal_resign' => $hrisEmployee->tgl_resign,
-                    'ket_resign' => $hrisEmployee->alasan_resign,
-                ]);
-
-                // Get data peringatan dari HRIS berdasarkan nik_karyawan
-                $peringatanList = Peringatan::where('nik_karyawan', $hrisEmployee->nik)->get();
-
-                foreach ($peringatanList as $data) {
-
-                    // Cegah duplikasi SP
-                    $exists = SuratPeringatan::where([
-                        'user_id' => $user->id,
-                        'level_sp' => $data->level_sp,
-                        'tanggal_mulai_sp' => $data->tgl_mulai,
-                    ])->exists();
-
-                    if (!$exists) {
-                        SuratPeringatan::create([
-                            'user_id' => $user->id,
-                            'level_sp' => $data->level_sp,
-                            'ket_sp' => $data->keterangan,
-                            'tanggal_mulai_sp' => $data->tgl_mulai,
-                            'tanggal_berakhir_sp' => $data->tgl_berakhir,
-                        ]);
-                    }
-                }
-            } else {
-
-                // Tidak ada data HRIS → reset tetap pakai update()
-                $user->update([
-                    'status_pelamar' => null,
-                    'area_kerja' => null,
-                    'tanggal_resign' => null,
-                    'ket_resign' => null,
-                ]);
-            }
-        }
-
-        Alert::success('Berhasil', 'Status pelamar berhasil di-refresh!');
         return back();
     }
 }

@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Mail\EmailVerification;
 use App\Services\FallbackMailService;
-use App\Models\Hris\Employee;
 use App\Models\Hris\Peringatan;
 use App\Models\SuratPeringatan;
 use App\Models\User;
@@ -66,9 +65,8 @@ class PendaftaranController extends Controller
             DB::beginTransaction();
 
             // Cari employee (jika ada)
-            $employee = Employee::where('no_ktp', $validatedData['no_ktp'])
-                ->orderByRaw('LEFT(nik, 4) DESC')
-                ->first();
+            $employee = User::latestHrisEmployeeByNoKtp($validatedData['no_ktp']);
+            $employmentAttributes = User::employmentAttributesFromHrisEmployee($employee);
 
             $userBaru = User::create([
                 'no_ktp' => $validatedData['no_ktp'],
@@ -76,12 +74,14 @@ class PendaftaranController extends Controller
                 'email' => $validatedData['email'],
                 'password' => bcrypt($request->password),
                 'status_akun' => 0,
-                'status_pelamar' => $employee ? $employee->status_resign : null,
-                'tanggal_resign' => $employee ? $employee->tgl_resign : null,
-                'ket_resign' => $employee ? $employee->alasan_resign : null,
                 'role' => 'user',
-                'area_kerja' => $employee ? $employee->area_kerja : null,
                 'email_verifikasi_token' => Str::random(64),
+                'employment_lock_active' => $employmentAttributes['employment_lock_active'],
+                'last_hris_sync_at' => now(),
+                'status_pelamar' => $employmentAttributes['status_pelamar'],
+                'tanggal_resign' => $employmentAttributes['tanggal_resign'],
+                'ket_resign' => $employmentAttributes['ket_resign'],
+                'area_kerja' => $employmentAttributes['area_kerja'],
             ]);
 
             // Copy SP jika ada

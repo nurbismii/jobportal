@@ -15,12 +15,18 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         \App\Console\Commands\DeleteUnverifiedUsers::class,
+        \App\Console\Commands\RefreshLockedEmploymentStatuses::class,
     ];
 
     protected function schedule(Schedule $schedule)
     {
-        // Jalankan tiap jam, atau bisa setiap 15 menit
         $schedule->command('users:cleanup-unverified')->everyMinute();
+
+        if (config('recruitment.locked_employment_refresh.enabled', true)) {
+            $schedule->command('users:refresh-locked-employment-statuses')
+                ->cron(config('recruitment.locked_employment_refresh.cron', '*/30 * * * *'))
+                ->withoutOverlapping();
+        }
     }
 
     /**
