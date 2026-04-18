@@ -6,7 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Support\Facades\Auth;
-use RealRashid\SweetAlert\Facades\Alert;
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class LoginController extends Controller
 {
@@ -41,16 +42,32 @@ class LoginController extends Controller
     }
 
     /**
-     * Override: after user is authenticated
+     * Only allow active accounts to pass the credential check.
      */
+    protected function credentials(Request $request)
+    {
+        return array_merge($request->only($this->username(), 'password'), [
+            'status_akun' => 1,
+        ]);
+    }
+
     protected function authenticated($request, $user)
     {
-        if ($user->status_akun == 0) {
+        if ((int) $user->status_akun !== 1) {
             Auth::logout();
-            Alert::error('Verifikasi', 'Akun Anda belum diverifikasi. Silakan cek email kamu untuk verifikasi.');
-            return redirect('/login');
+
+            return redirect()->route('verification.notice.public', [
+                'email' => $user->email,
+            ]);
         }
 
         return redirect()->intended($this->redirectPath());
+    }
+
+    protected function sendFailedLoginResponse(Request $request)
+    {
+        throw ValidationException::withMessages([
+            $this->username() => ['Email atau kata sandi salah, atau akun belum aktif.'],
+        ]);
     }
 }

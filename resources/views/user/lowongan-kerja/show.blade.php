@@ -8,17 +8,25 @@
 
 @php
 $isActive = strtolower($lowongan->status_lowongan) === 'aktif';
+$accountApplicationLocked = Auth::check() && Auth::user()->hasActiveEmploymentStatusLock();
 @endphp
 
 <!-- Lowongan Kerja Start -->
 <div class="container-fluid service py-4">
     <div class="container">
         @if(Auth::user() && $fieldLabels)
+        @if($accountApplicationLocked)
+        <div class="alert alert-warning alert-dismissible fade show mt-3" role="alert">
+            <strong>Perhatian!</strong> Akun ini tercatat aktif bekerja, sehingga biodata, dokumen, dan lamaran baru dikunci untuk mencegah penggunaan ulang akun.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        @else
         <div class="alert alert-warning alert-dismissible fade show mt-3" role="alert">
             <strong>Perhatian!</strong> Harap perbarui dokumen jika ada perubahan
             <a href="{{ route('biodata.index') }}#step5" class="btn btn-sm btn-warning mr-2"> Perbarui Dokumen </a>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
+        @endif
         @php
         $dataKosong = [];
         foreach ($fieldLabels as $field => $label) {
@@ -28,7 +36,7 @@ $isActive = strtolower($lowongan->status_lowongan) === 'aktif';
         }
         @endphp
 
-        @if(count($dataKosong) > 0)
+        @if(!$accountApplicationLocked && count($dataKosong) > 0)
         <div class="alert alert-warning mt-3">
             <strong>Perhatian!</strong> Mohon lengkapi data berikut sebelum melamar:
             <ul class="mb-0">
@@ -111,6 +119,10 @@ $isActive = strtolower($lowongan->status_lowongan) === 'aktif';
                     <a class="btn btn-primary" href="{{ route('login') }}">
                         <i class="fa fa-sign-in-alt me-2"></i>Masuk / Buat Akun
                     </a>
+                    @elseif($accountApplicationLocked)
+                    <button type="button" class="btn btn-secondary" disabled>
+                        <i class="fa fa-lock me-2"></i>Lamaran Dinonaktifkan
+                    </button>
                     @else
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#konfirmasi-lamaran">
                         <i class="fa fa-paper-plane me-2"></i>Lamar Posisi Ini

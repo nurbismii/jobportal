@@ -52,6 +52,14 @@ class User extends Authenticatable implements MustVerifyEmail
         'email_verified_at' => 'datetime',
     ];
 
+    public function hasActiveEmploymentStatusLock(): bool
+    {
+        return preg_match(
+            '/^Aktif bekerja pada tanggal \d{4}-\d{2}-\d{2}-$/i',
+            trim((string) $this->ket_resign)
+        ) === 1;
+    }
+
     public function biodataUser()
     {
         return $this->hasOne(Biodata::class, 'user_id', 'id')->select('id', 'user_id', 'no_ktp');

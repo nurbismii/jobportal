@@ -9,14 +9,17 @@ use App\Models\Hris\Peringatan;
 use App\Models\SuratPeringatan;
 use App\Models\User;
 use Carbon\Carbon;
-use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Throwable;
 use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class PendaftaranController extends Controller
 {
+    private const UNVERIFIED_ACCOUNT_TTL_HOURS = 1;
+
     public function index()
     {
         $title = 'Delete Data!';
@@ -24,6 +27,14 @@ class PendaftaranController extends Controller
         confirmDelete($title, $text);
 
         return view('user.pendaftaran.index');
+    }
+
+    public function verificationNotice(Request $request)
+    {
+        return view('auth.verification-pending', [
+            'email' => $request->query('email', old('email', session('verification_email'))),
+            'graceHours' => self::UNVERIFIED_ACCOUNT_TTL_HOURS,
+        ]);
     }
 
     public function store(Request $request)
@@ -52,71 +63,83 @@ class PendaftaranController extends Controller
         ]);
 
         try {
-            DB::transaction(function () use ($validatedData, $request, &$user_baru) {
+            DB::beginTransaction();
 
-                // Cari employee (jika ada)
-                $employee = Employee::where('no_ktp', $validatedData['no_ktp'])
-                    ->orderByRaw('LEFT(nik, 4) DESC')
-                    ->first();
+            // Cari employee (jika ada)
+            $employee = Employee::where('no_ktp', $validatedData['no_ktp'])
+                ->orderByRaw('LEFT(nik, 4) DESC')
+                ->first();
 
-                // Create user
-                $user_baru = User::create([
-                    'no_ktp' => $validatedData['no_ktp'],
-                    'name' => strtoupper($request->name),
-                    'email' => $validatedData['email'],
-                    'password' => bcrypt($request->password),
-                    'status_akun' => 0,
-                    'status_pelamar' => $employee ? $employee->status_resign : null,
-                    'tanggal_resign' => $employee ? $employee->tgl_resign : null,
-                    'ket_resign' => $employee ? $employee->alasan_resign : null,
-                    'role' => 'user',
-                    'area_kerja' => $employee ? $employee->area_kerja : null,
-                    'email_verifikasi_token' => md5($validatedData['no_ktp'] . now())
-                ]);
+            $userBaru = User::create([
+                'no_ktp' => $validatedData['no_ktp'],
+                'name' => strtoupper($request->name),
+                'email' => $validatedData['email'],
+                'password' => bcrypt($request->password),
+                'status_akun' => 0,
+                'status_pelamar' => $employee ? $employee->status_resign : null,
+                'tanggal_resign' => $employee ? $employee->tgl_resign : null,
+                'ket_resign' => $employee ? $employee->alasan_resign : null,
+                'role' => 'user',
+                'area_kerja' => $employee ? $employee->area_kerja : null,
+                'email_verifikasi_token' => Str::random(64),
+            ]);
 
-                // Copy SP jika ada
-                if ($employee) {
-                    $peringatan = Peringatan::where('nik_karyawan', $employee->nik)->get();
+            // Copy SP jika ada
+            if ($employee) {
+                $peringatan = Peringatan::where('nik_karyawan', $employee->nik)->get();
 
-                    foreach ($peringatan as $data) {
-                        SuratPeringatan::create([
-                            'user_id' => $user_baru->id,
-                            'level_sp' => $data->level_sp,
-                            'ket_sp' => $data->keterangan,
-                            'tanggal_mulai_sp' => $data->tgl_mulai,
-                            'tanggal_berakhir_sp' => $data->tgl_berakhir,
-                        ]);
-                    }
+                foreach ($peringatan as $data) {
+                    SuratPeringatan::create([
+                        'user_id' => $userBaru->id,
+                        'level_sp' => $data->level_sp,
+                        'ket_sp' => $data->keterangan,
+                        'tanggal_mulai_sp' => $data->tgl_mulai,
+                        'tanggal_berakhir_sp' => $data->tgl_berakhir,
+                    ]);
                 }
-            });
+            }
 
-            // Kirim email setelah commit (lebih aman)
-            app(FallbackMailService::class)->send($validatedData['email'], new EmailVerification($user_baru));
+            // Commit hanya jika email verifikasi berhasil dikirim.
+            app(FallbackMailService::class)->send($validatedData['email'], new EmailVerification($userBaru));
 
-            Alert::success('Berhasil', 'Pendaftaran berhasil! Silakan verifikasi email kamu.');
-            return redirect()->route('login');
+            DB::commit();
+
+            Alert::success('Pendaftaran berhasil', 'Kami sudah mengirim email verifikasi. Verifikasi akun Anda dalam 1 jam agar akun tidak terhapus otomatis.');
+            return redirect()->route('verification.notice.public', ['email' => $validatedData['email']]);
         } catch (\Illuminate\Database\QueryException $e) {
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
 
             // Handle duplicate entry (MySQL error 1062)
             if (isset($e->errorInfo[1]) && $e->errorInfo[1] == 1062) {
                 Alert::error('Gagal', 'Nomor KTP atau Email sudah terdaftar.');
-                return back()->withInput();
+                return back()->withInput($request->except(['password', 'password_confirmation']));
             }
 
-            throw $e;
-        } catch (\Exception $e) {
+            Log::error('Register Query Error: ' . $e->getMessage(), [
+                'email' => $validatedData['email'] ?? null,
+                'no_ktp' => $validatedData['no_ktp'] ?? null,
+            ]);
+
+            Alert::error('Gagal', 'Pendaftaran gagal diproses. Data akun tidak disimpan, silakan coba lagi.');
+            return back()->withInput($request->except(['password', 'password_confirmation']));
+        } catch (Throwable $e) {
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
 
             Log::error('Register Error: ' . $e->getMessage());
 
-            Alert::error('Gagal', 'Terjadi kesalahan sistem. Silakan coba lagi.');
-            return back()->withInput();
+            Alert::error('Gagal', 'Pendaftaran gagal diproses. Data akun tidak disimpan, silakan coba lagi.');
+            return back()->withInput($request->except(['password', 'password_confirmation']));
         }
     }
 
     public function konfirmasiEmail($id)
     {
         Alert::warning('Tautan Lama Tidak Berlaku', 'Silakan gunakan tautan verifikasi terbaru yang lengkap dari email Anda.');
-        return redirect()->route('login');
+        return redirect()->route('verification.notice.public');
     }
 
     public function konfirmasiEmailToken($token)
@@ -124,13 +147,13 @@ class PendaftaranController extends Controller
         $check = User::where('email_verifikasi_token', $token)->first();
 
         if (!$check) {
-            Alert::error('Opps!', 'Akun tidak ditemukan silakan daftar ulang');
-            return redirect('login');
+            Alert::error('Tautan tidak valid', 'Tautan verifikasi tidak valid atau sudah kedaluwarsa. Jika akun masih menunggu verifikasi, kirim ulang email verifikasi. Jika sudah lewat 1 jam, silakan daftar ulang.');
+            return redirect()->route('verification.notice.public');
         }
 
         if ($check->status_akun == 1) {
-            Alert::error('Opps!', 'Akun kamu telah aktif silakan login');
-            return redirect('login');
+            Alert::success('Akun sudah aktif', 'Email Anda sudah terverifikasi. Silakan login.');
+            return redirect()->route('login');
         }
 
         User::where('email_verifikasi_token', $token)->update([
@@ -139,5 +162,42 @@ class PendaftaranController extends Controller
         ]);
 
         return view('verifikasi-berhasil');
+    }
+
+    public function resendVerificationEmail(Request $request)
+    {
+        $validatedData = $request->validate([
+            'email' => 'required|email|max:255',
+        ], [
+            'email.required' => 'Alamat email wajib diisi.',
+            'email.email' => 'Format alamat email tidak valid.',
+            'email.max' => 'Panjang alamat email maksimal 255 karakter.',
+        ]);
+
+        try {
+            $user = User::where('email', $validatedData['email'])
+                ->where('role', 'user')
+                ->where('status_akun', 0)
+                ->whereNull('email_verified_at')
+                ->first();
+
+            if ($user) {
+                $user->forceFill([
+                    'email_verifikasi_token' => Str::random(64),
+                ])->save();
+
+                app(FallbackMailService::class)->send($user->email, new EmailVerification($user->fresh()));
+            }
+
+            Alert::success('Permintaan diterima', 'Jika akun masih menunggu verifikasi, email verifikasi terbaru telah dikirim.');
+        } catch (\Throwable $e) {
+            Log::error('Resend verification email error: ' . $e->getMessage(), [
+                'email' => $validatedData['email'],
+            ]);
+
+            Alert::success('Permintaan diterima', 'Jika akun masih menunggu verifikasi, email verifikasi terbaru akan segera dikirim.');
+        }
+
+        return redirect()->route('verification.notice.public', ['email' => $validatedData['email']]);
     }
 }

@@ -31,6 +31,10 @@ Route::resource('pendaftaran', 'App\Http\Controllers\PendaftaranController');
 
 Route::get('konfirmasi-email/{id}', [PendaftaranController::class, 'konfirmasiEmail']);
 Route::get('konfirmasi-email-token/{token}', [PendaftaranController::class, 'konfirmasiEmailToken']);
+Route::get('verifikasi-email', [PendaftaranController::class, 'verificationNotice'])->name('verification.notice.public');
+Route::post('verifikasi-email/kirim-ulang', [PendaftaranController::class, 'resendVerificationEmail'])
+    ->middleware('throttle:3,10')
+    ->name('verification.resend.public');
 
 Route::get('lupa-akun', [ResetPasswordController::class, 'index'])->name('lupa-akun.index');
 Route::post('lupa-akun', [ResetPasswordController::class, 'store'])->name('lupa-akun.store');

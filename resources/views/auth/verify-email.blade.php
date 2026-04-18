@@ -31,6 +31,7 @@
                     <tr>
                         <td align="center" style="padding:0 30px 20px;">
                             <p style="font-size:16px;color:#666;margin:0;">Terima kasih telah mendaftar. Silakan verifikasi email Anda dengan mengklik tombol di bawah ini.</p>
+                            <p style="font-size:14px;color:#666;margin:12px 0 0;">Akun yang belum diverifikasi dalam 1 jam akan dihapus otomatis, jadi gunakan tautan terbaru sesegera mungkin.</p>
                         </td>
                     </tr>
 

@@ -18,6 +18,15 @@ class ProfilController extends Controller
     public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
+        $identityUpdateLocked = $user->hasActiveEmploymentStatusLock();
+
+        if ($identityUpdateLocked) {
+            $request->merge([
+                'nama' => $user->name,
+                'no_ktp' => $user->no_ktp,
+                'email' => $user->email,
+            ]);
+        }
 
         $request->validate([
             'nama' => 'required|string|max:255',

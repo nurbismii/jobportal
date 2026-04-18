@@ -16,6 +16,11 @@ use Intervention\Image\Facades\Image;
 
 class BiodataController extends Controller
 {
+    private function accountDataLockedMessage(): string
+    {
+        return 'Biodata dan dokumen tidak dapat diubah karena akun Anda tercatat aktif bekerja.';
+    }
+
     public function index()
     {
         if (!Auth::user()) {
@@ -31,6 +36,11 @@ class BiodataController extends Controller
 
     public function store(Request $request)
     {
+        if (auth()->user()->hasActiveEmploymentStatusLock()) {
+            Alert::warning('Peringatan', $this->accountDataLockedMessage());
+            return redirect()->to(route('biodata.index') . '#step1');
+        }
+
         try {
             $biodata = Biodata::where('user_id', auth()->id())->first();
             $syarat_ketentuan = SyaratKetentuan::where('id', 1)->first();
@@ -80,6 +90,13 @@ class BiodataController extends Controller
 
     public function storeStep1to4(Request $request)
     {
+        if (auth()->user()->hasActiveEmploymentStatusLock()) {
+            return response()->json([
+                'status' => false,
+                'message' => $this->accountDataLockedMessage(),
+            ], 403);
+        }
+
         $validatedData = $request->validate(
             [
                 'provinsi' => 'required|numeric',
@@ -187,6 +204,18 @@ class BiodataController extends Controller
                 : abort(403);
         }
 
+        if (auth()->user()->hasActiveEmploymentStatusLock()) {
+            $message = $this->accountDataLockedMessage();
+
+            if (request()->expectsJson()) {
+                return response()->json(['success' => false, 'message' => $message], 403);
+            }
+
+            Alert::warning('Peringatan', $message);
+
+            return redirect()->to(route('biodata.index') . '#step5');
+        }
+
         $biodata = Biodata::where('user_id', auth()->id())->firstOrFail();
 
         $fileName = $biodata->{$field};
@@ -224,6 +253,13 @@ class BiodataController extends Controller
 
     public function uploadDocument(Request $request)
     {
+        if (auth()->user()->hasActiveEmploymentStatusLock()) {
+            return response()->json([
+                'success' => false,
+                'message' => $this->accountDataLockedMessage(),
+            ], 403);
+        }
+
         try {
             $rules = [
                 'cv' => 'required|mimes:pdf|max:2048',

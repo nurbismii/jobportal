@@ -61,6 +61,11 @@
                     </button>
                 </div>
 
+                <div class="text-center small mb-3">
+                    Belum menerima email verifikasi?
+                    <a href="{{ route('verification.notice.public', old('email') ? ['email' => old('email')] : []) }}" class="fw-bold text-primary text-decoration-none">Kirim ulang di sini</a>
+                </div>
+
                 <div class="text-center small mb-2">
                     Belum punya akun? <a href="{{ route('register') }}" class="fw-bold text-primary text-decoration-none">Daftar</a>
                 </div>

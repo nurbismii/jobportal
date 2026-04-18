@@ -8,6 +8,11 @@
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 @endpush
 
+@php
+    $accountDataLocked = auth()->user()->hasActiveEmploymentStatusLock();
+    $documentDeleteLocked = $accountDataLocked;
+@endphp
+
 <div class="container-fluid service py-2">
     <div class="container py-4 py-lg-5 biodata-wizard">
         <div class="mx-auto pb-4 wow fadeInUp" data-wow-delay="0.2s">
@@ -31,6 +36,13 @@
         </div>
         <form id="formWizard" method="POST" action="{{ route('biodata.store') }}" enctype="multipart/form-data">
             @csrf
+
+            @if($accountDataLocked)
+            <div class="alert alert-warning border-0 rounded-4 mb-4">
+                Akun ini tercatat aktif bekerja, sehingga biodata dan dokumen dikunci untuk mencegah penggunaan ulang akun oleh orang lain.
+            </div>
+            @endif
+
             <div class="wizard-shell">
                 <!-- Step Indicators -->
                 <div class="sticky-tabs">
@@ -96,6 +108,7 @@
                     <div class="wizard-panel__body">
                         <!-- Tab Content -->
                         <div class="tab-content">
+                            <fieldset @if($accountDataLocked) disabled @endif>
                 <!-- Step Biodata -->
                 <div class="tab-pane fade show active" id="step1">
                     <h6 class="text-primary">Biodata</h6>
@@ -695,6 +708,14 @@
                         ];
                         @endphp
 
+                        @if($documentDeleteLocked)
+                        <div class="col-12">
+                            <div class="alert alert-warning border-0 rounded-4 mb-3">
+                                Dokumen yang sudah diunggah tidak dapat dihapus karena status akun Anda tercatat aktif bekerja.
+                            </div>
+                        </div>
+                        @endif
+
                         <div class="row g-3 wow fadeInDown" data-wow-delay="0.2s" style="visibility: visible; animation-delay: 0.4s; animation-name: fadeInDown;">
                             @foreach($dokumenFields as $field => $meta)
                             @php
@@ -744,7 +765,8 @@
                                         <button type="button"
                                             class="btn btn-delete btn-confirm-delete"
                                             data-url="{{ route('biodata.deleteFile', ['field' => $field]) }}"
-                                            data-field="{{ $field }}">
+                                            data-field="{{ $field }}"
+                                            @if($documentDeleteLocked) disabled title="Dokumen tidak dapat dihapus karena akun Anda tercatat aktif bekerja." @endif>
                                             Hapus
                                         </button>
                                     </div>
@@ -1085,6 +1107,7 @@
                         </div>
                     </div>
                 </div>
+                            </fieldset>
                         </div>
                     </div>
                 </div>
@@ -1094,7 +1117,7 @@
                     <button type="button" class="btn btn-dark" id="prevBtn" disabled>Sebelumnya</button>
 
                     <div class="wizard-actions__next">
-                        <button type="submit" class="btn btn-success d-none" id="submitBtn">Ajukan</button>
+                        <button type="submit" class="btn btn-success d-none" id="submitBtn" @if($accountDataLocked) disabled @endif>Ajukan</button>
                         <button type="button" class="btn btn-primary" id="nextBtn">Selanjutnya</button>
                     </div>
                 </div>
@@ -1108,6 +1131,8 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
+    const documentDeleteLocked = @json($documentDeleteLocked);
+
     async function uploadDocumentAjax(input) {
         const file = input.files[0];
         if (!file) return;
@@ -1171,7 +1196,8 @@
                 <button type="button"
                     class="btn btn-delete btn-confirm-delete"
                     data-url="{{ url('biodata/delete-file') }}/${field}"
-                    data-field="${field}">
+                    data-field="${field}"
+                    ${documentDeleteLocked ? 'disabled title="Dokumen tidak dapat dihapus karena akun Anda tercatat aktif bekerja."' : ''}>
                     Hapus
                 </button>
             </div>

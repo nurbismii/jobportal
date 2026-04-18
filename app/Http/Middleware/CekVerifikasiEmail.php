@@ -16,8 +16,17 @@ class CekVerifikasiEmail
         }
 
         if (Auth::user()->status_akun != 1) {
-            Alert::error('Cek Email', 'Silakan verifikasi email terlebih dahulu.');
-            return redirect()->route('/');
+            $email = Auth::user()->email;
+
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            Alert::warning('Verifikasi email', 'Silakan verifikasi email terlebih dahulu atau kirim ulang email verifikasi.');
+
+            return redirect()->route('verification.notice.public', [
+                'email' => $email,
+            ]);
         }
 
         return $next($request);

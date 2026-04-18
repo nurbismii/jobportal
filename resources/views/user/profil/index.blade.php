@@ -9,6 +9,7 @@
 @php
     $user = auth()->user();
     $accountIsActive = (int) $user->status_akun === 1;
+    $identityUpdateLocked = $user->hasActiveEmploymentStatusLock();
 @endphp
 
 <div class="container account-profile-page">
@@ -79,6 +80,11 @@
                                 <p class="account-profile-section__text">
                                     Pastikan nama lengkap dan nomor KTP sesuai dengan data resmi yang Anda gunakan untuk melamar pekerjaan.
                                 </p>
+                                @if($identityUpdateLocked)
+                                <div class="alert alert-warning mt-3 mb-0">
+                                    Perubahan identitas akun dinonaktifkan karena status akun Anda tercatat aktif bekerja.
+                                </div>
+                                @endif
                             </div>
 
                             <div class="account-profile-grid">
@@ -91,7 +97,8 @@
                                         class="form-control account-profile-input @error('nama') is-invalid @enderror"
                                         value="{{ old('nama', $user->name) }}"
                                         required
-                                        autocomplete="name">
+                                        autocomplete="name"
+                                        @if($identityUpdateLocked) disabled @endif>
                                     @error('nama')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -107,7 +114,8 @@
                                         value="{{ old('no_ktp', $user->no_ktp) }}"
                                         maxlength="16"
                                         required
-                                        autocomplete="off">
+                                        autocomplete="off"
+                                        @if($identityUpdateLocked) disabled @endif>
                                     @error('no_ktp')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -123,8 +131,13 @@
                                         value="{{ old('email', $user->email) }}"
                                         required
                                         autocomplete="email"
-                                        readonly>
+                                        readonly
+                                        @if($identityUpdateLocked) disabled @endif>
+                                    @if($identityUpdateLocked)
+                                    <p class="account-profile-hint">Nama, nomor KTP, dan email tidak dapat diubah selama kolom <code>ket_resign</code> menunjukkan status aktif bekerja.</p>
+                                    @else
                                     <p class="account-profile-hint">Email digunakan sebagai identitas login dan saat ini tidak dapat diubah dari halaman ini.</p>
+                                    @endif
                                     @error('email')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror

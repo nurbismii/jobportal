@@ -207,8 +207,8 @@ class ResetPasswordController extends Controller
 
         app(FallbackMailService::class)->send($validatedData['email'], new EmailVerification($user->fresh()));
 
-        Alert::success('Berhasil', 'Email dan kata sandi berhasil diperbarui. Silakan verifikasi email baru Anda sebelum login.');
-        return redirect()->route('login');
+        Alert::success('Berhasil', 'Email dan kata sandi berhasil diperbarui. Verifikasi email baru Anda dalam 1 jam sebelum login.');
+        return redirect()->route('verification.notice.public', ['email' => $validatedData['email']]);
     }
 
     private function getValidRecovery($token)

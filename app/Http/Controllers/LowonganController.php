@@ -41,6 +41,11 @@ class LowonganController extends Controller
 
     public function store(Request $request)
     {
+        if (auth()->user() && auth()->user()->hasActiveEmploymentStatusLock()) {
+            Alert::warning('Peringatan', 'Akun yang tercatat aktif bekerja tidak dapat digunakan untuk memperbarui biodata atau mengirim lamaran baru.');
+            return redirect()->route('lowongan-kerja.show', $request->loker_id);
+        }
+
         $lamaran = Lamaran::where('biodata_id', $request->biodata_id)->latest()->first();
 
         if ($lamaran) {
