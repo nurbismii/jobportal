@@ -1129,8 +1129,11 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
-    const accountDataLocked = @json($accountDataLocked);
-    const documentDeleteLocked = @json($documentDeleteLocked);
+    window.accountDataLocked = @json($accountDataLocked);
+    window.documentDeleteLocked = @json($documentDeleteLocked);
+</script>
+
+<script>
 
     async function uploadDocumentAjax(input) {
         const file = input.files[0];
@@ -1196,7 +1199,7 @@
                     class="btn btn-delete btn-confirm-delete"
                     data-url="{{ url('biodata/delete-file') }}/${field}"
                     data-field="${field}"
-                    ${documentDeleteLocked ? 'disabled title="Dokumen tidak dapat dihapus karena akun Anda tercatat aktif bekerja."' : ''}>
+                    ${window.documentDeleteLocked ? 'disabled title="Dokumen tidak dapat dihapus karena akun Anda tercatat aktif bekerja."' : ''}>
                     Hapus
                 </button>
             </div>
@@ -1607,25 +1610,6 @@
             icon.classList.add('fa-plus');
         }
     }
-</script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        if (!accountDataLocked) {
-            return;
-        }
-
-        document.querySelectorAll('#formWizard .tab-pane input, #formWizard .tab-pane select, #formWizard .tab-pane textarea').forEach(function(element) {
-            element.disabled = true;
-        });
-
-        document.querySelectorAll('#formWizard .tab-pane .btn-upload').forEach(function(button) {
-            button.classList.add('disabled');
-            button.setAttribute('aria-disabled', 'true');
-            button.style.pointerEvents = 'none';
-            button.style.opacity = '0.65';
-        });
-    });
 </script>
 
 <script>
@@ -2054,6 +2038,65 @@
         document.getElementById('status_pernikahan')
             .addEventListener('change', toggleKeluarga);
 
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (!window.accountDataLocked) {
+            return;
+        }
+
+        const biodataForm = document.getElementById('formWizard');
+        if (!biodataForm) {
+            return;
+        }
+
+        function applyAccountDataLock(root = biodataForm) {
+            root.querySelectorAll('.tab-pane input:not([type="hidden"]), .tab-pane select, .tab-pane textarea').forEach(function(element) {
+                element.disabled = true;
+                element.readOnly = true;
+            });
+
+            root.querySelectorAll('.btn-confirm-delete').forEach(function(button) {
+                button.disabled = true;
+                button.setAttribute('title', 'Dokumen tidak dapat dihapus karena akun Anda tercatat aktif bekerja.');
+            });
+
+            root.querySelectorAll('.btn-upload').forEach(function(button) {
+                button.classList.add('disabled');
+                button.setAttribute('aria-disabled', 'true');
+                button.style.pointerEvents = 'none';
+                button.style.opacity = '0.65';
+            });
+
+            root.querySelectorAll('.select2-container').forEach(function(container) {
+                container.style.pointerEvents = 'none';
+                container.style.opacity = '0.65';
+            });
+
+            const submitBtn = document.getElementById('submitBtn');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+            }
+
+            const checkBox1 = document.getElementById('checkBox1');
+            if (checkBox1) {
+                checkBox1.checked = false;
+                checkBox1.disabled = true;
+            }
+        }
+
+        applyAccountDataLock();
+
+        const observer = new MutationObserver(function() {
+            applyAccountDataLock();
+        });
+
+        observer.observe(biodataForm, {
+            childList: true,
+            subtree: true,
+        });
     });
 </script>
 
