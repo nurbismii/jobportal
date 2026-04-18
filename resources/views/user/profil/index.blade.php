@@ -7,9 +7,9 @@
 @endpush
 
 @php
-    $user = auth()->user();
-    $accountIsActive = (int) $user->status_akun === 1;
-    $identityUpdateLocked = $user->hasActiveEmploymentStatusLock();
+$user = auth()->user();
+$accountIsActive = (int) $user->status_akun === 1;
+$identityUpdateLocked = $user->hasActiveEmploymentStatusLock();
 @endphp
 
 <div class="container account-profile-page">
@@ -26,7 +26,7 @@
                                 <span class="account-profile-header__eyebrow">Pengaturan Akun</span>
                                 <h1 class="account-profile-header__title">Profil Pengguna</h1>
                                 <p class="account-profile-header__subtitle">
-                                    Perbarui informasi akun Anda agar data tetap akurat dan proses lamaran berjalan dengan lancar.
+                                    Perbarui informasi akun agar data tetap akurat dan proses lamaran berjalan dengan lancar.
                                 </p>
                             </div>
                         </div>
@@ -78,7 +78,7 @@
                                 <span class="account-profile-section__eyebrow">Informasi Dasar</span>
                                 <h2 class="account-profile-section__title">Data Akun</h2>
                                 <p class="account-profile-section__text">
-                                    Pastikan nama lengkap dan nomor KTP sesuai dengan data resmi yang Anda gunakan untuk melamar pekerjaan.
+                                    Pastikan nama lengkap dan nomor KTP sesuai dengan data resmi yang digunakan untuk melamar pekerjaan.
                                 </p>
                                 @if($identityUpdateLocked)
                                 <div class="alert alert-warning mt-3 mb-0">
@@ -133,11 +133,7 @@
                                         autocomplete="email"
                                         readonly
                                         @if($identityUpdateLocked) disabled @endif>
-                                    @if($identityUpdateLocked)
-                                    <p class="account-profile-hint">Nama, nomor KTP, dan email tidak dapat diubah selama kolom <code>ket_resign</code> menunjukkan status aktif bekerja.</p>
-                                    @else
                                     <p class="account-profile-hint">Email digunakan sebagai identitas login dan saat ini tidak dapat diubah dari halaman ini.</p>
-                                    @endif
                                     @error('email')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -150,7 +146,7 @@
                                 <span class="account-profile-section__eyebrow">Keamanan</span>
                                 <h2 class="account-profile-section__title">Ubah Password</h2>
                                 <p class="account-profile-section__text">
-                                    Kosongkan kolom password jika Anda tidak ingin mengganti kata sandi akun saat ini.
+                                    Kosongkan kolom password jika kamu tidak ingin mengganti kata sandi akun saat ini.
                                 </p>
                             </div>
 
@@ -187,7 +183,7 @@
 
                         <div class="account-profile-actions">
                             <p class="account-profile-actions__text">
-                                Perubahan akan langsung diterapkan setelah Anda menekan tombol simpan.
+                                Perubahan akan langsung diterapkan setelah menekan tombol simpan.
                             </p>
 
                             <div class="d-flex flex-wrap gap-2">
