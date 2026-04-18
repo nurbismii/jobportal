@@ -108,7 +108,6 @@
                     <div class="wizard-panel__body">
                         <!-- Tab Content -->
                         <div class="tab-content">
-                            <fieldset @if($accountDataLocked) disabled @endif>
                 <!-- Step Biodata -->
                 <div class="tab-pane fade show active" id="step1">
                     <h6 class="text-primary">Biodata</h6>
@@ -121,7 +120,7 @@
 
                         <div class="col-md-6 mb-3">
                             <label>No KTP <span class="text-danger">*</span></label>
-                            <input type="text" name="no_ktp" class="form-control" value="{{ Auth::user()->no_ktp }}" readonly>
+                            <input type="text" name="no_ktp" class="form-control" value="{{ Auth::user()->no_ktp }}" readonly @if($accountDataLocked) disabled @endif>
                         </div>
                     </div>
 
@@ -1107,7 +1106,6 @@
                         </div>
                     </div>
                 </div>
-                            </fieldset>
                         </div>
                     </div>
                 </div>
@@ -1131,6 +1129,7 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
+    const accountDataLocked = @json($accountDataLocked);
     const documentDeleteLocked = @json($documentDeleteLocked);
 
     async function uploadDocumentAjax(input) {
@@ -1608,6 +1607,25 @@
             icon.classList.add('fa-plus');
         }
     }
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (!accountDataLocked) {
+            return;
+        }
+
+        document.querySelectorAll('#formWizard .tab-pane input, #formWizard .tab-pane select, #formWizard .tab-pane textarea').forEach(function(element) {
+            element.disabled = true;
+        });
+
+        document.querySelectorAll('#formWizard .tab-pane .btn-upload').forEach(function(button) {
+            button.classList.add('disabled');
+            button.setAttribute('aria-disabled', 'true');
+            button.style.pointerEvents = 'none';
+            button.style.opacity = '0.65';
+        });
+    });
 </script>
 
 <script>
