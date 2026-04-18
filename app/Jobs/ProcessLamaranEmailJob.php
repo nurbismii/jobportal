@@ -6,6 +6,7 @@ use App\Models\EmailBlastLog;
 use App\Models\Lamaran;
 use App\Models\PermintaanTenagaKerja;
 use App\Models\RiwayatProsesLamaran;
+use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -52,6 +53,14 @@ class ProcessLamaranEmailJob implements ShouldQueue
                     'tempat' => $this->tempat ?: '-',
                     'pesan' => $this->pesan ?: '-'
                 ]);
+
+                if (strtolower($this->status) === 'aktif bekerja') {
+                    $user = User::find($userId);
+
+                    if ($user) {
+                        $user->markAsActiveEmployee($this->tanggal);
+                    }
+                }
 
                 if ($riwayat->wasRecentlyCreated && strtolower($this->status) === 'aktif bekerja') {
                     PermintaanTenagaKerja::where('id', $lamaran->lowongan->permintaan_tenaga_kerja_id)->increment('jumlah_masuk');

@@ -5,6 +5,7 @@ namespace App\Imports;
 use App\Models\Biodata;
 use App\Models\Lamaran;
 use App\Models\RiwayatProsesLamaran;
+use App\Models\User;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -54,6 +55,7 @@ class ImportStatusLamaran implements ToModel, WithHeadingRow, WithChunkReading, 
 
         $statusTahapan = strtolower(trim($row['status_tahapan'] ?? ''));
         $statusLolos = $this->isTidakLolos($statusTahapan) ? 'Tidak Lolos' : null;
+        $tanggalProses = $this->parseDate($row['tanggal_proses'] ?? null);
 
         // update lamaran
         $lamaran->update([
@@ -67,11 +69,19 @@ class ImportStatusLamaran implements ToModel, WithHeadingRow, WithChunkReading, 
             'lamaran_id' => $lamaran->id,
             'status_proses' => ucwords($row['status_tahapan']),
             'status_lolos' => $statusLolos,
-            'tanggal_proses' => $this->parseDate($row['tanggal_proses']),
+            'tanggal_proses' => $tanggalProses,
             'jam' => now()->format('H:i:s'),
             'tempat' => $row['tempat'] ?? '-',
             'pesan' => '-'
         ]);
+
+        if ($statusTahapan === 'aktif bekerja') {
+            $user = User::find($biodata->user_id);
+
+            if ($user) {
+                $user->markAsActiveEmployee($tanggalProses ?: ($row['tanggal_proses'] ?? null));
+            }
+        }
 
         return null;
     }
@@ -112,8 +122,16 @@ class ImportStatusLamaran implements ToModel, WithHeadingRow, WithChunkReading, 
 
     private function parseDate($value)
     {
+        if (blank($value)) {
+            return null;
+        }
+
         try {
-            return Carbon::instance(\PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject(intval($value)));
+            if (is_numeric($value)) {
+                return Carbon::instance(\PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($value));
+            }
+
+            return Carbon::parse($value);
         } catch (\Throwable $th) {
             return null;
         }

@@ -30,6 +30,17 @@ class LamaranController extends Controller
             'status_lamaran' => $this->isTidakLolos($statusInput) ? 0 : 1
         ]);
 
+        if ($statusInput === 'aktif bekerja') {
+            Lamaran::with('biodata.user')
+                ->whereIn('id', $request->selected_ids)
+                ->get()
+                ->each(function ($lamaran) use ($request) {
+                    if ($lamaran->biodata && $lamaran->biodata->user) {
+                        $lamaran->biodata->user->markAsActiveEmployee($request->tanggal_proses);
+                    }
+                });
+        }
+
         ProcessLamaranMasterJob::dispatch(
             $request->selected_ids,
             $request->status_proses,

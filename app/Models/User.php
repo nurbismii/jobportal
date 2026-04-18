@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -58,6 +60,44 @@ class User extends Authenticatable implements MustVerifyEmail
             '/^Aktif bekerja pada tanggal \d{4}-\d{2}-\d{2}-$/i',
             trim((string) $this->ket_resign)
         ) === 1;
+    }
+
+    public function needsActiveEmploymentLockBackfill(): bool
+    {
+        $ketResign = trim((string) $this->ket_resign);
+
+        if ($ketResign === '') {
+            return true;
+        }
+
+        return stripos($ketResign, 'Aktif bekerja pada tanggal ') === 0
+            && ! $this->hasActiveEmploymentStatusLock();
+    }
+
+    public static function activeEmploymentKetResign($date = null): string
+    {
+        if ($date instanceof CarbonInterface) {
+            $resolvedDate = $date;
+        } elseif (!blank($date)) {
+            try {
+                $resolvedDate = Carbon::parse($date);
+            } catch (\Throwable $e) {
+                $resolvedDate = now();
+            }
+        } else {
+            $resolvedDate = now();
+        }
+
+        return 'Aktif bekerja pada tanggal ' . $resolvedDate->format('Y-m-d') . '-';
+    }
+
+    public function markAsActiveEmployee($date = null): bool
+    {
+        return $this->forceFill([
+            'status_pelamar' => 'Aktif',
+            'tanggal_resign' => null,
+            'ket_resign' => static::activeEmploymentKetResign($date),
+        ])->save();
     }
 
     public function biodataUser()
