@@ -9,7 +9,7 @@
             <h3 class="fw-bold mb-3">Satu langkah lagi</h3>
             <p class="text-white-50 mb-3">Akun Anda belum aktif sebelum email diverifikasi.</p>
             <div class="small lh-lg">
-                <div>1. Cek inbox dan folder spam.</div>
+                <div>1. Cek inbox atau folder spam.</div>
                 <div>2. Klik tautan verifikasi terbaru.</div>
                 <div>3. Login setelah verifikasi berhasil.</div>
             </div>
@@ -18,12 +18,12 @@
         <div class="col-md-7 p-5">
             <div class="mb-4">
                 <h3 class="fw-bold text-primary mb-2">Verifikasi Email Anda</h3>
-                <p class="text-muted mb-0">Kami menggunakan verifikasi email untuk mengaktifkan akun dan menjaga flow login tetap aman.</p>
+                <p class="text-muted mb-0">Silakan cek email kamu untuk tautan verifikasi.</p>
             </div>
 
             <div class="alert alert-primary border-0 rounded-4 mb-4" role="alert">
-                <div class="fw-semibold mb-2">Yang perlu Anda lakukan</div>
-                <div class="small">Klik tautan verifikasi yang dikirim ke email Anda. Jika email belum masuk, kirim ulang dari form di bawah.</div>
+                <div class="fw-semibold mb-2">Yang perlu kamu lakukan</div>
+                <div class="small">Klik tautan verifikasi yang dikirim ke email kamu. Jika email belum masuk, kirim ulang dari form di bawah.</div>
             </div>
 
             <div class="alert alert-warning border-0 rounded-4 mb-4" role="alert">
