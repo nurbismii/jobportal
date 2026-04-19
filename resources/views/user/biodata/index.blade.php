@@ -120,7 +120,7 @@
 
                         <div class="col-md-6 mb-3">
                             <label>No KTP <span class="text-danger">*</span></label>
-                            <input type="text" name="no_ktp" class="form-control" value="{{ Auth::user()->no_ktp }}" readonly @if($accountDataLocked) disabled @endif>
+                            <input type="text" id="no_ktp" name="no_ktp" class="form-control" value="{{ Auth::user()->no_ktp }}" readonly @if($accountDataLocked) disabled @endif>
                         </div>
                     </div>
 
@@ -139,9 +139,10 @@
 
                         <div class="col-md-6 mb-3">
                             <label>No Kartu Keluarga <span class="text-danger">*</span></label>
-                            <input type="text" name="no_kk"
+                            <input type="text" id="no_kk" name="no_kk"
                                 class="form-control"
                                 maxlength="16"
+                                inputmode="numeric"
                                 value="{{ old('no_kk', $biodata->no_kk ?? '') }}"
                                 required>
                         </div>
@@ -162,9 +163,10 @@
 
                         <div class="col-md-6 mb-3">
                             <label>NPWP <span class="text-danger">*</span></label>
-                            <input type="text" name="no_npwp"
+                            <input type="text" id="npwp" name="no_npwp"
                                 class="form-control"
                                 maxlength="20"
+                                inputmode="numeric"
                                 value="{{ old('no_npwp', $biodata->no_npwp ?? '') }}"
                                 required>
                         </div>
@@ -726,19 +728,48 @@
                             $ocrResultId = 'ocr-result-' . str_replace('_', '-', $field); // Tambahan
                             @endphp
 
-                            <div class="col-md-6 mb-2">
+                            <div class="col-md-6 mb-2 document-upload-item"
+                                data-field="{{ $field }}"
+                                data-accept="{{ $accept }}"
+                                data-input-id="{{ $inputId }}"
+                                data-span-id="{{ $spanId }}"
+                                data-ocr-result-id="{{ $ocrResultId }}">
                                 <label class="form-label">{!! strip_tags($label, '<sup>') !!}</label>
 
-                                @if(!$biodata || !$filename)
-                                <div class="file-upload-box">
-                                    <div class="upload-label">
-                                        <i class="bi bi-file-earmark-text file-icon"></i>
-                                        <span id="{{ $spanId }}">{{ $filename ? $filename : 'Dokumen belum diunggah' }}</span>
+                                <div class="document-upload-content">
+                                    @if(!$biodata || !$filename)
+                                    <div class="file-upload-box">
+                                        <div class="upload-label">
+                                            <i class="bi bi-file-earmark-text file-icon"></i>
+                                            <span id="{{ $spanId }}">{{ $filename ? $filename : 'Dokumen belum diunggah' }}</span>
+                                        </div>
+                                        <label for="{{ $inputId }}" class="btn btn-upload">Unggah</label>
+                                        <input type="file" name="{{ $field }}" id="{{ $inputId }}" accept="{{ $accept }}" data-accept="{{ $accept }}"
+                                            onchange="uploadDocumentAjax(this)">
                                     </div>
-                                    <label for="{{ $inputId }}" class="btn btn-upload">Unggah</label>
-                                    <input type="file" name="{{ $field }}" id="{{ $inputId }}" accept="{{ $accept }}" data-accept="{{ $accept }}"
-                                        onchange="uploadDocumentAjax(this)">
+                                    @else
+                                    <div class="file-box">
+                                        <div class="file-info">
+                                            <i class="bi bi-file-earmark-text file-icon"></i>
+                                            <div class="file-meta">
+                                                <span class="file-name-{{ str_replace('_', '-', $field) }}">{{ $filename }}</span>
+                                                <input type="hidden" name="{{ $field }}" value="{{ $filename }}">
+                                            </div>
+                                        </div>
+                                        <div class="btn-group-custom">
+                                            <a href="{{ asset(Auth::user()->no_ktp . '/dokumen/' . $filename) }}" target="_blank" class="btn btn-view">Lihat</a>
+                                            <button type="button"
+                                                class="btn btn-delete btn-confirm-delete"
+                                                data-url="{{ route('biodata.deleteFile', ['field' => $field]) }}"
+                                                data-field="{{ $field }}"
+                                                @if($documentDeleteLocked) disabled title="Dokumen tidak dapat dihapus karena akun Anda tercatat aktif bekerja." @endif>
+                                                Hapus
+                                            </button>
+                                        </div>
+                                    </div>
+                                    @endif
                                 </div>
+
                                 @if($field === 'sertifikat_pendukung')
                                 <span class="small text-muted fw-bold d-block mt-1">
                                     <i class="bi bi-exclamation-circle me-1"></i>
@@ -748,34 +779,6 @@
                                 {{-- Tempat hasil OCR ditampilkan hanya untuk KTP dan SIM B2 --}}
                                 @if(in_array($field, ['ktp', 'sim_b_2']))
                                 <div id="{{ $ocrResultId }}" class="mt-2 small text-muted">Hasil baca dokumen akan muncul di sini.</div>
-                                @endif
-                                @else
-                                <div class="file-box">
-                                    <div class="file-info">
-                                        <i class="bi bi-file-earmark-text file-icon"></i>
-                                        <div class="file-meta">
-                                            <span class="file-name-{{ str_replace('_', '-', $field) }}">{{ $filename }}</span>
-                                            <input type="hidden" name="{{ $field }}" value="{{ $filename }}">
-                                        </div>
-                                    </div>
-                                    <div class="btn-group-custom">
-                                        <a href="{{ asset(Auth::user()->no_ktp . '/dokumen/' . $filename) }}" target="_blank" class="btn btn-view">Lihat</a>
-                                        <input type="file" name="{{ $field }}" id="{{ $inputId }}" value="{{ $filename }}">
-                                        <button type="button"
-                                            class="btn btn-delete btn-confirm-delete"
-                                            data-url="{{ route('biodata.deleteFile', ['field' => $field]) }}"
-                                            data-field="{{ $field }}"
-                                            @if($documentDeleteLocked) disabled title="Dokumen tidak dapat dihapus karena akun Anda tercatat aktif bekerja." @endif>
-                                            Hapus
-                                        </button>
-                                    </div>
-                                </div>
-                                @if($field === 'sertifikat_pendukung')
-                                <span class="small text-muted fw-bold d-block mt-1">
-                                    <i class="bi bi-exclamation-circle me-1"></i>
-                                    Sertifikat lebih dari 1? Gabungkan semua dalam satu file PDF sebelum diunggah!
-                                </span>
-                                @endif
                                 @endif
                             </div>
                             @endforeach
@@ -1135,6 +1138,57 @@
 
 <script>
 
+    function renderUploadDocumentState(container, field, accept) {
+        const inputId = container.dataset.inputId || `${field}-upload`;
+        const spanId = container.dataset.spanId || `file-name-${field.replaceAll('_', '-')}`;
+        const content = container.querySelector('.document-upload-content');
+
+        if (!content) {
+            return;
+        }
+
+        content.innerHTML = `
+            <div class="file-upload-box">
+                <div class="upload-label">
+                    <i class="bi bi-file-earmark-text file-icon"></i>
+                    <span id="${spanId}">Dokumen belum diunggah</span>
+                </div>
+                <label for="${inputId}" class="btn btn-upload">Unggah</label>
+                <input type="file" name="${field}" id="${inputId}" accept="${accept}" data-accept="${accept}" onchange="uploadDocumentAjax(this)">
+            </div>
+        `;
+    }
+
+    function renderUploadedDocumentState(container, field, fileName, filePath) {
+        const content = container.querySelector('.document-upload-content');
+
+        if (!content) {
+            return;
+        }
+
+        content.innerHTML = `
+            <div class="file-box">
+                <div class="file-info">
+                    <i class="bi bi-file-earmark-text file-icon"></i>
+                    <div class="file-meta">
+                        <span class="file-name-${field.replaceAll('_', '-')}">${fileName}</span>
+                        <input type="hidden" name="${field}" value="${fileName}">
+                    </div>
+                </div>
+                <div class="btn-group-custom">
+                    <a href="/${filePath}" target="_blank" class="btn btn-view">Lihat</a>
+                    <button type="button"
+                        class="btn btn-delete btn-confirm-delete"
+                        data-url="{{ url('biodata/delete-file') }}/${field}"
+                        data-field="${field}"
+                        ${window.documentDeleteLocked ? 'disabled title="Dokumen tidak dapat dihapus karena akun Anda tercatat aktif bekerja."' : ''}>
+                        Hapus
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
     async function uploadDocumentAjax(input) {
         const file = input.files[0];
         if (!file) return;
@@ -1235,10 +1289,12 @@
 
         e.preventDefault();
 
-        const container = btn.closest('.col-md-6');
+        const container = btn.closest('.document-upload-item');
         const url = btn.dataset.url;
         const field = btn.dataset.field;
-        const accept = container.dataset.accept;
+        const accept = container?.dataset.accept || '';
+
+        if (!container) return;
 
         if (!confirm('Yakin ingin menghapus dokumen ini?')) return;
 
@@ -1263,18 +1319,21 @@
                     showConfirmButton: false
                 });
 
-                // ====== KEMBALIKAN KE UPLOAD BOX ======
-                const container = btn.closest('.col-md-6');
-                container.querySelector('.file-upload-box').innerHTML = `
-                <div class="upload-label">
-                    <i class="bi bi-file-earmark-text file-icon"></i>
-                    <span>Dokumen belum diunggah</span>
-                </div>
-                <label class="btn btn-upload">
-                    Unggah
-                    <input type="file" name="${field}" accept="${accept}" onchange="uploadDocumentAjax(this)" hidden>
-                </label>
-            `;
+                renderUploadDocumentState(container, field, accept);
+
+                const ocrResultId = container.dataset.ocrResultId;
+                const ocrResultElement = ocrResultId ? document.getElementById(ocrResultId) : null;
+                if (ocrResultElement) {
+                    ocrResultElement.innerHTML = 'Hasil baca dokumen akan muncul di sini.';
+                }
+
+                if (field === 'ktp') {
+                    window.ktpOcrData = null;
+                }
+
+                if (field === 'sim_b_2') {
+                    window.simOcrData = null;
+                }
             });
     });
 </script>
@@ -1814,6 +1873,10 @@
             return true;
         }
 
+        if (index === 0 && typeof window.validateNoKk === 'function' && !window.validateNoKk(true)) {
+            return false;
+        }
+
         const inputs = stepPane.querySelectorAll('input, select');
         for (const input of inputs) {
             if (!input.checkValidity()) {
@@ -1938,18 +2001,117 @@
         });
     });
 
-    document.getElementById('npwp').addEventListener('input', function(e) {
-        let value = e.target.value.replace(/\D/g, ''); // Hanya angka
-        let formatted = '';
+    document.addEventListener('DOMContentLoaded', function() {
+        const ktpInput = document.getElementById('no_ktp');
+        const kkInput = document.getElementById('no_kk');
+        const npwpInput = document.getElementById('npwp');
 
-        if (value.length > 0) formatted += value.substr(0, 2);
-        if (value.length >= 3) formatted += '.' + value.substr(2, 3);
-        if (value.length >= 6) formatted += '.' + value.substr(5, 3);
-        if (value.length >= 9) formatted += '.' + value.substr(8, 1);
-        if (value.length >= 10) formatted += '-' + value.substr(9, 3);
-        if (value.length >= 13) formatted += '.' + value.substr(12, 3);
+        if (!ktpInput || !kkInput || !npwpInput) {
+            return;
+        }
 
-        e.target.value = formatted;
+        const digitsOnly = (value) => (value || '').replace(/\D/g, '');
+
+        function formatNpwpExisting(digits) {
+            let formatted = '';
+
+            if (digits.length > 0) formatted += digits.substring(0, 2);
+            if (digits.length >= 3) formatted += '.' + digits.substring(2, 5);
+            if (digits.length >= 6) formatted += '.' + digits.substring(5, 8);
+            if (digits.length >= 9) formatted += '.' + digits.substring(8, 9);
+            if (digits.length >= 10) formatted += '-' + digits.substring(9, 12);
+            if (digits.length >= 13) formatted += '.' + digits.substring(12, 15);
+
+            return formatted;
+        }
+
+        function formatByFourDigits(digits) {
+            return (digits.match(/.{1,4}/g) || []).join(' ');
+        }
+
+        function showWarning(message, onClose = null) {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Perhatian',
+                    text: message,
+                    confirmButtonText: 'OK'
+                }).then(function() {
+                    if (typeof onClose === 'function') {
+                        onClose();
+                    }
+                });
+                return;
+            }
+
+            alert(message);
+
+            if (typeof onClose === 'function') {
+                onClose();
+            }
+        }
+
+        function getKtpDigits() {
+            return digitsOnly(ktpInput.value).slice(0, 16);
+        }
+
+        function validateNoKk(showAlert = false) {
+            const ktpDigits = getKtpDigits();
+            const kkDigits = digitsOnly(kkInput.value).slice(0, 16);
+
+            kkInput.value = kkDigits;
+            kkInput.setCustomValidity('');
+
+            if (!kkDigits || !ktpDigits || kkDigits !== ktpDigits) {
+                return true;
+            }
+
+            kkInput.setCustomValidity('No KK tidak boleh sama dengan No KTP.');
+
+            if (showAlert) {
+                kkInput.value = '';
+                kkInput.setCustomValidity('');
+                showWarning('No KK dan No KTP tidak boleh sama.', function() {
+                    kkInput.focus();
+                });
+            }
+
+            return false;
+        }
+
+        function formatNpwpInput() {
+            const rawDigits = digitsOnly(npwpInput.value);
+            const ktpDigits = getKtpDigits();
+            const useKtpFormat = ktpDigits.length === 16 &&
+                rawDigits.length <= ktpDigits.length &&
+                ktpDigits.startsWith(rawDigits);
+
+            if (useKtpFormat) {
+                npwpInput.value = formatByFourDigits(rawDigits.slice(0, 16));
+                return;
+            }
+
+            npwpInput.value = formatNpwpExisting(rawDigits.slice(0, 15));
+        }
+
+        kkInput.addEventListener('input', function() {
+            validateNoKk(false);
+        });
+
+        kkInput.addEventListener('blur', function() {
+            validateNoKk(true);
+        });
+
+        kkInput.addEventListener('change', function() {
+            validateNoKk(true);
+        });
+
+        npwpInput.addEventListener('input', function() {
+            formatNpwpInput();
+        });
+
+        window.validateNoKk = validateNoKk;
+        formatNpwpInput();
     });
 
     function saveStep1to4Ajax(targetStep = currentStep + 1) {
@@ -1982,39 +2144,6 @@
                 nextBtn.innerHTML = 'Selanjutnya';
             });
     }
-</script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('.btn-confirm-delete').forEach(function(button) {
-            button.addEventListener('click', function() {
-                const url = this.getAttribute('data-url');
-                const field = this.getAttribute('data-field');
-
-                if (confirm(`Yakin ingin menghapus ${field}?`)) {
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = url;
-
-                    const csrf = document.createElement('input');
-                    csrf.type = 'hidden';
-                    csrf.name = '_token';
-                    csrf.value = '{{ csrf_token() }}';
-
-                    const method = document.createElement('input');
-                    method.type = 'hidden';
-                    method.name = '_method';
-                    method.value = 'DELETE';
-
-                    form.appendChild(csrf);
-                    form.appendChild(method);
-
-                    document.body.appendChild(form);
-                    form.submit();
-                }
-            });
-        });
-    });
 </script>
 
 <script>

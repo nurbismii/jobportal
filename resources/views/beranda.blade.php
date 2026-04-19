@@ -913,7 +913,7 @@ $maxStep = count($steps);
     }
 </script>
 
-<script>
+<!-- <script>
     document.addEventListener("DOMContentLoaded", function() {
 
         const STORAGE_KEY = "vhire_tutorial_first_beranda";
@@ -992,7 +992,7 @@ $maxStep = count($steps);
             showStep();
         }
     });
-</script>
+</script> -->
 
 @endpush
 @endsection
