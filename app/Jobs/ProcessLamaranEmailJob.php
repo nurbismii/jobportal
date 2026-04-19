@@ -4,9 +4,6 @@ namespace App\Jobs;
 
 use App\Models\EmailBlastLog;
 use App\Models\Lamaran;
-use App\Models\PermintaanTenagaKerja;
-use App\Models\RiwayatProsesLamaran;
-use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -33,7 +30,11 @@ class ProcessLamaranEmailJob implements ShouldQueue
 
     public function handle()
     {
-        Lamaran::with('biodata:id,user_id', 'lowongan:id,permintaan_tenaga_kerja_id')
+        if ($this->blast !== 'iya') {
+            return;
+        }
+
+        Lamaran::with('biodata:id,user_id')
             ->whereIn('id', $this->ids)
             ->get()
             ->each(function ($lamaran) {
@@ -42,33 +43,7 @@ class ProcessLamaranEmailJob implements ShouldQueue
 
                 $userId = $lamaran->biodata->user_id;
 
-                $riwayat = RiwayatProsesLamaran::firstOrCreate([
-                    'user_id' => $userId,
-                    'lamaran_id' => $lamaran->id,
-                    'status_proses' => $this->status,
-                ], [
-                    'status_lolos' => $this->isTidakLolos($this->status) ? 'Tidak Lolos' : null,
-                    'tanggal_proses' => $this->tanggal,
-                    'jam' => $this->jam,
-                    'tempat' => $this->tempat ?: '-',
-                    'pesan' => $this->pesan ?: '-'
-                ]);
-
-                if (strtolower($this->status) === 'aktif bekerja') {
-                    $user = User::find($userId);
-
-                    if ($user) {
-                        $user->markAsActiveEmployee($this->tanggal);
-                    }
-                }
-
-                if ($riwayat->wasRecentlyCreated && strtolower($this->status) === 'aktif bekerja') {
-                    PermintaanTenagaKerja::where('id', $lamaran->lowongan->permintaan_tenaga_kerja_id)->increment('jumlah_masuk');
-                }
-
-                if ($this->blast === 'iya') {
-                    $this->dispatchEmail($userId, $lamaran->id);
-                }
+                $this->dispatchEmail($userId, $lamaran->id);
             });
     }
 
@@ -110,18 +85,4 @@ class ProcessLamaranEmailJob implements ShouldQueue
         )->delay(now()->addSeconds($delaySeconds));
     }
 
-    private function isTidakLolos($status)
-    {
-        return in_array(strtolower($status), [
-            'belum sesuai kriteria',
-            'tidak lolos verifikasi online',
-            'tidak lolos verifikasi berkas',
-            'tidak lolos tes kesehatan',
-            'tidak lolos tes lapangan',
-            'tidak lolos medical check-up',
-            'tidak lolos induksi safety',
-            'tidak lolos tanda tangan kontrak',
-            'tidak tanda tangan kontrak'
-        ]);
-    }
 }

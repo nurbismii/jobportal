@@ -4,8 +4,7 @@ namespace App\Imports;
 
 use App\Models\Biodata;
 use App\Models\Lamaran;
-use App\Models\RiwayatProsesLamaran;
-use App\Models\User;
+use App\Services\LamaranStatusService;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -20,6 +19,12 @@ class ImportStatusLamaran implements ToModel, WithHeadingRow, WithChunkReading, 
     protected $requiredHeaders = ['no_ktp', 'status_tahapan', 'tanggal_proses', 'tempat'];
 
     protected $biodataCache = [];
+    protected LamaranStatusService $lamaranStatusService;
+
+    public function __construct()
+    {
+        $this->lamaranStatusService = app(LamaranStatusService::class);
+    }
 
     public function model(array $row)
     {
@@ -45,7 +50,8 @@ class ImportStatusLamaran implements ToModel, WithHeadingRow, WithChunkReading, 
             throw new \Exception("No KTP '$noKtp' tidak ditemukan dalam database.");
         }
 
-        $lamaran = Lamaran::where('biodata_id', $biodata->id)
+        $lamaran = Lamaran::with('lowongan:id,permintaan_tenaga_kerja_id')
+            ->where('biodata_id', $biodata->id)
             ->latest('id')
             ->first();
 
@@ -53,55 +59,18 @@ class ImportStatusLamaran implements ToModel, WithHeadingRow, WithChunkReading, 
             throw new \Exception("Lamaran untuk KTP '$noKtp' tidak ditemukan.");
         }
 
-        $statusTahapan = strtolower(trim($row['status_tahapan'] ?? ''));
-        $statusLolos = $this->isTidakLolos($statusTahapan) ? 'Tidak Lolos' : null;
         $tanggalProses = $this->parseDate($row['tanggal_proses'] ?? null);
 
-        // update lamaran
-        $lamaran->update([
-            'status_lamaran' => strtolower($statusLolos) == 'tidak lolos' ? 0 : 1,
-            'status_proses' => ucwords($row['status_tahapan']),
-        ]);
-
-        // tentukan status lolos
-        RiwayatProsesLamaran::create([
-            'user_id' => $biodata->user_id,
-            'lamaran_id' => $lamaran->id,
-            'status_proses' => ucwords($row['status_tahapan']),
-            'status_lolos' => $statusLolos,
-            'tanggal_proses' => $tanggalProses,
-            'jam' => now()->format('H:i:s'),
-            'tempat' => $row['tempat'] ?? '-',
-            'pesan' => '-'
-        ]);
-
-        if ($statusTahapan === 'aktif bekerja') {
-            $user = User::find($biodata->user_id);
-
-            if ($user) {
-                $user->markAsActiveEmployee($tanggalProses ?: ($row['tanggal_proses'] ?? null));
-            }
-        }
+        $this->lamaranStatusService->apply(
+            $lamaran,
+            (string) ($row['status_tahapan'] ?? ''),
+            $tanggalProses ?: ($row['tanggal_proses'] ?? null),
+            now()->format('H:i:s'),
+            $row['tempat'] ?? '-',
+            '-'
+        );
 
         return null;
-    }
-
-    private function isTidakLolos($status)
-    {
-        $status = strtolower($status);
-
-        $keywords = [
-            'tidak lolos',
-            'belum sesuai'
-        ];
-
-        foreach ($keywords as $keyword) {
-            if (str_contains($status, $keyword)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private function validateHeaders(array $row)

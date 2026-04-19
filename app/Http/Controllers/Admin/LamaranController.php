@@ -7,13 +7,14 @@ use App\Imports\ImportStatusLamaran;
 use App\Jobs\ProcessLamaranMasterJob;
 use App\Models\Biodata;
 use App\Models\Lamaran;
+use App\Services\LamaranStatusService;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use RealRashid\SweetAlert\Facades\Alert;
 
 class LamaranController extends Controller
 {
-    public function updateStatusMassal(Request $request)
+    public function updateStatusMassal(Request $request, LamaranStatusService $lamaranStatusService)
     {
         $statusInput = strtolower($request->status_proses);
 
@@ -25,33 +26,40 @@ class LamaranController extends Controller
             return back();
         }
 
-        Lamaran::whereIn('id', $request->selected_ids)->update([
-            'status_proses' => $request->status_proses,
-            'status_lamaran' => $this->isTidakLolos($statusInput) ? 0 : 1
-        ]);
+        collect($request->selected_ids)
+            ->chunk(300)
+            ->each(function ($chunk) use ($lamaranStatusService, $request) {
+                Lamaran::with('biodata.user', 'lowongan:id,permintaan_tenaga_kerja_id')
+                    ->whereIn('id', $chunk->all())
+                    ->get()
+                    ->each(function ($lamaran) use ($lamaranStatusService, $request) {
+                        $lamaranStatusService->apply(
+                            $lamaran,
+                            (string) $request->status_proses,
+                            $request->tanggal_proses,
+                            $request->jam,
+                            $request->tempat,
+                            $request->pesanEmail
+                        );
+                    });
+            });
 
-        if ($statusInput === 'aktif bekerja') {
-            Lamaran::with('biodata.user')
-                ->whereIn('id', $request->selected_ids)
-                ->get()
-                ->each(function ($lamaran) use ($request) {
-                    if ($lamaran->biodata && $lamaran->biodata->user) {
-                        $lamaran->biodata->user->markAsActiveEmployee($request->tanggal_proses);
-                    }
-                });
+        if ($request->blast_email === 'iya') {
+            ProcessLamaranMasterJob::dispatch(
+                $request->selected_ids,
+                $request->status_proses,
+                $request->tanggal_proses,
+                $request->jam,
+                $request->tempat,
+                $request->pesanEmail,
+                $request->blast_email
+            );
+
+            Alert::success('Berhasil', 'Status lamaran berhasil diperbarui dan email sedang diproses untuk dikirim.');
+            return back();
         }
 
-        ProcessLamaranMasterJob::dispatch(
-            $request->selected_ids,
-            $request->status_proses,
-            $request->tanggal_proses,
-            $request->jam,
-            $request->tempat,
-            $request->pesanEmail,
-            $request->blast_email
-        );
-
-        Alert::success('Berhasil', 'Status lamaran berhasil diperbarui dan email sedang diproses untuk dikirim.');
+        Alert::success('Berhasil', 'Status lamaran berhasil diperbarui.');
         return back();
     }
 
@@ -145,20 +153,5 @@ class LamaranController extends Controller
     function getBatchDelayJam($counter, $limitPerJam = 50)
     {
         return intdiv($counter, $limitPerJam);
-    }
-
-    private function isTidakLolos($status)
-    {
-        return in_array(strtolower($status), [
-            'belum sesuai kriteria',
-            'tidak lolos verifikasi online',
-            'tidak lolos verifikasi berkas',
-            'tidak lolos tes kesehatan',
-            'tidak lolos tes lapangan',
-            'tidak lolos medical check-up',
-            'tidak lolos induksi safety',
-            'tidak lolos tanda tangan kontrak',
-            'tidak tanda tangan kontrak'
-        ]);
     }
 }
