@@ -15,9 +15,11 @@ class DeleteUnverifiedUsers extends Command
     {
         $limit = Carbon::now()->subHours(1);
 
-        $users = User::whereNull('email_verified_at')
-            ->where('role', 'user')
-            ->where(function ($query) use ($limit) {
+        $usersQuery = User::whereNull('email_verified_at')
+            ->where('role', 'user');
+
+        if (User::supportsVerificationResendTracking()) {
+            $usersQuery->where(function ($query) use ($limit) {
                 $query->where(function ($subQuery) use ($limit) {
                     $subQuery->whereNotNull('verification_email_last_sent_at')
                         ->where('verification_email_last_sent_at', '<=', $limit);
@@ -25,8 +27,12 @@ class DeleteUnverifiedUsers extends Command
                     $subQuery->whereNull('verification_email_last_sent_at')
                         ->where('created_at', '<=', $limit);
                 });
-            })
-            ->get();
+            });
+        } else {
+            $usersQuery->where('updated_at', '<=', $limit);
+        }
+
+        $users = $usersQuery->get();
 
         $count = $users->count();
 

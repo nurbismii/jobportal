@@ -68,12 +68,13 @@ class PendaftaranController extends Controller
         try {
             DB::beginTransaction();
             $now = now();
+            $supportsVerificationResendTracking = User::supportsVerificationResendTracking();
 
             // Cari employee (jika ada)
             $employee = User::latestHrisEmployeeByNoKtp($validatedData['no_ktp']);
             $employmentAttributes = User::employmentAttributesFromHrisEmployee($employee);
 
-            $userBaru = User::create([
+            $userData = [
                 'no_ktp' => $validatedData['no_ktp'],
                 'name' => strtoupper($request->name),
                 'email' => $validatedData['email'],
@@ -81,16 +82,21 @@ class PendaftaranController extends Controller
                 'status_akun' => 0,
                 'role' => 'user',
                 'email_verifikasi_token' => Str::random(64),
-                'verification_email_last_sent_at' => $now,
-                'verification_resend_count' => 0,
-                'verification_resend_count_date' => $now->toDateString(),
                 'employment_lock_active' => $employmentAttributes['employment_lock_active'],
                 'last_hris_sync_at' => $now,
                 'status_pelamar' => $employmentAttributes['status_pelamar'],
                 'tanggal_resign' => $employmentAttributes['tanggal_resign'],
                 'ket_resign' => $employmentAttributes['ket_resign'],
                 'area_kerja' => $employmentAttributes['area_kerja'],
-            ]);
+            ];
+
+            if ($supportsVerificationResendTracking) {
+                $userData['verification_email_last_sent_at'] = $now;
+                $userData['verification_resend_count'] = 0;
+                $userData['verification_resend_count_date'] = $now->toDateString();
+            }
+
+            $userBaru = User::create($userData);
 
             // Copy SP jika ada
             if ($employee) {
@@ -188,6 +194,7 @@ class PendaftaranController extends Controller
                 ->where('status_akun', 0)
                 ->whereNull('email_verified_at')
                 ->first();
+            $supportsVerificationResendTracking = User::supportsVerificationResendTracking();
 
             if (! $user) {
                 Alert::success('Permintaan diterima', 'Jika akun masih menunggu verifikasi, email verifikasi terbaru telah dikirim.');
@@ -195,10 +202,14 @@ class PendaftaranController extends Controller
             }
 
             $now = now();
-            $lastSentAt = $user->verification_email_last_sent_at ?? $user->created_at;
-            $currentResendCount = $this->currentVerificationResendCount($user, $now);
+            $lastSentAt = $supportsVerificationResendTracking
+                ? ($user->verification_email_last_sent_at ?? $user->created_at)
+                : $user->created_at;
+            $currentResendCount = $supportsVerificationResendTracking
+                ? $this->currentVerificationResendCount($user, $now)
+                : 0;
 
-            if ($currentResendCount >= self::VERIFICATION_RESEND_DAILY_LIMIT) {
+            if ($supportsVerificationResendTracking && $currentResendCount >= self::VERIFICATION_RESEND_DAILY_LIMIT) {
                 Alert::warning(
                     'Batas harian tercapai',
                     'Email verifikasi hanya bisa dikirim ulang maksimal ' . self::VERIFICATION_RESEND_DAILY_LIMIT . ' kali dalam sehari. Silakan coba lagi besok.'
@@ -207,7 +218,7 @@ class PendaftaranController extends Controller
                 return redirect()->route('verification.notice.public', ['email' => $validatedData['email']]);
             }
 
-            if ($lastSentAt && $lastSentAt->copy()->addMinutes(self::VERIFICATION_RESEND_COOLDOWN_MINUTES)->isFuture()) {
+            if ($supportsVerificationResendTracking && $lastSentAt && $lastSentAt->copy()->addMinutes(self::VERIFICATION_RESEND_COOLDOWN_MINUTES)->isFuture()) {
                 $availableAt = $lastSentAt->copy()->addMinutes(self::VERIFICATION_RESEND_COOLDOWN_MINUTES);
                 $remainingMinutes = max(1, $now->diffInMinutes($availableAt));
 
@@ -219,23 +230,34 @@ class PendaftaranController extends Controller
                 return redirect()->route('verification.notice.public', ['email' => $validatedData['email']]);
             }
 
-            DB::transaction(function () use ($user, $now, $currentResendCount) {
-                $user->forceFill([
+            DB::transaction(function () use ($user, $now, $currentResendCount, $supportsVerificationResendTracking) {
+                $payload = [
                     'email_verifikasi_token' => Str::random(64),
-                    'verification_email_last_sent_at' => $now,
-                    'verification_resend_count' => $currentResendCount + 1,
-                    'verification_resend_count_date' => $now->toDateString(),
-                ])->save();
+                ];
+
+                if ($supportsVerificationResendTracking) {
+                    $payload['verification_email_last_sent_at'] = $now;
+                    $payload['verification_resend_count'] = $currentResendCount + 1;
+                    $payload['verification_resend_count_date'] = $now->toDateString();
+                } else {
+                    Log::warning('Verification resend tracking columns are missing. Resend limit is temporarily bypassed until migration runs.');
+                }
+
+                $user->forceFill($payload)->save();
 
                 app(FallbackMailService::class)->send($user->email, new EmailVerification($user));
             });
 
-            $remainingResend = max(0, self::VERIFICATION_RESEND_DAILY_LIMIT - ($currentResendCount + 1));
+            if ($supportsVerificationResendTracking) {
+                $remainingResend = max(0, self::VERIFICATION_RESEND_DAILY_LIMIT - ($currentResendCount + 1));
 
-            Alert::success(
-                'Email terkirim',
-                'Email verifikasi terbaru telah dikirim. Sisa kirim ulang untuk hari ini: ' . $remainingResend . ' kali.'
-            );
+                Alert::success(
+                    'Email terkirim',
+                    'Email verifikasi terbaru telah dikirim. Sisa kirim ulang untuk hari ini: ' . $remainingResend . ' kali.'
+                );
+            } else {
+                Alert::success('Email terkirim', 'Email verifikasi terbaru telah dikirim.');
+            }
         } catch (\Throwable $e) {
             Log::error('Resend verification email error: ' . $e->getMessage(), [
                 'email' => $validatedData['email'],

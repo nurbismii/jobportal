@@ -10,11 +10,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Notifications\VerifikasiEmailNotification;
+use Illuminate\Support\Facades\Schema;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable;
+
+    private static ?bool $supportsVerificationResendTracking = null;
 
     /**
      * The attributes that are mass assignable.
@@ -63,6 +66,21 @@ class User extends Authenticatable implements MustVerifyEmail
         'verification_email_last_sent_at' => 'datetime',
         'verification_resend_count_date' => 'date',
     ];
+
+    public static function supportsVerificationResendTracking(): bool
+    {
+        if (static::$supportsVerificationResendTracking !== null) {
+            return static::$supportsVerificationResendTracking;
+        }
+
+        static::$supportsVerificationResendTracking = Schema::hasColumns('users', [
+            'verification_email_last_sent_at',
+            'verification_resend_count',
+            'verification_resend_count_date',
+        ]);
+
+        return static::$supportsVerificationResendTracking;
+    }
 
     public function hasActiveEmploymentStatusLock(): bool
     {
