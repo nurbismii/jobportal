@@ -551,6 +551,7 @@
                             <label>Nama Suami / Istri</label>
                             <input type="text"
                                 name="nama_pasangan"
+                                id="nama_pasangan"
                                 class="form-control"
                                 value="{{ old('nama_pasangan', $biodata->nama_pasangan ?? '') }}">
                         </div>
@@ -1847,7 +1848,7 @@
                 }
 
                 if (index > currentStep) {
-                    goToNextStep(index);
+                    goToNextStep(Math.min(index, currentStep + 1));
                     return;
                 }
 
@@ -1919,8 +1920,12 @@
             return false;
         }
 
-        const inputs = stepPane.querySelectorAll('input, select');
+        const inputs = stepPane.querySelectorAll('input, select, textarea');
         for (const input of inputs) {
+            if (input.disabled || input.type === 'hidden') {
+                continue;
+            }
+
             if (!input.checkValidity()) {
                 input.reportValidity();
                 return false;
@@ -2166,20 +2171,37 @@
         fetch("{{ route('biodata.storeStep1to4') }}", {
                 method: "POST",
                 headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
                 body: formData
             })
-            .then(res => res.json())
+            .then(async (res) => {
+                const contentType = res.headers.get('content-type') || '';
+                const data = contentType.includes('application/json')
+                    ? await res.json()
+                    : null;
+
+                if (!res.ok) {
+                    if (data?.errors) {
+                        throw new Error(Object.values(data.errors)[0][0]);
+                    }
+
+                    throw new Error(data?.message || 'Gagal menyimpan data');
+                }
+
+                return data;
+            })
             .then(res => {
                 if (res.status) {
                     setActiveStep(targetStep);
                 } else {
-                    alert(res.message || 'Gagal menyimpan data');
+                    throw new Error(res.message || 'Gagal menyimpan data');
                 }
             })
-            .catch(() => {
-                alert('Terjadi kesalahan server');
+            .catch((error) => {
+                alert(error.message || 'Terjadi kesalahan server');
             })
             .finally(() => {
                 nextBtn.disabled = false;
@@ -2193,11 +2215,22 @@
 
         let status = document.getElementById('status_pernikahan').value;
         let section = document.getElementById('keluarga_section');
+        let tanggalNikah = document.getElementById('tanggal_nikah');
+        let namaPasangan = document.getElementById('nama_pasangan');
+        let isKawin = status === 'Kawin';
 
         if (status === 'Belum Kawin' || status === '') {
             section.style.display = 'none';
         } else {
             section.style.display = 'block';
+        }
+
+        if (tanggalNikah) {
+            tanggalNikah.required = isKawin;
+        }
+
+        if (namaPasangan) {
+            namaPasangan.required = isKawin;
         }
 
     }
