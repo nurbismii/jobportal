@@ -16,6 +16,14 @@ use Intervention\Image\Facades\Image;
 
 class BiodataController extends Controller
 {
+    private function biodataIdentityDefaults(): array
+    {
+        return [
+            'user_id' => auth()->id(),
+            'no_ktp' => auth()->user()->no_ktp,
+        ];
+    }
+
     private function accountDataLockedMessage(): string
     {
         return 'Biodata dan dokumen tidak dapat diubah karena akun Anda tercatat aktif bekerja.';
@@ -61,10 +69,12 @@ class BiodataController extends Controller
                 [
                     'user_id' => auth()->id()
                 ],
-                [
+                array_merge($this->biodataIdentityDefaults(), [
                     'status_pernyataan' => $syarat_ketentuan->syarat_ketentuan
-                ]
+                ])
             );
+
+            $biodata = Biodata::where('user_id', auth()->id())->first();
 
             foreach ($oldFiles as $oldFile) {
                 $path = public_path(auth()->user()->no_ktp . '/dokumen/' . $oldFile);
@@ -74,7 +84,7 @@ class BiodataController extends Controller
             }
 
             // Check if SIM B II file is available before processing OCR
-            if (isset($fileNames['sim_b_2']) && $fileNames['sim_b_2'] && $biodata->ocr_sim_b2 == null) {
+            if ($biodata && isset($fileNames['sim_b_2']) && $fileNames['sim_b_2'] && $biodata->ocr_sim_b2 == null) {
                 // Langsung proses OCR saat file diunggah
                 extractSimB2OnlyOCR($biodata);
             }
@@ -121,10 +131,9 @@ class BiodataController extends Controller
             [
                 'user_id' => auth()->id()
             ],
-            [
+            array_merge($this->biodataIdentityDefaults(), [
                 // Biodata Pribadi
-                'user_id' => auth()->id(),
-                'no_ktp' => $request->no_ktp,
+                'no_ktp' => $request->no_ktp ?: auth()->user()->no_ktp,
                 'no_telp' => $request->no_telp,
                 'no_kk' => $request->no_kk,
                 'no_npwp' => $request->no_npwp,
@@ -171,7 +180,7 @@ class BiodataController extends Controller
                 'nama_kontak_darurat' => ucwords($request->nama_kontak_darurat),
                 'no_telepon_darurat' => $request->no_telp_darurat,
                 'status_hubungan' => $request->status_hubungan,
-            ]
+            ])
         );
 
         return response()->json([
@@ -277,12 +286,27 @@ class BiodataController extends Controller
                 'sertifikat_pendukung' => 'required|mimes:pdf|max:51200',
             ];
 
+            $maxSizeMessages = [
+                'cv.max' => 'Ukuran CV maksimal 2 MB.',
+                'pas_foto.max' => 'Ukuran Pas Foto maksimal 2 MB.',
+                'surat_lamaran.max' => 'Ukuran Surat Lamaran maksimal 2 MB.',
+                'ijazah.max' => 'Ukuran Ijazah dan Transkrip nilai maksimal 2 MB.',
+                'ktp.max' => 'Ukuran KTP maksimal 2 MB.',
+                'sim_b_2.max' => 'Ukuran SIM B II maksimal 2 MB.',
+                'skck.max' => 'Ukuran SKCK maksimal 2 MB.',
+                'sio.max' => 'Ukuran SIO maksimal 2 MB.',
+                'sertifikat_vaksin.max' => 'Ukuran Sertifikat Vaksin maksimal 2 MB.',
+                'kartu_keluarga.max' => 'Ukuran Kartu Keluarga maksimal 2 MB.',
+                'npwp.max' => 'Ukuran NPWP maksimal 2 MB.',
+                'ak1.max' => 'Ukuran AK1 maksimal 2 MB.',
+                'sertifikat_pendukung.max' => 'Ukuran Sertifikat Pendukung maksimal 50 MB.',
+            ];
+
             $messages = [
                 'required' => ':attribute wajib diupload',
                 'mimes'    => 'Format :attribute harus berupa :values',
                 'image'    => ':attribute harus berupa foto/gambar',
-                'max'      => 'Ukuran :attribute maksimal 2MB',
-            ];
+            ] + $maxSizeMessages;
 
             $attributes = [
                 'cv' => 'CV',
@@ -342,7 +366,9 @@ class BiodataController extends Controller
 
             Biodata::updateOrCreate(
                 ['user_id' => auth()->id()],
-                [$uploadedField => $fileName]
+                array_merge($this->biodataIdentityDefaults(), [
+                    $uploadedField => $fileName,
+                ])
             );
 
             // hapus file lama

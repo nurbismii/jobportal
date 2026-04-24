@@ -693,19 +693,19 @@
 
                         @php
                         $dokumenFields = [
-                        'cv' => ['label' => 'CV (pdf)', 'accept' => '.pdf'],
-                        'pas_foto' => ['label' => 'Pas Foto 3x4 (jpeg, jpg, png)', 'accept' => '.png,.jpg,.jpeg'],
-                        'surat_lamaran' => ['label' => 'Surat Lamaran Kerja (pdf)', 'accept' => '.pdf'],
-                        'ijazah' => ['label' => 'Ijazah dan Transkrip nilai (pdf)', 'accept' => '.pdf'],
-                        'ktp' => ['label' => 'Kartu Tanda Penduduk (KTP) (jpg, jpeg, png)', 'accept' => '.jpg,.jpeg,.png', 'onchange' => 'handleKtpOCR(this)'],
-                        'sim_b_2' => ['label' => 'SIM B II Umum (jpg, jpeg, png) <sup>wajib bagi pelamar DT/OPR</sup>', 'accept' => '.jpg,.jpeg,.png', 'onchange' => 'handleSimB2OCR(this)'],
-                        'skck' => ['label' => 'SKCK (pdf)', 'accept' => '.pdf'],
-                        'sio' => ['label' => 'SIO (jpeg, jpg, png) <sup>wajib bagi pelamar DT/OPR</sup>', 'accept' => '.png,.jpg,.jpeg'],
-                        'sertifikat_vaksin' => ['label' => 'Sertifikat Vaksin (pdf)', 'accept' => '.pdf'],
-                        'kartu_keluarga' => ['label' => 'Kartu Keluarga (pdf)', 'accept' => '.pdf'],
-                        'npwp' => ['label' => 'NPWP (pdf)', 'accept' => '.pdf'],
-                        'ak1' => ['label' => 'Kartu Pencari Kejra (AK1) (pdf)', 'accept' => '.pdf'],
-                        'sertifikat_pendukung' => ['label' => 'Sertifikat Pendukung (pdf)', 'accept' => '.pdf'],
+                        'cv' => ['label' => 'CV (pdf)', 'accept' => '.pdf', 'max_kb' => 2048],
+                        'pas_foto' => ['label' => 'Pas Foto 3x4 (jpeg, jpg, png)', 'accept' => '.png,.jpg,.jpeg', 'max_kb' => 2048],
+                        'surat_lamaran' => ['label' => 'Surat Lamaran Kerja (pdf)', 'accept' => '.pdf', 'max_kb' => 2048],
+                        'ijazah' => ['label' => 'Ijazah dan Transkrip nilai (pdf)', 'accept' => '.pdf', 'max_kb' => 2048],
+                        'ktp' => ['label' => 'Kartu Tanda Penduduk (KTP) (jpg, jpeg, png)', 'accept' => '.jpg,.jpeg,.png', 'max_kb' => 2048, 'onchange' => 'handleKtpOCR(this)'],
+                        'sim_b_2' => ['label' => 'SIM B II Umum (jpg, jpeg, png) <sup>wajib bagi pelamar DT/OPR</sup>', 'accept' => '.jpg,.jpeg,.png', 'max_kb' => 2048, 'onchange' => 'handleSimB2OCR(this)'],
+                        'skck' => ['label' => 'SKCK (pdf)', 'accept' => '.pdf', 'max_kb' => 2048],
+                        'sio' => ['label' => 'SIO (jpeg, jpg, png) <sup>wajib bagi pelamar DT/OPR</sup>', 'accept' => '.png,.jpg,.jpeg', 'max_kb' => 2048],
+                        'sertifikat_vaksin' => ['label' => 'Sertifikat Vaksin (pdf)', 'accept' => '.pdf', 'max_kb' => 2048],
+                        'kartu_keluarga' => ['label' => 'Kartu Keluarga (pdf)', 'accept' => '.pdf', 'max_kb' => 2048],
+                        'npwp' => ['label' => 'NPWP (pdf)', 'accept' => '.pdf', 'max_kb' => 2048],
+                        'ak1' => ['label' => 'Kartu Pencari Kejra (AK1) (pdf)', 'accept' => '.pdf', 'max_kb' => 2048],
+                        'sertifikat_pendukung' => ['label' => 'Sertifikat Pendukung (pdf)', 'accept' => '.pdf', 'max_kb' => 51200],
                         ];
                         @endphp
 
@@ -723,6 +723,8 @@
                             $filename = $biodata->$field ?? null;
                             $label = $meta['label'];
                             $accept = $meta['accept'];
+                            $maxKb = $meta['max_kb'] ?? 2048;
+                            $maxSizeLabel = $maxKb >= 1024 ? rtrim(rtrim(number_format($maxKb / 1024, 2, '.', ''), '0'), '.') . ' MB' : $maxKb . ' KB';
                             $inputId = $field . '-upload';
                             $spanId = 'file-name-' . str_replace('_', '-', $field);
                             $ocrResultId = 'ocr-result-' . str_replace('_', '-', $field); // Tambahan
@@ -731,6 +733,7 @@
                             <div class="col-md-6 mb-2 document-upload-item"
                                 data-field="{{ $field }}"
                                 data-accept="{{ $accept }}"
+                                data-max-kb="{{ $maxKb }}"
                                 data-input-id="{{ $inputId }}"
                                 data-span-id="{{ $spanId }}"
                                 data-ocr-result-id="{{ $ocrResultId }}">
@@ -769,6 +772,10 @@
                                     </div>
                                     @endif
                                 </div>
+
+                                <span class="small text-muted d-block mt-1">
+                                    Maksimal ukuran file: {{ $maxSizeLabel }}
+                                </span>
 
                                 @if($field === 'sertifikat_pendukung')
                                 <span class="small text-muted fw-bold d-block mt-1">
@@ -1192,6 +1199,20 @@
     async function uploadDocumentAjax(input) {
         const file = input.files[0];
         if (!file) return;
+        const field = input.name;
+        const container = input.closest('.document-upload-item, .col-md-6');
+        const maxKb = Number(container?.dataset.maxKb || 2048);
+        const maxBytes = maxKb * 1024;
+        const uploadBox = container?.querySelector('.file-upload-box') || { innerHTML: '' };
+        const fileNameSpan = container?.querySelector(`#file-name-${field.replaceAll('_', '-')}`) || { innerHTML: '' };
+
+        function formatFileSize(bytes) {
+            if (bytes >= 1024 * 1024) {
+                return `${(bytes / (1024 * 1024)).toFixed(2).replace(/\.00$/, '')} MB`;
+            }
+
+            return `${Math.ceil(bytes / 1024)} KB`;
+        }
 
         // ==== DETEKSI GOOGLE DRIVE ====
         if (file.type === '' && file.size > 0) {
@@ -1203,13 +1224,22 @@
             return;
         }
 
-        const field = input.name;
-        const container = input.closest('.col-md-6');
-        const uploadBox = container.querySelector('.file-upload-box');
-        const fileNameSpan = container.querySelector(`#file-name-${field.replaceAll('_', '-')}`);
+        if (file.size > maxBytes) {
+            Swal.fire({
+                icon: 'warning',
+                text: `Ukuran file melebihi batas ${formatFileSize(maxBytes)}. Silakan kompres file lalu upload ulang.`
+            });
+            input.value = '';
+            if (fileNameSpan) {
+                fileNameSpan.innerHTML = 'Dokumen belum diunggah';
+            }
+            return;
+        }
+
 
         fileNameSpan.innerHTML = '⏳ Mengunggah...';
 
+        fileNameSpan.innerHTML = 'Mengunggah...';
         const formData = new FormData();
         formData.append(field, file);
 
@@ -1217,7 +1247,9 @@
             const response = await fetch("{{ route('biodata.upload.document') }}", {
                 method: 'POST',
                 headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
                 body: formData
             });
@@ -1227,14 +1259,21 @@
                 throw 'Upload gagal. Pastikan file berasal dari penyimpanan HP, bukan Google Drive.';
             }
 
-            const data = await response.json();
+            const contentType = response.headers.get('content-type') || '';
+            const data = contentType.includes('application/json')
+                ? await response.json()
+                : null;
 
             // ===== VALIDATION ERROR =====
             if (!response.ok) {
-                if (data.errors) {
+                if (response.status === 413) {
+                    throw data?.message || 'Ukuran file melebihi batas upload. Maksimal 2 MB per dokumen, kecuali Sertifikat Pendukung maksimal 50 MB.';
+                }
+
+                if (data?.errors) {
                     throw Object.values(data.errors)[0][0];
                 }
-                throw data.message || 'Upload gagal';
+                throw data?.message || 'Upload gagal';
             }
 
             // ===== SUCCESS =====
@@ -1267,9 +1306,10 @@
 
             if (
                 err instanceof TypeError ||
+                err instanceof SyntaxError ||
                 (typeof err === 'string' && err.toLowerCase().includes('fetch'))
             ) {
-                msg = 'Upload gagal. File dari Google Drive tidak didukung. Silakan download file ke HP terlebih dahulu.';
+                msg = 'Upload gagal. Periksa koneksi Anda dan pastikan ukuran file masih dalam batas yang diizinkan.';
             }
 
             Swal.fire({
@@ -1277,7 +1317,9 @@
                 text: msg
             });
 
-            fileNameSpan.innerHTML = 'Dokumen belum diunggah';
+            if (fileNameSpan) {
+                fileNameSpan.innerHTML = 'Dokumen belum diunggah';
+            }
             input.value = '';
         }
     }

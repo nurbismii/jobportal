@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\File;
+use Illuminate\Validation\ValidationException;
 
 class ProfilController extends Controller
 {
@@ -54,30 +55,35 @@ class ProfilController extends Controller
         ]);
 
         $oldKtp = $user->no_ktp;
-        $newKtp = $request->no_ktp;
+        $newKtp = trim((string) $request->no_ktp);
+
+        if ($oldKtp !== $newKtp) {
+            $newPath = public_path($newKtp);
+
+            if (File::exists($newPath)) {
+                throw ValidationException::withMessages([
+                    'no_ktp' => 'Nomor KTP ini tidak dapat digunakan karena folder dokumen dengan nomor tersebut sudah ada.',
+                ]);
+            }
+        }
 
         $user->name = $request->nama;
-        $user->no_ktp = $request->no_ktp;
+        $user->no_ktp = $newKtp;
 
         if ($request->filled('password')) {
             $user->password = bcrypt($request->password);
         }
 
         Biodata::where('user_id', auth()->id())->update([
-            'no_ktp' => $request->no_ktp,
+            'no_ktp' => $newKtp,
         ]);
 
-        $oldPath = public_path($oldKtp);
-        $newPath = public_path($newKtp);
+        if ($oldKtp !== $newKtp) {
+            $oldPath = public_path($oldKtp);
+            $newPath = public_path($newKtp);
 
-        if (File::exists($oldPath)) {
-
-            if (!File::exists($newPath)) {
+            if (File::exists($oldPath)) {
                 File::moveDirectory($oldPath, $newPath);
-            } else {
-                \Log::warning('Folder tujuan sudah ada', [
-                    'path' => $newPath
-                ]);
             }
         }
 
