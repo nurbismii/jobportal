@@ -700,14 +700,14 @@
                             <div class="file-upload-box">
                                 <div class="upload-label">
                                     <i class="fas fa-file p-2"></i>
-                                    @if($biodata && $biodata->kk)
-                                    <span id="file-name">{{ $biodata->kk }}</span>
+                                    @if($biodata && $biodata->kartu_keluarga)
+                                    <span id="file-name">{{ $biodata->kartu_keluarga }}</span>
                                     @else
                                     <span id="file-name">Dokumen belum diunggah</span>
                                     @endif
                                 </div>
                                 <div class="btn-group-custom">
-                                    <a href="{{ asset($pengguna->no_ktp . '/dokumen/' . $biodata->kk) }}" target="_blank" class="btn btn-view">Lihat</a>
+                                    <a href="{{ asset($pengguna->no_ktp . '/dokumen/' . $biodata->kartu_keluarga) }}" target="_blank" class="btn btn-view">Lihat</a>
                                 </div>
                             </div>
                         </div>
