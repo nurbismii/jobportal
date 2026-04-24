@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\Log;
 class PendaftaranController extends Controller
 {
     private const UNVERIFIED_ACCOUNT_TTL_HOURS = 1;
+    private const VERIFICATION_RESEND_COOLDOWN_MINUTES = 15;
+    private const VERIFICATION_RESEND_DAILY_LIMIT = 2;
 
     public function index()
     {
@@ -33,6 +35,8 @@ class PendaftaranController extends Controller
         return view('auth.verification-pending', [
             'email' => $request->query('email', old('email', session('verification_email'))),
             'graceHours' => self::UNVERIFIED_ACCOUNT_TTL_HOURS,
+            'resendCooldownMinutes' => self::VERIFICATION_RESEND_COOLDOWN_MINUTES,
+            'resendDailyLimit' => self::VERIFICATION_RESEND_DAILY_LIMIT,
         ]);
     }
 
@@ -63,6 +67,7 @@ class PendaftaranController extends Controller
 
         try {
             DB::beginTransaction();
+            $now = now();
 
             // Cari employee (jika ada)
             $employee = User::latestHrisEmployeeByNoKtp($validatedData['no_ktp']);
@@ -76,8 +81,11 @@ class PendaftaranController extends Controller
                 'status_akun' => 0,
                 'role' => 'user',
                 'email_verifikasi_token' => Str::random(64),
+                'verification_email_last_sent_at' => $now,
+                'verification_resend_count' => 0,
+                'verification_resend_count_date' => $now->toDateString(),
                 'employment_lock_active' => $employmentAttributes['employment_lock_active'],
-                'last_hris_sync_at' => now(),
+                'last_hris_sync_at' => $now,
                 'status_pelamar' => $employmentAttributes['status_pelamar'],
                 'tanggal_resign' => $employmentAttributes['tanggal_resign'],
                 'ket_resign' => $employmentAttributes['ket_resign'],
@@ -181,15 +189,53 @@ class PendaftaranController extends Controller
                 ->whereNull('email_verified_at')
                 ->first();
 
-            if ($user) {
-                $user->forceFill([
-                    'email_verifikasi_token' => Str::random(64),
-                ])->save();
-
-                app(FallbackMailService::class)->send($user->email, new EmailVerification($user->fresh()));
+            if (! $user) {
+                Alert::success('Permintaan diterima', 'Jika akun masih menunggu verifikasi, email verifikasi terbaru telah dikirim.');
+                return redirect()->route('verification.notice.public', ['email' => $validatedData['email']]);
             }
 
-            Alert::success('Permintaan diterima', 'Jika akun masih menunggu verifikasi, email verifikasi terbaru telah dikirim.');
+            $now = now();
+            $lastSentAt = $user->verification_email_last_sent_at ?? $user->created_at;
+            $currentResendCount = $this->currentVerificationResendCount($user, $now);
+
+            if ($currentResendCount >= self::VERIFICATION_RESEND_DAILY_LIMIT) {
+                Alert::warning(
+                    'Batas harian tercapai',
+                    'Email verifikasi hanya bisa dikirim ulang maksimal ' . self::VERIFICATION_RESEND_DAILY_LIMIT . ' kali dalam sehari. Silakan coba lagi besok.'
+                );
+
+                return redirect()->route('verification.notice.public', ['email' => $validatedData['email']]);
+            }
+
+            if ($lastSentAt && $lastSentAt->copy()->addMinutes(self::VERIFICATION_RESEND_COOLDOWN_MINUTES)->isFuture()) {
+                $availableAt = $lastSentAt->copy()->addMinutes(self::VERIFICATION_RESEND_COOLDOWN_MINUTES);
+                $remainingMinutes = max(1, $now->diffInMinutes($availableAt));
+
+                Alert::warning(
+                    'Tunggu sebentar',
+                    'Email verifikasi hanya bisa dikirim ulang setiap ' . self::VERIFICATION_RESEND_COOLDOWN_MINUTES . ' menit. Silakan coba lagi dalam ' . $remainingMinutes . ' menit.'
+                );
+
+                return redirect()->route('verification.notice.public', ['email' => $validatedData['email']]);
+            }
+
+            DB::transaction(function () use ($user, $now, $currentResendCount) {
+                $user->forceFill([
+                    'email_verifikasi_token' => Str::random(64),
+                    'verification_email_last_sent_at' => $now,
+                    'verification_resend_count' => $currentResendCount + 1,
+                    'verification_resend_count_date' => $now->toDateString(),
+                ])->save();
+
+                app(FallbackMailService::class)->send($user->email, new EmailVerification($user));
+            });
+
+            $remainingResend = max(0, self::VERIFICATION_RESEND_DAILY_LIMIT - ($currentResendCount + 1));
+
+            Alert::success(
+                'Email terkirim',
+                'Email verifikasi terbaru telah dikirim. Sisa kirim ulang untuk hari ini: ' . $remainingResend . ' kali.'
+            );
         } catch (\Throwable $e) {
             Log::error('Resend verification email error: ' . $e->getMessage(), [
                 'email' => $validatedData['email'],
@@ -199,5 +245,16 @@ class PendaftaranController extends Controller
         }
 
         return redirect()->route('verification.notice.public', ['email' => $validatedData['email']]);
+    }
+
+    private function currentVerificationResendCount(User $user, Carbon $now): int
+    {
+        $countDate = $user->verification_resend_count_date;
+
+        if (! $countDate || ! $countDate->isSameDay($now)) {
+            return 0;
+        }
+
+        return (int) $user->verification_resend_count;
     }
 }

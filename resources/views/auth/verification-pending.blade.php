@@ -24,6 +24,7 @@
             <div class="alert alert-primary border-0 rounded-4 mb-4" role="alert">
                 <div class="fw-semibold mb-2">Yang perlu kamu lakukan</div>
                 <div class="small">Klik tautan verifikasi yang dikirim ke email kamu. Jika email belum masuk, kirim ulang dari form di bawah.</div>
+                <div class="small mt-2">Kirim ulang email verifikasi tersedia setiap {{ $resendCooldownMinutes }} menit dan maksimal {{ $resendDailyLimit }} kali per hari.</div>
             </div>
 
             <div class="alert alert-warning border-0 rounded-4 mb-4" role="alert">

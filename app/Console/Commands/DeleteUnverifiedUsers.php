@@ -16,8 +16,16 @@ class DeleteUnverifiedUsers extends Command
         $limit = Carbon::now()->subHours(1);
 
         $users = User::whereNull('email_verified_at')
-            ->where('updated_at', '<=', $limit)
             ->where('role', 'user')
+            ->where(function ($query) use ($limit) {
+                $query->where(function ($subQuery) use ($limit) {
+                    $subQuery->whereNotNull('verification_email_last_sent_at')
+                        ->where('verification_email_last_sent_at', '<=', $limit);
+                })->orWhere(function ($subQuery) use ($limit) {
+                    $subQuery->whereNull('verification_email_last_sent_at')
+                        ->where('created_at', '<=', $limit);
+                });
+            })
             ->get();
 
         $count = $users->count();

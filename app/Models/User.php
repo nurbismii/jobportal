@@ -35,6 +35,9 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'area_kerja',
         'email_verifikasi_token',
+        'verification_email_last_sent_at',
+        'verification_resend_count',
+        'verification_resend_count_date',
         'email_verified_at',
     ];
 
@@ -57,6 +60,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'email_verified_at' => 'datetime',
         'employment_lock_active' => 'boolean',
         'last_hris_sync_at' => 'datetime',
+        'verification_email_last_sent_at' => 'datetime',
+        'verification_resend_count_date' => 'date',
     ];
 
     public function hasActiveEmploymentStatusLock(): bool
