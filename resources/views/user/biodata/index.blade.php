@@ -1215,8 +1215,11 @@
             return `${Math.ceil(bytes / 1024)} KB`;
         }
 
+        clearFieldError(input);
+
         // ==== DETEKSI GOOGLE DRIVE ====
         if (file.type === '' && file.size > 0) {
+            setFieldError(input, 'File dari Google Drive tidak didukung. Silakan download file ke perangkat terlebih dahulu lalu upload ulang.');
             Swal.fire({
                 icon: 'warning',
                 text: 'File dari Google Drive tidak didukung. Silakan download file ke HP terlebih dahulu lalu upload ulang.'
@@ -1226,6 +1229,7 @@
         }
 
         if (file.size > maxBytes) {
+            setFieldError(input, `Ukuran file melebihi batas ${formatFileSize(maxBytes)}. Silakan kompres file lalu upload ulang.`);
             Swal.fire({
                 icon: 'warning',
                 text: `Ukuran file melebihi batas ${formatFileSize(maxBytes)}. Silakan kompres file lalu upload ulang.`
@@ -1278,6 +1282,7 @@
             }
 
             // ===== SUCCESS =====
+            clearFieldError(input);
             uploadBox.innerHTML = `
         <div class="file-box">
             <div class="file-info">
@@ -1317,6 +1322,8 @@
                 icon: 'warning',
                 text: msg
             });
+
+            setFieldError(input, msg);
 
             if (fileNameSpan) {
                 fileNameSpan.innerHTML = 'Dokumen belum diunggah';
@@ -1820,6 +1827,254 @@
     let formSubmitting = false;
     let currentStep = 0;
 
+    function escapeAttributeValue(value) {
+        return (value || '').replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+    }
+
+    function getFieldByName(name) {
+        if (!form || !name) {
+            return null;
+        }
+
+        return form.querySelector(`[name="${escapeAttributeValue(name)}"]`);
+    }
+
+    function getFieldWrapper(field) {
+        return field?.closest('.document-upload-item, .form-check, .mb-3, .col-md-6, .col-md-12, .col-12') || field?.parentElement || null;
+    }
+
+    function getFieldInsertTarget(field, wrapper) {
+        if (field?.type === 'file') {
+            return wrapper?.querySelector('.document-upload-content') || field;
+        }
+
+        if (field?.type === 'checkbox') {
+            return wrapper?.querySelector('.form-check-label') || field;
+        }
+
+        return field;
+    }
+
+    function getOrCreateFieldErrorElement(field) {
+        const wrapper = getFieldWrapper(field);
+        if (!wrapper) {
+            return null;
+        }
+
+        const existingFeedback = wrapper.querySelector(`.invalid-feedback[data-field-error-for="${field.name}"]`);
+        if (existingFeedback) {
+            return existingFeedback;
+        }
+
+        const siblingFeedback = field.nextElementSibling;
+        if (siblingFeedback?.classList.contains('invalid-feedback')) {
+            siblingFeedback.dataset.fieldErrorFor = field.name;
+            return siblingFeedback;
+        }
+
+        const feedback = document.createElement('div');
+        feedback.className = 'invalid-feedback';
+        feedback.dataset.fieldErrorFor = field.name;
+
+        const insertTarget = getFieldInsertTarget(field, wrapper);
+        insertTarget?.insertAdjacentElement('afterend', feedback);
+
+        return feedback;
+    }
+
+    function getFieldLabel(field) {
+        if (!field) {
+            return 'Field ini';
+        }
+
+        if (field.id) {
+            const explicitLabel = document.querySelector(`label[for="${field.id}"]`);
+            if (explicitLabel?.textContent) {
+                return explicitLabel.textContent.replace('*', '').trim();
+            }
+        }
+
+        const wrapper = getFieldWrapper(field);
+        const nearestLabel = wrapper?.querySelector('label');
+
+        return nearestLabel?.textContent?.replace('*', '').trim() || field.name || 'Field ini';
+    }
+
+    function getFieldValidationMessage(field) {
+        const label = getFieldLabel(field);
+        const validity = field.validity;
+
+        if (validity.customError && field.validationMessage) {
+            return field.validationMessage;
+        }
+
+        if (validity.valueMissing) {
+            return `${label} wajib diisi.`;
+        }
+
+        if (validity.typeMismatch || validity.patternMismatch || validity.tooShort || validity.tooLong ||
+            validity.rangeUnderflow || validity.rangeOverflow || validity.stepMismatch || validity.badInput) {
+            return field.validationMessage || `${label} tidak valid.`;
+        }
+
+        return field.validationMessage || `${label} tidak valid.`;
+    }
+
+    function clearFieldError(field) {
+        if (!field) {
+            return;
+        }
+
+        field.classList.remove('is-invalid');
+        field.removeAttribute('aria-invalid');
+
+        const wrapper = getFieldWrapper(field);
+        const feedback = wrapper?.querySelector(`.invalid-feedback[data-field-error-for="${field.name}"]`);
+
+        if (feedback) {
+            feedback.textContent = '';
+            feedback.style.display = 'none';
+        }
+    }
+
+    function setFieldError(field, message) {
+        if (!field) {
+            return;
+        }
+
+        field.classList.add('is-invalid');
+        field.setAttribute('aria-invalid', 'true');
+
+        const feedback = getOrCreateFieldErrorElement(field);
+        if (feedback) {
+            feedback.textContent = message;
+            feedback.style.display = 'block';
+        }
+    }
+
+    function isFieldVisible(field) {
+        if (!field || field.disabled || field.type === 'hidden') {
+            return false;
+        }
+
+        const hiddenParent = field.closest('#keluarga_section, #alamatDomisiliField');
+        if (hiddenParent && window.getComputedStyle(hiddenParent).display === 'none') {
+            return false;
+        }
+
+        return true;
+    }
+
+    function validateField(field) {
+        if (!isFieldVisible(field)) {
+            clearFieldError(field);
+            return true;
+        }
+
+        if (field.checkValidity()) {
+            clearFieldError(field);
+            return true;
+        }
+
+        setFieldError(field, getFieldValidationMessage(field));
+        return false;
+    }
+
+    function focusField(field) {
+        if (!field) {
+            return;
+        }
+
+        try {
+            field.focus({
+                preventScroll: true
+            });
+        } catch (error) {
+            field.focus();
+        }
+
+        field.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+        });
+    }
+
+    function applyServerValidationErrors(errors) {
+        if (!errors || typeof errors !== 'object') {
+            return;
+        }
+
+        form.querySelectorAll('input, select, textarea').forEach(clearFieldError);
+
+        let firstInvalidField = null;
+
+        Object.entries(errors).forEach(([name, messages]) => {
+            const field = getFieldByName(name);
+            if (!field) {
+                return;
+            }
+
+            setFieldError(field, Array.isArray(messages) ? messages[0] : messages);
+
+            if (!firstInvalidField) {
+                firstInvalidField = field;
+            }
+        });
+
+        if (!firstInvalidField) {
+            return;
+        }
+
+        const targetStepIndex = stepPanes.findIndex((pane) => pane.contains(firstInvalidField));
+        if (targetStepIndex >= 0 && targetStepIndex !== currentStep) {
+            setActiveStep(targetStepIndex);
+        }
+
+        setTimeout(() => focusField(firstInvalidField), 200);
+    }
+
+    function bindInlineValidation(field) {
+        if (!field || !field.name) {
+            return;
+        }
+
+        const validateOnInteraction = () => {
+            if (!isFieldVisible(field)) {
+                clearFieldError(field);
+                return;
+            }
+
+            if (!field.value && !field.required && !field.validity.customError) {
+                clearFieldError(field);
+                return;
+            }
+
+            validateField(field);
+        };
+
+        field.addEventListener('input', validateOnInteraction);
+        field.addEventListener('change', validateOnInteraction);
+        field.addEventListener('blur', validateOnInteraction);
+    }
+
+    form.addEventListener('invalid', function(event) {
+        const field = event.target;
+
+        if (!(field instanceof HTMLInputElement || field instanceof HTMLSelectElement || field instanceof HTMLTextAreaElement)) {
+            return;
+        }
+
+        event.preventDefault();
+        setFieldError(field, getFieldValidationMessage(field));
+    }, true);
+
+    form.querySelectorAll('input, select, textarea').forEach(bindInlineValidation);
+
+    const existingValidationErrors = @json($errors->toArray());
+    if (Object.keys(existingValidationErrors).length > 0) {
+        applyServerValidationErrors(existingValidationErrors);
+    }
+
     // Tampilkan loading spinner saat form disubmit, dan cegah double-submit
     form.addEventListener('submit', function(e) {
         if (formSubmitting) {
@@ -1922,12 +2177,12 @@
 
         const inputs = stepPane.querySelectorAll('input, select, textarea');
         for (const input of inputs) {
-            if (input.disabled || input.type === 'hidden') {
+            if (!isFieldVisible(input)) {
                 continue;
             }
 
-            if (!input.checkValidity()) {
-                input.reportValidity();
+            if (!validateField(input)) {
+                focusField(input);
                 return false;
             }
         }
@@ -2185,7 +2440,9 @@
 
                 if (!res.ok) {
                     if (data?.errors) {
-                        throw new Error(Object.values(data.errors)[0][0]);
+                        const validationError = new Error(Object.values(data.errors)[0][0]);
+                        validationError.validationErrors = data.errors;
+                        throw validationError;
                     }
 
                     throw new Error(data?.message || 'Gagal menyimpan data');
@@ -2201,6 +2458,19 @@
                 }
             })
             .catch((error) => {
+                if (error.validationErrors) {
+                    applyServerValidationErrors(error.validationErrors);
+                    return;
+                }
+
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'warning',
+                        text: error.message || 'Terjadi kesalahan server'
+                    });
+                    return;
+                }
+
                 alert(error.message || 'Terjadi kesalahan server');
             })
             .finally(() => {
@@ -2231,6 +2501,11 @@
 
         if (namaPasangan) {
             namaPasangan.required = isKawin;
+        }
+
+        if (!isKawin && typeof clearFieldError === 'function') {
+            clearFieldError(tanggalNikah);
+            clearFieldError(namaPasangan);
         }
 
     }
