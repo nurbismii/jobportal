@@ -123,6 +123,79 @@ class BiodataController extends Controller
         ];
     }
 
+    private function completedStep1to4BiodataFields(): array
+    {
+        return [
+            'no_telp',
+            'no_kk',
+            'no_npwp',
+            'jenis_kelamin',
+            'tempat_lahir',
+            'tanggal_lahir',
+            'agama',
+            'vaksin',
+            'provinsi',
+            'kabupaten',
+            'kecamatan',
+            'kelurahan',
+            'alamat',
+            'kode_pos',
+            'rt',
+            'rw',
+            'hobi',
+            'golongan_darah',
+            'tinggi_badan',
+            'berat_badan',
+            'pendidikan_terakhir',
+            'nama_instansi',
+            'jurusan',
+            'nilai_ipk',
+            'tahun_lulus',
+            'nama_ayah',
+            'nama_ibu',
+            'status_pernikahan',
+            'nama_kontak_darurat',
+            'no_telepon_darurat',
+            'status_hubungan',
+        ];
+    }
+
+    private function hasCompletedStep1to4(?Biodata $biodata): bool
+    {
+        if (! $biodata) {
+            return false;
+        }
+
+        foreach ($this->completedStep1to4BiodataFields() as $field) {
+            $value = $biodata->{$field};
+
+            if (is_string($value)) {
+                if (trim($value) === '') {
+                    return false;
+                }
+
+                continue;
+            }
+
+            if ($value === null) {
+                return false;
+            }
+        }
+
+        if ($biodata->status_pernikahan === 'Kawin') {
+            if (blank($biodata->tanggal_nikah) || blank($biodata->nama_pasangan)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private function incompleteStep1to4Message(): string
+    {
+        return 'Lengkapi data biodata pada langkah 1 sampai 4 terlebih dahulu sebelum melanjutkan ke dokumen.';
+    }
+
     public function index()
     {
         if (!Auth::user()) {
@@ -145,6 +218,12 @@ class BiodataController extends Controller
 
         try {
             $biodata = Biodata::where('user_id', auth()->id())->first();
+
+            if (! $this->hasCompletedStep1to4($biodata)) {
+                Alert::warning('Peringatan', $this->incompleteStep1to4Message());
+                return redirect()->to(route('biodata.index') . '#step1')->withInput();
+            }
+
             $syarat_ketentuan = SyaratKetentuan::where('id', 1)->first();
 
             $dokumenFields = [
@@ -157,18 +236,9 @@ class BiodataController extends Controller
 
             $fileNames = $fileNames['files'];
             $oldFiles  = $fileNames['oldFiles'] ?? [];
-
-
-            Biodata::updateOrCreate(
-                [
-                    'user_id' => auth()->id()
-                ],
-                array_merge($this->biodataIdentityDefaults(), [
-                    'status_pernyataan' => $syarat_ketentuan->syarat_ketentuan
-                ])
-            );
-
-            $biodata = Biodata::where('user_id', auth()->id())->first();
+            $biodata->forceFill([
+                'status_pernyataan' => $syarat_ketentuan->syarat_ketentuan,
+            ])->save();
 
             foreach ($oldFiles as $oldFile) {
                 $path = public_path(auth()->user()->no_ktp . '/dokumen/' . $oldFile);
@@ -412,6 +482,13 @@ class BiodataController extends Controller
 
             $biodata = Biodata::where('user_id', auth()->id())->first();
 
+            if (! $this->hasCompletedStep1to4($biodata)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $this->incompleteStep1to4Message(),
+                ], 422);
+            }
+
             $dokumenFields = [
                 'cv',
                 'pas_foto',
@@ -444,12 +521,9 @@ class BiodataController extends Controller
             $fileName = $result['files'][$uploadedField] ?? null;
             $oldFiles = $result['oldFiles'] ?? [];
 
-            Biodata::updateOrCreate(
-                ['user_id' => auth()->id()],
-                array_merge($this->biodataIdentityDefaults(), [
-                    $uploadedField => $fileName,
-                ])
-            );
+            $biodata->forceFill(array_merge($this->biodataIdentityDefaults(), [
+                $uploadedField => $fileName,
+            ]))->save();
 
             // hapus file lama
             foreach ($oldFiles as $old) {
