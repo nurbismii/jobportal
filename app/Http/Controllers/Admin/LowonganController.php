@@ -118,7 +118,9 @@ class LowonganController extends Controller
             'biodata.getKecamatan',
             'biodata.getKelurahan',
             'biodata.user.suratPeringatan',
-        ])->where('loker_id', $loker_id);
+        ])
+            ->where('loker_id', $loker_id)
+            ->whereHas('biodata.user');
 
         if ($userId) {
             $query->whereHas('biodata.user', function ($q) use ($userId) {
