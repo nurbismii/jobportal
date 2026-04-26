@@ -18,19 +18,6 @@ class AuthenticateInternalApi
             ], 401);
         }
 
-        $allowedIps = collect(explode(',', (string) config('recruitment.internal_api.allowed_ip')))
-            ->map(function ($ip) {
-                return trim($ip);
-            })
-            ->filter()
-            ->values();
-
-        if ($allowedIps->isNotEmpty() && ! $allowedIps->contains($request->ip())) {
-            return response()->json([
-                'message' => 'Forbidden.',
-            ], 403);
-        }
-
         return $next($request);
     }
 }

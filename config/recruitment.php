@@ -3,7 +3,6 @@
 return [
     'internal_api' => [
         'token' => env('INTERNAL_API_TOKEN'),
-        'allowed_ip' => env('HRIS_ALLOWED_IP'),
     ],
 
     'candidate_documents' => [

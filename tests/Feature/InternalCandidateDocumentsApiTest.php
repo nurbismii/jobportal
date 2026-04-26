@@ -37,7 +37,6 @@ class InternalCandidateDocumentsApiTest extends TestCase
                 'root' => $this->diskRoot,
             ],
             'recruitment.internal_api.token' => 'test-token',
-            'recruitment.internal_api.allowed_ip' => null,
             'recruitment.candidate_documents.disk' => 'candidate_documents_test',
             'recruitment.candidate_documents.base_path' => '{no_ktp}/dokumen',
             'recruitment.candidate_documents.temporary_url_minutes' => 10,
@@ -68,23 +67,6 @@ class InternalCandidateDocumentsApiTest extends TestCase
         $this->postJson('/api/internal/candidate-documents', [
             'no_ktp' => '1234567890123456',
         ])->assertUnauthorized();
-    }
-
-    public function test_it_can_restrict_requests_by_hris_allowed_ip()
-    {
-        config(['recruitment.internal_api.allowed_ip' => '10.10.10.10']);
-
-        $this->withHeader('Authorization', 'Bearer test-token')
-            ->postJson('/api/internal/candidate-documents', [
-                'no_ktp' => '1234567890123456',
-            ], ['REMOTE_ADDR' => '192.168.1.10'])
-            ->assertForbidden();
-
-        $this->withHeader('Authorization', 'Bearer test-token')
-            ->postJson('/api/internal/candidate-documents', [
-                'no_ktp' => '1234567890123456',
-            ], ['REMOTE_ADDR' => '10.10.10.10'])
-            ->assertOk();
     }
 
     public function test_it_returns_not_found_payload_when_candidate_does_not_exist()
