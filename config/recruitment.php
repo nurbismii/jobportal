@@ -1,6 +1,17 @@
 <?php
 
 return [
+    'internal_api' => [
+        'token' => env('INTERNAL_API_TOKEN'),
+        'allowed_ip' => env('HRIS_ALLOWED_IP'),
+    ],
+
+    'candidate_documents' => [
+        'disk' => 'recruitment_public',
+        'base_path' => '{no_ktp}/dokumen',
+        'temporary_url_minutes' => 10,
+    ],
+
     'locked_employment_refresh' => [
         'enabled' => env('LOCKED_EMPLOYMENT_REFRESH_ENABLED', true),
         'cron' => env('LOCKED_EMPLOYMENT_REFRESH_CRON', '*/30 * * * *'),
