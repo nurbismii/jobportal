@@ -166,6 +166,8 @@ class PenggunaController extends Controller
 
         if ($biodata) {
             Lamaran::where('biodata_id', $biodata->id)->delete();
+
+            $biodata->delete();
         }
 
         RiwayatProsesLamaran::where('user_id', $user->id)->delete();
