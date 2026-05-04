@@ -183,6 +183,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public static function employmentAttributesFromHrisEmployee(?Employee $employee): array
     {
+        // Jika tidak ada data employee yang cocok, anggap user ini tidak memiliki status pekerjaan aktif di HRIS
         if (! $employee) {
             return [
                 'employment_lock_active' => false,
@@ -195,6 +196,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
         $statusResign = trim((string) $employee->status_resign);
 
+        // Jika status_resign menunjukkan karyawan aktif, maka setel atribut terkait untuk mencerminkan status pekerjaan aktif
         if (strcasecmp($statusResign, 'aktif') === 0) {
             return [
                 'employment_lock_active' => true,

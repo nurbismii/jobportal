@@ -176,15 +176,22 @@ if (!function_exists('extractSimB2OnlyOCR')) {
             $fullPath = public_path($biodata->no_ktp . '/dokumen/' . $biodata->sim_b_2);
 
             try {
-                $response = Http::timeout(30) // batas waktu 30 detik
+                $apiKey = config('services.ocr_space.key');
+                $endpoint = config('services.ocr_space.endpoint', 'https://api.ocr.space/parse/image');
+
+                if (empty($apiKey)) {
+                    return ['success' => false, 'message' => 'Konfigurasi OCR.space belum lengkap.'];
+                }
+
+                $response = Http::timeout((int) config('services.ocr_space.timeout', 30))
                     ->attach(
                         'file',
                         file_get_contents($fullPath),
                         basename($fullPath)
-                    )->post('https://api.ocr.space/parse/image', [
-                        'apikey' => 'K82052672988957',
+                    )->post($endpoint, [
+                        'apikey' => $apiKey,
                         'language' => 'eng',
-                        'OCREngine' => '2',
+                        'OCREngine' => (string) config('services.ocr_space.sim_b2_engine', '2'),
                         'scale' => 'true',
                         'detectOrientation' => 'true',
                         'isOverlayRequired' => 'false',

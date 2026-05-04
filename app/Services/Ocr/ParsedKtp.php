@@ -28,7 +28,7 @@ class ParsedKtp
 
                 'nik' => $this->field(
                     'nik',
-                    $this->get('/NIK\s*[:\-]?\s*([0-9]{16})/m')
+                    $this->extractNik()
                 ),
 
                 'nama' => $this->field(
@@ -133,6 +133,27 @@ class ParsedKtp
         }
 
         return ['', ''];
+    }
+
+    protected function extractNik(): string
+    {
+        if (preg_match('/NIK\s*[:\-]?\s*([0-9\s]{16,30})/m', $this->text, $m)) {
+            $digits = preg_replace('/\D+/', '', $m[1]);
+
+            if (strlen($digits) >= 16) {
+                return substr($digits, 0, 16);
+            }
+        }
+
+        if (preg_match('/\b([0-9][0-9\s]{14,28}[0-9])\b/m', $this->text, $m)) {
+            $digits = preg_replace('/\D+/', '', $m[1]);
+
+            if (strlen($digits) >= 16) {
+                return substr($digits, 0, 16);
+            }
+        }
+
+        return '';
     }
 
     protected function parseRtRw(): array

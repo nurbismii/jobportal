@@ -283,7 +283,7 @@ class BiodataController extends Controller
             ],
             array_merge($this->biodataIdentityDefaults(), [
                 // Biodata Pribadi
-                'no_ktp' => $request->no_ktp ?: auth()->user()->no_ktp,
+                'no_ktp' => auth()->user()->no_ktp,
                 'no_telp' => $validatedData['no_telp'],
                 'no_kk' => $validatedData['no_kk'],
                 'no_npwp' => $validatedData['no_npwp'],
@@ -388,6 +388,7 @@ class BiodataController extends Controller
 
             if ($field === 'ktp') {
                 $biodata->ocr_ktp = null;
+                $biodata->ocr_ktp_at = null;
             }
 
             if ($field === 'sim_b_2') {
@@ -521,9 +522,21 @@ class BiodataController extends Controller
             $fileName = $result['files'][$uploadedField] ?? null;
             $oldFiles = $result['oldFiles'] ?? [];
 
-            $biodata->forceFill(array_merge($this->biodataIdentityDefaults(), [
+            $documentUpdates = [
                 $uploadedField => $fileName,
-            ]))->save();
+            ];
+
+            if ($uploadedField === 'ktp') {
+                $documentUpdates['ocr_ktp'] = null;
+                $documentUpdates['ocr_ktp_at'] = null;
+            }
+
+            if ($uploadedField === 'sim_b_2') {
+                $documentUpdates['ocr_sim_b2'] = null;
+                $documentUpdates['parsed_sim_b2'] = null;
+            }
+
+            $biodata->forceFill(array_merge($this->biodataIdentityDefaults(), $documentUpdates))->save();
 
             // hapus file lama
             foreach ($oldFiles as $old) {

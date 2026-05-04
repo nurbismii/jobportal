@@ -36,4 +36,12 @@ return [
         'type' => env('OCR_API_TYPE'),
     ],
 
+    'ocr_space' => [
+        'key' => env('OCR_SPACE_API_KEY'),
+        'endpoint' => env('OCR_SPACE_API_ENDPOINT', 'https://api.ocr.space/parse/image'),
+        'ktp_engine' => env('OCR_SPACE_KTP_ENGINE', '3'),
+        'sim_b2_engine' => env('OCR_SPACE_SIM_B2_ENGINE', '2'),
+        'timeout' => env('OCR_SPACE_TIMEOUT', 30),
+    ],
+
 ];

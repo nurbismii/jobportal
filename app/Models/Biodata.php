@@ -7,6 +7,7 @@ use App\Models\Hris\Kabupaten;
 use App\Models\Hris\Kecamatan;
 use App\Models\Hris\Kelurahan;
 use App\Models\Hris\Provinsi;
+use App\Services\Ocr\KtpIdentityValidator;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
@@ -75,23 +76,28 @@ class Biodata extends Model
             return false;
         }
 
-        $ocr = json_decode($this->ocr_ktp, true);
+        $ocr = is_array($this->ocr_ktp)
+            ? $this->ocr_ktp
+            : json_decode($this->ocr_ktp, true);
 
         if (!is_array($ocr) || !isset($ocr['result'])) {
             return false;
         }
 
-        $namaScore = $ocr['result']['nama']['score'] ?? 0;
-        $nikScore  = $ocr['result']['nik']['score'] ?? 0;
-        $tglScore  = $ocr['result']['tanggalLahir']['score'] ?? 0;
-
-        $nameValue = $ocr['result']['nama']['value'] ?? '';
-        $nikValue  = $ocr['result']['nik']['value'] ?? '';
-
-        if (strtoupper($nameValue) !== strtoupper(Auth::user()->name) || $nikValue !== Auth::user()->no_ktp) {
+        if (! Auth::user()) {
             return false;
         }
 
-        return $namaScore >= 85 && $nikScore >= 85 && $tglScore >= 85 && Carbon::parse($this->ocr_ktp_at)->diffInSeconds(now()) < 3600;
+        $validation = app(KtpIdentityValidator::class)->validateParsedResult($ocr, Auth::user(), $this);
+
+        if (! $validation['valid']) {
+            return false;
+        }
+
+        try {
+            return Carbon::parse($this->ocr_ktp_at)->diffInSeconds(now()) < 3600;
+        } catch (\Throwable $e) {
+            return false;
+        }
     }
 }

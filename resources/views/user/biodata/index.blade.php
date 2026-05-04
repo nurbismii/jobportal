@@ -1442,7 +1442,8 @@
                 method: "POST",
                 body: formData,
                 headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
                 }
             })
             .then(response => response.json())
@@ -1511,7 +1512,8 @@
                 method: "POST",
                 body: formData,
                 headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
                 }
             })
             .then(response => response.json())
@@ -1551,6 +1553,14 @@
                     `;
                 } else {
                     resultElement.innerHTML = `<span class="text-danger">${result.message || 'Gagal membaca data KTP.'}</span>`;
+
+                    if (result.clear_file) {
+                        const container = document.querySelector('.document-upload-item[data-field="ktp"]');
+                        if (container) {
+                            renderUploadDocumentState(container, 'ktp', container.dataset.accept || '.jpg,.jpeg,.png');
+                        }
+                        window.ktpOcrData = null;
+                    }
                 }
             })
             .catch(error => {

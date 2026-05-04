@@ -7,9 +7,11 @@ use App\Services\FallbackMailService;
 use App\Models\Hris\Peringatan;
 use App\Models\SuratPeringatan;
 use App\Models\User;
+use App\Services\Ocr\KtpIdentityValidator;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Throwable;
 use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\DB;
@@ -44,7 +46,7 @@ class PendaftaranController extends Controller
     {
         // Normalize KTP (hindari spasi & mismatch)
         $request->merge([
-            'no_ktp' => preg_replace('/\s+/', '', $request->no_ktp)
+            'no_ktp' => preg_replace('/\D+/', '', (string) $request->no_ktp)
         ]);
 
         // Validate input
@@ -65,6 +67,14 @@ class PendaftaranController extends Controller
             'name.required'   => 'Nama wajib diisi.',
         ]);
 
+        $identityValidator = app(KtpIdentityValidator::class);
+
+        if (! $identityValidator->isPlausibleNik($validatedData['no_ktp'])) {
+            throw ValidationException::withMessages([
+                'no_ktp' => 'Nomor KTP tidak valid. Pastikan NIK terdiri dari 16 digit dan sesuai format KTP Indonesia.',
+            ]);
+        }
+
         try {
             DB::beginTransaction();
             $now = now();
@@ -72,6 +82,13 @@ class PendaftaranController extends Controller
 
             // Cari employee (jika ada)
             $employee = User::latestHrisEmployeeByNoKtp($validatedData['no_ktp']);
+
+            if ($employee && ! $identityValidator->namesMatch($validatedData['name'], (string) $employee->nama_karyawan, 78)) {
+                throw ValidationException::withMessages([
+                    'name' => 'Nama tidak sesuai dengan riwayat karyawan di HRIS untuk nomor KTP ini.',
+                ]);
+            }
+
             $employmentAttributes = User::employmentAttributesFromHrisEmployee($employee);
 
             $userData = [
@@ -120,6 +137,12 @@ class PendaftaranController extends Controller
 
             Alert::success('Pendaftaran berhasil', 'Kami sudah mengirim email verifikasi. Verifikasi akun Anda dalam 1 jam agar akun tidak terhapus otomatis.');
             return redirect()->route('verification.notice.public', ['email' => $validatedData['email']]);
+        } catch (ValidationException $e) {
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
+
+            throw $e;
         } catch (\Illuminate\Database\QueryException $e) {
             if (DB::transactionLevel() > 0) {
                 DB::rollBack();

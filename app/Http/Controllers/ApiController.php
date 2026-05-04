@@ -7,17 +7,100 @@ use App\Models\Hris\Divisi;
 use App\Models\Hris\Kabupaten;
 use App\Models\Hris\Kecamatan;
 use App\Models\Hris\Kelurahan;
+use App\Services\EmploymentStatusRefreshService;
+use App\Services\Ocr\KtpIdentityValidator;
 use App\Services\Ocr\ParsedKtp;
 use App\Services\Ocr\ParsedSimB2;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use RealRashid\SweetAlert\Facades\Alert;
 
 class ApiController extends Controller
 {
     protected string $text;
+
+    private function validateOcrImage(Request $request, string $field, string $label)
+    {
+        return Validator::make(
+            $request->all(),
+            [
+                $field => 'required|image|mimes:jpg,jpeg,png|max:2048',
+            ],
+            [
+                'required' => ':attribute wajib diupload.',
+                'image' => ':attribute harus berupa foto/gambar.',
+                'mimes' => 'Format :attribute harus berupa jpg, jpeg, atau png.',
+                'max' => 'Ukuran :attribute maksimal 2 MB.',
+            ],
+            [
+                $field => $label,
+            ]
+        );
+    }
+
+    private function ktpValidationFailureResponse(array $parsedResult, ?Biodata $biodata)
+    {
+        $identityValidator = app(KtpIdentityValidator::class);
+        $validation = $identityValidator->validateParsedResult($parsedResult, request()->user(), $biodata);
+
+        if ($validation['valid']) {
+            return null;
+        }
+
+        return $this->rejectKtpOcr($biodata, $validation['message'], $validation);
+    }
+
+    private function rejectKtpOcr(?Biodata $biodata, string $message, array $context = [], int $status = 422, bool $clearUploadedKtp = true)
+    {
+        $identityValidator = app(KtpIdentityValidator::class);
+        $logContext = [
+            'user_id' => auth()->id(),
+            'reason' => $message,
+        ];
+
+        foreach (['ocr_nik', 'account_nik', 'biodata_nik'] as $key) {
+            if (isset($context[$key])) {
+                $logContext[$key] = $identityValidator->maskNik($context[$key]);
+            }
+        }
+
+        if (isset($context['has_hris_history'])) {
+            $logContext['has_hris_history'] = (bool) $context['has_hris_history'];
+        }
+
+        Log::warning('OCR KTP ditolak', $logContext);
+
+        if ($clearUploadedKtp && $biodata && $biodata->ktp) {
+            $filePath = public_path($biodata->no_ktp . '/dokumen/' . $biodata->ktp);
+
+            if (File::exists($filePath)) {
+                File::delete($filePath);
+            }
+
+            $biodata->forceFill([
+                'ktp' => null,
+                'ocr_ktp' => null,
+                'ocr_ktp_at' => null,
+            ])->save();
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => $message,
+            'clear_file' => $clearUploadedKtp,
+        ], $status);
+    }
+
+    private function refreshEmploymentStatusFromHris(): void
+    {
+        app(EmploymentStatusRefreshService::class)->refreshUser(
+            auth()->user()->load('biodata')
+        );
+    }
 
     public function fetchKabupaten($id)
     {
@@ -53,8 +136,24 @@ class ApiController extends Controller
     // OCR SPACE SIM B2 V2
     public function ocrSimB2(Request $request)
     {
-        if (!$request->hasFile('sim_b_2')) {
-            return response()->json(['success' => false, 'message' => 'File SIM B2 tidak ditemukan.']);
+        $validator = $this->validateOcrImage($request, 'sim_b_2', 'SIM B II');
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()->first(),
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $apiKey = config('services.ocr_space.key');
+        $endpoint = config('services.ocr_space.endpoint', 'https://api.ocr.space/parse/image');
+
+        if (empty($apiKey)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Konfigurasi OCR.space belum lengkap.',
+            ], 500);
         }
 
         $file = $request->file('sim_b_2');
@@ -69,12 +168,12 @@ class ApiController extends Controller
 
         try {
             // Panggil API OCR
-            $response = Http::timeout(30)
+            $response = Http::timeout((int) config('services.ocr_space.timeout', 30))
                 ->attach('file', file_get_contents($compressedPath), basename($compressedPath))
-                ->post('https://api.ocr.space/parse/image', [
-                    'apikey' => 'K82052672988957',
+                ->post($endpoint, [
+                    'apikey' => $apiKey,
                     'language' => 'eng',
-                    'OCREngine' => '2',
+                    'OCREngine' => (string) config('services.ocr_space.sim_b2_engine', '2'),
                     'scale' => 'true',
                     'detectOrientation' => 'true',
                     'isOverlayRequired' => 'false',
@@ -114,11 +213,21 @@ class ApiController extends Controller
     {
         $biodata = Biodata::where('user_id', auth()->id())->first();
 
-        if (!$request->hasFile('ktp')) {
+        $validator = $this->validateOcrImage($request, 'ktp', 'KTP');
+
+        if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'File KTP tidak ditemukan.'
-            ]);
+                'message' => $validator->errors()->first(),
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        if (! $biodata) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lengkapi biodata terlebih dahulu sebelum membaca KTP.',
+            ], 422);
         }
 
         // === Validasi konfigurasi OCR ===
@@ -147,10 +256,20 @@ class ApiController extends Controller
 
             $cachedData = json_decode(file_get_contents($cacheFile), true);
 
+            if (! is_array($cachedData)) {
+                return $this->rejectKtpOcr($biodata, 'Cache OCR KTP tidak valid. Silakan unggah ulang KTP.');
+            }
+
+            if ($failureResponse = $this->ktpValidationFailureResponse($cachedData, $biodata)) {
+                return $failureResponse;
+            }
+
             Biodata::where('user_id', auth()->id())->update([
                 'ocr_ktp'    => json_encode($cachedData, JSON_PRETTY_PRINT),
                 'ocr_ktp_at' => now(),
             ]);
+
+            $this->refreshEmploymentStatusFromHris();
 
             return response()->json([
                 'success' => true,
@@ -168,15 +287,27 @@ class ApiController extends Controller
                 ->put($url);
 
             if (!$response->successful()) {
-                return response()->json([
-                    'success' => false,
+                Log::warning('OCR KTP internal gagal', [
+                    'user_id' => auth()->id(),
                     'http_code' => $response->status(),
                     'reason' => $response->reason(),
-                    'body' => $response->body(),
-                ], $response->status());
+                ]);
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'OCR KTP gagal diproses. Silakan coba lagi atau unggah foto KTP yang lebih jelas.',
+                ], 502);
             }
 
             $ocrData = $response->json();
+
+            if (! is_array($ocrData)) {
+                return $this->rejectKtpOcr($biodata, 'Hasil OCR KTP tidak valid. Silakan unggah ulang KTP.');
+            }
+
+            if ($failureResponse = $this->ktpValidationFailureResponse($ocrData, $biodata)) {
+                return $failureResponse;
+            }
 
             Biodata::where('user_id', auth()->id())->update([
                 'ocr_ktp'    => json_encode($ocrData, JSON_PRETTY_PRINT),
@@ -184,6 +315,8 @@ class ApiController extends Controller
             ]);
 
             file_put_contents($cacheFile, json_encode($ocrData, JSON_PRETTY_PRINT));
+
+            $this->refreshEmploymentStatusFromHris();
 
             return response()->json([
                 'success' => true,
@@ -206,11 +339,35 @@ class ApiController extends Controller
     // OCR SPACE KTP v3
     public function ocrSpaceKtp(Request $request)
     {
-        if (!$request->hasFile('ktp')) {
+        $biodata = Biodata::where('user_id', auth()->id())->first();
+        $validator = $this->validateOcrImage($request, 'ktp', 'KTP');
+
+        if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'File KTP tidak ditemukan.'
-            ]);
+                'message' => $validator->errors()->first(),
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        if (! $biodata) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lengkapi biodata terlebih dahulu sebelum membaca KTP.',
+            ], 422);
+        }
+
+        $apiKey = config('services.ocr_space.key');
+        $endpoint = config('services.ocr_space.endpoint', 'https://api.ocr.space/parse/image');
+
+        if (empty($apiKey)) {
+            return $this->rejectKtpOcr(
+                $biodata,
+                'Konfigurasi OCR.space belum lengkap.',
+                [],
+                500,
+                false
+            );
         }
 
         $file = $request->file('ktp');
@@ -230,16 +387,16 @@ class ApiController extends Controller
 
         try {
             // ================== OCR API ==================
-            $response = Http::timeout(30)
+            $response = Http::timeout((int) config('services.ocr_space.timeout', 30))
                 ->attach(
                     'file',
                     file_get_contents($compressedPath),
                     basename($compressedPath)
                 )
-                ->post('https://api.ocr.space/parse/image', [
-                    'apikey'             => 'K82052672988957', // taruh di config
+                ->post($endpoint, [
+                    'apikey'             => $apiKey,
                     'language'           => 'eng',
-                    'OCREngine'          => '3',
+                    'OCREngine'          => (string) config('services.ocr_space.ktp_engine', '3'),
                     'scale'              => 'true',
                     'detectOrientation'  => 'true',
                     'isOverlayRequired'  => 'false',
@@ -272,10 +429,16 @@ class ApiController extends Controller
                 $parser = new ParsedKtp();
                 $parsedResult = $parser->parse($parsedText);
 
+                if ($failureResponse = $this->ktpValidationFailureResponse($parsedResult, $biodata)) {
+                    return $failureResponse;
+                }
+
                 Biodata::where('user_id', auth()->id())->update([
                     'ocr_ktp' => json_encode($parsedResult, JSON_PRETTY_PRINT),
                     'ocr_ktp_at' => now(),
                 ]);
+
+                $this->refreshEmploymentStatusFromHris();
             }
 
             return response()->json([

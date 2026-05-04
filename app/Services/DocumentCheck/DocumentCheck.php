@@ -4,6 +4,7 @@ namespace App\Services\DocumentCheck;
 
 use App\Models\Biodata;
 use App\Models\Lowongan;
+use App\Services\Ocr\KtpIdentityValidator;
 use Carbon\Carbon;
 use DateTime;
 use Illuminate\Support\Facades\Auth;
@@ -165,10 +166,19 @@ class DocumentCheck
         $fieldLabels = $this->getFieldLabels($lowongan->status_sim_b2, $lowongan->status_sio);
         $emptyFields = collect($fieldLabels)->filter(fn($label, $field) => empty($biodata->$field))->values()->all();
 
-        $msg_no_ktp = $ocrResult['nik_ktp'] !== $biodata->no_ktp ? 'No KTP tidak sesuai dengan biodata anda.' : null;
-        $msg_nama_ktp = $ocrResult['nama_ktp'] !== strtoupper(Auth::user()->name) ? 'Nama pada KTP tidak sesuai dengan nama pada biodata anda.' : null;
+        $msg_no_ktp = null;
+        $msg_nama_ktp = null;
+        $ktpIdentityValidation = app(KtpIdentityValidator::class)->validateParsedResult($ocrData, Auth::user(), $biodata);
 
-        if (count($emptyFields) || $msg_no_ktp || $msg_name_ktp_vs_sim_b2 || $msg_date_ktp_vs_sim_b2) {
+        if (! $ktpIdentityValidation['valid']) {
+            if (stripos($ktpIdentityValidation['message'], 'Nama') !== false) {
+                $msg_nama_ktp = $ktpIdentityValidation['message'];
+            } else {
+                $msg_no_ktp = $ktpIdentityValidation['message'];
+            }
+        }
+
+        if (count($emptyFields) || $msg_no_ktp || $msg_nama_ktp || $msg_name_ktp_vs_sim_b2 || $msg_date_ktp_vs_sim_b2) {
             return view('user.lowongan-kerja.verifikasi', [
                 'emptyFields' => $emptyFields,
                 'msg_no_ktp' => $msg_no_ktp,
