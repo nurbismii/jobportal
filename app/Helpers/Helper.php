@@ -1,11 +1,11 @@
 <?php
 
 use App\Models\Lowongan;
-use App\Models\RiwayatProsesLamaran;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
+use Illuminate\Support\Facades\File;
 
 if (!function_exists('hitungUmur')) {
     function hitungUmur($tanggalLahir)
@@ -335,32 +335,14 @@ if (!function_exists('compressImageTo1MB')) {
 if (!function_exists('deleteImageBiodata')) {
     function deleteImageBiodata($biodata)
     {
-        if ($biodata) {
-            $dokumenFields = [
-                'cv',
-                'pas_foto',
-                'surat_lamaran',
-                'ijazah',
-                'ktp',
-                'skck',
-                'kartu_keluarga',
-                'npwp',
-                'ak1',
-                'sim_b_2',
-                'sio'
-            ];
+        if (!$biodata || empty($biodata->no_ktp)) {
+            return;
+        }
 
-            $basePath = public_path($biodata->no_ktp . '/dokumen');
+        $folderKtp = public_path($biodata->no_ktp);
 
-            foreach ($dokumenFields as $field) {
-                $fileName = $biodata->{$field};
-                if ($fileName) {
-                    $filePath = $basePath . '/' . $fileName;
-                    if (file_exists($filePath)) {
-                        unlink($filePath);
-                    }
-                }
-            }
+        if (File::exists($folderKtp) && File::isDirectory($folderKtp)) {
+            File::deleteDirectory($folderKtp);
         }
     }
 }

@@ -10,6 +10,7 @@ use App\Models\RiwayatProsesLamaran;
 use App\Models\SuratPeringatan;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use RealRashid\SweetAlert\Facades\Alert;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -157,27 +158,39 @@ class PenggunaController extends Controller
 
     public function destroy($id)
     {
-        // Logic to delete a user
-        $user = User::findOrFail($id);
+        DB::beginTransaction();
 
-        $biodata = Biodata::where('user_id', $user->id)->first();
+        try {
+            $user = User::findOrFail($id);
 
-        deleteImageBiodata($biodata);
+            $biodata = Biodata::where('user_id', $user->id)->first();
 
-        if ($biodata) {
-            Lamaran::where('biodata_id', $biodata->id)->delete();
+            if ($biodata) {
+                deleteImageBiodata($biodata);
 
-            $biodata->delete();
+                Lamaran::where('biodata_id', $biodata->id)->delete();
+
+                $biodata->delete();
+            }
+
+            RiwayatProsesLamaran::where('user_id', $user->id)->delete();
+
+            SuratPeringatan::where('user_id', $user->id)->delete();
+
+            $user->delete();
+
+            DB::commit();
+
+            Alert::success('Berhasil', 'Pengguna berhasil dihapus.');
+            return redirect()->route('pengguna.index')->with('success', 'Pengguna berhasil dihapus.');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            report($e);
+
+            Alert::error('Gagal', 'Pengguna gagal dihapus.');
+            return redirect()->back()->with('error', 'Pengguna gagal dihapus.');
         }
-
-        RiwayatProsesLamaran::where('user_id', $user->id)->delete();
-
-        SuratPeringatan::where('user_id', $user->id)->delete();
-
-        $user->delete();
-
-        Alert::success('Berhasil', 'Pengguna berhasil dihapus.');
-        return redirect()->route('pengguna.index')->with('success', 'Pengguna berhasil dihapus.');
     }
 
     public function updateStatusAkun(Request $request)
