@@ -63,6 +63,10 @@ class EmploymentStatusRefreshService
     {
         return User::query()
             ->whereHas('biodata')
+            ->whereRaw(
+                'UPPER(TRIM(area_kerja)) in (' . implode(',', array_fill(0, count(User::lockableActiveEmploymentAreas()), '?')) . ')',
+                User::lockableActiveEmploymentAreas()
+            )
             ->where(function ($query) {
                 $query->where('employment_lock_active', true)
                     ->orWhere(function ($legacyQuery) {

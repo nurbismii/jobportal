@@ -17,6 +17,8 @@ class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    private const LOCKABLE_ACTIVE_EMPLOYMENT_AREAS = ['VDNI', 'VDNIP'];
+
     private static ?bool $supportsVerificationResendTracking = null;
 
     /**
@@ -84,7 +86,28 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function hasActiveEmploymentStatusLock(): bool
     {
-        return (bool) $this->employment_lock_active || $this->hasLegacyActiveEmploymentKetResign();
+        return $this->isLockableActiveEmploymentArea($this->area_kerja)
+            && ((bool) $this->employment_lock_active || $this->hasLegacyActiveEmploymentKetResign());
+    }
+
+    public static function lockableActiveEmploymentAreas(): array
+    {
+        return self::LOCKABLE_ACTIVE_EMPLOYMENT_AREAS;
+    }
+
+    public static function normalizeEmploymentArea(?string $area): string
+    {
+        return strtoupper(trim((string) $area));
+    }
+
+    public static function isLockableActiveEmploymentArea(?string $area): bool
+    {
+        return in_array(static::normalizeEmploymentArea($area), self::LOCKABLE_ACTIVE_EMPLOYMENT_AREAS, true);
+    }
+
+    public static function isActiveEmploymentStatus(?string $status): bool
+    {
+        return strcasecmp(trim((string) $status), 'aktif') === 0;
     }
 
     public function hasLegacyActiveEmploymentKetResign(): bool
@@ -99,7 +122,11 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         $ketResign = trim((string) $this->ket_resign);
 
-        if (! $this->employment_lock_active && $this->hasLegacyActiveEmploymentKetResign()) {
+        if (
+            ! $this->employment_lock_active
+            && $this->hasLegacyActiveEmploymentKetResign()
+            && $this->isLockableActiveEmploymentArea($this->area_kerja)
+        ) {
             return true;
         }
 
@@ -107,7 +134,8 @@ class User extends Authenticatable implements MustVerifyEmail
             return true;
         }
 
-        return stripos($ketResign, 'Aktif bekerja pada tanggal ') === 0
+        return $this->isLockableActiveEmploymentArea($this->area_kerja)
+            && stripos($ketResign, 'Aktif bekerja pada tanggal ') === 0
             && ! $this->hasLegacyActiveEmploymentKetResign();
     }
 
@@ -195,15 +223,16 @@ class User extends Authenticatable implements MustVerifyEmail
         }
 
         $statusResign = trim((string) $employee->status_resign);
+        $areaKerja = $employee->area_kerja;
 
         // Jika status_resign menunjukkan karyawan aktif, maka setel atribut terkait untuk mencerminkan status pekerjaan aktif
-        if (strcasecmp($statusResign, 'aktif') === 0) {
+        if (static::isActiveEmploymentStatus($statusResign)) {
             return [
-                'employment_lock_active' => true,
+                'employment_lock_active' => static::isLockableActiveEmploymentArea($areaKerja),
                 'status_pelamar' => 'Aktif',
                 'tanggal_resign' => null,
                 'ket_resign' => static::activeEmploymentKetResign($employee->entry_date),
-                'area_kerja' => $employee->area_kerja,
+                'area_kerja' => $areaKerja,
             ];
         }
 
@@ -212,14 +241,14 @@ class User extends Authenticatable implements MustVerifyEmail
             'status_pelamar' => $employee->status_resign,
             'tanggal_resign' => $employee->tgl_resign,
             'ket_resign' => $employee->alasan_resign,
-            'area_kerja' => $employee->area_kerja,
+            'area_kerja' => $areaKerja,
         ];
     }
 
     public function markAsActiveEmployee($date = null): bool
     {
         return $this->forceFill([
-            'employment_lock_active' => true,
+            'employment_lock_active' => static::isLockableActiveEmploymentArea($this->area_kerja),
             'last_hris_sync_at' => null,
             'status_pelamar' => 'Aktif',
             'tanggal_resign' => null,
