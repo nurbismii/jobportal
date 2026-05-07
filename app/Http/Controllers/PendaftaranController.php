@@ -83,12 +83,6 @@ class PendaftaranController extends Controller
             // Cari employee (jika ada)
             $employee = User::latestHrisEmployeeByNoKtp($validatedData['no_ktp']);
 
-            if ($employee && ! $identityValidator->namesMatch($validatedData['name'], (string) $employee->nama_karyawan, 78)) {
-                throw ValidationException::withMessages([
-                    'name' => 'Nama tidak sesuai dengan riwayat karyawan di HRIS untuk nomor KTP ini.',
-                ]);
-            }
-
             $employmentAttributes = User::employmentAttributesFromHrisEmployee($employee);
 
             $userData = [

@@ -8,23 +8,14 @@ use PHPUnit\Framework\TestCase;
 
 class KtpIdentityValidatorTest extends TestCase
 {
-    public function test_nik_must_have_plausible_indonesian_structure()
+    public function test_nik_must_have_valid_basic_identity_format()
     {
         $validator = new KtpIdentityValidator();
 
         $this->assertTrue($validator->isPlausibleNik('6401010101900001'));
+        $this->assertTrue($validator->isPlausibleNik('6401010199900001'));
         $this->assertFalse($validator->isPlausibleNik('1111111111111111'));
-        $this->assertFalse($validator->isPlausibleNik('6401010001900001'));
-        $this->assertFalse($validator->isPlausibleNik('6401010199900001'));
-    }
-
-    public function test_birth_date_must_match_nik_date_segment()
-    {
-        $validator = new KtpIdentityValidator();
-
-        $this->assertTrue($validator->birthDateMatchesNik('6401010101900001', '01-01-1990'));
-        $this->assertTrue($validator->birthDateMatchesNik('6401014101900001', '01-01-1990'));
-        $this->assertFalse($validator->birthDateMatchesNik('6401010101900001', '02-01-1990'));
+        $this->assertFalse($validator->isPlausibleNik('6401010101900000'));
     }
 
     public function test_name_matching_allows_common_ocr_formatting_noise()

@@ -39,17 +39,6 @@ class ProfilController extends Controller
         }
     }
 
-    private function ensureNameMatchesHris(string $name, string $noKtp, KtpIdentityValidator $identityValidator): void
-    {
-        $employee = User::latestHrisEmployeeByNoKtp($noKtp);
-
-        if ($employee && ! $identityValidator->namesMatch($name, (string) $employee->nama_karyawan, 78)) {
-            throw ValidationException::withMessages([
-                'nama' => 'Nama tidak sesuai dengan riwayat karyawan di HRIS untuk nomor KTP ini.',
-            ]);
-        }
-    }
-
     public function index()
     {
         return view('user.profil.index');
@@ -105,7 +94,6 @@ class ProfilController extends Controller
         $biodata = Biodata::where('user_id', $user->id)->first();
 
         $this->ensureNikCanBeChanged($biodata, $oldKtp, $newKtp, $identityValidator);
-        $this->ensureNameMatchesHris($request->nama, $newKtp, $identityValidator);
 
         if ($oldKtp !== $newKtp) {
             $newPath = public_path($newKtp);
