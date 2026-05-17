@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\Api\Internal\CandidateDocumentController;
+use App\Http\Controllers\Api\Vhire\CandidateActivationController;
+use App\Http\Controllers\Api\Vhire\ContractImportController;
+use App\Http\Controllers\Api\Vhire\ContractVisibilityController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -33,4 +36,15 @@ Route::prefix('internal')->name('internal.')->group(function () {
         ->middleware('signed')
         ->where('type', '[A-Za-z0-9_]+')
         ->name('candidate-documents.download');
+});
+
+Route::prefix('vhire')->name('vhire.')->middleware('internal.api')->group(function () {
+    Route::post('contracts', [ContractImportController::class, 'store'])
+        ->name('contracts.store');
+
+    Route::patch('contracts/{contract}/visibility', [ContractVisibilityController::class, 'update'])
+        ->name('contracts.visibility');
+
+    Route::post('candidates/{vhire_candidate_id}/activated', [CandidateActivationController::class, 'store'])
+        ->name('candidates.activated');
 });

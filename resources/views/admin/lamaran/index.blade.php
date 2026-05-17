@@ -579,6 +579,16 @@
 
                         <div class="col-6">
                             <div class="mb-2">
+                                <label for="signing-method">Metode Tanda Tangan PKWT 1</label>
+                                <select name="signing_method" class="form-control form-control-sm" id="signing-method">
+                                    <option value="electronic">Electronic - tampil dan ditandatangani di V-Hire</option>
+                                    <option value="manual">Manual - diproses dan diarsipkan di HRIS</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-6">
+                            <div class="mb-2">
                                 <label for="tanggal-proses">Tanggal Proses <span class="text-danger">*</span></label>
                                 <input class="form-control form-control-sm" type="date" name="tanggal_proses" id="tanggal-proses" required>
                             </div>

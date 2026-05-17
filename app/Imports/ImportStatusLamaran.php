@@ -67,7 +67,10 @@ class ImportStatusLamaran implements ToModel, WithHeadingRow, WithChunkReading, 
             $tanggalProses ?: ($row['tanggal_proses'] ?? null),
             now()->format('H:i:s'),
             $row['tempat'] ?? '-',
-            '-'
+            '-',
+            [
+                'signing_method' => $this->normalizeSigningMethod($row['signing_method'] ?? null),
+            ]
         );
 
         return null;
@@ -104,6 +107,25 @@ class ImportStatusLamaran implements ToModel, WithHeadingRow, WithChunkReading, 
         } catch (\Throwable $th) {
             return null;
         }
+    }
+
+    private function normalizeSigningMethod($value): ?string
+    {
+        $value = strtolower(trim((string) $value));
+
+        if ($value === '') {
+            return null;
+        }
+
+        if (in_array($value, ['electronic', 'elektronik', 'e-sign', 'esign'], true)) {
+            return 'electronic';
+        }
+
+        if (in_array($value, ['manual', 'offline'], true)) {
+            return 'manual';
+        }
+
+        return null;
     }
 
     public function chunkSize(): int

@@ -6,6 +6,9 @@ use App\Models\Lamaran;
 use App\Models\PermintaanTenagaKerja;
 use App\Models\RiwayatProsesLamaran;
 use App\Models\User;
+use App\Services\Vhire\OnboardingCandidateSyncService;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class LamaranStatusService
 {
@@ -15,7 +18,8 @@ class LamaranStatusService
         $tanggalProses = null,
         ?string $jam = null,
         ?string $tempat = null,
-        ?string $pesan = null
+        ?string $pesan = null,
+        array $options = []
     ): RiwayatProsesLamaran {
         $statusTahapan = strtolower(trim($status));
         $statusProses = ucwords(trim($status));
@@ -61,7 +65,38 @@ class LamaranStatusService
             }
         }
 
+        if ($this->isTandaTanganKontrak($statusTahapan)) {
+            if ($this->supportsPkwtIntegrationTables()) {
+                app(OnboardingCandidateSyncService::class)->prepareFromLamaran(
+                    $lamaran,
+                    $tanggalProses,
+                    $options
+                );
+            } else {
+                Log::warning('PKWT integration skipped because required tables are missing.', [
+                    'lamaran_id' => $lamaran->id,
+                    'status_proses' => $status,
+                ]);
+            }
+        }
+
         return $riwayat;
+    }
+
+    private function supportsPkwtIntegrationTables(): bool
+    {
+        return Schema::hasTable('vhire_onboarding_candidates')
+            && Schema::hasTable('vhire_pkwt_contracts')
+            && Schema::hasTable('vhire_integration_audit_logs');
+    }
+
+    private function isTandaTanganKontrak(string $status): bool
+    {
+        return in_array($status, [
+            'tanda tangan kontrak',
+            'proses tanda tangan kontrak',
+            'proses_tanda_tangan_kontrak',
+        ], true);
     }
 
     private function isTidakLolos(string $status): bool

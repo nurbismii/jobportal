@@ -62,6 +62,13 @@
         </a>
     </li>
 
+    <li class="nav-item {{ request()->routeIs('pkwt-contracts.*', 'pkwt-contract-settings.*') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('pkwt-contracts.index') }}">
+            <i class="fas fa-fw fa-file-signature"></i>
+            <span>PKWT 1</span>
+        </a>
+    </li>
+
     <!-- Divider -->
     <hr class="sidebar-divider">
 

@@ -407,3 +407,16 @@ if (!function_exists('versioned_asset')) {
         return $url . (Str::contains($url, '?') ? '&' : '?') . 'v=' . rawurlencode((string) $version);
     }
 }
+
+if (!function_exists('mask_no_ktp')) {
+    function mask_no_ktp($noKtp): string
+    {
+        $noKtp = preg_replace('/\D+/', '', (string) $noKtp);
+
+        if (strlen($noKtp) <= 8) {
+            return str_repeat('*', strlen($noKtp));
+        }
+
+        return substr($noKtp, 0, 4) . str_repeat('*', max(strlen($noKtp) - 8, 0)) . substr($noKtp, -4);
+    }
+}

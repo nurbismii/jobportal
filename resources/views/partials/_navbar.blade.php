@@ -70,6 +70,11 @@
                         Riwayat Proses Lamaran
                     </a>
 
+                    <a href="{{ route('kontrak-pkwt.index') }}"
+                        class="nav-item nav-link {{ request()->routeIs('kontrak-pkwt.*') ? 'active' : '' }}">
+                        Kontrak PKWT 1
+                    </a>
+
                     <a href="{{ route('pengumuman.index') }}"
                         class="nav-item nav-link {{ request()->routeIs('pengumuman.*') ? 'active' : '' }}">
                         Pengumuman

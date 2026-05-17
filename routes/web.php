@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\LamaranController;
 use App\Http\Controllers\Admin\AccountRecoveryRequestController;
 use App\Http\Controllers\BiodataController;
+use App\Http\Controllers\PkwtContractController;
 use App\Http\Controllers\PendaftaranController;
 use App\Http\Controllers\ResetPasswordController;
 use App\Http\Controllers\Admin\LowonganController;
@@ -54,6 +55,10 @@ Route::middleware(['auth', 'verified.email'])->group(function () {
 
     Route::resource('lamaran', 'App\Http\Controllers\LamaranController');
     Route::resource('profil', 'App\Http\Controllers\ProfilController');
+    Route::get('kontrak-pkwt', [PkwtContractController::class, 'index'])->name('kontrak-pkwt.index');
+    Route::get('kontrak-pkwt/{contract}', [PkwtContractController::class, 'show'])->name('kontrak-pkwt.show');
+    Route::get('kontrak-pkwt/{contract}/download', [PkwtContractController::class, 'download'])->name('kontrak-pkwt.download');
+    Route::post('kontrak-pkwt/{contract}/sign', [PkwtContractController::class, 'sign'])->name('kontrak-pkwt.sign');
 
     Route::resource('biodata', 'App\Http\Controllers\BiodataController');
     Route::post('/biodata/step-1-4', [BiodataController::class, 'storeStep1to4'])->name('biodata.storeStep1to4');
@@ -92,6 +97,13 @@ Route::group(['prefix' => 'admin', 'middleware' => ['redirect.role']], function 
     Route::resource('/permintaan-tenaga-kerja', 'App\Http\Controllers\Admin\PermintaanTenagaKerjaController');
     Route::resource('/email-blast-log', 'App\Http\Controllers\Admin\EmailBlastController');
     Route::resource('/kandidat-potensial', 'App\Http\Controllers\Admin\KandidatPotensialController');
+    Route::get('/pkwt-contracts', [App\Http\Controllers\Admin\PkwtContractController::class, 'index'])->name('pkwt-contracts.index');
+    Route::patch('/pkwt-contracts/{contract}/visibility', [App\Http\Controllers\Admin\PkwtContractController::class, 'updateVisibility'])->name('pkwt-contracts.visibility');
+    Route::post('/pkwt-contracts/{contract}/retry-signature-sync', [App\Http\Controllers\Admin\PkwtContractController::class, 'retrySignatureSync'])->name('pkwt-contracts.retry-signature-sync');
+    Route::post('/pkwt-onboarding-candidates/{candidate}/retry-sync', [App\Http\Controllers\Admin\PkwtContractController::class, 'retryOnboardingSync'])->name('pkwt-onboarding-candidates.retry-sync');
+    Route::get('/pkwt-contracts/{contract}/download', [App\Http\Controllers\Admin\PkwtContractController::class, 'download'])->name('pkwt-contracts.download');
+    Route::get('/pkwt-contract-settings', [App\Http\Controllers\Admin\PkwtContractSettingController::class, 'edit'])->name('pkwt-contract-settings.edit');
+    Route::patch('/pkwt-contract-settings', [App\Http\Controllers\Admin\PkwtContractSettingController::class, 'update'])->name('pkwt-contract-settings.update');
     Route::get('/request-lupa-akun', [AccountRecoveryRequestController::class, 'index'])->name('account-recovery-requests.index');
     Route::post('/request-lupa-akun/{id}/approve', [AccountRecoveryRequestController::class, 'approve'])->name('account-recovery-requests.approve');
     Route::post('/request-lupa-akun/{id}/reject', [AccountRecoveryRequestController::class, 'reject'])->name('account-recovery-requests.reject');

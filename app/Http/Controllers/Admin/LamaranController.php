@@ -39,7 +39,10 @@ class LamaranController extends Controller
                             $request->tanggal_proses,
                             $request->jam,
                             $request->tempat,
-                            $request->pesanEmail
+                            $request->pesanEmail,
+                            [
+                                'signing_method' => $request->input('signing_method', 'electronic'),
+                            ]
                         );
                     });
             });
