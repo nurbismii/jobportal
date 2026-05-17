@@ -35,7 +35,7 @@ class OnboardingCandidateSyncService
             $signingMethod = 'electronic';
         }
 
-        $candidateCode = 'VHIRE-CAND-' . $lamaran->id;
+        $candidateCode = 'VDNI/HRD/' . $lamaran->id;
         $vhireCandidateId = 'LAMARAN-' . $lamaran->id;
         $payload = [
             'vhire_candidate_id' => $vhireCandidateId,

@@ -130,6 +130,48 @@ $maxStep = count($steps);
             </div>
         </a>
     </div>
+
+    @if($showPkwtContractFeature)
+    <div class="col-12 col-md-6">
+        @if($visiblePkwtContractsCount > 0)
+        <a href="{{ route('kontrak-pkwt.index') }}" class="d-block h-100 text-decoration-none">
+        @endif
+            <div class="card quick-access-card border-0 h-100">
+                <div class="quick-access-card__body">
+                    <div class="quick-access-card__top">
+                        <div class="quick-access-card__icon quick-access-card__icon--primary">
+                            <i class="fa-solid fa-file-signature"></i>
+                        </div>
+                        <span class="quick-access-card__chip">PKWT 1</span>
+                    </div>
+
+                    <div class="quick-access-card__content">
+                        <h5 class="quick-access-card__title">Kontrak PKWT 1</h5>
+                        <p class="quick-access-card__text">
+                            @if($visiblePkwtContractsCount > 0)
+                            Periksa dan tandatangani kontrak elektronik selama proses onboarding.
+                            @else
+                            Status kamu sudah masuk tahap tanda tangan kontrak. Dokumen kontrak sedang disiapkan.
+                            @endif
+                        </p>
+                    </div>
+
+                    <div class="quick-access-card__footer">
+                        @if($visiblePkwtContractsCount > 0)
+                        <span>Buka Kontrak</span>
+                        <i class="fa fa-arrow-right"></i>
+                        @else
+                        <span>Menunggu Dokumen</span>
+                        <i class="fa fa-clock"></i>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        @if($visiblePkwtContractsCount > 0)
+        </a>
+        @endif
+    </div>
+    @endif
 </div>
 </div>
 

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Jobs\SyncContractSignatureStatusToHris;
+use App\Http\Middleware\VerifyCsrfToken;
 use App\Models\Biodata;
 use App\Models\User;
 use App\Models\VhirePkwtContract;
@@ -122,7 +123,8 @@ class VhirePkwtIntegrationTest extends TestCase
             'visible_in_vhire' => true,
         ]));
 
-        $this->actingAs($user)
+        $this->withoutMiddleware(VerifyCsrfToken::class)
+            ->actingAs($user)
             ->post(route('kontrak-pkwt.sign', $contract->id), [
                 'agreement' => '1',
             ])
