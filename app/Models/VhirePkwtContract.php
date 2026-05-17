@@ -14,6 +14,7 @@ class VhirePkwtContract extends Model
         'tanggal_mulai_kontrak' => 'date',
         'tanggal_akhir_kontrak' => 'date',
         'gaji' => 'decimal:2',
+        'matched_at' => 'datetime',
         'signed_at' => 'datetime',
         'visible_in_vhire' => 'boolean',
         'hidden_at' => 'datetime',
@@ -26,6 +27,21 @@ class VhirePkwtContract extends Model
     public function onboardingCandidate()
     {
         return $this->belongsTo(VhireOnboardingCandidate::class, 'onboarding_candidate_id');
+    }
+
+    public function matchedBiodata()
+    {
+        return $this->belongsTo(Biodata::class, 'matched_biodata_id');
+    }
+
+    public function matchedUser()
+    {
+        return $this->belongsTo(User::class, 'matched_user_id');
+    }
+
+    public function matchedLamaran()
+    {
+        return $this->belongsTo(Lamaran::class, 'matched_lamaran_id');
     }
 
     public function histories()
@@ -42,6 +58,7 @@ class VhirePkwtContract extends Model
     {
         return (bool) $this->visible_in_vhire
             && blank($this->employee_nik)
+            && $this->match_status === 'matched_to_candidate'
             && $this->signing_method === 'electronic'
             && in_array($this->signature_status, ['draft', 'waiting_signature'], true);
     }

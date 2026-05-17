@@ -47,4 +47,7 @@ Route::prefix('vhire')->name('vhire.')->middleware('internal.api')->group(functi
 
     Route::post('candidates/{vhire_candidate_id}/activated', [CandidateActivationController::class, 'store'])
         ->name('candidates.activated');
+
+    Route::post('candidates/activated', [CandidateActivationController::class, 'store'])
+        ->name('candidates.activated-without-id');
 });

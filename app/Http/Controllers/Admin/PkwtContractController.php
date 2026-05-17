@@ -3,13 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Jobs\SyncContractSignatureStatusToHris;
-use App\Jobs\SyncOnboardingCandidateToHris;
 use App\Http\Controllers\Controller;
-use App\Models\VhireOnboardingCandidate;
 use App\Models\VhirePkwtContract;
 use App\Services\Vhire\PkwtContractFileService;
 use App\Services\Vhire\PkwtContractService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use RealRashid\SweetAlert\Facades\Alert;
 
 class PkwtContractController extends Controller
@@ -33,16 +32,18 @@ class PkwtContractController extends Controller
             ->when($request->filled('signature_status'), function ($query) use ($request) {
                 $query->where('signature_status', $request->signature_status);
             })
+            ->when($request->filled('match_status'), function ($query) use ($request) {
+                if ($request->match_status === 'hidden') {
+                    $query->where('visible_in_vhire', false);
+                } else {
+                    $query->where('match_status', $request->match_status);
+                }
+            })
             ->orderByDesc('created_at')
             ->paginate(20)
             ->appends($request->query());
 
-        $failedOnboardingCandidates = VhireOnboardingCandidate::where('sync_status', 'failed_sync')
-            ->orderByDesc('last_sync_attempt_at')
-            ->limit(20)
-            ->get();
-
-        return view('admin.pkwt-contracts.index', compact('contracts', 'failedOnboardingCandidates'));
+        return view('admin.pkwt-contracts.index', compact('contracts'));
     }
 
     public function updateVisibility(Request $request, VhirePkwtContract $contract, PkwtContractService $contracts)
@@ -67,22 +68,24 @@ class PkwtContractController extends Controller
         return back();
     }
 
+    public function rematch(VhirePkwtContract $contract, PkwtContractService $contracts)
+    {
+        try {
+            $contracts->rematch($contract, optional(Auth::user())->id);
+            Alert::success('Berhasil', 'Kontrak berhasil ditautkan ke kandidat berdasarkan No KTP.');
+        } catch (\InvalidArgumentException $e) {
+            Alert::error('Gagal', $e->getMessage());
+        }
+
+        return back();
+    }
+
     public function retrySignatureSync(VhirePkwtContract $contract)
     {
         SyncContractSignatureStatusToHris::dispatch($contract->id)
             ->onQueue((string) config('recruitment.hris_api.queue', 'default'));
 
         Alert::success('Berhasil', 'Retry sync status tanda tangan dikirim ke queue.');
-
-        return back();
-    }
-
-    public function retryOnboardingSync(VhireOnboardingCandidate $candidate)
-    {
-        SyncOnboardingCandidateToHris::dispatch($candidate->id)
-            ->onQueue((string) config('recruitment.hris_api.queue', 'default'));
-
-        Alert::success('Berhasil', 'Retry sync onboarding dikirim ke queue.');
 
         return back();
     }

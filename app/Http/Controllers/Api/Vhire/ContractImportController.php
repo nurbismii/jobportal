@@ -26,6 +26,9 @@ class ContractImportController extends Controller
                 'signature_status' => $contract->signature_status,
                 'signing_method' => $contract->signing_method,
                 'visible_in_vhire' => $contract->visible_in_vhire,
+                'match_status' => $contract->match_status,
+                'matched_biodata_id' => $contract->matched_biodata_id,
+                'matched_lamaran_id' => $contract->matched_lamaran_id,
             ],
         ]);
     }

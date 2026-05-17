@@ -99,8 +99,8 @@ Route::group(['prefix' => 'admin', 'middleware' => ['redirect.role']], function 
     Route::resource('/kandidat-potensial', 'App\Http\Controllers\Admin\KandidatPotensialController');
     Route::get('/pkwt-contracts', [App\Http\Controllers\Admin\PkwtContractController::class, 'index'])->name('pkwt-contracts.index');
     Route::patch('/pkwt-contracts/{contract}/visibility', [App\Http\Controllers\Admin\PkwtContractController::class, 'updateVisibility'])->name('pkwt-contracts.visibility');
+    Route::post('/pkwt-contracts/{contract}/rematch', [App\Http\Controllers\Admin\PkwtContractController::class, 'rematch'])->name('pkwt-contracts.rematch');
     Route::post('/pkwt-contracts/{contract}/retry-signature-sync', [App\Http\Controllers\Admin\PkwtContractController::class, 'retrySignatureSync'])->name('pkwt-contracts.retry-signature-sync');
-    Route::post('/pkwt-onboarding-candidates/{candidate}/retry-sync', [App\Http\Controllers\Admin\PkwtContractController::class, 'retryOnboardingSync'])->name('pkwt-onboarding-candidates.retry-sync');
     Route::get('/pkwt-contracts/{contract}/download', [App\Http\Controllers\Admin\PkwtContractController::class, 'download'])->name('pkwt-contracts.download');
     Route::get('/pkwt-contract-settings', [App\Http\Controllers\Admin\PkwtContractSettingController::class, 'edit'])->name('pkwt-contract-settings.edit');
     Route::patch('/pkwt-contract-settings', [App\Http\Controllers\Admin\PkwtContractSettingController::class, 'update'])->name('pkwt-contract-settings.update');

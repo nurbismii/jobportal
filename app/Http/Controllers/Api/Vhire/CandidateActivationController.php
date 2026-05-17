@@ -9,11 +9,16 @@ use Illuminate\Http\JsonResponse;
 
 class CandidateActivationController extends Controller
 {
-    public function store(string $vhireCandidateId, HrisCandidateActivatedRequest $request, PkwtContractService $contracts): JsonResponse
+    public function store(HrisCandidateActivatedRequest $request, PkwtContractService $contracts): JsonResponse
     {
-        $affected = $contracts->markActivated(array_merge($request->validated(), [
-            'vhire_candidate_id' => $vhireCandidateId,
-        ]));
+        $payload = $request->validated();
+        $vhireCandidateId = $request->route('vhire_candidate_id');
+
+        if ($vhireCandidateId) {
+            $payload['vhire_candidate_id'] = $vhireCandidateId;
+        }
+
+        $affected = $contracts->markActivated($payload);
 
         return response()->json([
             'message' => 'Aktivasi kandidat HRIS diterima V-Hire.',

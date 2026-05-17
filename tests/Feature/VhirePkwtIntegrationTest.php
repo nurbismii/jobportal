@@ -41,6 +41,8 @@ class VhirePkwtIntegrationTest extends TestCase
         $this->createBaseSchema();
         include_once database_path('migrations/2026_05_16_000000_create_vhire_pkwt_integration_tables.php');
         (new \CreateVhirePkwtIntegrationTables())->up();
+        include_once database_path('migrations/2026_05_17_000000_add_matching_fields_to_vhire_pkwt_contracts.php');
+        (new \AddMatchingFieldsToVhirePkwtContracts())->up();
     }
 
     protected function tearDown(): void
@@ -59,7 +61,8 @@ class VhirePkwtIntegrationTest extends TestCase
 
         $first->assertOk()
             ->assertJsonPath('contract.no_ktp_masked', '1234********3456')
-            ->assertJsonPath('contract.visible_in_vhire', true);
+            ->assertJsonPath('contract.visible_in_vhire', true)
+            ->assertJsonPath('contract.match_status', 'pending_match');
 
         $this->assertStringNotContainsString('1234567890123456', $first->getContent());
         $this->assertDatabaseCount('vhire_pkwt_contracts', 1);
@@ -67,6 +70,7 @@ class VhirePkwtIntegrationTest extends TestCase
             'kode_kontrak' => 'PKWT-001',
             'duration_value' => 3,
             'duration_unit' => 'month',
+            'match_status' => 'pending_match',
         ]);
         $this->assertSame('2026-07-31', VhirePkwtContract::first()->tanggal_akhir_kontrak->format('Y-m-d'));
 
@@ -83,6 +87,30 @@ class VhirePkwtIntegrationTest extends TestCase
         ]);
         $this->assertDatabaseHas('vhire_integration_audit_logs', [
             'event' => 'pkwt_contract_imported_updated',
+        ]);
+    }
+
+    public function test_hris_contract_import_matches_existing_candidate_by_no_ktp_without_vhire_candidate_id()
+    {
+        $user = $this->createCandidateUser();
+
+        $response = $this->withHeader('Authorization', 'Bearer test-token')
+            ->postJson('/api/vhire/contracts', $this->contractPayload([
+                'vhire_candidate_id' => null,
+            ]));
+
+        $response->assertOk()
+            ->assertJsonPath('contract.match_status', 'matched_to_candidate')
+            ->assertJsonPath('contract.matched_biodata_id', (string) $user->biodata->id);
+
+        $this->assertDatabaseHas('vhire_pkwt_contracts', [
+            'no_ktp' => '1234567890123456',
+            'match_status' => 'matched_to_candidate',
+            'matched_biodata_id' => $user->biodata->id,
+            'matched_lamaran_id' => 1,
+        ]);
+        $this->assertDatabaseHas('vhire_integration_audit_logs', [
+            'event' => 'pkwt_contract_matched_to_candidate',
         ]);
     }
 
@@ -111,6 +139,30 @@ class VhirePkwtIntegrationTest extends TestCase
         ]);
         $this->assertDatabaseHas('vhire_integration_audit_logs', [
             'event' => 'candidate_activated_as_employee',
+        ]);
+    }
+
+    public function test_hris_activation_can_match_by_no_ktp_without_vhire_candidate_id()
+    {
+        VhirePkwtContract::create($this->contractRecord([
+            'vhire_candidate_id' => 'UNMATCHED-HRIS-CONTRACT-1',
+            'match_status' => 'pending_match',
+            'visible_in_vhire' => true,
+        ]));
+
+        $response = $this->withHeader('Authorization', 'Bearer test-token')
+            ->postJson('/api/vhire/candidates/activated', [
+                'no_ktp' => '1234567890123456',
+                'employee_nik' => 'EMP-0002',
+            ]);
+
+        $response->assertOk()
+            ->assertJsonPath('hidden_contracts', 1);
+
+        $this->assertDatabaseHas('vhire_pkwt_contracts', [
+            'employee_nik' => 'EMP-0002',
+            'visible_in_vhire' => 0,
+            'hidden_reason' => 'Kandidat sudah aktif sebagai karyawan HRIS',
         ]);
     }
 
@@ -176,6 +228,16 @@ class VhirePkwtIntegrationTest extends TestCase
             $table->string('no_ktp', 32)->nullable();
             $table->timestamps();
         });
+
+        Schema::create('lamaran', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('biodata_id')->nullable();
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->unsignedBigInteger('loker_id')->nullable();
+            $table->unsignedTinyInteger('status_lamaran')->default(1);
+            $table->string('status_proses')->nullable();
+            $table->timestamps();
+        });
     }
 
     private function createCandidateUser(): User
@@ -190,9 +252,19 @@ class VhirePkwtIntegrationTest extends TestCase
             'email_verified_at' => now(),
         ]);
 
-        Biodata::create([
+        $biodata = Biodata::create([
             'user_id' => $user->id,
             'no_ktp' => '1234567890123456',
+        ]);
+
+        DB::table('lamaran')->insert([
+            'id' => 1,
+            'biodata_id' => $biodata->id,
+            'user_id' => $user->id,
+            'status_lamaran' => 1,
+            'status_proses' => 'Tanda Tangan Kontrak',
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         return $user;
@@ -237,6 +309,7 @@ class VhirePkwtIntegrationTest extends TestCase
             'status_tanda_tangan' => 'waiting_signature',
             'signing_method' => 'electronic',
             'visible_in_vhire' => true,
+            'match_status' => 'matched_to_candidate',
         ], $overrides);
     }
 }

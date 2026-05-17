@@ -16,7 +16,7 @@ class HrisContractImportRequest extends FormRequest
     {
         return [
             'hris_contract_id' => ['nullable', 'string', 'max:100'],
-            'vhire_candidate_id' => ['required', 'string', 'max:100'],
+            'vhire_candidate_id' => ['nullable', 'string', 'max:100'],
             'candidate_code' => ['required', 'string', 'max:100'],
             'no_ktp' => ['required', 'digits:16'],
             'nama' => ['required', 'string', 'max:255'],

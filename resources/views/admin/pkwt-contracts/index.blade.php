@@ -11,7 +11,7 @@
 <div class="card shadow mb-3">
     <div class="card-body">
         <form method="GET" class="row">
-            <div class="col-md-4 mb-2">
+            <div class="col-md-3 mb-2">
                 <input type="text" name="search" class="form-control form-control-sm" placeholder="Cari nama, kode, no PKWT, NIK HRIS" value="{{ request('search') }}">
             </div>
             <div class="col-md-3 mb-2">
@@ -30,48 +30,19 @@
                 </select>
             </div>
             <div class="col-md-2 mb-2">
+                <select name="match_status" class="form-control form-control-sm">
+                    <option value="">Semua match</option>
+                    <option value="pending_match" {{ request('match_status') === 'pending_match' ? 'selected' : '' }}>Pending match</option>
+                    <option value="matched_to_candidate" {{ request('match_status') === 'matched_to_candidate' ? 'selected' : '' }}>Matched</option>
+                    <option value="hidden" {{ request('match_status') === 'hidden' ? 'selected' : '' }}>Hidden</option>
+                </select>
+            </div>
+            <div class="col-md-2 mb-2">
                 <button type="submit" class="btn btn-primary btn-sm btn-block">Filter</button>
             </div>
         </form>
     </div>
 </div>
-
-@if($failedOnboardingCandidates->isNotEmpty())
-<div class="card shadow mb-3 border-left-warning">
-    <div class="card-header font-weight-bold text-warning">Sync Onboarding Gagal</div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-sm table-bordered">
-                <thead>
-                    <tr>
-                        <th>Kandidat</th>
-                        <th>No KTP</th>
-                        <th>Error</th>
-                        <th>Percobaan</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($failedOnboardingCandidates as $candidate)
-                    <tr>
-                        <td>{{ $candidate->candidate_code }} - {{ $candidate->nama }}</td>
-                        <td>{{ $candidate->masked_no_ktp }}</td>
-                        <td>{{ $candidate->last_sync_error }}</td>
-                        <td>{{ $candidate->retry_count }}</td>
-                        <td>
-                            <form method="POST" action="{{ route('pkwt-onboarding-candidates.retry-sync', $candidate->id) }}">
-                                @csrf
-                                <button class="btn btn-warning btn-sm">Retry</button>
-                            </form>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-@endif
 
 <div class="card shadow">
     <div class="card-body">
@@ -83,6 +54,7 @@
                         <th>Kontrak</th>
                         <th>Periode</th>
                         <th>Metode</th>
+                        <th>Match</th>
                         <th>Status</th>
                         <th>Visible</th>
                         <th>NIK HRIS</th>
@@ -109,6 +81,15 @@
                         </td>
                         <td>{{ ucfirst($contract->signing_method) }}</td>
                         <td>
+                            @if($contract->match_status === 'matched_to_candidate')
+                            <span class="badge badge-success">Matched</span>
+                            <div class="small text-muted">Biodata #{{ $contract->matched_biodata_id ?: '-' }}</div>
+                            @else
+                            <span class="badge badge-warning">Pending match</span>
+                            <div class="small text-muted">Menunggu kandidat dengan No KTP ini</div>
+                            @endif
+                        </td>
+                        <td>
                             <span class="badge badge-info">{{ $contract->signature_status }}</span>
                             @if($contract->signed_at)
                             <div class="small text-muted">{{ $contract->signed_at->format('d-m-Y H:i') }}</div>
@@ -124,6 +105,13 @@
                         </td>
                         <td>{{ $contract->employee_nik ?: '-' }}</td>
                         <td style="min-width: 240px">
+                            @if($contract->match_status !== 'matched_to_candidate')
+                            <form method="POST" action="{{ route('pkwt-contracts.rematch', $contract->id) }}" class="mb-2">
+                                @csrf
+                                <button class="btn btn-info btn-sm btn-block">Rematch No KTP</button>
+                            </form>
+                            @endif
+
                             <form method="POST" action="{{ route('pkwt-contracts.visibility', $contract->id) }}" class="mb-2">
                                 @csrf
                                 @method('PATCH')
@@ -151,7 +139,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="8" class="text-center text-muted">Belum ada kontrak PKWT 1.</td>
+                        <td colspan="9" class="text-center text-muted">Belum ada kontrak PKWT 1.</td>
                     </tr>
                     @endforelse
                 </tbody>

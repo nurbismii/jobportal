@@ -3,11 +3,14 @@
 namespace App\Services\Vhire;
 
 use App\Jobs\SyncContractSignatureStatusToHris;
+use App\Models\Biodata;
+use App\Models\Lamaran;
 use App\Models\User;
 use App\Models\VhireOnboardingCandidate;
 use App\Models\VhirePkwtContract;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use InvalidArgumentException;
 
 class PkwtContractService
@@ -21,8 +24,9 @@ class PkwtContractService
                 throw new InvalidArgumentException('No KTP harus 16 digit numerik.');
             }
 
-            $candidate = $this->matchOnboardingCandidate($data, $noKtp);
-            $contract = $this->matchContract($data);
+            $candidateMatch = $this->matchCandidateByNoKtp($noKtp);
+            $candidate = $candidateMatch ? $this->ensureOnboardingCandidate($data, $noKtp, $candidateMatch) : null;
+            $contract = $this->matchContract($data, $noKtp);
             $old = $contract ? $contract->toArray() : [];
             $settingService = app(PkwtContractSettingService::class);
             $durationValue = (int) ($data['duration_value'] ?? $data['contract_duration_value'] ?? optional($candidate)->contract_duration_value ?? $settingService->pkwt1()->duration_value);
@@ -55,9 +59,14 @@ class PkwtContractService
 
             $attributes = [
                 'onboarding_candidate_id' => $candidate ? $candidate->id : null,
+                'match_status' => $candidateMatch ? 'matched_to_candidate' : 'pending_match',
+                'matched_biodata_id' => $candidateMatch ? optional($candidateMatch['biodata'])->id : null,
+                'matched_user_id' => $candidateMatch ? optional($candidateMatch['user'])->id : null,
+                'matched_lamaran_id' => $candidateMatch ? optional($candidateMatch['lamaran'])->id : null,
+                'matched_at' => $candidateMatch ? now() : null,
                 'hris_contract_id' => $data['hris_contract_id'] ?? optional($contract)->hris_contract_id,
-                'vhire_candidate_id' => $data['vhire_candidate_id'],
-                'candidate_code' => $data['candidate_code'],
+                'vhire_candidate_id' => $this->resolveVhireCandidateId($data, $candidateMatch, $contract),
+                'candidate_code' => $this->resolveCandidateCode($data, $candidateMatch, $contract),
                 'no_ktp' => $noKtp,
                 'nama' => $data['nama'],
                 'kode_kontrak' => $data['kode_kontrak'] ?? optional($contract)->kode_kontrak,
@@ -117,6 +126,19 @@ class PkwtContractService
                 'hris'
             );
 
+            app(VhireAuditLogger::class)->log(
+                $freshContract->match_status === 'matched_to_candidate' ? 'pkwt_contract_matched_to_candidate' : 'pkwt_contract_pending_match',
+                $freshContract,
+                $old ? ['match_status' => $old['match_status'] ?? null] : [],
+                [
+                    'match_status' => $freshContract->match_status,
+                    'matched_biodata_id' => $freshContract->matched_biodata_id,
+                    'matched_lamaran_id' => $freshContract->matched_lamaran_id,
+                ],
+                ['matching_identifier' => 'no_ktp'],
+                'hris'
+            );
+
             $this->logSpecificImportEvents($freshContract, $old, $data);
 
             return $freshContract;
@@ -148,19 +170,26 @@ class PkwtContractService
             $employeeNik = $data['employee_nik'];
             $activatedAt = $data['activated_as_employee_at'] ?? now();
 
-            $query = VhirePkwtContract::query()
-                ->where('vhire_candidate_id', $data['vhire_candidate_id']);
+            $query = VhirePkwtContract::query();
 
-            if (! blank($data['candidate_code'] ?? null) || ! blank($noKtp)) {
-                $query->orWhere(function ($subQuery) use ($data, $noKtp) {
-                    if (! blank($data['candidate_code'] ?? null)) {
-                        $subQuery->where('candidate_code', $data['candidate_code']);
-                    }
+            $query->where(function ($subQuery) use ($data, $noKtp) {
+                if (! blank($data['vhire_candidate_id'] ?? null)) {
+                    $subQuery->where('vhire_candidate_id', $data['vhire_candidate_id']);
+                }
 
-                    if (! blank($noKtp)) {
-                        $subQuery->orWhere('no_ktp', $noKtp);
-                    }
-                });
+                if (! blank($data['candidate_code'] ?? null)) {
+                    $method = blank($data['vhire_candidate_id'] ?? null) ? 'where' : 'orWhere';
+                    $subQuery->{$method}('candidate_code', $data['candidate_code']);
+                }
+
+                if (! blank($noKtp)) {
+                    $method = blank($data['vhire_candidate_id'] ?? null) && blank($data['candidate_code'] ?? null) ? 'where' : 'orWhere';
+                    $subQuery->{$method}('no_ktp', $noKtp);
+                }
+            });
+
+            if (blank($data['vhire_candidate_id'] ?? null) && blank($data['candidate_code'] ?? null) && blank($noKtp)) {
+                return 0;
             }
 
             $contracts = $query->get();
@@ -179,12 +208,20 @@ class PkwtContractService
                 app(VhireAuditLogger::class)->log('candidate_activated_as_employee', $contract, $old, $contract->fresh()->toArray(), [], 'hris');
             }
 
-            VhireOnboardingCandidate::where('vhire_candidate_id', $data['vhire_candidate_id'])
-                ->when(! blank($data['candidate_code'] ?? null), function ($query) use ($data) {
-                    $query->orWhere('candidate_code', $data['candidate_code']);
-                })
-                ->when(! blank($noKtp), function ($query) use ($noKtp) {
-                    $query->orWhere('no_ktp', $noKtp);
+            VhireOnboardingCandidate::where(function ($query) use ($data, $noKtp) {
+                    if (! blank($data['vhire_candidate_id'] ?? null)) {
+                        $query->where('vhire_candidate_id', $data['vhire_candidate_id']);
+                    }
+
+                    if (! blank($data['candidate_code'] ?? null)) {
+                        $method = blank($data['vhire_candidate_id'] ?? null) ? 'where' : 'orWhere';
+                        $query->{$method}('candidate_code', $data['candidate_code']);
+                    }
+
+                    if (! blank($noKtp)) {
+                        $method = blank($data['vhire_candidate_id'] ?? null) && blank($data['candidate_code'] ?? null) ? 'where' : 'orWhere';
+                        $query->{$method}('no_ktp', $noKtp);
+                    }
                 })
                 ->update([
                     'onboarding_status' => 'activated_as_employee',
@@ -231,6 +268,7 @@ class PkwtContractService
         return VhirePkwtContract::where('no_ktp', $noKtp)
             ->where('visible_in_vhire', true)
             ->whereNull('employee_nik')
+            ->where('match_status', 'matched_to_candidate')
             ->where('signing_method', 'electronic')
             ->whereIn('signature_status', ['draft', 'waiting_signature'])
             ->orderByDesc('created_at')
@@ -243,7 +281,7 @@ class PkwtContractService
             'hris_contract_id' => $contract->hris_contract_id,
             'kode_kontrak' => $contract->kode_kontrak,
             'no_pkwt' => $contract->no_pkwt,
-            'vhire_candidate_id' => $contract->vhire_candidate_id,
+            'vhire_candidate_id' => $this->publicVhireCandidateId($contract),
             'candidate_code' => $contract->candidate_code,
             'no_ktp' => $contract->no_ktp,
             'signature_status' => $contract->signature_status,
@@ -253,35 +291,171 @@ class PkwtContractService
         ];
     }
 
-    private function matchOnboardingCandidate(array $data, string $noKtp): ?VhireOnboardingCandidate
+    public function rematch(VhirePkwtContract $contract, ?int $actorId = null): VhirePkwtContract
     {
-        return VhireOnboardingCandidate::where('vhire_candidate_id', $data['vhire_candidate_id'])
-            ->orWhere('candidate_code', $data['candidate_code'])
-            ->orWhere('no_ktp', $noKtp)
-            ->first();
+        $candidateMatch = $this->matchCandidateByNoKtp($contract->no_ktp);
+
+        if (! $candidateMatch) {
+            throw new InvalidArgumentException('Kandidat dengan No KTP tersebut belum ditemukan di V-Hire.');
+        }
+
+        $old = $contract->toArray();
+        $candidate = $this->ensureOnboardingCandidate($contract->toArray(), $contract->no_ktp, $candidateMatch);
+
+        $contract->forceFill([
+            'onboarding_candidate_id' => $candidate->id,
+            'match_status' => 'matched_to_candidate',
+            'matched_biodata_id' => optional($candidateMatch['biodata'])->id,
+            'matched_user_id' => optional($candidateMatch['user'])->id,
+            'matched_lamaran_id' => optional($candidateMatch['lamaran'])->id,
+            'matched_at' => now(),
+            'matched_by' => $actorId,
+            'vhire_candidate_id' => $this->resolveVhireCandidateId($contract->toArray(), $candidateMatch, $contract),
+        ])->save();
+
+        app(VhireAuditLogger::class)->log('pkwt_contract_rematched_to_candidate', $contract, $old, $contract->fresh()->toArray(), [
+            'matching_identifier' => 'no_ktp',
+        ], 'admin');
+
+        return $contract->fresh();
     }
 
-    private function matchContract(array $data): ?VhirePkwtContract
+    private function matchContract(array $data, string $noKtp): ?VhirePkwtContract
     {
-        if (
-            blank($data['hris_contract_id'] ?? null)
-            && blank($data['kode_kontrak'] ?? null)
-            && blank($data['no_pkwt'] ?? null)
-        ) {
+        if (! blank($data['hris_contract_id'] ?? null)) {
+            return VhirePkwtContract::where('hris_contract_id', $data['hris_contract_id'])->first();
+        }
+
+        if (! blank($data['no_pkwt'] ?? null)) {
+            return VhirePkwtContract::where('no_ktp', $noKtp)
+                ->where('no_pkwt', $data['no_pkwt'])
+                ->first();
+        }
+
+        if (! blank($data['kode_kontrak'] ?? null)) {
+            return VhirePkwtContract::where('no_ktp', $noKtp)
+                ->where('kode_kontrak', $data['kode_kontrak'])
+                ->first();
+        }
+
+        return null;
+    }
+
+    private function matchCandidateByNoKtp(string $noKtp): ?array
+    {
+        $biodata = Biodata::with('user')
+            ->where('no_ktp', $noKtp)
+            ->first();
+
+        if (! $biodata) {
+            $user = User::where('no_ktp', $noKtp)->first();
+
+            if (! $user) {
+                return null;
+            }
+
+            $biodata = $user->biodata;
+        }
+
+        if (! $biodata) {
             return null;
         }
 
-        return VhirePkwtContract::query()
-            ->when(! blank($data['hris_contract_id'] ?? null), function ($query) use ($data) {
-                $query->orWhere('hris_contract_id', $data['hris_contract_id']);
-            })
-            ->when(! blank($data['kode_kontrak'] ?? null), function ($query) use ($data) {
-                $query->orWhere('kode_kontrak', $data['kode_kontrak']);
-            })
-            ->when(! blank($data['no_pkwt'] ?? null), function ($query) use ($data) {
-                $query->orWhere('no_pkwt', $data['no_pkwt']);
-            })
+        $lamaran = Lamaran::where('biodata_id', $biodata->id)
+            ->latest('id')
             ->first();
+
+        return [
+            'biodata' => $biodata,
+            'user' => $biodata->user ?: User::where('no_ktp', $noKtp)->first(),
+            'lamaran' => $lamaran,
+        ];
+    }
+
+    private function ensureOnboardingCandidate(array $data, string $noKtp, array $candidateMatch): VhireOnboardingCandidate
+    {
+        $setting = app(PkwtContractSettingService::class)->pkwt1();
+        $lamaran = $candidateMatch['lamaran'] ?? null;
+        $biodata = $candidateMatch['biodata'] ?? null;
+        $user = $candidateMatch['user'] ?? null;
+        $candidateCode = $this->resolveCandidateCode($data, $candidateMatch, null);
+        $vhireCandidateId = $this->resolveVhireCandidateId($data, $candidateMatch, null);
+
+        $lookup = $lamaran
+            ? ['lamaran_id' => $lamaran->id]
+            : ['candidate_code' => $candidateCode];
+
+        return VhireOnboardingCandidate::updateOrCreate(
+            $lookup,
+            [
+                'lamaran_id' => $lamaran ? $lamaran->id : null,
+                'biodata_id' => $biodata ? $biodata->id : null,
+                'user_id' => $user ? $user->id : null,
+                'vhire_candidate_id' => $vhireCandidateId,
+                'candidate_code' => $candidateCode,
+                'no_ktp' => $noKtp,
+                'nama' => $data['nama'] ?? optional($user)->name ?? '',
+                'jabatan' => $data['jabatan'] ?? null,
+                'tanggal_mulai_kerja' => $data['tanggal_mulai_kontrak'] ?? null,
+                'departemen' => $data['departemen'] ?? null,
+                'lokasi' => $data['lokasi'] ?? null,
+                'recruitment_status' => optional($lamaran)->status_proses ?: 'proses_tanda_tangan_kontrak',
+                'onboarding_status' => 'contract_generated',
+                'contract_duration_value' => (int) ($data['duration_value'] ?? $setting->duration_value),
+                'contract_duration_unit' => (string) ($data['duration_unit'] ?? $setting->duration_unit),
+                'signing_method' => $data['signing_method'] ?? 'electronic',
+                'payload' => $data,
+                'sync_status' => 'contract_generated',
+                'last_sync_error' => null,
+            ]
+        );
+    }
+
+    private function resolveVhireCandidateId(array $data, ?array $candidateMatch, ?VhirePkwtContract $contract): string
+    {
+        if (! blank($data['vhire_candidate_id'] ?? null)) {
+            return $data['vhire_candidate_id'];
+        }
+
+        if ($candidateMatch && ! blank(optional($candidateMatch['lamaran'] ?? null)->id)) {
+            return 'LAMARAN-' . $candidateMatch['lamaran']->id;
+        }
+
+        if ($candidateMatch && ! blank(optional($candidateMatch['biodata'] ?? null)->id)) {
+            return 'BIODATA-' . $candidateMatch['biodata']->id;
+        }
+
+        if ($contract && ! Str::startsWith((string) $contract->vhire_candidate_id, 'UNMATCHED-')) {
+            return $contract->vhire_candidate_id;
+        }
+
+        $stableKey = $data['hris_contract_id'] ?? $data['no_pkwt'] ?? $data['kode_kontrak'] ?? $data['no_ktp'] ?? Str::random(12);
+
+        return 'UNMATCHED-' . Str::slug((string) $stableKey);
+    }
+
+    private function publicVhireCandidateId(VhirePkwtContract $contract): ?string
+    {
+        return Str::startsWith((string) $contract->vhire_candidate_id, 'UNMATCHED-')
+            ? null
+            : $contract->vhire_candidate_id;
+    }
+
+    private function resolveCandidateCode(array $data, ?array $candidateMatch, ?VhirePkwtContract $contract): string
+    {
+        if (! blank($data['candidate_code'] ?? null)) {
+            return $data['candidate_code'];
+        }
+
+        if ($contract && ! blank($contract->candidate_code)) {
+            return $contract->candidate_code;
+        }
+
+        if ($candidateMatch && ! blank(optional($candidateMatch['lamaran'] ?? null)->id)) {
+            return 'VHIRE-CAND-' . $candidateMatch['lamaran']->id;
+        }
+
+        return 'HRIS-CAND-' . Str::slug((string) ($data['no_ktp'] ?? Str::random(12)));
     }
 
     private function storeImportedFiles(array $data, string $candidateCode, ?VhirePkwtContract $contract): array
