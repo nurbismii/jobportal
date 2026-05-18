@@ -230,7 +230,12 @@ class VhirePkwtContract extends Model
         return (bool) $this->visible_in_vhire
             && blank($this->employee_nik)
             && $this->match_status === 'matched_to_candidate'
-            && $this->signing_method === 'electronic'
+            && $this->signing_method === 'electronic';
+    }
+
+    public function isSignableByCandidate(): bool
+    {
+        return $this->isVisibleForCandidate()
             && in_array($this->signature_status, ['draft', 'waiting_signature'], true);
     }
 }

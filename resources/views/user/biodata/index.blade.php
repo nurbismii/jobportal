@@ -15,11 +15,13 @@
 
 <div class="container-fluid service py-2">
     <div class="container py-4 py-lg-5 biodata-wizard">
-        <div class="mx-auto pb-4 wow fadeInUp" data-wow-delay="0.2s">
+        <div class="mx-auto mb-2 wow fadeInUp" data-wow-delay="0.2s">
             <div class="wizard-hero" id="start">
-                <div>
-                    <span class="wizard-hero__eyebrow">Profil Pelamar</span>
-                    <h1 class="wizard-hero__title">Lengkapi biodata dan dokumen dalam beberapa langkah</h1>
+                <div class="wizard-hero__identity">
+                    <span class="wizard-hero__eyebrow">
+                        <i class="fa fa-user"></i>
+                        <span>Profil Pelamar</span>
+                    </span>
                 </div>
 
                 <div class="wizard-hero__progress">
@@ -690,7 +692,7 @@
                         </div>
                     </div>
 
-                    <div class="row g-3 wow fadeInDown" data-wow-delay="0.2s" style="visibility: visible; animation-delay: 0.4s; animation-name: fadeInDown;">
+                    <div class="row g-3 wow fadeInLeft" data-wow-delay="0.2s" style="visibility: visible; animation-delay: 0.4s; animation-name: fadeInLeft;">
 
                         @php
                         $dokumenFields = [
@@ -718,7 +720,7 @@
                         </div>
                         @endif
 
-                        <div class="row g-3 wow fadeInDown" data-wow-delay="0.2s" style="visibility: visible; animation-delay: 0.4s; animation-name: fadeInDown;">
+                        <div class="row g-3 wow fadeInLeft" data-wow-delay="0.2s" style="visibility: visible; animation-delay: 0.4s; animation-name: fadeInLeft;">
                             @foreach($dokumenFields as $field => $meta)
                             @php
                             $filename = $biodata->$field ?? null;

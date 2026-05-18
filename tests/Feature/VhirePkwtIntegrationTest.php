@@ -197,9 +197,15 @@ class VhirePkwtIntegrationTest extends TestCase
             'signed_at' => '2026-05-16 10:00:00',
             'signature_file_mime' => 'image/png',
             'signature_file_hash' => hash('sha256', $signatureBytes),
+            'visible_in_vhire' => true,
         ]);
 
         $contract->refresh();
+        $this->assertTrue((bool) $contract->visible_in_vhire);
+        $this->assertTrue($contract->isVisibleForCandidate());
+        $this->assertFalse($contract->isSignableByCandidate());
+        $this->assertCount(1, app(PkwtContractService::class)->visibleContractsForUser($user));
+
         Storage::disk('local')->assertExists($contract->signature_file_path);
 
         $payload = app(PkwtContractService::class)->signaturePayload($contract);

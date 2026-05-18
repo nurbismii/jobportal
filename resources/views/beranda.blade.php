@@ -64,314 +64,227 @@ $steps = [
 ];
 
 $maxStep = count($steps);
-@endphp
+$completedStep = min($step, $maxStep);
+$progressPercent = $maxStep > 0 ? round(($completedStep / $maxStep) * 100) : 0;
+$activeStep = $completedStep < $maxStep ? $completedStep + 1 : $maxStep;
+    $remainingSteps=max($maxStep - $completedStep, 0);
+    $profileComplete=$completedStep>= $maxStep;
 
-<div class="container py-4">
-    @if($step < $maxStep)
-        <div class="alert alert-warning d-flex align-items-center gap-2 mb-4">
-        <i class="fa fa-exclamation-triangle"></i>
-        <span>Silakan lengkapi <a href="{{ route('biodata.index') }}" class="">Formulir Biodata</a> untuk <b>melihat lowongan pekerjaan tersedia.</b></span>
-</div>
-@else
-<div class="alert alert-success d-flex align-items-center gap-2 mb-4">
-    <i class="fa fa-check-circle"></i>
-    <span>Formulir lengkap! Kamu sudah bisa melamar pekerjaan <a href="{{ route('lowongan-kerja.index') }}" class="btn btn-sm btn-success">Lihat lowongan pekerjaan</a></span>
-</div>
-@endif
-<div class="row g-3 quick-access-grid">
-    @if($showPkwtContractFeature)
-    <div class="col-12 col-md-12">
-        @if($visiblePkwtContractsCount > 0)
-        <a href="{{ route('kontrak-pkwt.index') }}" class="d-block h-100 text-decoration-none">
-        @endif
-            <div class="card quick-access-card border-0 h-100">
-                <div class="quick-access-card__body">
-                    <div class="quick-access-card__top">
-                        <div class="quick-access-card__icon quick-access-card__icon--primary">
-                            <i class="fa-solid fa-file-signature"></i>
-                        </div>
-                        <span class="quick-access-card__chip">PKWT 1</span>
-                    </div>
-
-                    <div class="quick-access-card__content">
-                        <h5 class="quick-access-card__title">Kontrak PKWT 1</h5>
-                        <p class="quick-access-card__text">
-                            @if($visiblePkwtContractsCount > 0)
-                            Periksa dan tandatangani kontrak elektronik selama proses onboarding.
-                            @else
-                            Status kamu sudah masuk tahap tanda tangan kontrak. Dokumen kontrak sedang disiapkan.
-                            @endif
-                        </p>
-                    </div>
-
-                    <div class="quick-access-card__footer">
-                        @if($visiblePkwtContractsCount > 0)
-                        <span>Buka Kontrak</span>
-                        <i class="fa fa-arrow-right"></i>
-                        @else
-                        <span>Menunggu Dokumen</span>
-                        <i class="fa fa-clock"></i>
-                        @endif
-                    </div>
-                </div>
-            </div>
-        @if($visiblePkwtContractsCount > 0)
-        </a>
-        @endif
-    </div>
-    @endif
-    <!-- Card Formulir Biodata -->
-    <div class="col-6 col-md-6">
-        <a href="{{ route('biodata.index') }}" class="d-block h-100 text-decoration-none">
-            <div class="card quick-access-card border-0 h-100">
-                <div class="quick-access-card__body">
-                    <div class="quick-access-card__top">
-                        <div class="quick-access-card__icon quick-access-card__icon--primary">
-                            <i class="fa-solid fa-id-card"></i>
-                        </div>
-                        <span class="quick-access-card__chip">Persiapan</span>
-                    </div>
-
-                    <div class="quick-access-card__content">
-                        <h5 class="quick-access-card__title">Upload Berkas Lamaran</h5>
-                        <p class="quick-access-card__text">Lengkapi data pribadi dan dokumen agar proses lamaran bisa dilanjutkan.</p>
-                    </div>
-
-                    <div class="quick-access-card__footer">
-                        <span>Lengkapi Sekarang</span>
-                        <i class="fa fa-arrow-right"></i>
-                    </div>
-                </div>
-            </div>
-        </a>
-    </div>
-
-    <!-- Card Panduan Melamar -->
-    <div class="col-6 col-md-6">
-        <a href="{{ asset('pdf/MANUAL BOOK V-HIRE (1).pdf') }}" target="_blank" class="d-block h-100 text-decoration-none">
-            <div class="card quick-access-card border-0 h-100">
-                <div class="quick-access-card__body">
-                    <div class="quick-access-card__top">
-                        <div class="quick-access-card__icon quick-access-card__icon--success">
-                            <i class="fa-solid fa-book-open-reader"></i>
-                        </div>
-                        <span class="quick-access-card__chip">Panduan</span>
-                    </div>
-
-                    <div class="quick-access-card__content">
-                        <h5 class="quick-access-card__title">Panduan Melamar</h5>
-                        <p class="quick-access-card__text">Pelajari langkah penting sebelum mengajukan lamaran kerja.</p>
-                    </div>
-
-                    <div class="quick-access-card__footer">
-                        <span>Buka Panduan</span>
-                        <i class="fa fa-arrow-right"></i>
-                    </div>
-                </div>
-            </div>
-        </a>
-    </div>
-</div>
-
-<div class="container">
-
-    @php
-    $completedStep = min($step, $maxStep);
-    $progressPercent = $maxStep > 0 ? ($completedStep / $maxStep) * 100 : 0;
-    $activeStep = $completedStep < $maxStep ? $completedStep + 1 : $maxStep;
-    $remainingSteps = max($maxStep - $completedStep, 0);
-    $stepDescriptions = [
-    1 => 'Lengkapi data dasar dan identitas diri untuk memulai proses pendaftaran.',
-    2 => 'Tambahkan informasi pendidikan agar profil Anda lebih lengkap.',
-    3 => 'Masukkan data keluarga untuk kebutuhan administrasi.',
-    4 => 'Isi kontak darurat yang dapat dihubungi jika diperlukan.',
-    5 => 'Unggah dokumen pribadi dan berkas pendukung lamaran.',
-    6 => 'Profil selesai dan siap digunakan untuk melamar pekerjaan.',
-    ];
+    $userName = Auth::user()->name ?? 'Pelamar';
     @endphp
 
-    <div class="card profile-progress-card mb-4">
-        <div class="profile-progress-card__header">
-            <div class="profile-progress-card__title-wrap">
-                <div class="profile-progress-card__icon">
-                    <i class="fa fa-user-check"></i>
-                </div>
-                <div>
-                    <span class="profile-progress-card__eyebrow">Progres Profil</span>
-                    <h5 class="profile-progress-card__title">Informasi Pribadi dan Dokumen</h5>
-                    <p class="profile-progress-card__subtitle">
-                        Lengkapi setiap tahap agar akun Anda siap digunakan untuk melihat lowongan dan mengirim lamaran.
+    <div class="home-clean-page">
+        <div class="container py-4">
+
+            {{-- Hero --}}
+            <div class="home-clean-hero">
+                <div class="home-clean-hero__content">
+                    <span class="home-clean-badge">
+                        <i class="fa {{ $profileComplete ? 'fa-check-circle' : 'fa-clock' }}"></i>
+                        {{ $profileComplete ? 'Profil Lengkap' : 'Profil Belum Lengkap' }}
+                    </span>
+
+                    <h4 class="home-clean-title">
+                        Halo, {{ $userName }}
+                    </h4>
+
+                    <p class="home-clean-subtitle">
+                        {{ $profileComplete
+                        ? 'Profil kamu sudah lengkap. Kamu dapat melihat lowongan dan mengajukan lamaran.'
+                        : 'Lengkapi profil terlebih dahulu agar dapat melihat lowongan dan melanjutkan proses lamaran.'
+                    }}
                     </p>
                 </div>
+
+                <div class="home-clean-progress-box">
+                    <div class="home-clean-progress-box__top">
+                        <span>Progress Profil</span>
+                        <strong>{{ $completedStep }}/{{ $maxStep }}</strong>
+                    </div>
+
+                    <div class="progress home-clean-progress">
+                        <div
+                            class="progress-bar"
+                            role="progressbar"
+                            style="width: {{ $progressPercent }}%"
+                            aria-valuenow="{{ $progressPercent }}"
+                            aria-valuemin="0"
+                            aria-valuemax="100">
+                        </div>
+                    </div>
+
+                    <small>{{ $progressPercent }}% selesai</small>
+                </div>
             </div>
 
-            <span class="profile-progress-card__status {{ $completedStep >= $maxStep ? 'profile-progress-card__status--done' : 'profile-progress-card__status--progress' }}">
-                <i class="fa {{ $completedStep >= $maxStep ? 'fa-check-circle' : 'fa-hourglass-half' }}"></i>
-                {{ $completedStep >= $maxStep ? 'Siap Melamar' : 'Dalam Proses' }}
-            </span>
+            {{-- Info Alert --}}
+            @if(!$profileComplete)
+            <div class="home-clean-alert is-warning">
+                <i class="fa fa-exclamation-circle"></i>
+                <div>
+                    <strong>Lengkapi {{ $remainingSteps }} tahap lagi</strong>
+                    <span>Langkah berikutnya: {{ $steps[$activeStep] }}.</span>
+                </div>
+                <a href="{{ route('biodata.index') }}" class="btn btn-sm btn-primary">
+                    Lanjutkan
+                </a>
+            </div>
+            @else
+            <div class="home-clean-alert is-success">
+                <i class="fa fa-check-circle"></i>
+                <div>
+                    <strong>Formulir sudah lengkap</strong>
+                    <span>Kamu sudah dapat memilih lowongan pekerjaan yang tersedia.</span>
+                </div>
+                <a href="{{ route('lowongan-kerja.index') }}" class="btn btn-sm btn-success">
+                    Lihat Lowongan
+                </a>
+            </div>
+            @endif
+
+            {{-- Quick Actions --}}
+            <div class="row g-3 mb-4">
+                @if($showPkwtContractFeature)
+                <div class="col-12 col-md-4">
+                    @if($visiblePkwtContractsCount > 0)
+                    <a href="{{ route('kontrak-pkwt.index') }}" class="home-action-card text-decoration-none">
+                        @else
+                        <div class="home-action-card is-disabled">
+                            @endif
+
+                            <span class="home-action-card__icon">
+                                <i class="fa-solid fa-file-signature"></i>
+                            </span>
+
+                            <div class="home-action-card__body">
+                                <h6>Kontrak PKWT 1</h6>
+                                <p>
+                                    {{ $visiblePkwtContractsCount > 0
+                                    ? 'Periksa dan tanda tangani kontrak elektronik.'
+                                    : 'Dokumen kontrak sedang disiapkan.'
+                                }}
+                                </p>
+                            </div>
+
+                            <span class="home-action-card__arrow">
+                                <i class="fa {{ $visiblePkwtContractsCount > 0 ? 'fa-arrow-right' : 'fa-clock' }}"></i>
+                            </span>
+
+                            @if($visiblePkwtContractsCount > 0)
+                    </a>
+                    @else
+                </div>
+                @endif
+            </div>
+            @endif
+
+            <div class="col-12 col-md-4">
+                <a href="{{ route('biodata.index') }}" class="home-action-card text-decoration-none">
+                    <span class="home-action-card__icon">
+                        <i class="fa-solid fa-id-card"></i>
+                    </span>
+
+                    <div class="home-action-card__body">
+                        <h6>Upload Berkas</h6>
+                        <p>Lengkapi biodata dan dokumen pribadi.</p>
+                    </div>
+
+                    <span class="home-action-card__arrow">
+                        <i class="fa fa-arrow-right"></i>
+                    </span>
+                </a>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <a href="{{ asset('pdf/MANUAL BOOK V-HIRE (1).pdf') }}" target="_blank" class="home-action-card text-decoration-none">
+                    <span class="home-action-card__icon is-green">
+                        <i class="fa-solid fa-book-open-reader"></i>
+                    </span>
+
+                    <div class="home-action-card__body">
+                        <h6>Panduan Melamar</h6>
+                        <p>Lihat alur pendaftaran dan lamaran.</p>
+                    </div>
+
+                    <span class="home-action-card__arrow">
+                        <i class="fa fa-arrow-right"></i>
+                    </span>
+                </a>
+            </div>
         </div>
 
-        <div class="profile-progress-card__body">
-            <div class="profile-progress-card__summary">
-                <div class="profile-progress-card__summary-top">
-                    <div>
-                        <div class="profile-progress-card__summary-label">Ringkasan Progres</div>
-                        <p class="profile-progress-card__summary-title">
-                            @if($completedStep >= $maxStep)
-                            Profil Anda sudah lengkap dan siap digunakan untuk melamar.
-                            @else
-                            Selesaikan {{ $remainingSteps }} tahap lagi untuk membuka akses penuh ke lowongan pekerjaan.
-                            @endif
-                        </p>
-                    </div>
-
-                    <div class="profile-progress-card__summary-count">
-                        {{ $completedStep }}/{{ $maxStep }} Tahap
-                    </div>
+        {{-- Step Compact --}}
+        <div class="home-step-card mb-4">
+            <div class="home-section-head">
+                <div>
+                    <h5>Progres Pengisian Profil</h5>
+                    <p>
+                        {{ $profileComplete
+                            ? 'Semua tahapan sudah selesai.'
+                            : 'Selesaikan tahapan berikut agar akses lowongan terbuka.'
+                        }}
+                    </p>
                 </div>
 
-                <div class="progress profile-progress-card__progress">
-                    <div
-                        class="progress-bar"
-                        role="progressbar"
-                        style="width: {{ $progressPercent }}%"
-                        aria-valuenow="{{ $completedStep }}"
-                        aria-valuemin="0"
-                        aria-valuemax="{{ $maxStep }}">
-                    </div>
-                </div>
-
-                <p class="profile-progress-card__helper">
-                    @if($completedStep >= $maxStep)
-                    Semua tahapan sudah terisi. Anda dapat langsung menuju daftar lowongan untuk memilih posisi yang sesuai.
-                    @else
-                    Langkah berikutnya yang perlu Anda selesaikan adalah <strong>{{ $steps[$activeStep] }}</strong>. Progres akan tersimpan secara otomatis saat data dilengkapi.
-                    @endif
-                </p>
+                <a href="{{ route('biodata.index') }}" class="btn btn-light btn-sm">
+                    Kelola Biodata
+                </a>
             </div>
 
-            <div class="profile-progress-card__steps">
-                @foreach ($steps as $number => $label)
+            <div class="home-step-list">
+                @foreach($steps as $number => $label)
                 @php
                 if ($completedStep >= $number) {
                 $state = 'done';
-                $stateLabel = 'Selesai';
                 $icon = 'fa-check';
                 } elseif ($number === $activeStep) {
                 $state = 'current';
-                $stateLabel = 'Langkah Berikutnya';
                 $icon = 'fa-pen';
                 } else {
-                $state = 'upcoming';
-                $stateLabel = 'Menunggu';
+                $state = 'waiting';
                 $icon = 'fa-clock';
                 }
                 @endphp
-                <div class="profile-progress-step">
-                    <div class="profile-progress-step__icon profile-progress-step__icon--{{ $state }}">
+
+                <div class="home-step-item is-{{ $state }}">
+                    <span>
                         <i class="fa {{ $icon }}"></i>
-                    </div>
-                    <div class="profile-progress-step__content">
-                        <div class="profile-progress-step__meta profile-progress-step__meta--{{ $state }}">
-                            Tahap {{ $number }} &middot; {{ $stateLabel }}
-                        </div>
-                        <span class="profile-progress-step__title">{{ $label }}</span>
-                        <p class="profile-progress-step__description">{{ $stepDescriptions[$number] }}</p>
+                    </span>
+                    <div>
+                        <small>Tahap {{ $number }}</small>
+                        <strong>{{ $label }}</strong>
                     </div>
                 </div>
                 @endforeach
             </div>
-
-            <div class="profile-progress-card__footer">
-                <p class="profile-progress-card__footer-text">
-                    @if($completedStep >= $maxStep)
-                    Profil Anda sudah memenuhi semua tahapan. Lanjutkan untuk memilih lowongan yang ingin dilamar.
-                    @else
-                    Luangkan beberapa menit untuk melengkapi data sekarang agar proses lamaran Anda berjalan lebih lancar.
-                    @endif
-                </p>
-
-                @if($completedStep >= $maxStep)
-                <a href="{{ route('lowongan-kerja.index') }}" class="btn btn-success rounded-pill px-4 py-2">
-                    Lihat Lowongan
-                </a>
-                @else
-                <a href="{{ route('biodata.index') }}" class="btn btn-primary rounded-pill px-4 py-2">
-                    Lengkapi Informasi Pribadi
-                </a>
-                @endif
-            </div>
         </div>
-    </div>
 
-    @if(($step == 6) || (Auth::check() && Auth::user()->role == 'admin'))
-    <h4 class="display-4 fw-bold mb-0">Lowongan</h4>
-    <p class="text-primary mb-3">Pilih lowongan kerja yang kamu minati dan kesempatan berkarir bersama kami.</p>
-    @include('partials.lowongan.list', ['lowongans' => $lowongans])
-    {{--
-    <div class="row g-4 justify-content-center">
-
-        @php
-        $shareUrl = route('lowongan-kerja.index');
-        @endphp
-
-        @forelse($lowongans as $lowongan)
-        <div class="col-md-6 col-lg-4">
-            <div class="service-item h-100 d-flex flex-column"> <!-- h-100: biar tinggi seragam -->
-                <div class="service-content p-4 d-flex flex-column flex-grow-1">
-                    <div class="service-content-inner flex-grow-1 d-flex flex-column justify-content-between">
-                        <a href="{{ route('lowongan-kerja.show', $lowongan->id) }}" class="d-inline-block h4 mb-0">{{ $lowongan->nama_lowongan }}</a>
-                        <!-- Isian deskripsi lowongan kerja -->
-                        <p class="mb-4">
-                            {!! substr($lowongan->kualifikasi, 0, 409) !!}
-                        </p>
-
-                        <p class="fw-bold mb-1">Tanggal aktif</p>
-                        <p class="mb-1">{{ tanggalIndo($lowongan->tanggal_mulai) }} – {{ tanggalIndo($lowongan->tanggal_berakhir) }}</p>
-                        <!-- Isian deskripsi lowongan kerja end -->
-                        <div>
-                            @if(strtolower($lowongan->status_lowongan) == 'aktif')
-                            <span class="mb-1 badge bg-success">{{ $lowongan->status_lowongan }}</span>
-                            @else
-                            <span class="mb-1 badge bg-danger">{{ $lowongan->status_lowongan }}</span>
-                            @endif
-                        </div>
-
-                        <div class="d-flex justify-content-end gap-2 mt-auto pt-3">
-                            <a class="btn btn-primary btn-sm rounded-pill py-2 px-3" href="{{ route('lowongan-kerja.show', $lowongan->id) }}">Lihat</a>
-                            <a class="btn btn-primary btn-sm rounded-pill py-2 px-3" href="javascript:void(0)" onclick="copyToClipboard('{{ $shareUrl }}')">Bagikan</a>
-                        </div>
-                    </div>
-                </div>
+        {{-- Lowongan --}}
+        @if(($step == 6) || (Auth::check() && Auth::user()->role == 'admin'))
+        <div class="home-section-head mb-3">
+            <div>
+                <h5>Lowongan Tersedia</h5>
+                <p>Pilih lowongan yang sesuai dengan minat dan kualifikasi kamu.</p>
             </div>
+
+            <a href="{{ route('lowongan-kerja.index') }}" class="btn btn-primary btn-sm">
+                Lihat Semua
+            </a>
         </div>
-        @empty
-        <div class="col-12">
-            <div class="text-center p-5 my-4 border rounded-3 shadow-sm bg-light wow fadeInRight" data-wow-delay="0.2s">
-                <i class="fa fa-briefcase fa-3x text-primary mb-3"></i>
-                <h4 class="fw-bold mb-2">Belum ada lowongan tersedia</h4>
-                <p class="text-muted mb-3">Silakan cek kembali di lain waktu. Kami terus memperbarui informasi lowongan secara berkala.</p>
-            </div>
-        </div>
-        @endforelse
+
+        @include('partials.lowongan.list', ['lowongans' => $lowongans])
+        @endif
 
     </div>
-    --}}
-    <div class="d-flex justify-content-end mt-3">
-        <a href="{{ route('lowongan-kerja.index') }}" class="text-primary fw-bold">
-            Lihat semua lowongan &gt;&gt;
-        </a>
     </div>
     @endif
-</div>
-@endif
 
-@if(Auth::guest())
-<div class="container py-5">
-    <h4 class="display-4 fw-bold mb-0">Lowongan</h4>
-    <p class="text-primary mb-3">Pilih lowongan kerja yang kamu minati dan kesempatan berkarir bersama kami.</p>
-    @include('partials.lowongan.list', ['lowongans' => $lowongans])
-    {{--
+    @if(Auth::guest())
+    <div class="container py-5">
+        <h4 class="display-4 fw-bold mb-0">Lowongan</h4>
+        <p class="text-primary mb-3">Pilih lowongan kerja yang kamu minati dan kesempatan berkarir bersama kami.</p>
+        @include('partials.lowongan.list', ['lowongans' => $lowongans])
+        {{--
     <div class="row g-4 justify-content-center">
 
         @php
@@ -383,46 +296,46 @@ $maxStep = count($steps);
             <div class="service-item h-100 d-flex flex-column"> <!-- h-100: biar tinggi seragam -->
                 <div class="service-img">
                     <img src="{{ asset('img/megapone-loker.jpg') }}" class="img-fluid rounded-top w-100" alt="">
-                    <div class="service-icon p-3">
-                        <i class="fa fa-users fa-2x"></i>
-                    </div>
-                </div>
-                <div class="service-content p-4 d-flex flex-column flex-grow-1">
-                    <div class="service-content-inner flex-grow-1 d-flex flex-column justify-content-between">
-                        <a href="{{ route('lowongan-kerja.show', $lowongan->id) }}" class="d-inline-block h4 mb-0">{{ $lowongan->nama_lowongan }}</a>
-                        <!-- Isian deskripsi lowongan kerja -->
-                        <p class="mb-4">
-                            {!! substr($lowongan->kualifikasi, 0, 409) !!}
-                        </p>
+        <div class="service-icon p-3">
+            <i class="fa fa-users fa-2x"></i>
+        </div>
+    </div>
+    <div class="service-content p-4 d-flex flex-column flex-grow-1">
+        <div class="service-content-inner flex-grow-1 d-flex flex-column justify-content-between">
+            <a href="{{ route('lowongan-kerja.show', $lowongan->id) }}" class="d-inline-block h4 mb-0">{{ $lowongan->nama_lowongan }}</a>
+            <!-- Isian deskripsi lowongan kerja -->
+            <p class="mb-4">
+                {!! substr($lowongan->kualifikasi, 0, 409) !!}
+            </p>
 
-                        <p class="fw-bold mb-1">Tanggal aktif</p>
-                        <p class="mb-1">{{ tanggalIndo($lowongan->tanggal_mulai) }} – {{ tanggalIndo($lowongan->tanggal_berakhir) }}</p>
-                        <!-- Isian deskripsi lowongan kerja end -->
-                        <div>
-                            @if(strtolower($lowongan->status_lowongan) == 'aktif')
-                            <span class="mb-1 badge bg-success">{{ $lowongan->status_lowongan }}</span>
-                            @else
-                            <span class="mb-1 badge bg-danger">{{ $lowongan->status_lowongan }}</span>
-                            @endif
-                        </div>
+            <p class="fw-bold mb-1">Tanggal aktif</p>
+            <p class="mb-1">{{ tanggalIndo($lowongan->tanggal_mulai) }} – {{ tanggalIndo($lowongan->tanggal_berakhir) }}</p>
+            <!-- Isian deskripsi lowongan kerja end -->
+            <div>
+                @if(strtolower($lowongan->status_lowongan) == 'aktif')
+                <span class="mb-1 badge bg-success">{{ $lowongan->status_lowongan }}</span>
+                @else
+                <span class="mb-1 badge bg-danger">{{ $lowongan->status_lowongan }}</span>
+                @endif
+            </div>
 
-                        <div class="d-flex justify-content-end gap-2 mt-auto pt-3">
-                            <a class="btn btn-primary btn-sm rounded-pill py-2 px-3" href="{{ route('lowongan-kerja.show', $lowongan->id) }}">Lihat</a>
-                            <a class="btn btn-primary btn-sm rounded-pill py-2 px-3" href="javascript:void(0)" onclick="copyToClipboard('{{ $shareUrl }}')">Bagikan</a>
-                        </div>
-                    </div>
-                </div>
+            <div class="d-flex justify-content-end gap-2 mt-auto pt-3">
+                <a class="btn btn-primary btn-sm rounded-pill py-2 px-3" href="{{ route('lowongan-kerja.show', $lowongan->id) }}">Lihat</a>
+                <a class="btn btn-primary btn-sm rounded-pill py-2 px-3" href="javascript:void(0)" onclick="copyToClipboard('{{ $shareUrl }}')">Bagikan</a>
             </div>
         </div>
-        @empty
-        <div class="col-12">
-            <div class="text-center p-5 my-4 border rounded-3 shadow-sm bg-light wow fadeInRight" data-wow-delay="0.2s">
-                <i class="fa fa-briefcase fa-3x text-primary mb-3"></i>
-                <h4 class="fw-bold mb-2">Belum ada lowongan tersedia</h4>
-                <p class="text-muted mb-3">Silakan cek kembali di lain waktu. Kami terus memperbarui informasi lowongan secara berkala.</p>
-            </div>
+    </div>
+    </div>
+    </div>
+    @empty
+    <div class="col-12">
+        <div class="text-center p-5 my-4 border rounded-3 shadow-sm bg-light wow fadeInRight" data-wow-delay="0.2s">
+            <i class="fa fa-briefcase fa-3x text-primary mb-3"></i>
+            <h4 class="fw-bold mb-2">Belum ada lowongan tersedia</h4>
+            <p class="text-muted mb-3">Silakan cek kembali di lain waktu. Kami terus memperbarui informasi lowongan secara berkala.</p>
         </div>
-        @endforelse
+    </div>
+    @endforelse
 
     </div>
     --}}
@@ -431,250 +344,72 @@ $maxStep = count($steps);
             Lihat semua lowongan &gt;&gt;
         </a>
     </div>
-</div>
-@endif
-
-<div class="container-fluid service py-2">
-    <!-- Tentang Start -->
-    <div class="container-fluid bg-light about pt-5 pb-5">
-        <div class="container pb-5">
-            <div class="row g-5">
-                <div class="col-xl-6 wow fadeInLeft" data-wow-delay="0.2s">
-                    <div class="about-item-content bg-white rounded p-5 h-100">
-                        <h4 class="text-primary">Tentang Kami</h4>
-                        <h1 class="display-4 mb-4">PT VDNI</h1>
-                        <p>
-                            PT Virtue Dragon Nickel Industry adalah perusahaan swasta yang bergerak di bidang peleburan bijih nikel di Sulawesi Tenggara, Indonesia.
-                        </p>
-                        <p>
-                            VDNIP Group akan menjadi organisasi yang kreatif, peduli terhadap karyawan dan lingkungan sekitar. Perusahaan kami sempurna untuk semua.
-                        </p>
-                        <p>
-                            Kami selalu memastikan semua tenaga kerja kami memiliki pengalaman dan juga keterampilan profesional. Sehat adalah perhatian utama kami.
-                        </p>
-                        <p class="text-dark"><i class="fa fa-check text-primary me-3"></i>Perfect For All</p>
-                        <p class="text-dark"><i class="fa fa-check text-primary me-3"></i>Who We Are</p>
-                        <p class="text-dark mb-4"><i class="fa fa-check text-primary me-3"></i>Powerful Skill</p>
-                        <a class="btn btn-primary rounded-pill py-3 px-5" href="https://vdni.co.id/" target="_blank">Informasi Lebih Lanjut</a>
-                    </div>
-                </div>
-                <div class="col-xl-6 wow fadeInRight" data-wow-delay="0.2s">
-                    <div class="bg-white rounded p-5 h-100">
-                        <div class="row g-4 justify-content-center">
-                            <div class="col-12">
-                                <div class="rounded bg-light">
-                                    <img src="{{ asset('user/img/about-2.jpg') }}" class="img-fluid rounded w-100" alt="">
-                                </div>
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="counter-item bg-light rounded p-3 h-100">
-                                    <div class="counter-counting">
-                                        <span class="text-primary fs-2 fw-bold" data-toggle="counter-up">{{ $count_karyawan }}</span>
-                                    </div>
-                                    <h4 class="mb-0 text-dark">Karyawan</h4>
-                                </div>
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="counter-item bg-light rounded p-3 h-100">
-                                    <div class="counter-counting">
-                                        <span class="text-primary fs-2 fw-bold" data-toggle="counter-up">49</span>
-                                    </div>
-                                    <h4 class="mb-0 text-dark">Penghargaan</h4>
-                                </div>
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="counter-item bg-light rounded p-3 h-100">
-                                    <div class="counter-counting">
-                                        <span class="text-primary fs-2 fw-bold" data-toggle="counter-up">{{ $count_departemen }}</span>
-                                    </div>
-                                    <h4 class="mb-0 text-dark">Departemen</h4>
-                                </div>
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="counter-item bg-light rounded p-3 h-100">
-                                    <div class="counter-counting">
-                                        <span class="text-primary fs-2 fw-bold" data-toggle="counter-up">{{ $count_user }}</span>
-                                    </div>
-                                    <h4 class="mb-0 text-dark">Pengguna</h4>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
-    <!-- Tentang End -->
+    @endif
 
-    <!-- Pengumumam Start -->
-
-    <div class="container-fluid blog py-5">
-        <div class="container py-5">
-            <h4 class="display-4 fw-bold mb-0">Pengumuman</h4>
-            <p class="text-primary mb-3">Temukan informasi terbaru dan penting dari kami di bawah ini.</p>
-            <div class="row g-4 justify-content-center">
-                @forelse($pengumumans as $pengumuman)
-                <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
-                    <div class="blog-item">
-                        <div class="blog-img">
-                            @if($pengumuman->thumbnail)
-                            <img src="{{ asset('thumbnail/' . $pengumuman->thumbnail) }}" class="img-fluid rounded-top w-100" alt="">
-                            @else
-                            <img src="{{ asset('img/megapone-loker.jpg') }}" class="img-fluid rounded-top w-100" alt="">
-                            @endif
-                            <div class="blog-categiry py-2 px-4">
-                                <span>Pengumuman</span>
-                            </div>
-                        </div>
-                        <div class="blog-content p-4">
-                            <div class="blog-comment d-flex justify-content-between mb-3">
-                                <div class="small"><span class="fa fa-user text-primary me-2"></span>PT VDNI</div>
-                                <div class="small"><span class="fa fa-calendar text-primary me-2"></span>{{ tanggalIndo($pengumuman->created_at) }}</div>
-                            </div>
-                            <a href="{{ route('pengumuman.show', $pengumuman->id) }}" class="h4 d-inline-block mb-3">{{ $pengumuman->pengumuman }}</a>
-                            <p class="mb-3">{!! substr($pengumuman->keterangan, 0, 140) !!}...</p>
-                            <a href="{{ route('pengumuman.show', $pengumuman->id) }}" class="btn p-0 mt-3">Baca Detail <i class="fa fa-arrow-right"></i></a>
-                        </div>
-                    </div>
-                </div>
-                @empty
-                <div class="col-12">
-                    <div class="text-center p-5 my-4 border rounded-3 shadow-sm bg-light wow fadeInLeft" data-wow-delay="0.2s">
-                        <i class="fa fa-bullhorn fa-3x text-primary mb-3"></i>
-                        <h4 class="fw-bold mb-2">Belum ada pengumuman terbaru</h4>
-                        <p class="text-muted mb-3">Kami akan segera memperbarui informasi pengumuman di sini.</p>
-                    </div>
-                </div>
-                @endforelse
-            </div>
-        </div>
-    </div>
-    <!-- Pengumumam End -->
-
-    @php
-        $faqs = [
-            [
-                'question' => 'Bagaimana cara mengatasi KTP atau SIM B2 Umum tidak terbaca?',
-                'answer' => '
-                    <ul class="mb-0 ps-3">
-                        <li class="mb-1">Posisikan KTP dan SIM dalam keadaan tegak.</li>
-                        <li class="mb-1">Pastikan hasil foto jelas, tidak blur, tidak pecah, dan semua informasi dapat dibaca.</li>
-                        <li class="mb-1">Gunakan pencahayaan yang cukup dan ambil gambar dari jarak yang pas.</li>
-                        <li class="mb-1">Pastikan tulisan pada SIM B2 Umum tidak tertutup hologram saat diunggah.</li>
-                        <li class="mb-0">Jangan menambahkan tulisan lain di atas dokumen.</li>
-                    </ul>',
-            ],
-            [
-                'question' => 'Bagaimana cara melihat status pelamaran yang dilakukan?',
-                'answer' => 'Silakan masuk menggunakan akun yang telah terdaftar, lalu buka menu Lamaran dan pilih lamaran yang ingin Anda lihat riwayat prosesnya.',
-            ],
-            [
-                'question' => 'Apa saja yang perlu dipersiapkan untuk melamar pekerjaan?',
-                'answer' => '
-                    <ul class="mb-0 ps-3">
-                        <li>CV</li>
-                        <li>KTP</li>
-                        <li>Surat lamaran</li>
-                        <li>Kartu Keluarga</li>
-                        <li>Ijazah terakhir</li>
-                        <li>Sertifikat vaksin</li>
-                        <li>Surat Keterangan Catatan Kepolisian (SKCK)</li>
-                        <li>Kartu Pencari Kerja (AK1)</li>
-                        <li>Pas foto 3x4</li>
-                        <li>NPWP</li>
-                        <li>SIM B2 Umum jika dibutuhkan oleh posisi yang dilamar</li>
-                    </ul>',
-            ],
-            [
-                'question' => 'Di manakah hasil seleksi akan diumumkan?',
-                'answer' => 'Hasil seleksi diumumkan pada halaman lamaran di website rekrutmen VDNI dan akan diberitahukan secara personal melalui sarana komunikasi tercepat yang Anda daftarkan.',
-            ],
-            [
-                'question' => 'Berapa lama waktu seleksi di setiap tahapan?',
-                'answer' => 'Durasi setiap tahapan seleksi dapat berbeda. Informasi lanjutan akan disampaikan langsung kepada peserta yang dinyatakan lolos pada tahap terkait.',
-            ],
-            [
-                'question' => 'Siapa yang dapat dihubungi jika mengalami kendala teknis saat pendaftaran?',
-                'answer' => 'Jika Anda mengalami kendala teknis selama proses pendaftaran, silakan hubungi tim support melalui email <a href="mailto:vdnirekrutmen88@gmail.com">vdnirekrutmen88@gmail.com</a>.',
-            ],
-            [
-                'question' => 'Apakah saya dapat melamar lebih dari satu posisi secara bersamaan?',
-                'answer' => 'Tidak. Anda perlu menunggu proses lamaran pada posisi yang sedang diajukan selesai terlebih dahulu sebelum melamar posisi lainnya.',
-            ],
-        ];
-    @endphp
-
-    <div class="container-fluid faq-help-section py-5">
-        <div class="container py-5">
-            <div class="faq-help">
-                <div class="row g-4 g-xl-5 align-items-start">
-                    <div class="col-xl-7">
-                        <div class="faq-help__header wow fadeInLeft" data-wow-delay="0.2s">
-                            <span class="faq-help__eyebrow">
-                                <i class="fa-solid fa-life-ring"></i>
-                                Bantuan
-                            </span>
-                            <h2 class="faq-help__title">Jawaban cepat untuk kendala yang paling sering ditanyakan pelamar</h2>
-                            <p class="faq-help__lead">
-                                Kami rangkum pertanyaan penting seputar dokumen, proses seleksi, dan kendala teknis agar proses melamar terasa lebih jelas dari awal sampai akhir.
+    <div class="container-fluid service py-2">
+        <!-- Tentang Start -->
+        <div class="container-fluid bg-light about pt-5 pb-5">
+            <div class="container pb-5">
+                <div class="row g-5">
+                    <div class="col-xl-6 wow fadeInLeft" data-wow-delay="0.2s">
+                        <div class="about-item-content bg-white rounded p-5 h-100">
+                            <h4 class="text-primary">Tentang Kami</h4>
+                            <h1 class="display-4 mb-4">PT VDNI</h1>
+                            <p>
+                                PT Virtue Dragon Nickel Industry adalah perusahaan swasta yang bergerak di bidang peleburan bijih nikel di Sulawesi Tenggara, Indonesia.
                             </p>
-                        </div>
-
-                        <div class="accordion faq-help__accordion wow fadeInUp" data-wow-delay="0.3s" id="homeHelpAccordion">
-                            @foreach($faqs as $index => $faq)
-                            <div class="accordion-item faq-help__item">
-                                <h2 class="accordion-header" id="homeHelpHeading{{ $index }}">
-                                    <button class="accordion-button {{ $index === 0 ? '' : 'collapsed' }}" type="button" data-bs-toggle="collapse" data-bs-target="#homeHelpCollapse{{ $index }}" aria-expanded="{{ $index === 0 ? 'true' : 'false' }}" aria-controls="homeHelpCollapse{{ $index }}">
-                                        <span class="faq-help__number">{{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}</span>
-                                        <span>{{ $faq['question'] }}</span>
-                                    </button>
-                                </h2>
-                                <div id="homeHelpCollapse{{ $index }}" class="accordion-collapse collapse {{ $index === 0 ? 'show' : '' }}" aria-labelledby="homeHelpHeading{{ $index }}" data-bs-parent="#homeHelpAccordion">
-                                    <div class="accordion-body">
-                                        {!! $faq['answer'] !!}
-                                    </div>
-                                </div>
-                            </div>
-                            @endforeach
+                            <p>
+                                VDNIP Group akan menjadi organisasi yang kreatif, peduli terhadap karyawan dan lingkungan sekitar. Perusahaan kami sempurna untuk semua.
+                            </p>
+                            <p>
+                                Kami selalu memastikan semua tenaga kerja kami memiliki pengalaman dan juga keterampilan profesional. Sehat adalah perhatian utama kami.
+                            </p>
+                            <p class="text-dark"><i class="fa fa-check text-primary me-3"></i>Perfect For All</p>
+                            <p class="text-dark"><i class="fa fa-check text-primary me-3"></i>Who We Are</p>
+                            <p class="text-dark mb-4"><i class="fa fa-check text-primary me-3"></i>Powerful Skill</p>
+                            <a class="btn btn-primary rounded-pill py-3 px-5" href="https://vdni.co.id/" target="_blank">Informasi Lebih Lanjut</a>
                         </div>
                     </div>
-
-                    <div class="col-xl-5">
-                        <div class="faq-help-card wow fadeInRight" data-wow-delay="0.4s">
-                            <div class="faq-help-card__media">
-                                <img src="{{ asset('img/faq-1.png') }}" class="img-fluid" alt="Ilustrasi bantuan rekrutmen">
-                            </div>
-                            <div class="faq-help-card__body">
-                                <span class="faq-help-card__eyebrow">Dukungan Rekrutmen</span>
-                                <h3 class="faq-help-card__title">Masih perlu panduan lebih lanjut?</h3>
-                                <p class="faq-help-card__text">
-                                    Jika pertanyaan Anda belum terjawab, buka pusat bantuan atau gunakan panduan melamar untuk melihat alur pengisian biodata, upload dokumen, dan proses lamaran dengan lebih detail.
-                                </p>
-
-                                <div class="faq-help-card__contact">
-                                    <div class="faq-help-card__contact-item">
-                                        <i class="fa-regular fa-envelope"></i>
-                                        <div>
-                                            <small>Email Support</small>
-                                            <a href="mailto:vdnirekrutmen88@gmail.com">vdnirekrutmen88@gmail.com</a>
-                                        </div>
-                                    </div>
-                                    <div class="faq-help-card__contact-item">
-                                        <i class="fa-solid fa-file-lines"></i>
-                                        <div>
-                                            <small>Panduan Resmi</small>
-                                            <span>Manual Book V-HIRE</span>
-                                        </div>
+                    <div class="col-xl-6 wow fadeInRight" data-wow-delay="0.2s">
+                        <div class="bg-white rounded p-5 h-100">
+                            <div class="row g-4 justify-content-center">
+                                <div class="col-12">
+                                    <div class="rounded bg-light">
+                                        <img src="{{ asset('user/img/about-2.jpg') }}" class="img-fluid rounded w-100" alt="">
                                     </div>
                                 </div>
-
-                                <div class="faq-help-card__actions">
-                                    <a href="{{ route('bantuan.index') }}" class="btn btn-primary rounded-pill py-3 px-4">
-                                        Kunjungi Pusat Bantuan
-                                    </a>
-                                    <a href="{{ asset('pdf/MANUAL BOOK V-HIRE (1).pdf') }}" target="_blank" class="btn btn-outline-primary rounded-pill py-3 px-4">
-                                        Lihat Panduan Melamar
-                                    </a>
+                                <div class="col-sm-6">
+                                    <div class="counter-item bg-light rounded p-3 h-100">
+                                        <div class="counter-counting">
+                                            <span class="text-primary fs-2 fw-bold" data-toggle="counter-up">{{ $count_karyawan }}</span>
+                                        </div>
+                                        <h4 class="mb-0 text-dark">Karyawan</h4>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="counter-item bg-light rounded p-3 h-100">
+                                        <div class="counter-counting">
+                                            <span class="text-primary fs-2 fw-bold" data-toggle="counter-up">49</span>
+                                        </div>
+                                        <h4 class="mb-0 text-dark">Penghargaan</h4>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="counter-item bg-light rounded p-3 h-100">
+                                        <div class="counter-counting">
+                                            <span class="text-primary fs-2 fw-bold" data-toggle="counter-up">{{ $count_departemen }}</span>
+                                        </div>
+                                        <h4 class="mb-0 text-dark">Departemen</h4>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="counter-item bg-light rounded p-3 h-100">
+                                        <div class="counter-counting">
+                                            <span class="text-primary fs-2 fw-bold" data-toggle="counter-up">{{ $count_user }}</span>
+                                        </div>
+                                        <h4 class="mb-0 text-dark">Pengguna</h4>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -682,9 +417,187 @@ $maxStep = count($steps);
                 </div>
             </div>
         </div>
-    </div>
+        <!-- Tentang End -->
 
-    {{-- Legacy FAQ block retained for reference.
+        <!-- Pengumumam Start -->
+
+        <div class="container-fluid blog py-5">
+            <div class="container py-5">
+                <h4 class="display-4 fw-bold mb-0">Pengumuman</h4>
+                <p class="text-primary mb-3">Temukan informasi terbaru dan penting dari kami di bawah ini.</p>
+                <div class="row g-4 justify-content-center">
+                    @forelse($pengumumans as $pengumuman)
+                    <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
+                        <div class="blog-item">
+                            <div class="blog-img">
+                                @if($pengumuman->thumbnail)
+                                <img src="{{ asset('thumbnail/' . $pengumuman->thumbnail) }}" class="img-fluid rounded-top w-100" alt="">
+                                @else
+                                <img src="{{ asset('img/megapone-loker.jpg') }}" class="img-fluid rounded-top w-100" alt="">
+                                @endif
+                                <div class="blog-categiry py-2 px-4">
+                                    <span>Pengumuman</span>
+                                </div>
+                            </div>
+                            <div class="blog-content p-4">
+                                <div class="blog-comment d-flex justify-content-between mb-3">
+                                    <div class="small"><span class="fa fa-user text-primary me-2"></span>PT VDNI</div>
+                                    <div class="small"><span class="fa fa-calendar text-primary me-2"></span>{{ tanggalIndo($pengumuman->created_at) }}</div>
+                                </div>
+                                <a href="{{ route('pengumuman.show', $pengumuman->id) }}" class="h4 d-inline-block mb-3">{{ $pengumuman->pengumuman }}</a>
+                                <p class="mb-3">{!! substr($pengumuman->keterangan, 0, 140) !!}...</p>
+                                <a href="{{ route('pengumuman.show', $pengumuman->id) }}" class="btn p-0 mt-3">Baca Detail <i class="fa fa-arrow-right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    @empty
+                    <div class="col-12">
+                        <div class="text-center p-5 my-4 border rounded-3 shadow-sm bg-light wow fadeInLeft" data-wow-delay="0.2s">
+                            <i class="fa fa-bullhorn fa-3x text-primary mb-3"></i>
+                            <h4 class="fw-bold mb-2">Belum ada pengumuman terbaru</h4>
+                            <p class="text-muted mb-3">Kami akan segera memperbarui informasi pengumuman di sini.</p>
+                        </div>
+                    </div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+        <!-- Pengumumam End -->
+
+        @php
+        $faqs = [
+        [
+        'question' => 'Bagaimana cara mengatasi KTP atau SIM B2 Umum tidak terbaca?',
+        'answer' => '
+        <ul class="mb-0 ps-3">
+            <li class="mb-1">Posisikan KTP dan SIM dalam keadaan tegak.</li>
+            <li class="mb-1">Pastikan hasil foto jelas, tidak blur, tidak pecah, dan semua informasi dapat dibaca.</li>
+            <li class="mb-1">Gunakan pencahayaan yang cukup dan ambil gambar dari jarak yang pas.</li>
+            <li class="mb-1">Pastikan tulisan pada SIM B2 Umum tidak tertutup hologram saat diunggah.</li>
+            <li class="mb-0">Jangan menambahkan tulisan lain di atas dokumen.</li>
+        </ul>',
+        ],
+        [
+        'question' => 'Bagaimana cara melihat status pelamaran yang dilakukan?',
+        'answer' => 'Silakan masuk menggunakan akun yang telah terdaftar, lalu buka menu Lamaran dan pilih lamaran yang ingin Anda lihat riwayat prosesnya.',
+        ],
+        [
+        'question' => 'Apa saja yang perlu dipersiapkan untuk melamar pekerjaan?',
+        'answer' => '
+        <ul class="mb-0 ps-3">
+            <li>CV</li>
+            <li>KTP</li>
+            <li>Surat lamaran</li>
+            <li>Kartu Keluarga</li>
+            <li>Ijazah terakhir</li>
+            <li>Sertifikat vaksin</li>
+            <li>Surat Keterangan Catatan Kepolisian (SKCK)</li>
+            <li>Kartu Pencari Kerja (AK1)</li>
+            <li>Pas foto 3x4</li>
+            <li>NPWP</li>
+            <li>SIM B2 Umum jika dibutuhkan oleh posisi yang dilamar</li>
+        </ul>',
+        ],
+        [
+        'question' => 'Di manakah hasil seleksi akan diumumkan?',
+        'answer' => 'Hasil seleksi diumumkan pada halaman lamaran di website rekrutmen VDNI dan akan diberitahukan secara personal melalui sarana komunikasi tercepat yang Anda daftarkan.',
+        ],
+        [
+        'question' => 'Berapa lama waktu seleksi di setiap tahapan?',
+        'answer' => 'Durasi setiap tahapan seleksi dapat berbeda. Informasi lanjutan akan disampaikan langsung kepada peserta yang dinyatakan lolos pada tahap terkait.',
+        ],
+        [
+        'question' => 'Siapa yang dapat dihubungi jika mengalami kendala teknis saat pendaftaran?',
+        'answer' => 'Jika Anda mengalami kendala teknis selama proses pendaftaran, silakan hubungi tim support melalui email <a href="mailto:vdnirekrutmen88@gmail.com">vdnirekrutmen88@gmail.com</a>.',
+        ],
+        [
+        'question' => 'Apakah saya dapat melamar lebih dari satu posisi secara bersamaan?',
+        'answer' => 'Tidak. Anda perlu menunggu proses lamaran pada posisi yang sedang diajukan selesai terlebih dahulu sebelum melamar posisi lainnya.',
+        ],
+        ];
+        @endphp
+
+        <div class="container-fluid faq-help-section py-5">
+            <div class="container py-5">
+                <div class="faq-help">
+                    <div class="row g-4 g-xl-5 align-items-start">
+                        <div class="col-xl-7">
+                            <div class="faq-help__header wow fadeInLeft" data-wow-delay="0.2s">
+                                <span class="faq-help__eyebrow">
+                                    <i class="fa-solid fa-life-ring"></i>
+                                    Bantuan
+                                </span>
+                                <h2 class="faq-help__title">Jawaban cepat untuk kendala yang paling sering ditanyakan pelamar</h2>
+                                <p class="faq-help__lead">
+                                    Kami rangkum pertanyaan penting seputar dokumen, proses seleksi, dan kendala teknis agar proses melamar terasa lebih jelas dari awal sampai akhir.
+                                </p>
+                            </div>
+
+                            <div class="accordion faq-help__accordion wow fadeInUp" data-wow-delay="0.3s" id="homeHelpAccordion">
+                                @foreach($faqs as $index => $faq)
+                                <div class="accordion-item faq-help__item">
+                                    <h2 class="accordion-header" id="homeHelpHeading{{ $index }}">
+                                        <button class="accordion-button {{ $index === 0 ? '' : 'collapsed' }}" type="button" data-bs-toggle="collapse" data-bs-target="#homeHelpCollapse{{ $index }}" aria-expanded="{{ $index === 0 ? 'true' : 'false' }}" aria-controls="homeHelpCollapse{{ $index }}">
+                                            <span class="faq-help__number">{{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}</span>
+                                            <span>{{ $faq['question'] }}</span>
+                                        </button>
+                                    </h2>
+                                    <div id="homeHelpCollapse{{ $index }}" class="accordion-collapse collapse {{ $index === 0 ? 'show' : '' }}" aria-labelledby="homeHelpHeading{{ $index }}" data-bs-parent="#homeHelpAccordion">
+                                        <div class="accordion-body">
+                                            {!! $faq['answer'] !!}
+                                        </div>
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <div class="col-xl-5">
+                            <div class="faq-help-card wow fadeInRight" data-wow-delay="0.4s">
+                                <div class="faq-help-card__media">
+                                    <img src="{{ asset('img/faq-1.png') }}" class="img-fluid" alt="Ilustrasi bantuan rekrutmen">
+                                </div>
+                                <div class="faq-help-card__body">
+                                    <span class="faq-help-card__eyebrow">Dukungan Rekrutmen</span>
+                                    <h3 class="faq-help-card__title">Masih perlu panduan lebih lanjut?</h3>
+                                    <p class="faq-help-card__text">
+                                        Jika pertanyaan Anda belum terjawab, buka pusat bantuan atau gunakan panduan melamar untuk melihat alur pengisian biodata, upload dokumen, dan proses lamaran dengan lebih detail.
+                                    </p>
+
+                                    <div class="faq-help-card__contact">
+                                        <div class="faq-help-card__contact-item">
+                                            <i class="fa-regular fa-envelope"></i>
+                                            <div>
+                                                <small>Email Support</small>
+                                                <a href="mailto:vdnirekrutmen88@gmail.com">vdnirekrutmen88@gmail.com</a>
+                                            </div>
+                                        </div>
+                                        <div class="faq-help-card__contact-item">
+                                            <i class="fa-solid fa-file-lines"></i>
+                                            <div>
+                                                <small>Panduan Resmi</small>
+                                                <span>Manual Book V-HIRE</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="faq-help-card__actions">
+                                        <a href="{{ route('bantuan.index') }}" class="btn btn-primary rounded-pill py-3 px-4">
+                                            Kunjungi Pusat Bantuan
+                                        </a>
+                                        <a href="{{ asset('pdf/MANUAL BOOK V-HIRE (1).pdf') }}" target="_blank" class="btn btn-outline-primary rounded-pill py-3 px-4">
+                                            Lihat Panduan Melamar
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Legacy FAQ block retained for reference.
     <!-- FAQs Start -->
     <div class="container-fluid faq-section bg-light py-5">
         <div class="container py-5">
@@ -804,156 +717,156 @@ $maxStep = count($steps);
                 </div>
                 <div class="col-xl-6 wow fadeInRight" data-wow-delay="0.4s">
                     <img src="{{ asset('img/faq-1.png') }}" class="img-fluid w-100" alt="">
-                </div>
-            </div>
-        </div>
+    </div>
+    </div>
+    </div>
     </div>
     <!-- FAQs End -->
     --}}
-</div>
+    </div>
 
-<!-- Modal Scrollable + TOC -->
-<div class="modal fade" id="pdfScrollModal" tabindex="-1" aria-labelledby="pdfScrollModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-fullscreen modal-dialog-scrollable">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title me-2">PDF Viewer Lengkap</h5>
-                <button type="button" class="btn btn-sm btn-outline-secondary me-2" id="btnPrint">🖨️ Print</button>
-                <a id="btnDownload" class="btn btn-sm btn-outline-secondary me-auto" href="#" download target="_blank">⬇️ Download</a>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
-            </div>
-            <div class="modal-body d-flex">
-                <!-- Sidebar TOC -->
-                <div id="pdf-toc" style="width: 250px; max-height: 80vh; overflow-y: auto;" class="pe-3 border-end"></div>
+    <!-- Modal Scrollable + TOC -->
+    <div class="modal fade" id="pdfScrollModal" tabindex="-1" aria-labelledby="pdfScrollModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title me-2">PDF Viewer Lengkap</h5>
+                    <button type="button" class="btn btn-sm btn-outline-secondary me-2" id="btnPrint">🖨️ Print</button>
+                    <a id="btnDownload" class="btn btn-sm btn-outline-secondary me-auto" href="#" download target="_blank">⬇️ Download</a>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body d-flex">
+                    <!-- Sidebar TOC -->
+                    <div id="pdf-toc" style="width: 250px; max-height: 80vh; overflow-y: auto;" class="pe-3 border-end"></div>
 
-                <!-- Kontainer halaman PDF -->
-                <div id="pdf-scroll-container" style="flex: 1; overflow-y: auto; max-height: 80vh;" class="ps-3">
-                    <p class="text-muted">Memuat PDF...</p>
+                    <!-- Kontainer halaman PDF -->
+                    <div id="pdf-scroll-container" style="flex: 1; overflow-y: auto; max-height: 80vh;" class="ps-3">
+                        <p class="text-muted">Memuat PDF...</p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-@push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
-<!-- PDF.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <!-- PDF.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
-<script>
-    const pdfjsLib = window['pdfjs-dist/build/pdf'];
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    <script>
+        const pdfjsLib = window['pdfjs-dist/build/pdf'];
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-    function openScrollablePdfViewer(pdfUrl) {
-        const container = document.getElementById('pdf-scroll-container');
-        const tocContainer = document.getElementById('pdf-toc');
-        container.innerHTML = '<p class="text-muted">Memuat dokumen...</p>';
-        tocContainer.innerHTML = '<p class="text-muted">Memuat TOC...</p>';
+        function openScrollablePdfViewer(pdfUrl) {
+            const container = document.getElementById('pdf-scroll-container');
+            const tocContainer = document.getElementById('pdf-toc');
+            container.innerHTML = '<p class="text-muted">Memuat dokumen...</p>';
+            tocContainer.innerHTML = '<p class="text-muted">Memuat TOC...</p>';
 
-        // Set tombol print & download
-        document.getElementById('btnPrint').onclick = () => window.open(pdfUrl, '_blank').print();
-        document.getElementById('btnDownload').href = pdfUrl;
+            // Set tombol print & download
+            document.getElementById('btnPrint').onclick = () => window.open(pdfUrl, '_blank').print();
+            document.getElementById('btnDownload').href = pdfUrl;
 
-        // Load dokumen
-        pdfjsLib.getDocument({
-            url: pdfUrl
-        }).promise.then(pdfDoc => {
-            container.innerHTML = '';
-            tocContainer.innerHTML = '';
+            // Load dokumen
+            pdfjsLib.getDocument({
+                url: pdfUrl
+            }).promise.then(pdfDoc => {
+                container.innerHTML = '';
+                tocContainer.innerHTML = '';
 
-            // Render semua halaman
-            for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
-                pdfDoc.getPage(pageNum).then(page => {
-                    const viewport = page.getViewport({
-                        scale: 1.2
+                // Render semua halaman
+                for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+                    pdfDoc.getPage(pageNum).then(page => {
+                        const viewport = page.getViewport({
+                            scale: 1.2
+                        });
+
+                        const canvas = document.createElement('canvas');
+                        canvas.style.marginBottom = '20px';
+                        canvas.width = viewport.width;
+                        canvas.height = viewport.height;
+
+                        const ctx = canvas.getContext('2d');
+                        page.render({
+                            canvasContext: ctx,
+                            viewport: viewport
+                        });
+
+                        // Tandai halaman untuk TOC scroll
+                        canvas.setAttribute('id', `page-${page.pageNumber}`);
+                        container.appendChild(canvas);
                     });
-
-                    const canvas = document.createElement('canvas');
-                    canvas.style.marginBottom = '20px';
-                    canvas.width = viewport.width;
-                    canvas.height = viewport.height;
-
-                    const ctx = canvas.getContext('2d');
-                    page.render({
-                        canvasContext: ctx,
-                        viewport: viewport
-                    });
-
-                    // Tandai halaman untuk TOC scroll
-                    canvas.setAttribute('id', `page-${page.pageNumber}`);
-                    container.appendChild(canvas);
-                });
-            }
-
-            // Tampilkan TOC (outline)
-            pdfDoc.getOutline().then(outline => {
-                if (!outline) {
-                    tocContainer.innerHTML = '<p class="text-muted">Tidak ada daftar isi.</p>';
-                    return;
                 }
 
-                tocContainer.innerHTML = '<ul class="list-group list-group-flush w-100"></ul>';
-                const list = tocContainer.querySelector('ul');
+                // Tampilkan TOC (outline)
+                pdfDoc.getOutline().then(outline => {
+                    if (!outline) {
+                        tocContainer.innerHTML = '<p class="text-muted">Tidak ada daftar isi.</p>';
+                        return;
+                    }
 
-                outline.forEach(item => {
-                    const li = document.createElement('li');
-                    li.className = 'list-group-item py-1 px-2';
-                    li.innerText = item.title;
+                    tocContainer.innerHTML = '<ul class="list-group list-group-flush w-100"></ul>';
+                    const list = tocContainer.querySelector('ul');
 
-                    li.style.cursor = 'pointer';
-                    li.onclick = () => {
-                        if (item.dest) {
-                            pdfDoc.getDestination(item.dest).then(dest => {
-                                if (!dest) return;
-                                pdfDoc.getPageIndex(dest[0]).then(pageIndex => {
-                                    const targetCanvas = document.getElementById(`page-${pageIndex + 1}`);
-                                    if (targetCanvas) {
-                                        targetCanvas.scrollIntoView({
-                                            behavior: 'smooth'
-                                        });
-                                    }
+                    outline.forEach(item => {
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item py-1 px-2';
+                        li.innerText = item.title;
+
+                        li.style.cursor = 'pointer';
+                        li.onclick = () => {
+                            if (item.dest) {
+                                pdfDoc.getDestination(item.dest).then(dest => {
+                                    if (!dest) return;
+                                    pdfDoc.getPageIndex(dest[0]).then(pageIndex => {
+                                        const targetCanvas = document.getElementById(`page-${pageIndex + 1}`);
+                                        if (targetCanvas) {
+                                            targetCanvas.scrollIntoView({
+                                                behavior: 'smooth'
+                                            });
+                                        }
+                                    });
                                 });
-                            });
-                        }
-                    };
+                            }
+                        };
 
-                    list.appendChild(li);
+                        list.appendChild(li);
+                    });
+                });
+
+            }).catch(error => {
+                container.innerHTML = `<p class="text-danger">Gagal memuat PDF: ${error.message}</p>`;
+                tocContainer.innerHTML = '';
+            });
+
+            new bootstrap.Modal(document.getElementById('pdfScrollModal')).show();
+        }
+    </script>
+
+
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function() {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: 'Link telah disalin',
+                    confirmButtonText: 'OK'
+                });
+            }, function(err) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: 'Gagal menyalin link',
+                    confirmButtonText: 'OK'
                 });
             });
+        }
+    </script>
 
-        }).catch(error => {
-            container.innerHTML = `<p class="text-danger">Gagal memuat PDF: ${error.message}</p>`;
-            tocContainer.innerHTML = '';
-        });
-
-        new bootstrap.Modal(document.getElementById('pdfScrollModal')).show();
-    }
-</script>
-
-
-<script>
-    function copyToClipboard(text) {
-        navigator.clipboard.writeText(text).then(function() {
-            Swal.fire({
-                icon: 'success',
-                title: 'Berhasil!',
-                text: 'Link telah disalin',
-                confirmButtonText: 'OK'
-            });
-        }, function(err) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Gagal',
-                text: 'Gagal menyalin link',
-                confirmButtonText: 'OK'
-            });
-        });
-    }
-</script>
-
-<!-- <script>
+    <!-- <script>
     document.addEventListener("DOMContentLoaded", function() {
 
         const STORAGE_KEY = "vhire_tutorial_first_beranda";
@@ -1034,5 +947,5 @@ $maxStep = count($steps);
     });
 </script> -->
 
-@endpush
-@endsection
+    @endpush
+    @endsection

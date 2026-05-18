@@ -1,200 +1,199 @@
 @extends('layouts.app')
 
-@section('content')
-
 @push('styles')
 <link rel="stylesheet" href="{{ versioned_asset('user/css/vhire-custom.css') }}">
 @endpush
 
+@section('content')
 @php
-$user = auth()->user();
-$accountIsActive = (int) $user->status_akun === 1;
-$identityUpdateLocked = $user->hasActiveEmploymentStatusLock();
+    $user = auth()->user();
+
+    $accountIsActive = (int) $user->status_akun === 1;
+    $identityUpdateLocked = $user->hasActiveEmploymentStatusLock();
+
+    $profileName = old('nama', $user->name);
+    $profileEmail = old('email', $user->email);
+    $profileKtp = old('no_ktp', $user->no_ktp);
+
+    $initial = strtoupper(substr(trim($profileName ?: 'U'), 0, 1));
 @endphp
 
-<div class="container account-profile-page">
-    <div class="row justify-content-center">
-        <div class="col-12">
-            <div class="account-profile-card">
-                <div class="account-profile-card__body">
-                    <div class="account-profile-header">
-                        <div class="account-profile-header__main">
-                            <div class="account-profile-header__icon">
-                                <i class="fa fa-user"></i>
-                            </div>
-                            <div>
-                                <span class="account-profile-header__eyebrow">Pengaturan Akun</span>
-                                <h1 class="account-profile-header__title">Profil Pengguna</h1>
-                                <p class="account-profile-header__subtitle">
-                                    Perbarui informasi akun agar data tetap akurat dan proses lamaran berjalan dengan lancar.
-                                </p>
-                            </div>
-                        </div>
+<div class="container clean-profile-page">
+    <div class="clean-profile-shell">
 
-                        <span class="account-status-pill {{ $accountIsActive ? 'account-status-pill--active' : 'account-status-pill--inactive' }}">
-                            <i class="fa {{ $accountIsActive ? 'fa-check-circle' : 'fa-user-clock' }}"></i>
-                            {{ $accountIsActive ? 'Akun Aktif' : 'Akun Tidak Aktif' }}
-                        </span>
-                    </div>
+        <div class="clean-profile-topbar">
+            <div>
+                <span class="clean-profile-eyebrow">Pengaturan Akun</span>
+                <h4 class="clean-profile-title">Profil Pengguna</h4>
+                <p class="clean-profile-subtitle">
+                    Perbarui informasi akun dan keamanan password.
+                </p>
+            </div>
 
-                    <div class="account-profile-summary">
-                        <div class="account-profile-summary__item">
-                            <span class="account-profile-summary__icon">
-                                <i class="fa fa-user-circle"></i>
-                            </span>
-                            <div>
-                                <span class="account-profile-summary__label">Nama Pengguna</span>
-                                <span class="account-profile-summary__value">{{ old('nama', $user->name) }}</span>
-                            </div>
-                        </div>
+            <span class="clean-profile-status {{ $accountIsActive ? 'is-active' : 'is-inactive' }}">
+                <i class="fa {{ $accountIsActive ? 'fa-check-circle' : 'fa-user-clock' }}"></i>
+                {{ $accountIsActive ? 'Akun Aktif' : 'Akun Tidak Aktif' }}
+            </span>
+        </div>
 
-                        <div class="account-profile-summary__item">
-                            <span class="account-profile-summary__icon">
-                                <i class="fa fa-envelope"></i>
-                            </span>
-                            <div>
-                                <span class="account-profile-summary__label">Email Terdaftar</span>
-                                <span class="account-profile-summary__value">{{ old('email', $user->email) }}</span>
-                            </div>
-                        </div>
+        <div class="clean-profile-card">
+            <div class="clean-profile-user">
+                <div class="clean-profile-avatar">
+                    {{ $initial }}
+                </div>
 
-                        <div class="account-profile-summary__item">
-                            <span class="account-profile-summary__icon">
-                                <i class="fa fa-id-card"></i>
-                            </span>
-                            <div>
-                                <span class="account-profile-summary__label">Nomor KTP</span>
-                                <span class="account-profile-summary__value">{{ old('no_ktp', $user->no_ktp) }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <form action="{{ route('profil.update', $user->id) }}" method="POST" class="account-profile-form needs-validation" novalidate>
-                        @csrf
-                        @method('PATCH')
-
-                        <section class="account-profile-section">
-                            <div class="account-profile-section__header">
-                                <span class="account-profile-section__eyebrow">Informasi Dasar</span>
-                                <h2 class="account-profile-section__title">Data Akun</h2>
-                                <p class="account-profile-section__text">
-                                    Pastikan nama lengkap dan nomor KTP sesuai dengan data resmi yang digunakan untuk melamar pekerjaan.
-                                </p>
-                                @if($identityUpdateLocked)
-                                <div class="alert alert-warning mt-3 mb-0">
-                                    Perubahan identitas akun dinonaktifkan karena status akun Anda tercatat aktif bekerja.
-                                </div>
-                                @endif
-                            </div>
-
-                            <div class="account-profile-grid">
-                                <div class="account-profile-field">
-                                    <label for="nama" class="account-profile-label">Nama Lengkap</label>
-                                    <input
-                                        type="text"
-                                        id="nama"
-                                        name="nama"
-                                        class="form-control account-profile-input @error('nama') is-invalid @enderror"
-                                        value="{{ old('nama', $user->name) }}"
-                                        required
-                                        autocomplete="name"
-                                        @if($identityUpdateLocked) disabled @endif>
-                                    @error('nama')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="account-profile-field">
-                                    <label for="no_ktp" class="account-profile-label">No. KTP</label>
-                                    <input
-                                        type="text"
-                                        id="no_ktp"
-                                        name="no_ktp"
-                                        class="form-control account-profile-input @error('no_ktp') is-invalid @enderror"
-                                        value="{{ old('no_ktp', $user->no_ktp) }}"
-                                        maxlength="16"
-                                        required
-                                        autocomplete="off"
-                                        @if($identityUpdateLocked) disabled @endif>
-                                    @error('no_ktp')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="account-profile-field account-profile-field--full">
-                                    <label for="email" class="account-profile-label">Alamat Email</label>
-                                    <input
-                                        type="email"
-                                        id="email"
-                                        name="email"
-                                        class="form-control account-profile-input @error('email') is-invalid @enderror"
-                                        value="{{ old('email', $user->email) }}"
-                                        required
-                                        autocomplete="email"
-                                        readonly
-                                        @if($identityUpdateLocked) disabled @endif>
-                                    <p class="account-profile-hint">Email digunakan sebagai identitas login dan saat ini tidak dapat diubah dari halaman ini.</p>
-                                    @error('email')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-                        </section>
-
-                        <section class="account-profile-section">
-                            <div class="account-profile-section__header">
-                                <span class="account-profile-section__eyebrow">Keamanan</span>
-                                <h2 class="account-profile-section__title">Ubah Password</h2>
-                                <p class="account-profile-section__text">
-                                    Kosongkan kolom password jika kamu tidak ingin mengganti kata sandi akun saat ini.
-                                </p>
-                            </div>
-
-                            <div class="account-profile-grid">
-                                <div class="account-profile-field">
-                                    <label for="password" class="account-profile-label">
-                                        Password Baru
-                                        <small>(opsional)</small>
-                                    </label>
-                                    <input
-                                        type="password"
-                                        id="password"
-                                        name="password"
-                                        class="form-control account-profile-input @error('password') is-invalid @enderror"
-                                        autocomplete="new-password">
-                                    <p class="account-profile-hint">Gunakan minimal 8 karakter untuk keamanan yang lebih baik.</p>
-                                    @error('password')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="account-profile-field">
-                                    <label for="password_confirmation" class="account-profile-label">Konfirmasi Password Baru</label>
-                                    <input
-                                        type="password"
-                                        id="password_confirmation"
-                                        name="password_confirmation"
-                                        class="form-control account-profile-input"
-                                        autocomplete="new-password">
-                                    <p class="account-profile-hint">Masukkan ulang password baru agar perubahan dapat dikonfirmasi.</p>
-                                </div>
-                            </div>
-                        </section>
-
-                        <div class="account-profile-actions">
-                            <p class="account-profile-actions__text">
-                                Perubahan akan langsung diterapkan setelah menekan tombol simpan.
-                            </p>
-
-                            <div class="d-flex flex-wrap gap-2">
-                                <a href="{{ route('beranda') }}" class="btn btn-light">Tutup</a>
-                                <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
-                            </div>
-                        </div>
-                    </form>
+                <div class="clean-profile-user-info">
+                    <h5>{{ $profileName }}</h5>
+                    <p>{{ $profileEmail }}</p>
                 </div>
             </div>
+
+            @if($identityUpdateLocked)
+                <div class="clean-profile-alert">
+                    <i class="fa fa-lock"></i>
+                    <div>
+                        <strong>Identitas akun terkunci</strong>
+                        <span>Nama dan No. KTP tidak dapat diubah karena akun tercatat aktif bekerja.</span>
+                    </div>
+                </div>
+            @endif
+
+            <form action="{{ route('profil.update', $user->id) }}" method="POST" class="clean-profile-form needs-validation" novalidate>
+                @csrf
+                @method('PATCH')
+
+                <div class="clean-profile-section">
+                    <div class="clean-profile-section-head">
+                        <h6>Data Akun</h6>
+                        <p>Informasi utama yang digunakan pada akun kamu.</p>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="nama" class="form-label clean-profile-label">Nama Lengkap</label>
+                            <input
+                                type="text"
+                                id="nama"
+                                name="nama"
+                                class="form-control clean-profile-control @error('nama') is-invalid @enderror"
+                                value="{{ $profileName }}"
+                                required
+                                autocomplete="name"
+                                @if($identityUpdateLocked) disabled @endif>
+
+                            @if($identityUpdateLocked)
+                                <input type="hidden" name="nama" value="{{ $profileName }}">
+                            @endif
+
+                            @error('nama')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="no_ktp" class="form-label clean-profile-label">No. KTP</label>
+                            <input
+                                type="text"
+                                id="no_ktp"
+                                name="no_ktp"
+                                class="form-control clean-profile-control @error('no_ktp') is-invalid @enderror"
+                                value="{{ $profileKtp }}"
+                                maxlength="16"
+                                required
+                                autocomplete="off"
+                                @if($identityUpdateLocked) disabled @endif>
+
+                            @if($identityUpdateLocked)
+                                <input type="hidden" name="no_ktp" value="{{ $profileKtp }}">
+                            @endif
+
+                            @error('no_ktp')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="col-12">
+                            <label for="email" class="form-label clean-profile-label">Alamat Email</label>
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                class="form-control clean-profile-control @error('email') is-invalid @enderror"
+                                value="{{ $profileEmail }}"
+                                required
+                                readonly
+                                autocomplete="email">
+
+                            <div class="clean-profile-help">
+                                Email digunakan sebagai identitas login dan tidak dapat diubah dari halaman ini.
+                            </div>
+
+                            @error('email')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <div class="clean-profile-divider"></div>
+
+                <div class="clean-profile-section">
+                    <div class="clean-profile-section-head">
+                        <h6>Keamanan Akun</h6>
+                        <p>Kosongkan password jika tidak ingin mengganti kata sandi.</p>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="password" class="form-label clean-profile-label">
+                                Password Baru <span>(opsional)</span>
+                            </label>
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                class="form-control clean-profile-control @error('password') is-invalid @enderror"
+                                autocomplete="new-password">
+
+                            <div class="clean-profile-help">
+                                Gunakan minimal 8 karakter.
+                            </div>
+
+                            @error('password')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="password_confirmation" class="form-label clean-profile-label">
+                                Konfirmasi Password
+                            </label>
+                            <input
+                                type="password"
+                                id="password_confirmation"
+                                name="password_confirmation"
+                                class="form-control clean-profile-control"
+                                autocomplete="new-password">
+
+                            <div class="clean-profile-help">
+                                Masukkan ulang password baru.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="clean-profile-actions">
+                    <a href="{{ route('beranda') }}" class="btn btn-light">
+                        Tutup
+                    </a>
+
+                    <button type="submit" class="btn btn-primary">
+                        Simpan Perubahan
+                    </button>
+                </div>
+            </form>
         </div>
+
     </div>
 </div>
 @endsection

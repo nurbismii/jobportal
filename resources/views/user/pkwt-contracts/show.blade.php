@@ -182,36 +182,46 @@
                 <div class="card border-0 shadow-sm">
                     <div class="card-body">
                         <h5 class="mb-2">Tanda Tangan</h5>
-                        <p class="small text-muted">Gunakan jari atau mouse di area tanda tangan. Tanda tangan ini hanya berlaku untuk kontrak ini.</p>
+                        @if($contract->isSignableByCandidate())
+                            <p class="small text-muted">Gunakan jari atau mouse di area tanda tangan. Tanda tangan ini hanya berlaku untuk kontrak ini.</p>
 
-                        <form action="{{ route('kontrak-pkwt.sign', $contract->id) }}" method="POST" id="signatureForm">
-                            @csrf
-                            <canvas id="signaturePad" class="signature-pad"></canvas>
-                            <input type="hidden" name="signature_data" id="signatureData">
-                            @error('signature_data')
-                                <div class="text-danger small mt-2">{{ $message }}</div>
-                            @enderror
-
-                            <div class="d-flex gap-2 mt-2">
-                                <button type="button" class="btn btn-outline-secondary btn-sm" id="clearSignature">
-                                    Bersihkan
-                                </button>
-                            </div>
-
-                            <div class="form-check mt-3">
-                                <input class="form-check-input @error('consent') is-invalid @enderror" type="checkbox" name="consent" value="1" id="consent">
-                                <label class="form-check-label small" for="consent">
-                                    {{ $consentText }}
-                                </label>
-                                @error('consent')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                            <form action="{{ route('kontrak-pkwt.sign', $contract->id) }}" method="POST" id="signatureForm">
+                                @csrf
+                                <canvas id="signaturePad" class="signature-pad"></canvas>
+                                <input type="hidden" name="signature_data" id="signatureData">
+                                @error('signature_data')
+                                    <div class="text-danger small mt-2">{{ $message }}</div>
                                 @enderror
-                            </div>
 
-                            <button type="submit" class="btn btn-primary w-100 mt-3">
-                                Tandatangani Kontrak
-                            </button>
-                        </form>
+                                <div class="d-flex gap-2 mt-2">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" id="clearSignature">
+                                        Bersihkan
+                                    </button>
+                                </div>
+
+                                <div class="form-check mt-3">
+                                    <input class="form-check-input @error('consent') is-invalid @enderror" type="checkbox" name="consent" value="1" id="consent">
+                                    <label class="form-check-label small" for="consent">
+                                        {{ $consentText }}
+                                    </label>
+                                    @error('consent')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <button type="submit" class="btn btn-primary w-100 mt-3">
+                                    Tandatangani Kontrak
+                                </button>
+                            </form>
+                        @elseif($contract->signature_status === 'signed')
+                            <div class="alert alert-success small mb-0">
+                                Kontrak ini sudah ditandatangani pada {{ optional($contract->signed_at)->format('d M Y H:i') ?: '-' }}.
+                            </div>
+                        @else
+                            <div class="alert alert-secondary small mb-0">
+                                Kontrak ini tidak tersedia untuk tanda tangan elektronik saat ini.
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>

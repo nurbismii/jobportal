@@ -29,7 +29,7 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-2 mb-2">
+            <div class="col-md-3 mb-2">
                 <select name="match_status" class="form-control form-control-sm">
                     <option value="">Semua match</option>
                     <option value="pending_match" {{ request('match_status') === 'pending_match' ? 'selected' : '' }}>Pending match</option>

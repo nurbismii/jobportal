@@ -241,7 +241,7 @@ class PkwtContractService
             throw new InvalidArgumentException('Kontrak tidak sesuai dengan kandidat yang login.');
         }
 
-        if (! $contract->isVisibleForCandidate()) {
+        if (! $contract->isSignableByCandidate()) {
             throw new InvalidArgumentException('Kontrak tidak tersedia untuk tanda tangan elektronik di V-Hire.');
         }
 
@@ -317,7 +317,6 @@ class PkwtContractService
             ->whereNull('employee_nik')
             ->where('match_status', 'matched_to_candidate')
             ->where('signing_method', 'electronic')
-            ->whereIn('signature_status', ['draft', 'waiting_signature'])
             ->orderByDesc('created_at')
             ->get();
     }
