@@ -179,6 +179,7 @@ class VhirePkwtIntegrationTest extends TestCase
         $contract = VhirePkwtContract::create($this->contractRecord([
             'signature_status' => 'waiting_signature',
             'visible_in_vhire' => true,
+            'contract_content' => '<p>Isi kontrak PKWT 1</p><div class="contract-signature-slot" data-contract-signature="employee" style="height: 86px; text-align: center;">&nbsp;</div>',
         ]));
 
         $this->withoutMiddleware(VerifyCsrfToken::class)
@@ -207,6 +208,10 @@ class VhirePkwtIntegrationTest extends TestCase
         $this->assertCount(1, app(PkwtContractService::class)->visibleContractsForUser($user));
 
         Storage::disk('local')->assertExists($contract->signature_file_path);
+        $html = $contract->displayable_contract_content;
+        $this->assertStringContainsString('contract-signature-image-candidate', $html);
+        $this->assertStringContainsString('src="data:image/png;base64,' . base64_encode($signatureBytes), $html);
+        $this->assertStringNotContainsString('{{tanda_tangan_pihak_kedua}}', $html);
 
         $payload = app(PkwtContractService::class)->signaturePayload($contract);
         $this->assertSame(base64_encode($signatureBytes), $payload['employee_signature_base64']);

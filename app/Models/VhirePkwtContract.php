@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class VhirePkwtContract extends Model
 {
@@ -61,16 +62,17 @@ class VhirePkwtContract extends Model
         $content = trim((string) $this->contract_content);
 
         if ($content === '') {
-            return '';
+            return $this->embedCandidateSignatureIntoHtml('');
         }
 
         $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
         if ($content === strip_tags($content)) {
-            return nl2br(e($content));
+            return $this->embedCandidateSignatureIntoHtml(nl2br(e($content)));
         }
 
         $content = preg_replace('#<(script|style|iframe|object|embed|form|input|button|textarea|select)\b[^>]*>.*?</\1>#is', '', $content);
+        $content = $this->embedCandidateSignatureIntoHtml($content);
         [$content, $dataImageSources] = $this->extractDataImageSources($content);
 
         if (class_exists(\HTMLPurifier::class) && class_exists(\HTMLPurifier_Config::class)) {
@@ -131,6 +133,95 @@ class VhirePkwtContract extends Model
             strip_tags($content, '<a><p><br><strong><b><em><i><u><s><sub><sup><ol><ul><li><table><caption><colgroup><col><thead><tbody><tfoot><tr><td><th><h1><h2><h3><h4><h5><h6><div><span><blockquote><figure><figcaption><hr><img>'),
             $dataImageSources
         );
+    }
+
+    private function embedCandidateSignatureIntoHtml(string $content): string
+    {
+        $signatureHtml = $this->candidateSignatureSlotHtml();
+
+        if ($signatureHtml === '') {
+            return $content;
+        }
+
+        $updated = preg_replace(
+            '/<(?P<tag>span|div)\b(?=[^>]*data-contract-signature=["\'](?:employee|candidate)["\'])(?=[^>]*contract-signature-slot)[^>]*>.*?<\/(?P=tag)>/is',
+            $signatureHtml,
+            $content,
+            -1,
+            $replacementCount
+        );
+
+        if ((int) $replacementCount > 0) {
+            return $updated ?? $content;
+        }
+
+        $updated = preg_replace(
+            '/{{\s*(?:tanda_tangan_pihak_kedua|tanda_tangan_karyawan|tanda_tangan_penanda_tangan)\s*}}/i',
+            $signatureHtml,
+            $content,
+            -1,
+            $replacementCount
+        );
+
+        if ((int) $replacementCount > 0) {
+            return $updated ?? $content;
+        }
+
+        return $content . '<div class="contract-candidate-signature-fallback" style="margin-top: 36px; text-align: center;"><div style="font-weight: bold; margin-bottom: 4px;">Tanda tangan kandidat</div>' . $signatureHtml . '</div>';
+    }
+
+    private function candidateSignatureSlotHtml(): string
+    {
+        $signatureSrc = $this->candidateSignatureImageSrc();
+
+        if (! $signatureSrc) {
+            return '';
+        }
+
+        $imageHtml = sprintf(
+            '<img src="%s" alt="Tanda tangan kandidat" class="contract-signature-image contract-signature-image-candidate" style="height: 76px; max-width: 220px; vertical-align: middle;">',
+            htmlspecialchars($signatureSrc, ENT_QUOTES, 'UTF-8')
+        );
+
+        return sprintf(
+            '<div class="contract-signature-slot contract-signature-slot-candidate" data-contract-signature="employee" style="height: 86px; line-height: normal; margin: 4px 0; text-align: center;"><table class="contract-signature-box" style="border: 0; border-collapse: collapse; height: 86px; margin: 0; width: 100%%;"><tr><td style="border: 0; height: 86px; padding: 0; text-align: center; vertical-align: middle;">%s</td></tr></table></div>',
+            $imageHtml
+        );
+    }
+
+    private function candidateSignatureImageSrc(): ?string
+    {
+        if (
+            $this->signature_status !== 'signed'
+            || blank($this->signature_file_disk)
+            || blank($this->signature_file_path)
+        ) {
+            return null;
+        }
+
+        try {
+            $disk = Storage::disk($this->signature_file_disk);
+
+            if (! $disk->exists($this->signature_file_path)) {
+                return null;
+            }
+
+            $content = $disk->get($this->signature_file_path);
+        } catch (\Throwable $exception) {
+            return null;
+        }
+
+        if ($content === '') {
+            return null;
+        }
+
+        $mime = strtolower((string) ($this->signature_file_mime ?: 'image/png'));
+
+        if (! in_array($mime, ['image/png', 'image/jpeg', 'image/webp'], true)) {
+            $mime = 'image/png';
+        }
+
+        return 'data:' . $mime . ';base64,' . base64_encode($content);
     }
 
     private function extractDataImageSources(string $content): array
