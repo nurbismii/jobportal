@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class VhirePkwtContract extends Model
 {
+    private const MAX_EMBEDDED_SIGNATURE_BASE64_LENGTH = 4194304;
+
     protected $table = 'vhire_pkwt_contracts';
 
     protected $guarded = [];
@@ -136,18 +138,9 @@ class VhirePkwtContract extends Model
         $sources = [];
 
         $content = preg_replace_callback(
-            '/(<img\b[^>]*\bsrc\s*=\s*)(["\'])(data:image\/(?:png|jpe?g|webp);base64,[A-Za-z0-9+\/=\s]+)\2([^>]*>)/i',
+            '/<img\b[^>]*>/i',
             function (array $matches) use (&$sources): string {
-                $source = $this->normalizeDataImageSource($matches[3]);
-
-                if ($source === null) {
-                    return $matches[0];
-                }
-
-                $placeholder = 'https://vhire.local/contract-data-image/' . sha1($source) . '.png';
-                $sources[$placeholder] = $source;
-
-                return $matches[1] . $matches[2] . $placeholder . $matches[2] . $matches[4];
+                return $this->replaceDataImageSourceInImgTag($matches[0], $sources);
             },
             $content
         ) ?? $content;
@@ -155,15 +148,41 @@ class VhirePkwtContract extends Model
         return [$content, $sources];
     }
 
+    private function replaceDataImageSourceInImgTag(string $tag, array &$sources): string
+    {
+        if (! preg_match('/\bsrc\s*=\s*(["\'])/i', $tag, $matches, PREG_OFFSET_CAPTURE)) {
+            return $tag;
+        }
+
+        $quote = $matches[1][0];
+        $valueStart = $matches[1][1] + 1;
+        $valueEnd = strpos($tag, $quote, $valueStart);
+
+        if ($valueEnd === false) {
+            return $tag;
+        }
+
+        $source = $this->normalizeDataImageSource(substr($tag, $valueStart, $valueEnd - $valueStart));
+
+        if ($source === null) {
+            return $tag;
+        }
+
+        $placeholder = 'https://vhire.local/contract-data-image/' . sha1($source) . '.png';
+        $sources[$placeholder] = $source;
+
+        return substr($tag, 0, $valueStart) . $placeholder . substr($tag, $valueEnd);
+    }
+
     private function normalizeDataImageSource(string $source): ?string
     {
-        if (! preg_match('/^data:image\/(png|jpe?g|webp);base64,(.+)$/is', $source, $matches)) {
+        if (! preg_match('/^data:image\/(png|jpe?g|webp);base64,/i', $source, $matches)) {
             return null;
         }
 
-        $base64 = preg_replace('/\s+/', '', $matches[2]);
+        $base64 = preg_replace('/\s+/', '', substr($source, strlen($matches[0])));
 
-        if (! is_string($base64) || $base64 === '' || strlen($base64) > 1048576) {
+        if (! is_string($base64) || $base64 === '' || strlen($base64) > self::MAX_EMBEDDED_SIGNATURE_BASE64_LENGTH) {
             return null;
         }
 
@@ -173,7 +192,7 @@ class VhirePkwtContract extends Model
             return null;
         }
 
-        $mime = strtolower($matches[1]);
+        $mime = strtolower(str_replace(['data:image/', ';base64,'], '', $matches[0]));
         $mime = $mime === 'jpg' ? 'jpeg' : $mime;
 
         return 'data:image/' . $mime . ';base64,' . $base64;

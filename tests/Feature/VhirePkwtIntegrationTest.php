@@ -222,6 +222,19 @@ class VhirePkwtIntegrationTest extends TestCase
             ->assertSee('name="signature_data"', false);
     }
 
+    public function test_displayable_contract_content_keeps_large_uploaded_first_party_signature()
+    {
+        $signatureBase64 = base64_encode(str_repeat('uploaded-first-party-signature', 45000));
+        $signatureSrc = 'data:image/png;base64,' . $signatureBase64;
+        $contract = new VhirePkwtContract([
+            'contract_content' => '<div class="contract-signature-slot"><img src="' . $signatureSrc . '" alt="Tanda tangan elektronik" class="contract-signature-image"></div>',
+        ]);
+
+        $this->assertGreaterThan(1048576, strlen($signatureBase64));
+        $this->assertStringContainsString($signatureSrc, $contract->displayable_contract_content);
+        $this->assertStringContainsString('contract-signature-image', $contract->displayable_contract_content);
+    }
+
     public function test_invalid_no_ktp_is_rejected_on_contract_import()
     {
         $this->withHeader('Authorization', 'Bearer test-token')
