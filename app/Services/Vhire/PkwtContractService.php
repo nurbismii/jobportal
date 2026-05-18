@@ -459,7 +459,7 @@ class PkwtContractService
 
     private function publicVhireCandidateId(VhirePkwtContract $contract): ?string
     {
-        return Str::startsWith((string) $contract->vhire_candidate_id, 'UNMATCHED-')
+        return Str::startsWith((string) $contract->vhire_candidate_id, ['UNMATCHED-', 'LAMARAN-', 'BIODATA-'])
             ? null
             : $contract->vhire_candidate_id;
     }

@@ -7,6 +7,7 @@ use App\Http\Middleware\VerifyCsrfToken;
 use App\Models\Biodata;
 use App\Models\User;
 use App\Models\VhirePkwtContract;
+use App\Services\Vhire\PkwtContractService;
 use Carbon\Carbon;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -194,6 +195,19 @@ class VhirePkwtIntegrationTest extends TestCase
             'event' => 'pkwt_contract_signed_electronically',
         ]);
         Queue::assertPushed(SyncContractSignatureStatusToHris::class);
+    }
+
+    public function test_signature_callback_payload_does_not_send_internal_candidate_ids_to_hris()
+    {
+        $contract = VhirePkwtContract::create($this->contractRecord([
+            'vhire_candidate_id' => 'LAMARAN-1',
+        ]));
+
+        $payload = app(PkwtContractService::class)->signaturePayload($contract);
+
+        $this->assertNull($payload['vhire_candidate_id']);
+        $this->assertSame('VHIRE-CAND-1', $payload['candidate_code']);
+        $this->assertSame('1234567890123456', $payload['no_ktp']);
     }
 
     public function test_candidate_contract_page_renders_html_content_and_signature_column()
