@@ -54,6 +54,37 @@ class VhirePkwtContract extends Model
         return mask_no_ktp($this->no_ktp);
     }
 
+    public function getDisplayableContractContentAttribute(): string
+    {
+        $content = trim((string) $this->contract_content);
+
+        if ($content === '') {
+            return '';
+        }
+
+        $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+        if ($content === strip_tags($content)) {
+            return nl2br(e($content));
+        }
+
+        $content = preg_replace('#<(script|style|iframe|object|embed|form|input|button|textarea|select)\b[^>]*>.*?</\1>#is', '', $content);
+
+        if (class_exists(\HTMLPurifier::class) && class_exists(\HTMLPurifier_Config::class)) {
+            $config = \HTMLPurifier_Config::createDefault();
+            $config->set('HTML.Allowed', 'p,br,strong,b,em,i,u,ol,ul,li,table,thead,tbody,tfoot,tr,td[colspan|rowspan],th[colspan|rowspan],h1,h2,h3,h4,h5,h6,div,span,blockquote,hr');
+            $config->set('AutoFormat.RemoveEmpty', false);
+            $config->set('Cache.DefinitionImpl', null);
+
+            return (new \HTMLPurifier($config))->purify($content);
+        }
+
+        $allowedTags = '<p><br><strong><b><em><i><u><ol><ul><li><table><thead><tbody><tfoot><tr><td><th><h1><h2><h3><h4><h5><h6><div><span><blockquote><hr>';
+        $content = strip_tags($content, $allowedTags);
+
+        return preg_replace('/<([a-z][a-z0-9]*)\b[^>]*>/i', '<$1>', $content);
+    }
+
     public function isVisibleForCandidate(): bool
     {
         return (bool) $this->visible_in_vhire

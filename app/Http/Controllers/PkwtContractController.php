@@ -41,7 +41,7 @@ class PkwtContractController extends Controller
     public function sign(CandidateSignPkwtContractRequest $request, VhirePkwtContract $contract, PkwtContractService $contracts)
     {
         try {
-            $contracts->signElectronically($contract, Auth::user());
+            $contracts->signElectronically($contract, Auth::user(), $request->input('candidate_signature'));
             Alert::success('Berhasil', 'Kontrak PKWT 1 berhasil ditandatangani.');
         } catch (\InvalidArgumentException $e) {
             Alert::error('Gagal', $e->getMessage());

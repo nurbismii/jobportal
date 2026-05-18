@@ -232,7 +232,7 @@ class PkwtContractService
         });
     }
 
-    public function signElectronically(VhirePkwtContract $contract, User $user): VhirePkwtContract
+    public function signElectronically(VhirePkwtContract $contract, User $user, ?string $candidateSignature = null): VhirePkwtContract
     {
         $candidateNoKtp = preg_replace('/\D+/', '', (string) ($user->no_ktp ?? optional($user->biodata)->no_ktp));
 
@@ -253,7 +253,9 @@ class PkwtContractService
             'signed_by_source' => 'vhire',
         ])->save();
 
-        app(VhireAuditLogger::class)->log('pkwt_contract_signed_electronically', $contract, $old, $contract->fresh()->toArray(), [], 'vhire');
+        app(VhireAuditLogger::class)->log('pkwt_contract_signed_electronically', $contract, $old, $contract->fresh()->toArray(), [
+            'candidate_signature' => Str::limit($candidateSignature ?: $contract->nama, 255, ''),
+        ], 'vhire');
 
         SyncContractSignatureStatusToHris::dispatch($contract->id)
             ->onQueue((string) config('recruitment.hris_api.queue', 'default'));

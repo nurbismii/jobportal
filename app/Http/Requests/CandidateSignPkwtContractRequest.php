@@ -11,9 +11,17 @@ class CandidateSignPkwtContractRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation()
+    {
+        $this->merge([
+            'candidate_signature' => trim((string) $this->input('candidate_signature')),
+        ]);
+    }
+
     public function rules()
     {
         return [
+            'candidate_signature' => ['required', 'string', 'max:255'],
             'agreement' => ['accepted'],
         ];
     }

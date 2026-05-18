@@ -178,6 +178,7 @@ class VhirePkwtIntegrationTest extends TestCase
         $this->withoutMiddleware(VerifyCsrfToken::class)
             ->actingAs($user)
             ->post(route('kontrak-pkwt.sign', $contract->id), [
+                'candidate_signature' => 'Budi Santoso',
                 'agreement' => '1',
             ])
             ->assertRedirect(route('kontrak-pkwt.index'));
@@ -193,6 +194,25 @@ class VhirePkwtIntegrationTest extends TestCase
             'event' => 'pkwt_contract_signed_electronically',
         ]);
         Queue::assertPushed(SyncContractSignatureStatusToHris::class);
+    }
+
+    public function test_candidate_contract_page_renders_html_content_and_signature_column()
+    {
+        $user = $this->createCandidateUser();
+        $contract = VhirePkwtContract::create($this->contractRecord([
+            'contract_content' => '&lt;p&gt;Pasal 1&lt;/p&gt;&lt;strong&gt;Isi kontrak&lt;/strong&gt;&lt;script&gt;alert(1)&lt;/script&gt;',
+        ]));
+
+        $response = $this->actingAs($user)
+            ->get(route('kontrak-pkwt.show', $contract->id));
+
+        $response->assertOk()
+            ->assertSee('<p>Pasal 1</p>', false)
+            ->assertSee('<strong>Isi kontrak</strong>', false)
+            ->assertDontSee('&lt;p&gt;Pasal 1&lt;/p&gt;', false)
+            ->assertDontSee('alert(1)')
+            ->assertSee('Tanda Tangan Kandidat')
+            ->assertSee('name="candidate_signature"', false);
     }
 
     public function test_invalid_no_ktp_is_rejected_on_contract_import()
