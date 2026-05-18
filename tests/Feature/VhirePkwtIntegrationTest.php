@@ -13,6 +13,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class VhirePkwtIntegrationTest extends TestCase
@@ -44,6 +45,8 @@ class VhirePkwtIntegrationTest extends TestCase
         (new \CreateVhirePkwtIntegrationTables())->up();
         include_once database_path('migrations/2026_05_17_000000_add_matching_fields_to_vhire_pkwt_contracts.php');
         (new \AddMatchingFieldsToVhirePkwtContracts())->up();
+        include_once database_path('migrations/2026_05_18_000001_add_candidate_signature_file_to_vhire_pkwt_contracts.php');
+        (new \AddCandidateSignatureFileToVhirePkwtContracts())->up();
     }
 
     protected function tearDown(): void
@@ -170,7 +173,9 @@ class VhirePkwtIntegrationTest extends TestCase
     public function test_candidate_can_sign_visible_electronic_contract()
     {
         Queue::fake();
+        Storage::fake('local');
         $user = $this->createCandidateUser();
+        $signatureBytes = str_repeat('signature-bytes', 12);
         $contract = VhirePkwtContract::create($this->contractRecord([
             'signature_status' => 'waiting_signature',
             'visible_in_vhire' => true,
@@ -179,7 +184,7 @@ class VhirePkwtIntegrationTest extends TestCase
         $this->withoutMiddleware(VerifyCsrfToken::class)
             ->actingAs($user)
             ->post(route('kontrak-pkwt.sign', $contract->id), [
-                'signature_data' => 'data:image/png;base64,' . base64_encode(str_repeat('signature-bytes', 12)),
+                'signature_data' => 'data:image/png;base64,' . base64_encode($signatureBytes),
                 'consent' => '1',
             ])
             ->assertRedirect(route('kontrak-pkwt.index'));
@@ -190,7 +195,18 @@ class VhirePkwtIntegrationTest extends TestCase
             'status_tanda_tangan' => 'signed',
             'signed_by_source' => 'vhire',
             'signed_at' => '2026-05-16 10:00:00',
+            'signature_file_mime' => 'image/png',
+            'signature_file_hash' => hash('sha256', $signatureBytes),
         ]);
+
+        $contract->refresh();
+        Storage::disk('local')->assertExists($contract->signature_file_path);
+
+        $payload = app(PkwtContractService::class)->signaturePayload($contract);
+        $this->assertSame(base64_encode($signatureBytes), $payload['employee_signature_base64']);
+        $this->assertSame('image/png', $payload['employee_signature_mime']);
+        $this->assertSame(hash('sha256', $signatureBytes), $payload['employee_signature_hash']);
+
         $this->assertDatabaseHas('vhire_integration_audit_logs', [
             'event' => 'pkwt_contract_signed_electronically',
         ]);

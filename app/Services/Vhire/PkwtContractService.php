@@ -10,6 +10,7 @@ use App\Models\VhireOnboardingCandidate;
 use App\Models\VhirePkwtContract;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 
@@ -244,7 +245,11 @@ class PkwtContractService
             throw new InvalidArgumentException('Kontrak tidak tersedia untuk tanda tangan elektronik di V-Hire.');
         }
 
-        $signatureMetadata = $this->signatureMetadata($signatureData);
+        $storedSignature = $this->storeCandidateSignature($contract, $signatureData);
+        $signatureMetadata = [
+            'signature_hash' => $storedSignature['hash'],
+            'signature_size' => $storedSignature['size'],
+        ];
         $old = $contract->toArray();
 
         $contract->forceFill([
@@ -252,6 +257,10 @@ class PkwtContractService
             'status_tanda_tangan' => 'signed',
             'signed_at' => now(),
             'signed_by_source' => 'vhire',
+            'signature_file_disk' => $storedSignature['disk'],
+            'signature_file_path' => $storedSignature['path'],
+            'signature_file_mime' => $storedSignature['mime'],
+            'signature_file_hash' => $storedSignature['hash'],
         ])->save();
 
         app(VhireAuditLogger::class)->log('pkwt_contract_signed_electronically', $contract, $old, $contract->fresh()->toArray(), $signatureMetadata, 'vhire');
@@ -262,7 +271,7 @@ class PkwtContractService
         return $contract->fresh();
     }
 
-    private function signatureMetadata(?string $signatureData): array
+    private function storeCandidateSignature(VhirePkwtContract $contract, ?string $signatureData): array
     {
         if (! is_string($signatureData) || ! preg_match('/^data:image\/png;base64,/', $signatureData)) {
             throw new InvalidArgumentException('Tanda tangan kandidat wajib diisi.');
@@ -278,9 +287,24 @@ class PkwtContractService
             throw new InvalidArgumentException('Ukuran tanda tangan terlalu besar.');
         }
 
+        $hash = hash('sha256', $decoded);
+        $disk = (string) config('recruitment.pkwt_contracts.disk', config('filesystems.default', 'local'));
+        $directoryKey = preg_replace('/[^A-Za-z0-9\-]+/', '-', (string) ($contract->candidate_code ?: $contract->no_ktp ?: $contract->id));
+        $path = sprintf(
+            'pkwt-contract-signatures/%s/%s/%s.png',
+            $directoryKey ?: 'candidate',
+            $contract->id,
+            Str::uuid()
+        );
+
+        Storage::disk($disk)->put($path, $decoded);
+
         return [
-            'signature_hash' => hash('sha256', $decoded),
-            'signature_size' => strlen($decoded),
+            'disk' => $disk,
+            'path' => $path,
+            'mime' => 'image/png',
+            'hash' => $hash,
+            'size' => strlen($decoded),
         ];
     }
 
@@ -300,7 +324,7 @@ class PkwtContractService
 
     public function signaturePayload(VhirePkwtContract $contract): array
     {
-        return [
+        $payload = [
             'hris_contract_id' => $contract->hris_contract_id,
             'kode_kontrak' => $contract->kode_kontrak,
             'no_pkwt' => $contract->no_pkwt,
@@ -312,6 +336,21 @@ class PkwtContractService
             'signed_at' => optional($contract->signed_at)->toIso8601String(),
             'signed_by_source' => $contract->signed_by_source,
         ];
+
+        if (
+            $contract->signature_status === 'signed'
+            && $contract->signature_file_disk
+            && $contract->signature_file_path
+            && Storage::disk($contract->signature_file_disk)->exists($contract->signature_file_path)
+        ) {
+            $payload['employee_signature_base64'] = base64_encode(
+                Storage::disk($contract->signature_file_disk)->get($contract->signature_file_path)
+            );
+            $payload['employee_signature_mime'] = $contract->signature_file_mime ?: 'image/png';
+            $payload['employee_signature_hash'] = $contract->signature_file_hash;
+        }
+
+        return $payload;
     }
 
     public function rematch(VhirePkwtContract $contract, ?int $actorId = null): VhirePkwtContract

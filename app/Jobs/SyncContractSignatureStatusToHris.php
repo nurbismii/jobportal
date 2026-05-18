@@ -34,6 +34,12 @@ class SyncContractSignatureStatusToHris implements ShouldQueue
         }
 
         $payload = $service->signaturePayload($contract);
+        $payloadForLog = $payload;
+
+        if (isset($payloadForLog['employee_signature_base64'])) {
+            $payloadForLog['employee_signature_base64'] = '[base64 image omitted]';
+        }
+
         $contractIdentifier = $contract->hris_contract_id ?: ($contract->kode_kontrak ?: $contract->id);
         $endpoint = '/api/hris/contracts/' . rawurlencode((string) $contractIdentifier) . '/signature-status';
         $idempotencyKey = 'vhire-signature-' . $contract->id . '-' . optional($contract->signed_at)->timestamp;
@@ -43,7 +49,7 @@ class SyncContractSignatureStatusToHris implements ShouldQueue
             'endpoint' => $endpoint,
             'status' => 'pending',
             'idempotency_key' => $idempotencyKey,
-            'payload' => $payload,
+            'payload' => $payloadForLog,
             'related_type' => VhirePkwtContract::class,
             'related_id' => $contract->id,
             'attempts' => 1,
