@@ -120,7 +120,7 @@ $accountApplicationLocked = Auth::check() && Auth::user()->hasActiveEmploymentSt
                         <i class="fa fa-sign-in-alt me-2"></i>Masuk / Buat Akun
                     </a>
                     @elseif($accountApplicationLocked)
-                    <button type="button" class="btn btn-secondary" disabled>
+                    <button type="button" class="btn btn-light" disabled>
                         <i class="fa fa-lock me-2"></i>Lamaran Dinonaktifkan
                     </button>
                     @else
