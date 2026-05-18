@@ -1310,12 +1310,8 @@
         } catch (err) {
             let msg = err;
 
-            if (
-                err instanceof TypeError ||
-                err instanceof SyntaxError ||
-                (typeof err === 'string' && err.toLowerCase().includes('fetch'))
-            ) {
-                msg = 'Upload gagal. Periksa koneksi Anda dan pastikan ukuran file masih dalam batas yang diizinkan.';
+            if (err instanceof TypeError || err instanceof SyntaxError || (typeof err === 'string' && err.toLowerCase().includes('fetch'))) {
+                msg = 'Upload gagal. Pastikan file berasal dari penyimpanan HP, bukan Google Drive.';
             }
 
             Swal.fire({
