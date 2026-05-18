@@ -6,6 +6,31 @@
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
+<style>
+    .job-card__panel--description {
+        min-height: 200px;
+        max-height: 200px;
+        overflow: hidden;
+    }
+
+    .job-card__qualification-list {
+        margin: 0;
+        padding-left: 22px;
+    }
+
+    .job-card__qualification-list li {
+        color: #475569;
+        font-size: 0.95rem;
+        line-height: 1.55;
+        margin-bottom: 9px;
+    }
+
+    .job-card__qualification-list li::marker {
+        color: #64748b;
+        font-weight: 600;
+    }
+</style>
+
 @include('partials.lowongan.styles')
 @endpush
 

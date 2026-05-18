@@ -1,13 +1,44 @@
 @php
-    $showBackHomeButton = $showBackHomeButton ?? false;
+$showBackHomeButton = $showBackHomeButton ?? false;
 @endphp
 
 <div class="row g-4 justify-content-center">
     @forelse($lowongans as $lowongan)
-        @php
-            $detailUrl = route('lowongan-kerja.show', $lowongan->id);
-            $isActive = strtolower($lowongan->status_lowongan) === 'aktif';
-        @endphp
+    @php
+    $detailUrl = route('lowongan-kerja.show', $lowongan->id);
+    $isActive = strtolower($lowongan->status_lowongan) === 'aktif';
+    $rawKualifikasi = (string) $lowongan->kualifikasi;
+    $kualifikasiItems = [];
+
+    // Ambil isi dari tag <li> jika kualifikasi berasal dari editor HTML
+    if (preg_match_all('/<li\b[^>]*>(.*?)<\/li>/is', $rawKualifikasi, $matches)) {
+        foreach ($matches[1] as $item) {
+            $text = trim(html_entity_decode(strip_tags($item)));
+
+            if ($text !== '') {
+                $kualifikasiItems[] = $text;
+            }
+        }
+    } else {
+        // Fallback jika isi bukan <li>, misalnya text biasa / paragraf
+        $cleanText = str_replace(
+            ['</p>', '<br>', '<br/>', '<br />'],
+            "\n",
+            $rawKualifikasi
+        );
+
+        $plainText = trim(html_entity_decode(strip_tags($cleanText)));
+
+        $kualifikasiItems = preg_split('/\r\n|\r|\n/', $plainText);
+
+        $kualifikasiItems = array_filter(array_map(function ($item) {
+            return trim(preg_replace('/^\d+[\.\)]\s*/', '', $item));
+        }, $kualifikasiItems));
+    }
+
+    // Batasi jumlah list yang tampil
+    $kualifikasiItems = array_slice($kualifikasiItems, 0, 4);
+    @endphp
 
         <div class="col-md-6 col-lg-4 d-flex">
             <article class="job-card h-100 w-100">
@@ -29,9 +60,17 @@
 
                     <div class="job-card__panel job-card__panel--description">
                         <span class="job-card__section-label">Kualifikasi Singkat</span>
-                        <div class="job-card__description">
-                            {!! substr($lowongan->kualifikasi, 0, 400) !!}  
+                        @if(count($kualifikasiItems))
+                        <ol class="job-card__qualification-list">
+                            @foreach($kualifikasiItems as $item)
+                            <li>{{ \Illuminate\Support\Str::limit($item, 70) }}</li>
+                            @endforeach
+                        </ol>
+                        @else
+                        <div class="job-card__description text-muted">
+                            Belum ada kualifikasi.
                         </div>
+                        @endif
                     </div>
 
                     <ul class="job-card__meta mb-3">
@@ -59,7 +98,7 @@
                 </div>
             </article>
         </div>
-    @empty
+        @empty
         <div class="col-12">
             <div class="job-empty-state text-center p-5 my-2 shadow-sm">
                 <i class="fa fa-briefcase fa-3x text-primary mb-3"></i>
@@ -67,9 +106,9 @@
                 <p class="text-muted mb-3">Silakan cek kembali di lain waktu. Kami terus memperbarui informasi lowongan secara berkala.</p>
 
                 @if($showBackHomeButton)
-                    <a href="{{ url('/') }}" class="btn btn-primary rounded-pill px-4">Kembali ke Beranda</a>
+                <a href="{{ url('/') }}" class="btn btn-primary rounded-pill px-4">Kembali ke Beranda</a>
                 @endif
             </div>
         </div>
-    @endforelse
+        @endforelse
 </div>
