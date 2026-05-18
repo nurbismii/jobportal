@@ -11,6 +11,8 @@ use RealRashid\SweetAlert\Facades\Alert;
 
 class PkwtContractController extends Controller
 {
+    private const CONSENT_TEXT = 'Saya telah membaca dan menyetujui isi kontrak elektronik ini. Tanda tangan ini diberikan secara sadar untuk dokumen dan nomor kontrak yang ditampilkan pada halaman ini.';
+
     public function index(PkwtContractService $contracts)
     {
         $contracts = $contracts->visibleContractsForUser(Auth::user());
@@ -22,7 +24,11 @@ class PkwtContractController extends Controller
     {
         $this->authorizeCandidateContract($contract);
 
-        return view('user.pkwt-contracts.show', compact('contract'));
+        return view('user.pkwt-contracts.show', [
+            'contract' => $contract,
+            'html' => $contract->displayable_contract_content,
+            'consentText' => self::CONSENT_TEXT,
+        ]);
     }
 
     public function download(VhirePkwtContract $contract, PkwtContractFileService $files)
@@ -41,7 +47,7 @@ class PkwtContractController extends Controller
     public function sign(CandidateSignPkwtContractRequest $request, VhirePkwtContract $contract, PkwtContractService $contracts)
     {
         try {
-            $contracts->signElectronically($contract, Auth::user(), $request->input('candidate_signature'));
+            $contracts->signElectronically($contract, Auth::user(), $request->input('signature_data'));
             Alert::success('Berhasil', 'Kontrak PKWT 1 berhasil ditandatangani.');
         } catch (\InvalidArgumentException $e) {
             Alert::error('Gagal', $e->getMessage());

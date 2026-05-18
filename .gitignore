@@ -1,5 +1,11 @@
 /node_modules
 /public
+!/public/
+/public/*
+!/public/vendor/
+/public/vendor/*
+!/public/vendor/tinymce/
+!/public/vendor/tinymce/**
 /public/hot
 /public/storage
 /storage/*.key

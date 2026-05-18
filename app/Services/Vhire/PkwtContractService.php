@@ -232,7 +232,7 @@ class PkwtContractService
         });
     }
 
-    public function signElectronically(VhirePkwtContract $contract, User $user, ?string $candidateSignature = null): VhirePkwtContract
+    public function signElectronically(VhirePkwtContract $contract, User $user, ?string $signatureData = null): VhirePkwtContract
     {
         $candidateNoKtp = preg_replace('/\D+/', '', (string) ($user->no_ktp ?? optional($user->biodata)->no_ktp));
 
@@ -244,6 +244,7 @@ class PkwtContractService
             throw new InvalidArgumentException('Kontrak tidak tersedia untuk tanda tangan elektronik di V-Hire.');
         }
 
+        $signatureMetadata = $this->signatureMetadata($signatureData);
         $old = $contract->toArray();
 
         $contract->forceFill([
@@ -253,14 +254,34 @@ class PkwtContractService
             'signed_by_source' => 'vhire',
         ])->save();
 
-        app(VhireAuditLogger::class)->log('pkwt_contract_signed_electronically', $contract, $old, $contract->fresh()->toArray(), [
-            'candidate_signature' => Str::limit($candidateSignature ?: $contract->nama, 255, ''),
-        ], 'vhire');
+        app(VhireAuditLogger::class)->log('pkwt_contract_signed_electronically', $contract, $old, $contract->fresh()->toArray(), $signatureMetadata, 'vhire');
 
         SyncContractSignatureStatusToHris::dispatch($contract->id)
             ->onQueue((string) config('recruitment.hris_api.queue', 'default'));
 
         return $contract->fresh();
+    }
+
+    private function signatureMetadata(?string $signatureData): array
+    {
+        if (! is_string($signatureData) || ! preg_match('/^data:image\/png;base64,/', $signatureData)) {
+            throw new InvalidArgumentException('Tanda tangan kandidat wajib diisi.');
+        }
+
+        $decoded = base64_decode(substr($signatureData, strpos($signatureData, ',') + 1), true);
+
+        if ($decoded === false || strlen($decoded) < 100) {
+            throw new InvalidArgumentException('Data tanda tangan tidak dapat dibaca.');
+        }
+
+        if (strlen($decoded) > 1024 * 1024) {
+            throw new InvalidArgumentException('Ukuran tanda tangan terlalu besar.');
+        }
+
+        return [
+            'signature_hash' => hash('sha256', $decoded),
+            'signature_size' => strlen($decoded),
+        ];
     }
 
     public function visibleContractsForUser(User $user)

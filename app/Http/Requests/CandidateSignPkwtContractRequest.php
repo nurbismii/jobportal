@@ -11,18 +11,25 @@ class CandidateSignPkwtContractRequest extends FormRequest
         return true;
     }
 
-    protected function prepareForValidation()
-    {
-        $this->merge([
-            'candidate_signature' => trim((string) $this->input('candidate_signature')),
-        ]);
-    }
-
     public function rules()
     {
         return [
-            'candidate_signature' => ['required', 'string', 'max:255'],
-            'agreement' => ['accepted'],
+            'consent' => ['accepted'],
+            'signature_data' => [
+                'required',
+                'string',
+                'regex:/^data:image\/png;base64,/',
+                'max:1500000',
+            ],
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'consent.accepted' => 'Anda perlu menyetujui pernyataan sebelum menandatangani.',
+            'signature_data.required' => 'Tanda tangan wajib diisi.',
+            'signature_data.regex' => 'Format tanda tangan tidak valid.',
         ];
     }
 }

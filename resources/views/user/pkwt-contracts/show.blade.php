@@ -1,61 +1,111 @@
 @extends('layouts.app')
 
+@section('title', 'Tanda Tangan Kontrak')
+
 @push('styles')
 <style>
-    .pkwt-contract-content {
-        color: #2f3542;
-        font-size: .98rem;
-        line-height: 1.75;
-        overflow-x: auto;
+    .secure-contract-viewer {
+        background: #f3f4f6;
+        border-radius: 10px;
+        padding: 14px;
     }
 
-    .pkwt-contract-content p,
-    .pkwt-contract-content ul,
-    .pkwt-contract-content ol,
-    .pkwt-contract-content table,
-    .pkwt-contract-content blockquote {
+    .secure-contract-page {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+        margin: 0 auto;
+        max-width: 850px;
+        min-height: 900px;
+        padding: 38px;
+        position: relative;
+    }
+
+    .secure-contract-page::before {
+        color: rgba(15, 23, 42, 0.06);
+        content: @json(($contract->display_number ?: $contract->masked_no_ktp) . ' - ' . now()->format('Y-m-d H:i'));
+        font-size: 38px;
+        font-weight: 700;
+        left: 50%;
+        pointer-events: none;
+        position: absolute;
+        top: 50%;
+        transform: translate(-50%, -50%) rotate(-28deg);
+        white-space: nowrap;
+        z-index: 0;
+    }
+
+    .secure-contract-content {
+        color: #111827;
+        font-size: .95rem;
+        line-height: 1.7;
+        overflow-x: auto;
+        position: relative;
+        z-index: 1;
+    }
+
+    .secure-contract-content p,
+    .secure-contract-content ul,
+    .secure-contract-content ol,
+    .secure-contract-content table,
+    .secure-contract-content blockquote {
         margin-bottom: 1rem;
     }
 
-    .pkwt-contract-content table {
-        width: 100%;
+    .secure-contract-content table {
         border-collapse: collapse;
+        width: 100%;
     }
 
-    .pkwt-contract-content th,
-    .pkwt-contract-content td {
-        border: 1px solid #dfe4ea;
-        padding: .65rem .75rem;
+    .secure-contract-content td,
+    .secure-contract-content th {
+        border: 1px solid #d1d5db;
+        padding: 6px;
         vertical-align: top;
     }
 
-    .pkwt-signature-panel {
-        border: 1px solid #dfe4ea;
-        border-radius: 8px;
-        background: #fff;
-        padding: 1rem;
-    }
-
-    .pkwt-signature-preview {
-        min-height: 88px;
-        border: 1px dashed #a4b0be;
-        border-radius: 6px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 1rem;
-        color: #1e3799;
-        font-family: "Segoe Script", "Brush Script MT", cursive;
-        font-size: 1.7rem;
-        line-height: 1.25;
+    .secure-contract-content .contract-signature-slot {
+        display: block;
+        height: 86px;
+        line-height: normal;
+        margin: 4px 0;
         text-align: center;
-        word-break: break-word;
     }
 
-    .pkwt-company-signature-preview {
-        color: #6c757d;
-        font-family: inherit;
-        font-size: 1rem;
+    .secure-contract-content .contract-signature-box {
+        border: 0 !important;
+        border-collapse: collapse;
+        height: 86px;
+        margin: 0;
+        width: 100%;
+    }
+
+    .secure-contract-content .contract-signature-box td {
+        border: 0 !important;
+        height: 86px;
+        padding: 0 !important;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .signature-pad {
+        background: #fff;
+        border: 1px dashed #94a3b8;
+        border-radius: 8px;
+        height: 220px;
+        touch-action: none;
+        width: 100%;
+    }
+
+    @media (max-width: 576px) {
+        .secure-contract-page {
+            min-height: 680px;
+            padding: 22px;
+        }
+
+        .secure-contract-page::before {
+            font-size: 22px;
+        }
     }
 </style>
 @endpush
@@ -69,86 +119,98 @@
 
 <div class="container-fluid py-5 bg-light">
     <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-lg-9">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body p-4 p-md-5">
-                        <div class="d-flex justify-content-between align-items-start mb-4">
-                            <div>
-                                <h1 class="h3 fw-bold mb-1">Kontrak PKWT 1</h1>
-                                <div class="text-muted">{{ $contract->kode_kontrak ?: $contract->no_pkwt }}</div>
-                            </div>
-                            <span class="badge bg-warning text-dark">{{ ucwords(str_replace('_', ' ', $contract->signature_status)) }}</span>
-                        </div>
+        <div class="d-flex align-items-start align-items-md-center flex-column flex-md-row gap-2 mb-4">
+            <div>
+                <h1 class="h3 fw-bold mb-1">Kontrak Elektronik PKWT 1</h1>
+                <div class="text-muted">{{ $contract->display_number ?: '-' }}</div>
+            </div>
+            <div class="ms-md-auto">
+                <a href="{{ route('kontrak-pkwt.index') }}" class="btn btn-light rounded-pill px-4">Kembali</a>
+            </div>
+        </div>
 
-                        <div class="row mb-4">
-                            <div class="col-md-6 mb-2"><strong>Nama:</strong> {{ $contract->nama }}</div>
-                            <div class="col-md-6 mb-2"><strong>No KTP:</strong> {{ $contract->masked_no_ktp }}</div>
-                            <div class="col-md-6 mb-2"><strong>Jabatan:</strong> {{ $contract->jabatan ?: '-' }}</div>
-                            <div class="col-md-6 mb-2"><strong>Durasi:</strong> {{ $contract->durasi_kontrak ?: '-' }}</div>
-                            <div class="col-md-6 mb-2"><strong>Mulai:</strong> {{ optional($contract->tanggal_mulai_kontrak)->format('d-m-Y') ?: '-' }}</div>
-                            <div class="col-md-6 mb-2"><strong>Akhir:</strong> {{ optional($contract->tanggal_akhir_kontrak)->format('d-m-Y') ?: '-' }}</div>
+        <div class="row g-3">
+            <div class="col-lg-8">
+                <div class="secure-contract-viewer">
+                    <div class="secure-contract-page">
+                        <div class="secure-contract-content">
+                            @if($html)
+                                {!! $html !!}
+                            @else
+                                <div class="text-center text-muted py-5">
+                                    Dokumen kontrak belum tersedia untuk ditampilkan.
+                                </div>
+                            @endif
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-body">
+                        <h5 class="mb-3">Ringkasan</h5>
+                        <dl class="row mb-0 small">
+                            <dt class="col-5">Status</dt>
+                            <dd class="col-7">{{ $contract->signature_status_label }}</dd>
+                            <dt class="col-5">Tipe</dt>
+                            <dd class="col-7">Kontrak PKWT 1</dd>
+                            <dt class="col-5">Nama</dt>
+                            <dd class="col-7">{{ $contract->nama ?: '-' }}</dd>
+                            <dt class="col-5">No KTP</dt>
+                            <dd class="col-7">{{ $contract->masked_no_ktp }}</dd>
+                            <dt class="col-5">No PKWT</dt>
+                            <dd class="col-7">{{ $contract->no_pkwt ?: '-' }}</dd>
+                            <dt class="col-5">Jabatan</dt>
+                            <dd class="col-7">{{ $contract->jabatan ?: '-' }}</dd>
+                            <dt class="col-5">Periode</dt>
+                            <dd class="col-7">
+                                {{ optional($contract->tanggal_mulai_kontrak)->format('d M Y') ?: '-' }}
+                                s/d
+                                {{ optional($contract->tanggal_akhir_kontrak)->format('d M Y') ?: '-' }}
+                            </dd>
+                        </dl>
 
                         @if($contract->contract_file_path)
-                        <div class="mb-4">
-                            <a href="{{ route('kontrak-pkwt.download', $contract->id) }}" target="_blank" class="btn btn-outline-primary rounded-pill px-4">
+                            <a href="{{ route('kontrak-pkwt.download', $contract->id) }}" target="_blank" class="btn btn-outline-primary btn-sm w-100 mt-3">
                                 <i class="fa fa-file-pdf me-1"></i> Buka Dokumen Kontrak
                             </a>
-                        </div>
                         @endif
+                    </div>
+                </div>
 
-                        @php($displayableContractContent = $contract->displayable_contract_content)
-                        @if($displayableContractContent)
-                        <div class="border rounded p-4 bg-white mb-4 pkwt-contract-content">{!! $displayableContractContent !!}</div>
-                        @endif
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="mb-2">Tanda Tangan</h5>
+                        <p class="small text-muted">Gunakan jari atau mouse di area tanda tangan. Tanda tangan ini hanya berlaku untuk kontrak ini.</p>
 
-                        <form method="POST" action="{{ route('kontrak-pkwt.sign', $contract->id) }}">
+                        <form action="{{ route('kontrak-pkwt.sign', $contract->id) }}" method="POST" id="signatureForm">
                             @csrf
-                            <div class="row g-3 mb-4">
-                                <div class="col-md-6">
-                                    <div class="pkwt-signature-panel h-100">
-                                        <div class="small text-muted mb-3">Pihak Perusahaan</div>
-                                        <div class="pkwt-signature-preview pkwt-company-signature-preview">
-                                            Perwakilan Perusahaan
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="pkwt-signature-panel h-100">
-                                        <label for="candidate_signature" class="form-label fw-bold">Tanda Tangan Kandidat</label>
-                                        <div id="candidate-signature-preview" class="pkwt-signature-preview mb-3">
-                                            {{ old('candidate_signature', $contract->nama) ?: 'Nama kandidat' }}
-                                        </div>
-                                        <input
-                                            class="form-control @error('candidate_signature') is-invalid @enderror"
-                                            type="text"
-                                            name="candidate_signature"
-                                            id="candidate_signature"
-                                            value="{{ old('candidate_signature', $contract->nama) }}"
-                                            placeholder="Ketik nama lengkap sebagai tanda tangan"
-                                            maxlength="255"
-                                            required
-                                        >
-                                        @error('candidate_signature')
-                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
+                            <canvas id="signaturePad" class="signature-pad"></canvas>
+                            <input type="hidden" name="signature_data" id="signatureData">
+                            @error('signature_data')
+                                <div class="text-danger small mt-2">{{ $message }}</div>
+                            @enderror
+
+                            <div class="d-flex gap-2 mt-2">
+                                <button type="button" class="btn btn-outline-secondary btn-sm" id="clearSignature">
+                                    Bersihkan
+                                </button>
                             </div>
-                            <div class="form-check mb-3">
-                                <input class="form-check-input @error('agreement') is-invalid @enderror" type="checkbox" name="agreement" value="1" id="agreement" required>
-                                <label class="form-check-label" for="agreement">
-                                    Saya telah membaca dan menyetujui isi kontrak PKWT 1 ini.
+
+                            <div class="form-check mt-3">
+                                <input class="form-check-input @error('consent') is-invalid @enderror" type="checkbox" name="consent" value="1" id="consent">
+                                <label class="form-check-label small" for="consent">
+                                    {{ $consentText }}
                                 </label>
-                                @error('agreement')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @error('consent')
+                                    <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-                            <button type="submit" class="btn btn-primary rounded-pill px-4">
-                                Tanda Tangani Kontrak
+
+                            <button type="submit" class="btn btn-primary w-100 mt-3">
+                                Tandatangani Kontrak
                             </button>
-                            <a href="{{ route('kontrak-pkwt.index') }}" class="btn btn-link">Kembali</a>
                         </form>
                     </div>
                 </div>
@@ -160,17 +222,91 @@
 
 @push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var signatureInput = document.getElementById('candidate_signature');
-        var signaturePreview = document.getElementById('candidate-signature-preview');
+    (function () {
+        var canvas = document.getElementById('signaturePad');
+        var form = document.getElementById('signatureForm');
 
-        if (!signatureInput || !signaturePreview) {
+        if (!canvas || !form) {
             return;
         }
 
-        signatureInput.addEventListener('input', function () {
-            signaturePreview.textContent = signatureInput.value.trim() || 'Nama kandidat';
+        var context = canvas.getContext('2d');
+        var drawing = false;
+        var hasStroke = false;
+
+        function resizeCanvas() {
+            var ratio = Math.max(window.devicePixelRatio || 1, 1);
+            var rect = canvas.getBoundingClientRect();
+
+            canvas.width = rect.width * ratio;
+            canvas.height = rect.height * ratio;
+            context.setTransform(1, 0, 0, 1, 0, 0);
+            context.scale(ratio, ratio);
+            context.lineWidth = 2;
+            context.lineCap = 'round';
+            context.strokeStyle = '#111827';
+        }
+
+        function point(event) {
+            var rect = canvas.getBoundingClientRect();
+            var source = event.touches ? event.touches[0] : event;
+
+            return {
+                x: source.clientX - rect.left,
+                y: source.clientY - rect.top
+            };
+        }
+
+        function start(event) {
+            drawing = true;
+            var p = point(event);
+            context.beginPath();
+            context.moveTo(p.x, p.y);
+            event.preventDefault();
+        }
+
+        function move(event) {
+            if (!drawing) {
+                return;
+            }
+
+            var p = point(event);
+            context.lineTo(p.x, p.y);
+            context.stroke();
+            hasStroke = true;
+            event.preventDefault();
+        }
+
+        function end(event) {
+            drawing = false;
+            event.preventDefault();
+        }
+
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        canvas.addEventListener('mousedown', start);
+        canvas.addEventListener('mousemove', move);
+        canvas.addEventListener('mouseup', end);
+        canvas.addEventListener('mouseleave', end);
+        canvas.addEventListener('touchstart', start, { passive: false });
+        canvas.addEventListener('touchmove', move, { passive: false });
+        canvas.addEventListener('touchend', end, { passive: false });
+        canvas.addEventListener('touchcancel', end, { passive: false });
+
+        document.getElementById('clearSignature').addEventListener('click', function () {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            hasStroke = false;
         });
-    });
+
+        form.addEventListener('submit', function (event) {
+            if (!hasStroke) {
+                event.preventDefault();
+                alert('Tanda tangan wajib diisi.');
+                return;
+            }
+
+            document.getElementById('signatureData').value = canvas.toDataURL('image/png');
+        });
+    })();
 </script>
 @endpush

@@ -178,8 +178,8 @@ class VhirePkwtIntegrationTest extends TestCase
         $this->withoutMiddleware(VerifyCsrfToken::class)
             ->actingAs($user)
             ->post(route('kontrak-pkwt.sign', $contract->id), [
-                'candidate_signature' => 'Budi Santoso',
-                'agreement' => '1',
+                'signature_data' => 'data:image/png;base64,' . base64_encode(str_repeat('signature-bytes', 12)),
+                'consent' => '1',
             ])
             ->assertRedirect(route('kontrak-pkwt.index'));
 
@@ -200,7 +200,7 @@ class VhirePkwtIntegrationTest extends TestCase
     {
         $user = $this->createCandidateUser();
         $contract = VhirePkwtContract::create($this->contractRecord([
-            'contract_content' => '&lt;p&gt;Pasal 1&lt;/p&gt;&lt;strong&gt;Isi kontrak&lt;/strong&gt;&lt;script&gt;alert(1)&lt;/script&gt;',
+            'contract_content' => '&lt;p&gt;Pasal 1&lt;/p&gt;&lt;strong&gt;Isi kontrak&lt;/strong&gt;&lt;figure class=&quot;image&quot;&gt;&lt;img src=&quot;https://example.test/logo.png&quot; alt=&quot;Logo&quot;&gt;&lt;figcaption&gt;Logo&lt;/figcaption&gt;&lt;/figure&gt;&lt;a href=&quot;https://example.test&quot; target=&quot;_blank&quot;&gt;Referensi&lt;/a&gt;&lt;div class=&quot;contract-signature-slot&quot; style=&quot;display: block; height: 86px; text-align: center;&quot;&gt;&lt;table class=&quot;contract-signature-box&quot;&gt;&lt;tr&gt;&lt;td&gt;&lt;img src=&quot;data:image/png;base64,' . base64_encode(str_repeat('first-party-signature', 6)) . '&quot; alt=&quot;Tanda tangan elektronik&quot; class=&quot;contract-signature-image&quot; style=&quot;height: 76px; max-width: 220px; vertical-align: middle;&quot;&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;script&gt;alert(1)&lt;/script&gt;',
         ]));
 
         $response = $this->actingAs($user)
@@ -209,10 +209,17 @@ class VhirePkwtIntegrationTest extends TestCase
         $response->assertOk()
             ->assertSee('<p>Pasal 1</p>', false)
             ->assertSee('<strong>Isi kontrak</strong>', false)
+            ->assertSee('<figure class="image">', false)
+            ->assertSee('<figcaption>Logo</figcaption>', false)
+            ->assertSee('href="https://example.test"', false)
+            ->assertSee('src="data:image/png;base64,', false)
+            ->assertSee('contract-signature-image')
             ->assertDontSee('&lt;p&gt;Pasal 1&lt;/p&gt;', false)
             ->assertDontSee('alert(1)')
-            ->assertSee('Tanda Tangan Kandidat')
-            ->assertSee('name="candidate_signature"', false);
+            ->assertSee('contract-signature-slot')
+            ->assertSee('Kontrak Elektronik PKWT 1')
+            ->assertSee('id="signaturePad"', false)
+            ->assertSee('name="signature_data"', false);
     }
 
     public function test_invalid_no_ktp_is_rejected_on_contract_import()
