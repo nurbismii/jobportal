@@ -3,10 +3,13 @@
 namespace Tests\Feature;
 
 use App\Jobs\SyncContractSignatureStatusToHris;
+use App\Jobs\SyncOnboardingCandidateToHris;
 use App\Http\Middleware\VerifyCsrfToken;
 use App\Models\Biodata;
+use App\Models\Lamaran;
 use App\Models\User;
 use App\Models\VhirePkwtContract;
+use App\Services\Vhire\OnboardingCandidateSyncService;
 use App\Services\Vhire\PkwtContractService;
 use Carbon\Carbon;
 use Illuminate\Database\Schema\Blueprint;
@@ -116,6 +119,56 @@ class VhirePkwtIntegrationTest extends TestCase
         $this->assertDatabaseHas('vhire_integration_audit_logs', [
             'event' => 'pkwt_contract_matched_to_candidate',
         ]);
+    }
+
+    public function test_onboarding_candidate_payload_includes_profile_data_for_hris_employee_sync()
+    {
+        Queue::fake();
+
+        $user = $this->createCandidateUser();
+        $user->update(['area_kerja' => 'VDNI']);
+        $user->biodata->update([
+            'no_telp' => '081234567890',
+            'no_kk' => '1234567890123000',
+            'no_npwp' => '12.345.678.9-012.000',
+            'jenis_kelamin' => 'L',
+            'tanggal_lahir' => '1997-06-22',
+            'agama' => 'ISLAM',
+            'alamat' => 'JL. KTP KANDIDAT',
+            'alamat_domisili' => 'JL. DOMISILI KANDIDAT',
+            'kode_pos' => '93231',
+            'rt' => '001',
+            'rw' => '002',
+            'hobi' => 'Futsal',
+            'golongan_darah' => 'O',
+            'tinggi_badan' => '170',
+            'berat_badan' => '65',
+            'pendidikan_terakhir' => 'SMA',
+            'nama_instansi' => 'SMAN 1',
+            'jurusan' => 'IPA',
+            'nama_ayah' => 'Bapak Kandidat',
+            'nama_ibu' => 'Ibu Kandidat',
+            'status_pernikahan' => 'Belum Kawin',
+        ]);
+
+        $candidate = app(OnboardingCandidateSyncService::class)
+            ->prepareFromLamaran(Lamaran::firstOrFail(), '2026-04-15');
+        $payload = app(OnboardingCandidateSyncService::class)->payload($candidate->fresh());
+
+        $this->assertSame('1234567890123000', $payload['no_kk']);
+        $this->assertSame('123456789012000', $payload['npwp']);
+        $this->assertSame('081234567890', $payload['no_telp']);
+        $this->assertSame('1997-06-22', $payload['tanggal_lahir']);
+        $this->assertSame('JL. KTP KANDIDAT', $payload['alamat_ktp']);
+        $this->assertSame('JL. DOMISILI KANDIDAT', $payload['alamat_domisili']);
+        $this->assertSame('Ibu Kandidat', $payload['nama_ibu_kandung']);
+        $this->assertSame('Bapak Kandidat', $payload['nama_bapak']);
+        $this->assertSame('SMAN 1', $payload['nama_instansi_pendidikan']);
+        $this->assertSame('SMA', $payload['pendidikan_terakhir']);
+        $this->assertSame('VDNI', $payload['kode_area_kerja']);
+        $this->assertSame('PKWT', $payload['status_karyawan']);
+
+        Queue::assertPushed(SyncOnboardingCandidateToHris::class);
     }
 
     public function test_hris_activation_hides_contract_from_vhire_without_deleting_it()
@@ -297,6 +350,7 @@ class VhirePkwtIntegrationTest extends TestCase
             $table->string('email')->nullable();
             $table->string('password')->nullable();
             $table->string('role')->default('user');
+            $table->string('area_kerja')->nullable();
             $table->unsignedTinyInteger('status_akun')->default(1);
             $table->timestamp('email_verified_at')->nullable();
             $table->rememberToken();
@@ -307,6 +361,29 @@ class VhirePkwtIntegrationTest extends TestCase
             $table->id();
             $table->unsignedBigInteger('user_id')->nullable();
             $table->string('no_ktp', 32)->nullable();
+            $table->string('no_telp')->nullable();
+            $table->string('no_kk', 32)->nullable();
+            $table->string('no_npwp')->nullable();
+            $table->string('jenis_kelamin')->nullable();
+            $table->string('tempat_lahir')->nullable();
+            $table->date('tanggal_lahir')->nullable();
+            $table->string('agama')->nullable();
+            $table->text('alamat')->nullable();
+            $table->text('alamat_domisili')->nullable();
+            $table->string('kode_pos')->nullable();
+            $table->string('rt')->nullable();
+            $table->string('rw')->nullable();
+            $table->string('hobi')->nullable();
+            $table->string('golongan_darah')->nullable();
+            $table->string('tinggi_badan')->nullable();
+            $table->string('berat_badan')->nullable();
+            $table->string('pendidikan_terakhir')->nullable();
+            $table->string('nama_instansi')->nullable();
+            $table->string('jurusan')->nullable();
+            $table->string('nama_ayah')->nullable();
+            $table->string('nama_ibu')->nullable();
+            $table->string('status_pernikahan')->nullable();
+            $table->date('tanggal_nikah')->nullable();
             $table->timestamps();
         });
 
@@ -317,6 +394,13 @@ class VhirePkwtIntegrationTest extends TestCase
             $table->unsignedBigInteger('loker_id')->nullable();
             $table->unsignedTinyInteger('status_lamaran')->default(1);
             $table->string('status_proses')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('lowongan', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('permintaan_tenaga_kerja_id')->nullable();
+            $table->string('nama_lowongan')->nullable();
             $table->timestamps();
         });
     }
