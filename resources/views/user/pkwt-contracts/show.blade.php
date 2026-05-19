@@ -194,7 +194,7 @@
                                 @enderror
 
                                 <div class="d-flex gap-2 mt-2">
-                                    <button type="button" class="btn btn-outline-light btn-sm" id="clearSignature">
+                                    <button type="button" class="btn btn-light btn-sm" id="clearSignature">
                                         Bersihkan
                                     </button>
                                 </div>
