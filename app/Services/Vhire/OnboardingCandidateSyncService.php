@@ -45,8 +45,10 @@ class OnboardingCandidateSyncService
             'nama' => trim((string) ($user->name ?? $biodata->nama ?? '')),
             'jabatan' => $this->stringOrNull($ptk->posisi ?? $lowongan->nama_lowongan ?? null),
             'tanggal_mulai_kerja' => $tanggalMulaiKerja ? date('Y-m-d', strtotime((string) $tanggalMulaiKerja)) : null,
-            'departemen' => $this->stringOrNull(optional($ptk->departemen ?? null)->departemen),
-            'divisi' => $this->stringOrNull(optional($ptk->divisi ?? null)->nama_divisi),
+            'departemen' => $this->stringOrNull(optional(optional($ptk)->departemen)->departemen),
+            'departemen_id' => $this->integerOrNull(optional($ptk)->departemen_id),
+            'divisi' => $this->stringOrNull(optional(optional($ptk)->divisi)->nama_divisi),
+            'divisi_id' => $this->integerOrNull(optional($ptk)->divisi_id),
             'lokasi' => $this->stringOrNull($user->area_kerja ?? null),
             'recruitment_status' => 'proses_tanda_tangan_kontrak',
             'onboarding_status' => 'draft',
@@ -121,7 +123,9 @@ class OnboardingCandidateSyncService
             'jabatan' => $candidate->jabatan ?: ($workPayload['jabatan'] ?? null),
             'tanggal_mulai_kerja' => optional($candidate->tanggal_mulai_kerja)->format('Y-m-d'),
             'departemen' => $candidate->departemen ?: ($workPayload['departemen'] ?? null),
+            'departemen_id' => $workPayload['departemen_id'] ?? ($storedPayload['departemen_id'] ?? null),
             'divisi' => $workPayload['divisi'] ?? ($storedPayload['divisi'] ?? null),
+            'divisi_id' => $workPayload['divisi_id'] ?? ($storedPayload['divisi_id'] ?? null),
             'lokasi' => $candidate->lokasi,
             'recruitment_status' => $candidate->recruitment_status,
             'onboarding_status' => $candidate->onboarding_status,
@@ -151,6 +155,10 @@ class OnboardingCandidateSyncService
             'alamat' => $this->stringOrNull(optional($biodata)->alamat),
             'alamat_ktp' => $this->stringOrNull(optional($biodata)->alamat),
             'alamat_domisili' => $this->stringOrNull(optional($biodata)->alamat_domisili) ?: $this->stringOrNull(optional($biodata)->alamat),
+            'provinsi_id' => $this->integerOrNull(optional($biodata)->provinsi),
+            'kabupaten_id' => $this->integerOrNull(optional($biodata)->kabupaten),
+            'kecamatan_id' => $this->integerOrNull(optional($biodata)->kecamatan),
+            'kelurahan_id' => $this->integerOrNull(optional($biodata)->kelurahan),
             'nama_ibu_kandung' => $this->stringOrNull(optional($biodata)->nama_ibu),
             'nama_bapak' => $this->stringOrNull(optional($biodata)->nama_ayah),
             'nama_suami_atau_istri' => $this->stringOrNull(optional($biodata)->nama_ayah),
@@ -186,8 +194,10 @@ class OnboardingCandidateSyncService
 
         return [
             'jabatan' => $this->stringOrNull($ptk->posisi ?? optional($lowongan)->nama_lowongan ?? null),
-            'departemen' => $this->stringOrNull(optional($ptk->departemen ?? null)->departemen),
-            'divisi' => $this->stringOrNull(optional($ptk->divisi ?? null)->nama_divisi),
+            'departemen' => $this->stringOrNull(optional(optional($ptk)->departemen)->departemen),
+            'departemen_id' => $this->integerOrNull(optional($ptk)->departemen_id),
+            'divisi' => $this->stringOrNull(optional(optional($ptk)->divisi)->nama_divisi),
+            'divisi_id' => $this->integerOrNull(optional($ptk)->divisi_id),
         ];
     }
 
@@ -196,6 +206,19 @@ class OnboardingCandidateSyncService
         $digits = preg_replace('/\D+/', '', (string) $value);
 
         return $digits === '' ? null : $digits;
+    }
+
+    private function integerOrNull($value): ?int
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (is_numeric($value) && (int) $value > 0) {
+            return (int) $value;
+        }
+
+        return null;
     }
 
     private function dateOrNull($value): ?string

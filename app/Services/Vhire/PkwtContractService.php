@@ -323,7 +323,7 @@ class PkwtContractService
 
     public function signaturePayload(VhirePkwtContract $contract): array
     {
-        $payload = [
+        $payload = array_merge([
             'hris_contract_id' => $contract->hris_contract_id,
             'kode_kontrak' => $contract->kode_kontrak,
             'no_pkwt' => $contract->no_pkwt,
@@ -334,7 +334,7 @@ class PkwtContractService
             'status_tanda_tangan' => $contract->status_tanda_tangan,
             'signed_at' => optional($contract->signed_at)->toIso8601String(),
             'signed_by_source' => $contract->signed_by_source,
-        ];
+        ], $this->candidateProfilePayloadForHris($contract));
 
         if (
             $contract->signature_status === 'signed'
@@ -439,6 +439,7 @@ class PkwtContractService
         $lamaran = $candidateMatch['lamaran'] ?? null;
         $biodata = $candidateMatch['biodata'] ?? null;
         $user = $candidateMatch['user'] ?? null;
+        $profilePayload = $this->candidateProfilePayloadFromMatch($biodata, $user, $lamaran);
         $candidateCode = $this->resolveCandidateCode($data, $candidateMatch, null);
         $vhireCandidateId = $this->resolveVhireCandidateId($data, $candidateMatch, null);
 
@@ -465,11 +466,49 @@ class PkwtContractService
                 'contract_duration_value' => (int) ($data['duration_value'] ?? $setting->duration_value),
                 'contract_duration_unit' => (string) ($data['duration_unit'] ?? $setting->duration_unit),
                 'signing_method' => $data['signing_method'] ?? 'electronic',
-                'payload' => $data,
+                'payload' => $this->compactPayload(array_merge($data, $profilePayload)),
                 'sync_status' => 'contract_generated',
                 'last_sync_error' => null,
             ]
         );
+    }
+
+    private function candidateProfilePayloadForHris(VhirePkwtContract $contract): array
+    {
+        $contract->loadMissing(
+            'matchedBiodata.user',
+            'matchedUser',
+            'matchedLamaran.lowongan.permintaanTenagaKerja.departemen',
+            'matchedLamaran.lowongan.permintaanTenagaKerja.divisi',
+            'onboardingCandidate.biodata.user',
+            'onboardingCandidate.user',
+            'onboardingCandidate.lamaran.lowongan.permintaanTenagaKerja.departemen',
+            'onboardingCandidate.lamaran.lowongan.permintaanTenagaKerja.divisi'
+        );
+
+        $biodata = $contract->matchedBiodata ?: optional($contract->onboardingCandidate)->biodata;
+        $user = $contract->matchedUser ?: optional($biodata)->user ?: optional($contract->onboardingCandidate)->user;
+        $lamaran = $contract->matchedLamaran ?: optional($contract->onboardingCandidate)->lamaran;
+
+        return $this->candidateProfilePayloadFromMatch($biodata, $user, $lamaran);
+    }
+
+    private function candidateProfilePayloadFromMatch($biodata, $user, $lamaran): array
+    {
+        $lowongan = optional($lamaran)->lowongan;
+        $ptk = optional($lowongan)->permintaanTenagaKerja;
+
+        return $this->compactPayload([
+            'departemen' => $this->stringOrNull(optional(optional($ptk)->departemen)->departemen),
+            'departemen_id' => $this->integerOrNull(optional($ptk)->departemen_id),
+            'divisi' => $this->stringOrNull(optional(optional($ptk)->divisi)->nama_divisi),
+            'divisi_id' => $this->integerOrNull(optional($ptk)->divisi_id),
+            'provinsi_id' => $this->integerOrNull(optional($biodata)->provinsi),
+            'kabupaten_id' => $this->integerOrNull(optional($biodata)->kabupaten),
+            'kecamatan_id' => $this->integerOrNull(optional($biodata)->kecamatan),
+            'kelurahan_id' => $this->integerOrNull(optional($biodata)->kelurahan),
+            'kode_area_kerja' => $this->stringOrNull(optional($user)->area_kerja),
+        ]);
     }
 
     private function resolveVhireCandidateId(array $data, ?array $candidateMatch, ?VhirePkwtContract $contract): string
@@ -612,6 +651,31 @@ class PkwtContractService
     private function signatureStatusToStatusTandaTangan(string $signatureStatus): string
     {
         return $signatureStatus === 'signed' ? 'signed' : $signatureStatus;
+    }
+
+    private function stringOrNull($value): ?string
+    {
+        $value = trim((string) $value);
+
+        return $value === '' ? null : $value;
+    }
+
+    private function integerOrNull($value): ?int
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (is_numeric($value) && (int) $value > 0) {
+            return (int) $value;
+        }
+
+        return null;
+    }
+
+    private function compactPayload(array $payload): array
+    {
+        return array_filter($payload, fn($value) => $value !== null && $value !== '');
     }
 
     private function sanitizePayload(array $data): array
