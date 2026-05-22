@@ -13,10 +13,12 @@ use App\Services\Vhire\OnboardingCandidateSyncService;
 use App\Services\Vhire\PkwtContractService;
 use Carbon\Carbon;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
+use PDOException;
 use Tests\TestCase;
 
 class VhirePkwtIntegrationTest extends TestCase
@@ -338,6 +340,39 @@ class VhirePkwtIntegrationTest extends TestCase
             ->assertStatus(422)
             ->assertJsonValidationErrors('no_ktp');
 
+        $this->assertDatabaseCount('vhire_pkwt_contracts', 0);
+    }
+
+    public function test_contract_import_database_failure_returns_traceable_json()
+    {
+        $previous = new PDOException('SQLSTATE[42S22]: Column not found: 1054 Unknown column matched_biodata_id');
+        $previous->errorInfo = ['42S22', 1054, 'Unknown column matched_biodata_id'];
+        $exception = new QueryException('insert into vhire_pkwt_contracts values (?)', [], $previous);
+
+        $this->app->instance(PkwtContractService::class, new class($exception) extends PkwtContractService {
+            private $exception;
+
+            public function __construct(QueryException $exception)
+            {
+                $this->exception = $exception;
+            }
+
+            public function importFromHris(array $data): VhirePkwtContract
+            {
+                throw $this->exception;
+            }
+        });
+
+        $response = $this->withHeader('Authorization', 'Bearer test-token')
+            ->postJson('/api/vhire/contracts', $this->contractPayload());
+
+        $response->assertStatus(500)
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('message', 'Import kontrak PKWT 1 gagal diproses di V-Hire.')
+            ->assertJsonPath('error_detail', 'Struktur tabel V-Hire belum sesuai dengan kode terbaru. Jalankan migration V-Hire, lalu retry sync dari HRIS.')
+            ->assertJsonStructure(['error_id']);
+
+        $this->assertStringNotContainsString('1234567890123456', $response->getContent());
         $this->assertDatabaseCount('vhire_pkwt_contracts', 0);
     }
 
