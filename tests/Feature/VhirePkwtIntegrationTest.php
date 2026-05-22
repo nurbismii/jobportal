@@ -225,6 +225,87 @@ class VhirePkwtIntegrationTest extends TestCase
         ]);
     }
 
+    public function test_admin_can_show_pkwt_contracts_in_bulk()
+    {
+        $admin = User::create([
+            'name' => 'Admin V-Hire',
+            'email' => 'admin@example.test',
+            'password' => 'secret',
+            'role' => 'admin',
+            'status_akun' => 1,
+            'email_verified_at' => now(),
+        ]);
+
+        $first = VhirePkwtContract::create($this->contractRecord([
+            'hris_contract_id' => 'HRIS-CONTRACT-BULK-1',
+            'kode_kontrak' => 'PKWT-BULK-001',
+            'no_pkwt' => 'NO/PKWT/BULK/001',
+            'visible_in_vhire' => false,
+            'hidden_reason' => 'Menunggu admin',
+            'hidden_at' => now(),
+        ]));
+
+        $second = VhirePkwtContract::create($this->contractRecord([
+            'hris_contract_id' => 'HRIS-CONTRACT-BULK-2',
+            'kode_kontrak' => 'PKWT-BULK-002',
+            'no_pkwt' => 'NO/PKWT/BULK/002',
+            'visible_in_vhire' => false,
+            'hidden_reason' => 'Menunggu admin',
+            'hidden_at' => now(),
+        ]));
+
+        $alreadyVisible = VhirePkwtContract::create($this->contractRecord([
+            'hris_contract_id' => 'HRIS-CONTRACT-BULK-3',
+            'kode_kontrak' => 'PKWT-BULK-003',
+            'no_pkwt' => 'NO/PKWT/BULK/003',
+            'visible_in_vhire' => true,
+        ]));
+
+        $employeeContract = VhirePkwtContract::create($this->contractRecord([
+            'hris_contract_id' => 'HRIS-CONTRACT-BULK-4',
+            'kode_kontrak' => 'PKWT-BULK-004',
+            'no_pkwt' => 'NO/PKWT/BULK/004',
+            'visible_in_vhire' => false,
+            'hidden_reason' => 'Kandidat sudah aktif sebagai karyawan HRIS',
+            'employee_nik' => 'EMP-0001',
+        ]));
+
+        $this->withoutMiddleware(VerifyCsrfToken::class)
+            ->actingAs($admin)
+            ->post(route('pkwt-contracts.bulk-visibility'), [
+                'selected_ids' => [
+                    $first->id,
+                    $second->id,
+                    $alreadyVisible->id,
+                    $employeeContract->id,
+                ],
+                'bulk_action' => 'show',
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('vhire_pkwt_contracts', [
+            'id' => $first->id,
+            'visible_in_vhire' => 1,
+            'hidden_reason' => null,
+        ]);
+
+        $this->assertDatabaseHas('vhire_pkwt_contracts', [
+            'id' => $second->id,
+            'visible_in_vhire' => 1,
+            'hidden_reason' => null,
+        ]);
+
+        $this->assertDatabaseHas('vhire_pkwt_contracts', [
+            'id' => $employeeContract->id,
+            'visible_in_vhire' => 0,
+            'hidden_reason' => 'Kandidat sudah aktif sebagai karyawan HRIS',
+        ]);
+
+        $this->assertSame(2, DB::table('vhire_integration_audit_logs')
+            ->where('event', 'pkwt_contract_visibility_changed')
+            ->count());
+    }
+
     public function test_candidate_can_sign_visible_electronic_contract()
     {
         Queue::fake();

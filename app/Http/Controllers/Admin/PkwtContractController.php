@@ -9,6 +9,7 @@ use App\Services\Vhire\PkwtContractFileService;
 use App\Services\Vhire\PkwtContractService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 use RealRashid\SweetAlert\Facades\Alert;
 
 class PkwtContractController extends Controller
@@ -63,6 +64,55 @@ class PkwtContractController extends Controller
             Alert::success('Berhasil', 'Visibility kontrak diperbarui.');
         } catch (\InvalidArgumentException $e) {
             Alert::error('Gagal', $e->getMessage());
+        }
+
+        return back();
+    }
+
+    public function bulkUpdateVisibility(Request $request, PkwtContractService $contracts)
+    {
+        $validator = Validator::make($request->all(), [
+            'selected_ids' => ['required', 'array', 'min:1'],
+            'selected_ids.*' => ['integer', 'distinct', 'exists:vhire_pkwt_contracts,id'],
+            'bulk_action' => ['required', 'in:show,hide'],
+            'hidden_reason' => ['nullable', 'string', 'max:255'],
+        ], [
+            'selected_ids.required' => 'Pilih minimal satu kontrak PKWT 1.',
+            'selected_ids.min' => 'Pilih minimal satu kontrak PKWT 1.',
+            'selected_ids.*.exists' => 'Ada kontrak PKWT 1 yang tidak ditemukan.',
+            'bulk_action.in' => 'Aksi massal tidak valid.',
+        ]);
+
+        if ($validator->fails()) {
+            Alert::error('Gagal', $validator->errors()->first());
+
+            return back()->withInput();
+        }
+
+        $validated = $validator->validated();
+        $visible = $validated['bulk_action'] === 'show';
+        $summary = $contracts->bulkUpdateVisibility(
+            $validated['selected_ids'],
+            $visible,
+            $validated['hidden_reason'] ?? null,
+            'admin'
+        );
+
+        $actionLabel = $visible ? 'ditampilkan' : 'disembunyikan';
+        $message = $summary['updated'] . ' kontrak PKWT 1 berhasil ' . $actionLabel . '.';
+
+        if ($summary['unchanged'] > 0) {
+            $message .= ' ' . $summary['unchanged'] . ' kontrak tidak berubah.';
+        }
+
+        if ($summary['skipped_employee'] > 0) {
+            $message .= ' ' . $summary['skipped_employee'] . ' kontrak dilewati karena kandidat sudah memiliki NIK HRIS.';
+        }
+
+        if ($summary['updated'] > 0) {
+            Alert::success('Berhasil', $message);
+        } else {
+            Alert::error('Tidak ada perubahan', $message);
         }
 
         return back();

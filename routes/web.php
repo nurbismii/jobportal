@@ -98,6 +98,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['redirect.role']], function 
     Route::resource('/email-blast-log', 'App\Http\Controllers\Admin\EmailBlastController');
     Route::resource('/kandidat-potensial', 'App\Http\Controllers\Admin\KandidatPotensialController');
     Route::get('/pkwt-contracts', [App\Http\Controllers\Admin\PkwtContractController::class, 'index'])->name('pkwt-contracts.index');
+    Route::post('/pkwt-contracts/visibility/bulk', [App\Http\Controllers\Admin\PkwtContractController::class, 'bulkUpdateVisibility'])->name('pkwt-contracts.bulk-visibility');
     Route::patch('/pkwt-contracts/{contract}/visibility', [App\Http\Controllers\Admin\PkwtContractController::class, 'updateVisibility'])->name('pkwt-contracts.visibility');
     Route::post('/pkwt-contracts/{contract}/rematch', [App\Http\Controllers\Admin\PkwtContractController::class, 'rematch'])->name('pkwt-contracts.rematch');
     Route::post('/pkwt-contracts/{contract}/retry-signature-sync', [App\Http\Controllers\Admin\PkwtContractController::class, 'retrySignatureSync'])->name('pkwt-contracts.retry-signature-sync');

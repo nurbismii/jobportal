@@ -46,10 +46,38 @@
 
 <div class="card shadow">
     <div class="card-body">
+        <form id="bulkPkwtVisibilityForm" method="POST" action="{{ route('pkwt-contracts.bulk-visibility') }}" class="mb-3">
+            @csrf
+            <div class="row align-items-end">
+                <div class="col-md-5 mb-2">
+                    <label class="small font-weight-bold mb-1" for="bulk-hidden-reason">Aksi Massal PKWT 1</label>
+                    <div class="small text-muted">
+                        <span id="pkwtSelectedCount">0</span> kontrak dipilih. Gunakan untuk menampilkan PKWT 1 ke kandidat secara kolektif.
+                    </div>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <input type="text" name="hidden_reason" id="bulk-hidden-reason" class="form-control form-control-sm" placeholder="Alasan jika disembunyikan">
+                </div>
+                <div class="col-md-3 mb-2">
+                    <div class="btn-group btn-block" role="group" aria-label="Aksi massal PKWT 1">
+                        <button type="submit" name="bulk_action" value="show" class="btn btn-success btn-sm">
+                            Tampilkan Terpilih
+                        </button>
+                        <button type="submit" name="bulk_action" value="hide" class="btn btn-secondary btn-sm">
+                            Sembunyikan
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
         <div class="table-responsive">
             <table class="table table-sm table-bordered">
                 <thead>
                     <tr>
+                        <th class="text-center" style="width: 42px">
+                            <input type="checkbox" id="pkwtCheckAll" aria-label="Pilih semua kontrak PKWT 1">
+                        </th>
                         <th>Kandidat</th>
                         <th>Kontrak</th>
                         <th>Periode</th>
@@ -64,6 +92,9 @@
                 <tbody>
                     @forelse($contracts as $contract)
                     <tr>
+                        <td class="text-center">
+                            <input type="checkbox" class="pkwt-contract-checkbox" name="selected_ids[]" value="{{ $contract->id }}" form="bulkPkwtVisibilityForm" aria-label="Pilih kontrak {{ $contract->display_number }}">
+                        </td>
                         <td>
                             <div class="font-weight-bold">{{ $contract->nama }}</div>
                             <div class="small text-muted">{{ $contract->candidate_code }}</div>
@@ -139,7 +170,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="9" class="text-center text-muted">Belum ada kontrak PKWT 1.</td>
+                        <td colspan="10" class="text-center text-muted">Belum ada kontrak PKWT 1.</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -150,3 +181,51 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    (function() {
+        const checkAll = document.getElementById('pkwtCheckAll');
+        const form = document.getElementById('bulkPkwtVisibilityForm');
+        const selectedCount = document.getElementById('pkwtSelectedCount');
+        const checkboxes = Array.from(document.querySelectorAll('.pkwt-contract-checkbox'));
+
+        function refreshSelectedState() {
+            const checkedCount = checkboxes.filter(checkbox => checkbox.checked).length;
+
+            if (selectedCount) {
+                selectedCount.textContent = checkedCount;
+            }
+
+            if (checkAll) {
+                checkAll.checked = checkboxes.length > 0 && checkedCount === checkboxes.length;
+                checkAll.indeterminate = checkedCount > 0 && checkedCount < checkboxes.length;
+            }
+        }
+
+        if (checkAll) {
+            checkAll.addEventListener('change', function() {
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = checkAll.checked;
+                });
+                refreshSelectedState();
+            });
+        }
+
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', refreshSelectedState);
+        });
+
+        if (form) {
+            form.addEventListener('submit', function(event) {
+                if (!checkboxes.some(checkbox => checkbox.checked)) {
+                    event.preventDefault();
+                    alert('Pilih minimal satu kontrak PKWT 1.');
+                }
+            });
+        }
+
+        refreshSelectedState();
+    })();
+</script>
+@endpush

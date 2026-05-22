@@ -164,6 +164,53 @@ class PkwtContractService
         return $contract->fresh();
     }
 
+    public function bulkUpdateVisibility(array $contractIds, bool $visible, ?string $hiddenReason, string $source = 'admin'): array
+    {
+        $ids = collect($contractIds)
+            ->filter(fn ($id) => is_numeric($id))
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        $summary = [
+            'selected' => $ids->count(),
+            'found' => 0,
+            'updated' => 0,
+            'unchanged' => 0,
+            'skipped_employee' => 0,
+            'not_found' => 0,
+        ];
+
+        if ($ids->isEmpty()) {
+            return $summary;
+        }
+
+        VhirePkwtContract::whereIn('id', $ids->all())
+            ->orderBy('id')
+            ->chunkById(100, function ($contracts) use (&$summary, $visible, $hiddenReason, $source) {
+                foreach ($contracts as $contract) {
+                    $summary['found']++;
+
+                    if ($visible && ! blank($contract->employee_nik)) {
+                        $summary['skipped_employee']++;
+                        continue;
+                    }
+
+                    if ((bool) $contract->visible_in_vhire === $visible) {
+                        $summary['unchanged']++;
+                        continue;
+                    }
+
+                    $this->updateVisibility($contract, $visible, $hiddenReason, $source);
+                    $summary['updated']++;
+                }
+            });
+
+        $summary['not_found'] = max(0, $summary['selected'] - $summary['found']);
+
+        return $summary;
+    }
+
     public function markActivated(array $data): int
     {
         return DB::transaction(function () use ($data) {
