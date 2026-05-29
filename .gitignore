@@ -2,6 +2,10 @@
 /public
 !/public/
 /public/*
+!/public/pdf/
+/public/pdf/*
+!/public/pdf/manual-book-v-hire-user.pdf
+!/public/pdf/MANUAL BOOK V-HIRE (1).pdf
 !/public/vendor/
 /public/vendor/*
 !/public/vendor/tinymce/

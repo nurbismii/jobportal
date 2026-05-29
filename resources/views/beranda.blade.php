@@ -59,7 +59,7 @@
                                 <a class="btn btn-light rounded-pill py-3 px-4 px-md-5 me-2" href="{{ route('login') }}">
                                     <i class="fas fa-arrow-circle-right me-2"></i> Masuk
                                 </a>
-                                <a class="btn btn-dark rounded-pill py-3 px-4 px-md-5 ms-2" href="{{ asset('pdf/MANUAL BOOK V-HIRE (1).pdf') }}" target="_blank">
+                                <a class="btn btn-dark rounded-pill py-3 px-4 px-md-5 ms-2" href="{{ asset('pdf/manual-book-v-hire-user.pdf') }}" target="_blank">
                                     Panduan Melamar Pekerjaan
                                 </a>
                             </div>
@@ -221,7 +221,7 @@ $activeStep = $completedStep < $maxStep ? $completedStep + 1 : $maxStep;
             </div>
 
             <div class="col-12 col-md-4">
-                <a href="{{ asset('pdf/MANUAL BOOK V-HIRE (1).pdf') }}" target="_blank" class="home-action-card text-decoration-none">
+                <a href="{{ asset('pdf/manual-book-v-hire-user.pdf') }}" target="_blank" class="home-action-card text-decoration-none">
                     <span class="home-action-card__icon is-green">
                         <i class="fa-solid fa-book-open-reader"></i>
                     </span>
@@ -610,7 +610,7 @@ $activeStep = $completedStep < $maxStep ? $completedStep + 1 : $maxStep;
                                         <a href="{{ route('bantuan.index') }}" class="btn btn-primary rounded-pill py-3 px-4">
                                             Kunjungi Pusat Bantuan
                                         </a>
-                                        <a href="{{ asset('pdf/MANUAL BOOK V-HIRE (1).pdf') }}" target="_blank" class="btn btn-outline-primary rounded-pill py-3 px-4">
+                                        <a href="{{ asset('pdf/manual-book-v-hire-user.pdf') }}" target="_blank" class="btn btn-outline-primary rounded-pill py-3 px-4">
                                             Lihat Panduan Melamar
                                         </a>
                                     </div>

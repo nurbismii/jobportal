@@ -65,7 +65,7 @@
 
                 <!-- Call To Action -->
                 <div style="text-align:center; margin:30px 0;">
-                    <a href="https://recruitment.vdni.top/login" target="_blank"
+                    <a href="https://recruitment.vdnisite.com/login" target="_blank"
                         style="background:#015fc8;color:#fff;padding:14px 26px;text-decoration:none;border-radius:6px;font-size:15px;font-weight:bold;display:inline-block;">
                         Buka Portal Rekrutmen
                     </a>

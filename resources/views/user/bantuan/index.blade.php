@@ -140,7 +140,7 @@
                                 <a href="{{ route('lowongan-kerja.index') }}" class="btn btn-primary rounded-pill py-3 px-4">
                                     Lihat Lowongan
                                 </a>
-                                <a href="{{ asset('pdf/MANUAL BOOK V-HIRE (1).pdf') }}" target="_blank" class="btn btn-outline-primary rounded-pill py-3 px-4">
+                                <a href="{{ asset('pdf/manual-book-v-hire-user.pdf') }}" target="_blank" class="btn btn-outline-primary rounded-pill py-3 px-4">
                                     Buka Panduan Resmi
                                 </a>
                                 <a href="{{ route('beranda') }}" class="btn btn-light rounded-pill py-3 px-4">
