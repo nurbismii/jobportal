@@ -23,6 +23,16 @@
                     <h6 class="m-0 font-weight-bold text-primary">Form Permintaan Tenaga Kerja</h6>
                 </div>
                 <div class="card-body">
+                    @if ($errors->any())
+                    <div class="alert alert-danger">
+                        <ul class="mb-0">
+                            @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                    @endif
+
                     <form action="{{ route('permintaan-tenaga-kerja.store') }}" method="POST">
                         @csrf
                         <div class="row g-3">
@@ -36,7 +46,7 @@
                         <div class="row g-3">
                             <div class="col-md-6 mb-3">
                                 <label for="departemen">Departemen <span class="text-danger">*</span></label>
-                                <select name="departemen" class="form-control" id="departemen">
+                                <select name="departemen" class="form-control departemen" id="departemen" required>
                                     <option value="">-- Pilih departemen --</option>
 
                                     @php
@@ -50,7 +60,7 @@
                                     @foreach ($grouped as $perusahaanId => $departemensPerusahaan)
                                     <optgroup label="{{ $namaPerusahaan[$perusahaanId] ?? 'Perusahaan Lain' }}">
                                         @foreach ($departemensPerusahaan as $departemen)
-                                        <option value="{{ $departemen->id }}">
+                                        <option value="{{ $departemen->id }}" {{ (string) old('departemen') === (string) $departemen->id ? 'selected' : '' }}>
                                             {{ $departemen->departemen }}
                                         </option>
                                         @endforeach
@@ -73,7 +83,7 @@
                                 <label for="posisi">Posisi
                                     <span class="text-danger">*</span>
                                 </label>
-                                <input type="text" name="posisi" id="departemen" class="form-control" required>
+                                <input type="text" name="posisi" id="posisi" class="form-control" value="{{ old('posisi') }}" required>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="jumlah-permintaan">Jumlah Permintaan Tenaga Kerja

@@ -25,6 +25,16 @@
                     <h6 class="m-0 font-weight-bold text-primary">Form Edit Permintaan Tenaga Kerja</h6>
                 </div>
                 <div class="card-body">
+                    @if ($errors->any())
+                    <div class="alert alert-danger">
+                        <ul class="mb-0">
+                            @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                    @endif
+
                     <form action="{{ route('permintaan-tenaga-kerja.update', $permintaanTenagaKerja->id) }}" method="POST">
                         @csrf
                         {{ method_field('patch') }}
@@ -39,8 +49,8 @@
                         <div class="row g-3">
                             <div class="col-md-6 mb-3">
                                 <label for="departemen">Departemen <span class="text-danger">*</span></label>
-                                <select name="departemen" class="form-control" id="departemen">
-                                    <option value="{{ optional($permintaanTenagaKerja->departemen)->departemen }}">{{ optional($permintaanTenagaKerja->departemen)->departemen }}</option>
+                                <select name="departemen" class="form-control departemen" id="departemen" required>
+                                    <option value="">-- Pilih departemen --</option>
 
                                     @php
                                     $grouped = $departemens->groupBy('perusahaan_id');
@@ -53,7 +63,7 @@
                                     @foreach ($grouped as $perusahaanId => $departemensPerusahaan)
                                     <optgroup label="{{ $namaPerusahaan[$perusahaanId] ?? 'Perusahaan Lain' }}">
                                         @foreach ($departemensPerusahaan as $departemen)
-                                        <option value="{{ $departemen->id }}">
+                                        <option value="{{ $departemen->id }}" {{ (string) old('departemen', $permintaanTenagaKerja->departemen_id) === (string) $departemen->id ? 'selected' : '' }}>
                                             {{ $departemen->departemen }}
                                         </option>
                                         @endforeach
@@ -66,7 +76,12 @@
                                     <span class="text-danger">*</span>
                                 </label>
                                 <select name="divisi" class="form-control" id="divisi">
-                                    <option value="{{ $permintaanTenagaKerja->divisi->id }}">{{ $permintaanTenagaKerja->divisi->nama_divisi }}</option>
+                                    <option value="">-- Pilih divisi --</option>
+                                    @if ($permintaanTenagaKerja->divisi)
+                                    <option value="{{ $permintaanTenagaKerja->divisi->id }}" {{ (string) old('divisi', $permintaanTenagaKerja->divisi_id) === (string) $permintaanTenagaKerja->divisi->id ? 'selected' : '' }}>
+                                        {{ $permintaanTenagaKerja->divisi->nama_divisi }}
+                                    </option>
+                                    @endif
                                 </select>
                             </div>
                         </div>
