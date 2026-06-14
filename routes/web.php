@@ -106,6 +106,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['redirect.role']], function 
     Route::get('/pkwt-contract-settings', [App\Http\Controllers\Admin\PkwtContractSettingController::class, 'edit'])->name('pkwt-contract-settings.edit');
     Route::patch('/pkwt-contract-settings', [App\Http\Controllers\Admin\PkwtContractSettingController::class, 'update'])->name('pkwt-contract-settings.update');
     Route::get('/request-lupa-akun', [AccountRecoveryRequestController::class, 'index'])->name('account-recovery-requests.index');
+    Route::post('/request-lupa-akun/bulk-action', [AccountRecoveryRequestController::class, 'bulkAction'])->name('account-recovery-requests.bulk-action');
     Route::post('/request-lupa-akun/{id}/approve', [AccountRecoveryRequestController::class, 'approve'])->name('account-recovery-requests.approve');
     Route::post('/request-lupa-akun/{id}/reject', [AccountRecoveryRequestController::class, 'reject'])->name('account-recovery-requests.reject');
 

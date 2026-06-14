@@ -56,7 +56,7 @@
             <div class="border rounded-4 p-4 bg-white shadow-sm">
                 <div class="mb-3">
                     <h5 class="fw-bold text-dark mb-1">2. Email lama sudah tidak bisa diakses</h5>
-                    <p class="text-muted small mb-0">Ajukan pemulihan manual. Tim HR akan meninjau permintaan Anda sebelum email akun diganti.</p>
+                    <p class="text-muted small mb-0">Ajukan pemulihan manual hanya untuk akun yang email lamanya sudah pernah terverifikasi.</p>
                 </div>
 
                 <form method="POST" action="{{ route('lupa-akun.request') }}">
@@ -78,6 +78,16 @@
                             class="form-control @error('name_manual') is-invalid @enderror"
                             value="{{ old('name_manual') }}" placeholder="Sesuai data akun" required>
                         @error('name_manual')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email_lama_manual" class="form-label">Email Lama Terverifikasi</label>
+                        <input type="email" id="email_lama_manual" name="email_lama_manual"
+                            class="form-control @error('email_lama_manual') is-invalid @enderror"
+                            value="{{ old('email_lama_manual') }}" placeholder="Email yang terdaftar di akun lama" required>
+                        @error('email_lama_manual')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
@@ -113,7 +123,7 @@
                     </div>
 
                     <div class="small text-muted mb-3">
-                        Demi keamanan, permintaan ini tidak langsung mengubah email akun. Tim HR akan melakukan verifikasi manual terlebih dahulu.
+                        Demi keamanan, sistem hanya menerima request dari akun lama yang sudah aktif/terverifikasi. Jika baru daftar tetapi belum verifikasi, gunakan menu kirim ulang email verifikasi.
                     </div>
 
                     <div class="d-grid">

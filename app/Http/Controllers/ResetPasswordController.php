@@ -26,6 +26,10 @@ class ResetPasswordController extends Controller
 
     public function store(Request $request)
     {
+        $request->merge([
+            'no_ktp' => preg_replace('/\D+/', '', (string) $request->no_ktp),
+        ]);
+
         $validatedData = $request->validate([
             'no_ktp' => 'required|digits:16',
             'email' => 'required|email|max:255',
@@ -44,6 +48,15 @@ class ResetPasswordController extends Controller
         if (!$user) {
             Alert::success('Permintaan diterima', 'Jika data akun cocok, tautan pemulihan akan dikirim ke email yang terdaftar.');
             return redirect()->route('login');
+        }
+
+        if (! $this->hasVerifiedOldEmail($user)) {
+            Alert::warning(
+                'Email belum diverifikasi',
+                'Akun ini belum aktif karena email lama belum diverifikasi. Gunakan kirim ulang email verifikasi, bukan lupa akun.'
+            );
+
+            return redirect()->route('verification.notice.public', ['email' => $user->email]);
         }
 
         $existingReset = DB::table('password_resets')
@@ -82,10 +95,15 @@ class ResetPasswordController extends Controller
 
     public function submitRecoveryRequest(Request $request)
     {
+        $request->merge([
+            'no_ktp_manual' => preg_replace('/\D+/', '', (string) $request->no_ktp_manual),
+        ]);
+
         $validatedData = $request->validate([
             'no_ktp_manual' => 'required|digits:16',
             'name_manual' => 'required|string|max:255',
-            'email_baru' => 'required|email|max:255',
+            'email_lama_manual' => 'required|email|max:255',
+            'email_baru' => 'required|email|max:255|different:email_lama_manual',
             'no_telp_manual' => 'nullable|string|max:25',
             'keterangan_manual' => 'nullable|string|max:1000',
         ], [
@@ -93,18 +111,42 @@ class ResetPasswordController extends Controller
             'no_ktp_manual.digits' => 'Nomor KTP harus terdiri dari 16 digit.',
             'name_manual.required' => 'Nama lengkap wajib diisi.',
             'name_manual.max' => 'Nama lengkap maksimal 255 karakter.',
+            'email_lama_manual.required' => 'Email lama wajib diisi.',
+            'email_lama_manual.email' => 'Format email lama tidak valid.',
+            'email_lama_manual.max' => 'Panjang email lama maksimal 255 karakter.',
             'email_baru.required' => 'Email baru wajib diisi.',
             'email_baru.email' => 'Format email baru tidak valid.',
             'email_baru.max' => 'Panjang email baru maksimal 255 karakter.',
+            'email_baru.different' => 'Email baru harus berbeda dari email lama.',
             'no_telp_manual.max' => 'Nomor telepon maksimal 25 karakter.',
             'keterangan_manual.max' => 'Keterangan maksimal 1000 karakter.',
         ]);
 
         $user = User::with('biodata')
             ->where('no_ktp', $validatedData['no_ktp_manual'])
+            ->where('email', $validatedData['email_lama_manual'])
             ->first();
 
         if ($user) {
+            if (! $this->hasVerifiedOldEmail($user)) {
+                Alert::warning(
+                    'Request tidak dapat diproses',
+                    'Permintaan ganti email hanya bisa diajukan untuk akun yang email lamanya sudah terverifikasi. Jika akun baru belum verifikasi, gunakan kirim ulang email verifikasi.'
+                );
+
+                return redirect()->route('verification.notice.public', ['email' => $validatedData['email_lama_manual']]);
+            }
+
+            $emailBaruDipakai = User::where('email', $validatedData['email_baru'])
+                ->where('id', '!=', $user->id)
+                ->exists();
+
+            if ($emailBaruDipakai) {
+                return back()
+                    ->withErrors(['email_baru' => 'Email baru sudah digunakan oleh akun lain.'])
+                    ->withInput();
+            }
+
             $accountRecoveryRequest = AccountRecoveryRequest::updateOrCreate(
                 [
                     'user_id' => $user->id,
@@ -131,6 +173,7 @@ class ResetPasswordController extends Controller
                     'request_id' => $accountRecoveryRequest->id,
                     'input_name' => $validatedData['name_manual'],
                     'input_no_ktp' => $validatedData['no_ktp_manual'],
+                    'input_old_email' => $validatedData['email_lama_manual'],
                     'input_new_email' => $validatedData['email_baru'],
                     'input_phone' => $validatedData['no_telp_manual'] ?? null,
                     'input_notes' => $validatedData['keterangan_manual'] ?? null,
@@ -192,14 +235,23 @@ class ResetPasswordController extends Controller
 
         $emailLama = $user->email;
         $tokenVerifikasiBaru = Str::random(64);
+        $now = Carbon::now();
 
-        $user->update([
+        $payload = [
             'email' => $validatedData['email'],
             'password' => bcrypt($validatedData['password']),
             'email_verified_at' => null,
             'status_akun' => 0,
             'email_verifikasi_token' => $tokenVerifikasiBaru,
-        ]);
+        ];
+
+        if (User::supportsVerificationResendTracking()) {
+            $payload['verification_email_last_sent_at'] = $now;
+            $payload['verification_resend_count'] = 0;
+            $payload['verification_resend_count_date'] = $now->toDateString();
+        }
+
+        $user->update($payload);
 
         DB::table('password_resets')
             ->where('email', $emailLama)
@@ -209,6 +261,12 @@ class ResetPasswordController extends Controller
 
         Alert::success('Berhasil', 'Email dan kata sandi berhasil diperbarui. Verifikasi email baru Anda dalam 1 jam sebelum login.');
         return redirect()->route('verification.notice.public', ['email' => $validatedData['email']]);
+    }
+
+    private function hasVerifiedOldEmail(User $user): bool
+    {
+        return (int) $user->status_akun === 1
+            && $user->email_verified_at !== null;
     }
 
     private function getValidRecovery($token)

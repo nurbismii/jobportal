@@ -88,6 +88,11 @@
                     Sudah punya akun? <a href="{{ route('login') }}" class="fw-bold text-primary text-decoration-none">Masuk</a>
                 </div>
 
+                <div class="text-center small mt-2">
+                    Sudah daftar tapi belum verifikasi?
+                    <a href="{{ route('verification.notice.public', old('email') ? ['email' => old('email')] : []) }}" class="fw-bold text-primary text-decoration-none">Kirim ulang email verifikasi</a>
+                </div>
+
                 <div class="text-center text-muted mt-4 small">
                     © {{ date('Y') }} HRD PT VDNI
                 </div>

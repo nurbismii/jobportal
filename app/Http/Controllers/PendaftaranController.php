@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Log;
 class PendaftaranController extends Controller
 {
     private const UNVERIFIED_ACCOUNT_TTL_HOURS = 1;
-    private const VERIFICATION_RESEND_COOLDOWN_MINUTES = 15;
+    private const VERIFICATION_RESEND_COOLDOWN_MINUTES = 2;
     private const VERIFICATION_RESEND_DAILY_LIMIT = 2;
 
     public function index()
@@ -51,15 +51,13 @@ class PendaftaranController extends Controller
 
         // Validate input
         $validatedData = $request->validate([
-            'no_ktp'    => 'bail|required|digits:16|unique:users,no_ktp',
-            'email'     => 'bail|required|email|max:255|unique:users,email',
+            'no_ktp'    => 'bail|required|digits:16',
+            'email'     => 'bail|required|email|max:255',
             'password'  => 'required|min:6|confirmed',
             'name'      => 'required|string|max:255',
         ], [
             'no_ktp.required' => 'Nomor KTP wajib diisi.',
             'no_ktp.digits'   => 'Nomor KTP harus terdiri dari 16 digit.',
-            'no_ktp.unique'   => 'Nomor KTP sudah terdaftar.',
-            'email.unique'    => 'Email sudah terdaftar.',
             'email.required'  => 'Alamat email wajib diisi.',
             'email.email'     => 'Format alamat email tidak valid.',
             'email.max'       => 'Panjang alamat email maksimal 255 karakter.',
@@ -73,6 +71,12 @@ class PendaftaranController extends Controller
             throw ValidationException::withMessages([
                 'no_ktp' => 'Nomor KTP tidak valid. Pastikan NIK terdiri dari 16 digit dan sesuai format KTP Indonesia.',
             ]);
+        }
+
+        $duplicateRedirect = $this->duplicateRegistrationRedirect($validatedData);
+
+        if ($duplicateRedirect) {
+            return $duplicateRedirect;
         }
 
         try {
@@ -295,5 +299,62 @@ class PendaftaranController extends Controller
         }
 
         return (int) $user->verification_resend_count;
+    }
+
+    private function duplicateRegistrationRedirect(array $validatedData)
+    {
+        $existingUsers = User::where('email', $validatedData['email'])
+            ->orWhere('no_ktp', $validatedData['no_ktp'])
+            ->get();
+
+        if ($existingUsers->isEmpty()) {
+            return null;
+        }
+
+        $emailUser = $existingUsers->first(function (User $user) use ($validatedData) {
+            return strcasecmp((string) $user->email, (string) $validatedData['email']) === 0;
+        });
+
+        $ktpUser = $existingUsers->first(function (User $user) use ($validatedData) {
+            return (string) $user->no_ktp === (string) $validatedData['no_ktp'];
+        });
+
+        $errors = [];
+
+        if ($emailUser && ! $this->isPendingVerificationUser($emailUser)) {
+            $errors['email'] = 'Email sudah terdaftar.';
+        }
+
+        if ($ktpUser && ! $this->isPendingVerificationUser($ktpUser)) {
+            $errors['no_ktp'] = 'Nomor KTP sudah terdaftar.';
+        }
+
+        if (! empty($errors)) {
+            throw ValidationException::withMessages($errors);
+        }
+
+        $pendingUser = $emailUser && $this->isPendingVerificationUser($emailUser)
+            ? $emailUser
+            : $ktpUser;
+
+        Alert::warning(
+            'Akun belum diverifikasi',
+            'Data tersebut sudah pernah didaftarkan tetapi belum diverifikasi. Silakan kirim ulang email verifikasi dari halaman berikut. Fitur lupa akun hanya untuk akun yang email lamanya sudah terverifikasi.'
+        );
+
+        $query = [];
+
+        if ($pendingUser && strcasecmp((string) $pendingUser->email, (string) $validatedData['email']) === 0) {
+            $query['email'] = $pendingUser->email;
+        }
+
+        return redirect()->route('verification.notice.public', $query);
+    }
+
+    private function isPendingVerificationUser(User $user): bool
+    {
+        return $user->role === 'user'
+            && (int) $user->status_akun !== 1
+            && $user->email_verified_at === null;
     }
 }

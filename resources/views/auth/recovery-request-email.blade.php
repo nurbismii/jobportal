@@ -32,6 +32,10 @@
                         <td style="border-bottom:1px solid #e5e7eb;">{{ $data['input_no_ktp'] }}</td>
                     </tr>
                     <tr>
+                        <td width="35%" style="border-bottom:1px solid #e5e7eb;"><strong>Email lama yang diinput</strong></td>
+                        <td style="border-bottom:1px solid #e5e7eb;">{{ $data['input_old_email'] ?? '-' }}</td>
+                    </tr>
+                    <tr>
                         <td width="35%" style="border-bottom:1px solid #e5e7eb;"><strong>Email baru</strong></td>
                         <td style="border-bottom:1px solid #e5e7eb;">{{ $data['input_new_email'] }}</td>
                     </tr>
