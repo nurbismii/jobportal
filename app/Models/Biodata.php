@@ -22,6 +22,7 @@ class Biodata extends Model
     protected $casts = [
         'ocr_ktp' => 'array',
         'parsed_sim_b2' => 'array',
+        'status_pernyataan_disetujui_pada' => 'datetime',
     ];
 
     protected $guarded = [];

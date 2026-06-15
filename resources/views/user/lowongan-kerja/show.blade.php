@@ -9,6 +9,7 @@
 @php
 $isActive = strtolower($lowongan->status_lowongan) === 'aktif';
 $accountApplicationLocked = Auth::check() && Auth::user()->hasActiveEmploymentStatusLock();
+$hasApprovedTerms = $biodata && filled($biodata->status_pernyataan);
 @endphp
 
 <!-- Lowongan Kerja Start -->
@@ -123,6 +124,10 @@ $accountApplicationLocked = Auth::check() && Auth::user()->hasActiveEmploymentSt
                     <button type="button" class="btn btn-light" disabled>
                         <i class="fa fa-lock me-2"></i>Lamaran Dinonaktifkan
                     </button>
+                    @elseif(! $hasApprovedTerms)
+                    <a class="btn btn-warning" href="{{ route('biodata.index') }}#step6">
+                        <i class="fa fa-file-signature me-2"></i>Setujui Syarat Dulu
+                    </a>
                     @else
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#konfirmasi-lamaran">
                         <i class="fa fa-paper-plane me-2"></i>Lamar Posisi Ini

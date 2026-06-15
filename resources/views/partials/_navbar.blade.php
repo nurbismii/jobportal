@@ -90,6 +90,11 @@
                             <i class="fa fa-user me-2 text-primary"></i>
                             Kelola Akun
                         </a>
+                        <a href="{{ route('syarat-ketentuan.approved') }}"
+                            class="nav-item nav-link btn btn-light d-flex align-items-center btn-sm">
+                            <i class="fa fa-file-contract me-2 text-primary"></i>
+                            Syarat Disetujui
+                        </a>
                         <li>
                             <hr class="dropdown-divider">
                         </li>
@@ -128,6 +133,11 @@
             <li>
                 <a class="dropdown-item d-flex align-items-center" href="{{ route('profil.index') }}">
                     <i class="fa fa-user me-2 text-primary"></i> Kelola Akun
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item d-flex align-items-center" href="{{ route('syarat-ketentuan.approved') }}">
+                    <i class="fa fa-file-contract me-2 text-primary"></i> Syarat Disetujui
                 </a>
             </li>
             @else

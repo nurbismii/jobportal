@@ -189,6 +189,11 @@ class DocumentCheck
             ]);
         }
 
+        if (blank($biodata->status_pernyataan)) {
+            Alert::info('Opss!', 'Silakan baca dan setujui syarat dan ketentuan rekrutmen terlebih dahulu.');
+            return redirect()->to(route('biodata.index') . '#step6');
+        }
+
         return; // lanjut ke store()
     }
 

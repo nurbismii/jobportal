@@ -6,6 +6,7 @@ use App\Http\Controllers\BiodataController;
 use App\Http\Controllers\PkwtContractController;
 use App\Http\Controllers\PendaftaranController;
 use App\Http\Controllers\ResetPasswordController;
+use App\Http\Controllers\SyaratKetentuanController;
 use App\Http\Controllers\Admin\LowonganController;
 use App\Http\Controllers\Admin\PenggunaController;
 use Illuminate\Support\Facades\Auth;
@@ -59,6 +60,7 @@ Route::middleware(['auth', 'verified.email'])->group(function () {
     Route::get('kontrak-pkwt/{contract}', [PkwtContractController::class, 'show'])->name('kontrak-pkwt.show');
     Route::get('kontrak-pkwt/{contract}/download', [PkwtContractController::class, 'download'])->name('kontrak-pkwt.download');
     Route::post('kontrak-pkwt/{contract}/sign', [PkwtContractController::class, 'sign'])->name('kontrak-pkwt.sign');
+    Route::get('syarat-ketentuan-disetujui', [SyaratKetentuanController::class, 'approved'])->name('syarat-ketentuan.approved');
 
     Route::resource('biodata', 'App\Http\Controllers\BiodataController');
     Route::post('/biodata/step-1-4', [BiodataController::class, 'storeStep1to4'])->name('biodata.storeStep1to4');

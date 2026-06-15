@@ -307,6 +307,12 @@ if (!function_exists('calcutaionStep')) {
             return $step;
         }
 
+        $step = 5;
+
+        if (blank($biodata->status_pernyataan)) {
+            return $step;
+        }
+
         return 6;
     }
 }

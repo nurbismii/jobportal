@@ -12,6 +12,8 @@ use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Validator;
 use Intervention\Image\Facades\Image;
 
 class BiodataController extends Controller
@@ -196,6 +198,15 @@ class BiodataController extends Controller
         return 'Lengkapi data biodata pada langkah 1 sampai 4 terlebih dahulu sebelum melanjutkan ke dokumen.';
     }
 
+    private function currentSyaratKetentuan(): ?SyaratKetentuan
+    {
+        return SyaratKetentuan::query()
+            ->whereNotNull('syarat_ketentuan')
+            ->where('syarat_ketentuan', '<>', '')
+            ->orderByDesc('id')
+            ->first();
+    }
+
     public function index()
     {
         if (!Auth::user()) {
@@ -205,8 +216,9 @@ class BiodataController extends Controller
 
         $provinsis = Provinsi::all();
         $biodata = Biodata::with('getProvinsi', 'getKabupaten', 'getKecamatan', 'getKelurahan')->where('user_id', auth()->id())->first();
+        $syaratKetentuan = $this->currentSyaratKetentuan();
 
-        return view('user.biodata.index', compact('provinsis', 'biodata'));
+        return view('user.biodata.index', compact('provinsis', 'biodata', 'syaratKetentuan'));
     }
 
     public function store(Request $request)
@@ -224,7 +236,23 @@ class BiodataController extends Controller
                 return redirect()->to(route('biodata.index') . '#step1')->withInput();
             }
 
-            $syarat_ketentuan = SyaratKetentuan::where('id', 1)->first();
+            $validator = Validator::make($request->all(), [
+                'menyetujui_syarat' => 'accepted',
+            ], [
+                'menyetujui_syarat.accepted' => 'Anda wajib membaca dan menyetujui syarat dan ketentuan rekrutmen.',
+            ]);
+
+            if ($validator->fails()) {
+                Alert::warning('Peringatan', 'Anda wajib membaca dan menyetujui syarat dan ketentuan rekrutmen.');
+                return redirect()->to(route('biodata.index') . '#step6')->withErrors($validator)->withInput();
+            }
+
+            $syaratKetentuan = $this->currentSyaratKetentuan();
+
+            if (! $syaratKetentuan) {
+                Alert::error('Error', 'Syarat dan ketentuan rekrutmen belum tersedia. Silakan hubungi admin.');
+                return redirect()->to(route('biodata.index') . '#step6')->withInput();
+            }
 
             $dokumenFields = [
                 'sim_b_2' => 'SIM B II Umum'
@@ -236,9 +264,19 @@ class BiodataController extends Controller
 
             $fileNames = $fileNames['files'];
             $oldFiles  = $fileNames['oldFiles'] ?? [];
-            $biodata->forceFill([
-                'status_pernyataan' => $syarat_ketentuan->syarat_ketentuan,
-            ])->save();
+            $pernyataanUpdates = [
+                'status_pernyataan' => $syaratKetentuan->syarat_ketentuan,
+            ];
+
+            if (Schema::hasColumn('biodata', 'syarat_ketentuan_id')) {
+                $pernyataanUpdates['syarat_ketentuan_id'] = $syaratKetentuan->id;
+            }
+
+            if (Schema::hasColumn('biodata', 'status_pernyataan_disetujui_pada')) {
+                $pernyataanUpdates['status_pernyataan_disetujui_pada'] = now();
+            }
+
+            $biodata->forceFill($pernyataanUpdates)->save();
 
             foreach ($oldFiles as $oldFile) {
                 $path = public_path(auth()->user()->no_ktp . '/dokumen/' . $oldFile);
