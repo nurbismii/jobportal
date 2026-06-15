@@ -176,6 +176,18 @@
         top: -1px;
     }
 
+    .terms-document input.terms-document__checkbox {
+        cursor: pointer;
+        height: 18px;
+        margin: 4px 0 0;
+        width: 18px;
+    }
+
+    .terms-document input.terms-document__checkbox:disabled {
+        cursor: not-allowed;
+        opacity: 0.65;
+    }
+
     .terms-document .checkbox-item p {
         margin-bottom: 0;
     }

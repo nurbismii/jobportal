@@ -823,7 +823,7 @@
                         <div class="col-12">
                             <div class="form-check terms-approval-check">
                                 <input class="form-check-input @error('menyetujui_syarat') is-invalid @enderror" type="checkbox" name="menyetujui_syarat" value="1" id="checkBox1"
-                                    {{ old('menyetujui_syarat') || ($biodata && $biodata->status_pernyataan) ? 'checked' : 'disabled' }}
+                                    {{ old('menyetujui_syarat') || ($biodata && $biodata->status_pernyataan) ? 'checked' : '' }}
                                     @if(! $syaratKetentuan || blank($syaratKetentuan->syarat_ketentuan) || $accountDataLocked) disabled @endif>
                                 <label class="form-check-label" for="checkBox1">
                                     Saya telah membaca, memahami, dan menyetujui seluruh syarat dan ketentuan rekrutmen PT VDNI yang ditampilkan di atas.
@@ -1966,32 +1966,6 @@
         }
     }
 
-    const scrollBox = document.getElementById('termsBox');
-    const checkBox = document.getElementById('checkBox1');
-    const termsContentAvailable = @json($syaratKetentuan && filled($syaratKetentuan->syarat_ketentuan));
-
-    function enableTermsCheckboxWhenRead() {
-        if (!scrollBox || !checkBox || !termsContentAvailable || window.accountDataLocked || checkBox.checked) {
-            return;
-        }
-
-        const {
-            scrollTop,
-            scrollHeight,
-            clientHeight
-        } = scrollBox;
-        const isBottom = scrollTop + clientHeight >= scrollHeight - 5;
-
-        if (isBottom) {
-            checkBox.disabled = false;
-        }
-    }
-
-    if (scrollBox && checkBox) {
-        scrollBox.addEventListener('scroll', enableTermsCheckboxWhenRead);
-        enableTermsCheckboxWhenRead();
-    }
-
     function checkCheckboxes() {
         const checkBox1 = document.getElementById('checkBox1');
         const submitBtn = document.getElementById('submitBtn');
@@ -2003,20 +1977,70 @@
         submitBtn.disabled = !checkBox1.checked || window.accountDataLocked;
     }
 
-    const masterCheckbox = document.getElementById('checkBox1');
-    const childCheckboxes = document.querySelectorAll('.check-pasif');
+    function prepareTermsAgreementCheckboxes() {
+        const termsBox = document.getElementById('termsBox');
+        const masterCheckbox = document.getElementById('checkBox1');
 
-    if (masterCheckbox) {
-        masterCheckbox.addEventListener('change', function() {
-            childCheckboxes.forEach(cb => cb.checked = this.checked);
+        if (!termsBox || !masterCheckbox) {
+            return;
+        }
+
+        termsBox.querySelectorAll('.terms-document__checkbox:not(input)').forEach(function(visualCheckbox, index) {
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'terms-document__checkbox terms-document-checkbox form-check-input';
+            checkbox.setAttribute('aria-label', `Persetujuan syarat dan ketentuan ${index + 1}`);
+            visualCheckbox.replaceWith(checkbox);
         });
+
+        const childCheckboxes = Array.from(termsBox.querySelectorAll('input[type="checkbox"]'));
+
+        childCheckboxes.forEach(function(checkbox, index) {
+            checkbox.classList.add('terms-document-checkbox');
+            checkbox.removeAttribute('onclick');
+            checkbox.onclick = null;
+            checkbox.removeAttribute('checked');
+            checkbox.removeAttribute('name');
+            checkbox.value = '1';
+
+            if (!checkbox.getAttribute('aria-label')) {
+                checkbox.setAttribute('aria-label', `Persetujuan syarat dan ketentuan ${index + 1}`);
+            }
+
+            checkbox.disabled = Boolean(window.accountDataLocked);
+            checkbox.checked = masterCheckbox.checked;
+        });
+
+        function syncMasterFromChildren() {
+            if (childCheckboxes.length === 0) {
+                checkCheckboxes();
+                return;
+            }
+
+            masterCheckbox.checked = childCheckboxes.every(function(checkbox) {
+                return checkbox.checked;
+            });
+            checkCheckboxes();
+        }
+
+        masterCheckbox.addEventListener('change', function() {
+            childCheckboxes.forEach(function(checkbox) {
+                checkbox.checked = masterCheckbox.checked;
+            });
+            checkCheckboxes();
+        });
+
+        childCheckboxes.forEach(function(checkbox) {
+            checkbox.addEventListener('change', syncMasterFromChildren);
+        });
+
+        syncMasterFromChildren();
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        // Cek awal
+        prepareTermsAgreementCheckboxes();
         checkCheckboxes();
 
-        // Cek ulang setiap kali checkbox berubah
         const checkBox1 = document.getElementById('checkBox1');
         if (checkBox1) {
             checkBox1.addEventListener('change', checkCheckboxes);
