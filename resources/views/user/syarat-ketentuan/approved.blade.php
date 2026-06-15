@@ -49,3 +49,25 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const approvedDocument = document.querySelector('.terms-document--approved');
+
+        if (!approvedDocument) {
+            return;
+        }
+
+        approvedDocument.querySelectorAll('.terms-document__checkbox:not(input)').forEach(function(checkbox) {
+            checkbox.classList.add('terms-document__checkbox--checked');
+        });
+
+        approvedDocument.querySelectorAll('input[type="checkbox"]').forEach(function(checkbox) {
+            checkbox.checked = true;
+            checkbox.disabled = true;
+            checkbox.classList.add('terms-document__checkbox', 'terms-document-checkbox');
+        });
+    });
+</script>
+@endpush

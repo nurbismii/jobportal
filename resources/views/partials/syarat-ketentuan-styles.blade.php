@@ -176,6 +176,11 @@
         top: -1px;
     }
 
+    .terms-document--approved .terms-document__checkbox::after,
+    .terms-document__checkbox--checked::after {
+        content: "\2713";
+    }
+
     .terms-document input.terms-document__checkbox {
         cursor: pointer;
         height: 18px;
