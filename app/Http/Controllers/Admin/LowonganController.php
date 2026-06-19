@@ -103,7 +103,7 @@ class LowonganController extends Controller
 
     public function directToLamaran(Request $request, $loker_id)
     {
-        $lowongan = Lowongan::select('id', 'nama_lowongan', 'status_sim_b2', 'status_sio')
+        $lowongan = Lowongan::select('id', 'nama_lowongan', 'status_sim_b2', 'status_sio', 'tanggal_mulai', 'tanggal_berakhir')
             ->where('id', $loker_id)
             ->first();
 

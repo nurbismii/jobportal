@@ -1,6 +1,14 @@
 @extends('layouts.app-pic')
 
 @section('content-admin')
+@php
+    $approvedTermsBiodata = $user->biodata;
+    $hasApprovedTerms = $approvedTermsBiodata && filled($approvedTermsBiodata->status_pernyataan);
+    $approvedTermsAt = $approvedTermsBiodata
+        ? ($approvedTermsBiodata->status_pernyataan_disetujui_pada ?: $approvedTermsBiodata->updated_at)
+        : null;
+@endphp
+
 <div class="container-fluid">
     <div class="row justify-content-center">
         <div class="col-lg-12">
@@ -34,6 +42,37 @@
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <p><strong>No. KTP:</strong> {{ $user->biodataUser->no_ktp ?? '-' }}</p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Persetujuan Syarat dan Ketentuan -->
+                    <h5 class="fw-bold mb-3 text-primary">Persetujuan Syarat dan Ketentuan</h5>
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <p>
+                                <strong>Status:</strong>
+                                @if($hasApprovedTerms)
+                                <span class="badge badge-success">Sudah Disetujui</span>
+                                @else
+                                <span class="badge badge-warning">Belum Disetujui</span>
+                                @endif
+                            </p>
+                            <p><strong>Disetujui Pada:</strong> {{ $approvedTermsAt ? $approvedTermsAt->format('d/m/Y H:i') : '-' }}</p>
+                            <p><strong>Versi Syarat:</strong> {{ $approvedTermsBiodata && $approvedTermsBiodata->syarat_ketentuan_id ? '#' . $approvedTermsBiodata->syarat_ketentuan_id : '-' }}</p>
+                        </div>
+
+                        <div class="col-md-4 text-md-right">
+                            @if($hasApprovedTerms)
+                            <a href="{{ route('pengguna.syarat-ketentuan.show', $user->id) }}" target="_blank" class="btn btn-primary">
+                                <i class="fas fa-print"></i> Lihat / Cetak Bukti
+                            </a>
+                            @else
+                            <button type="button" class="btn btn-secondary" disabled>
+                                <i class="fas fa-file-contract"></i> Belum Ada Bukti
+                            </button>
+                            @endif
                         </div>
                     </div>
 

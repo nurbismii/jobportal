@@ -29,6 +29,15 @@ class PenggunaController extends Controller
                         ->withCount('getRiwayatLamaran');
                 }
             ])
+                ->select('users.*')
+                ->selectSub(
+                    Biodata::query()
+                        ->selectRaw('COUNT(*)')
+                        ->whereColumn('biodata.user_id', 'users.id')
+                        ->whereNotNull('status_pernyataan')
+                        ->whereRaw('TRIM(status_pernyataan) <> ?', ['']),
+                    'has_approved_terms'
+                )
                 ->where('role', '!=', 'admin');
 
             return DataTables::of($query)
@@ -92,8 +101,30 @@ class PenggunaController extends Controller
                 })
 
                 ->addColumn('aksi', function ($pengguna) {
+                    $termsButton = ((int) $pengguna->has_approved_terms > 0)
+                        ? '
+                <a href="' . route('pengguna.syarat-ketentuan.show', $pengguna->id) . '"
+                target="_blank"
+                class="btn btn-info btn-sm btn-icon-split mr-2">
+                    <span class="icon text-white-50">
+                        <i class="fas fa-file-contract"></i>
+                    </span>
+                    <span class="text">S&K</span>
+                </a>'
+                        : '
+                <button type="button"
+                class="btn btn-outline-secondary btn-sm btn-icon-split mr-2"
+                disabled>
+                    <span class="icon text-muted">
+                        <i class="fas fa-file-contract"></i>
+                    </span>
+                    <span class="text">Belum Setuju</span>
+                </button>';
+
                     return '
             <div class="d-flex">
+                ' . $termsButton . '
+
                 <a href="' . route('pengguna.edit', $pengguna->id) . '"
                 class="btn btn-success btn-sm btn-icon-split mr-2">
                     <span class="icon text-white-50">
@@ -151,7 +182,7 @@ class PenggunaController extends Controller
     public function show($id)
     {
         // Logic to show user details
-        $user = User::with('biodataUser.getRiwayatLamaran')->findOrFail($id);
+        $user = User::with('biodata', 'biodataUser.getRiwayatLamaran.lowongan')->findOrFail($id);
 
         return view('admin.pengguna.show', compact('user'));
     }

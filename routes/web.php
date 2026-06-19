@@ -9,6 +9,7 @@ use App\Http\Controllers\ResetPasswordController;
 use App\Http\Controllers\SyaratKetentuanController;
 use App\Http\Controllers\Admin\LowonganController;
 use App\Http\Controllers\Admin\PenggunaController;
+use App\Http\Controllers\Admin\SyaratKetentuanController as AdminSyaratKetentuanController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -79,6 +80,8 @@ Route::group(['prefix' => 'admin', 'middleware' => ['redirect.role']], function 
     Route::get('/dasbor/lowongan-chart', [App\Http\Controllers\Admin\DasborController::class, 'lowonganChart']);
 
     Route::resource('/pengguna', 'App\Http\Controllers\Admin\PenggunaController');
+    Route::get('/pengguna/{pengguna}/syarat-ketentuan', [AdminSyaratKetentuanController::class, 'show'])
+        ->name('pengguna.syarat-ketentuan.show');
 
     Route::resource('/lowongan', 'App\Http\Controllers\Admin\LowonganController');
     Route::resource('/peralihan', 'App\Http\Controllers\Admin\PeralihanPelamarController');

@@ -103,7 +103,7 @@
 </div>
 
 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between mb-3">
-    <h2 class="m-0 font-weight-bold text-primary">{{ $lowongan->nama_lowongan }}</h2>
+    <h2 class="m-0 font-weight-bold text-primary">{{ $lowongan->nama_lowongan }} - {{ tanggalIndo($lowongan->tanggal_mulai) }}</h2>
     <div class="d-flex align-items-center">
 
         <button type="button" class="btn btn-warning btn-sm mr-2" data-toggle="modal" data-target="#modalRefreshStatus">
