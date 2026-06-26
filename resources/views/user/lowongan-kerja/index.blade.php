@@ -7,9 +7,16 @@
 @endpush
 
 <!-- Header Start -->
-<div class="container-fluid bg-breadcrumb">
-    <div class="container text-center py-5" style="max-width: 900px;">
-        <h4 class="text-white display-4 mb-4 wow fadeInDown" data-wow-delay="0.1s">Lowongan Kerja</h4>
+<div class="container-fluid bg-breadcrumb page-hero-banner">
+    <div class="container page-hero text-center py-5">
+        <span class="page-hero__eyebrow wow fadeInDown" data-wow-delay="0.1s">
+            <i class="fas fa-briefcase"></i>
+            Lowongan Kerja
+        </span>
+        <h1 class="text-white display-4 mb-3 wow fadeInDown" data-wow-delay="0.2s">Temukan peluang karier resmi bersama PT VDNI</h1>
+        <p class="page-hero__text wow fadeInUp" data-wow-delay="0.3s">
+            Lihat posisi yang tersedia, perhatikan periode pendaftaran, dan ajukan lamaran hanya melalui sistem rekrutmen V-HIRE.
+        </p>
     </div>
 </div>
 <!-- Header End -->

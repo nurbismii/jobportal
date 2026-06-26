@@ -375,13 +375,13 @@ $activeStep = $completedStep < $maxStep ? $completedStep + 1 : $maxStep;
     <div class="container-fluid service py-2">
         <!-- Tentang Start -->
         @php
-            $formatRibuanPlus = function ($count) {
-                $count = (int) $count;
+        $formatRibuanPlus = function ($count) {
+        $count = (int) $count;
 
-                return $count >= 1000
-                    ? intdiv($count, 1000) . 'ribu+'
-                    : number_format($count, 0, ',', '.');
-            };
+        return $count >= 1000
+        ? intdiv($count, 1000) . 'ribu+'
+        : number_format($count, 0, ',', '.');
+        };
         @endphp
 
         <div class="container-fluid bg-light about pt-5 pb-5">

@@ -360,6 +360,67 @@
 .bg-breadcrumb .breadcrumb .breadcrumb-item a {
     color: var(--bs-white);
 }
+
+.page-hero-banner,
+.help-page-banner {
+    position: relative;
+    overflow: hidden;
+}
+
+.page-hero-banner::before,
+.help-page-banner::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at top left, rgba(255, 255, 255, 0.12), transparent 32%),
+        linear-gradient(135deg, rgba(7, 45, 75, 0.2), rgba(11, 118, 183, 0.06));
+    pointer-events: none;
+}
+
+.page-hero,
+.help-page-hero {
+    position: relative;
+    z-index: 1;
+    max-width: 860px;
+}
+
+.page-hero__eyebrow,
+.help-page-hero__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.55rem 0.95rem;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.page-hero__text,
+.help-page-hero__text {
+    max-width: 62ch;
+    margin: 0 auto;
+    color: rgba(255, 255, 255, 0.88);
+    font-size: 1rem;
+    line-height: 1.8;
+}
+
+@media (max-width: 767.98px) {
+    .page-hero__eyebrow,
+    .help-page-hero__eyebrow {
+        font-size: 0.72rem;
+    }
+
+    .page-hero__text,
+    .help-page-hero__text {
+        font-size: 0.94rem;
+    }
+}
 /*** Single Page Hero Header End ***/
 
 
