@@ -16,7 +16,6 @@ class DasborController extends Controller
 {
     private const STATUS_BELUM_DIPROSES = [
         'Lamaran Dikirim',
-        'Belum Sesuai Kriteria',
     ];
 
     private const STATUS_TAHAPAN = [

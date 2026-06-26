@@ -374,6 +374,16 @@ $activeStep = $completedStep < $maxStep ? $completedStep + 1 : $maxStep;
 
     <div class="container-fluid service py-2">
         <!-- Tentang Start -->
+        @php
+            $formatRibuanPlus = function ($count) {
+                $count = (int) $count;
+
+                return $count >= 1000
+                    ? intdiv($count, 1000) . 'ribu+'
+                    : number_format($count, 0, ',', '.');
+            };
+        @endphp
+
         <div class="container-fluid bg-light about pt-5 pb-5">
             <div class="container pb-5">
                 <div class="row g-5">
@@ -407,7 +417,7 @@ $activeStep = $completedStep < $maxStep ? $completedStep + 1 : $maxStep;
                                 <div class="col-sm-6">
                                     <div class="counter-item bg-light rounded p-3 h-100">
                                         <div class="counter-counting">
-                                            <span class="text-primary fs-2 fw-bold" data-toggle="counter-up">{{ $count_karyawan }}</span>
+                                            <span class="text-primary fs-2 fw-bold">{{ $formatRibuanPlus($count_karyawan) }}</span>
                                         </div>
                                         <h4 class="mb-0 text-dark">Karyawan</h4>
                                     </div>
@@ -415,7 +425,7 @@ $activeStep = $completedStep < $maxStep ? $completedStep + 1 : $maxStep;
                                 <div class="col-sm-6">
                                     <div class="counter-item bg-light rounded p-3 h-100">
                                         <div class="counter-counting">
-                                            <span class="text-primary fs-2 fw-bold" data-toggle="counter-up">49</span>
+                                            <span class="text-primary fs-2 fw-bold" data-toggle="counter-up">50</span>
                                         </div>
                                         <h4 class="mb-0 text-dark">Penghargaan</h4>
                                     </div>
@@ -431,7 +441,7 @@ $activeStep = $completedStep < $maxStep ? $completedStep + 1 : $maxStep;
                                 <div class="col-sm-6">
                                     <div class="counter-item bg-light rounded p-3 h-100">
                                         <div class="counter-counting">
-                                            <span class="text-primary fs-2 fw-bold" data-toggle="counter-up">{{ $count_user }}</span>
+                                            <span class="text-primary fs-2 fw-bold">{{ $formatRibuanPlus($count_user) }}</span>
                                         </div>
                                         <h4 class="mb-0 text-dark">Pengguna</h4>
                                     </div>
