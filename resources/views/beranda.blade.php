@@ -543,7 +543,7 @@ $activeStep = $completedStep < $maxStep ? $completedStep + 1 : $maxStep;
         ],
         [
         'question' => 'Siapa yang dapat dihubungi jika mengalami kendala teknis saat pendaftaran?',
-        'answer' => 'Jika Anda mengalami kendala teknis selama proses pendaftaran, silakan hubungi tim support melalui email <a href="mailto:vdnirekrutmen88@gmail.com">vdnirekrutmen88@gmail.com</a>.',
+        'answer' => 'Jika Anda mengalami kendala teknis selama proses pendaftaran, silakan hubungi tim support melalui email <a href="mailto:support@vdnisite.com">support@vdnisite.com</a>.',
         ],
         [
         'question' => 'Apakah saya dapat melamar lebih dari satu posisi secara bersamaan?',
@@ -604,7 +604,7 @@ $activeStep = $completedStep < $maxStep ? $completedStep + 1 : $maxStep;
                                             <i class="fa-regular fa-envelope"></i>
                                             <div>
                                                 <small>Email Support</small>
-                                                <a href="mailto:vdnirekrutmen88@gmail.com">vdnirekrutmen88@gmail.com</a>
+                                                <a href="mailto:support@vdnisite.com">support@vdnisite.com</a>
                                             </div>
                                         </div>
                                         <div class="faq-help-card__contact-item">
@@ -731,7 +731,7 @@ $activeStep = $completedStep < $maxStep ? $completedStep + 1 : $maxStep;
                                 <div id="collapseSix" class="accordion-collapse collapse" aria-labelledby="headingSix" data-bs-parent="#accordionExample">
                                     <div class="accordion-body">
                                         Apabila Anda mengalami kendala teknis selama proses pendaftaran, silakan menghubungi tim support kami melalui email
-                                        <a href="mailto:vdnirekrutmen88@gmail.com">vdnirekrutmen88@gmail.com</a>.
+                                        <a href="mailto:support@vdnisite.com">support@vdnisite.com</a>.
                                     </div>
                                 </div>
                             </div>

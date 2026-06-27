@@ -586,7 +586,7 @@ def build_story():
                 ("Email verifikasi tidak masuk", "Cek Spam/Junk/Promotions. Gunakan menu kirim ulang dan tunggu sesuai batas 15 menit jika baru saja mengirim ulang."),
                 ("File gagal diunggah", "Periksa format dan ukuran file. Dokumen umum maksimal 2 MB, sertifikat pendukung maksimal 50 MB."),
                 ("Ingin tahu hasil seleksi", "Buka Riwayat Proses Lamaran dan baca detail tahapan. Informasi juga dapat dikirim melalui kontak yang didaftarkan."),
-                ("Butuh bantuan teknis", "Hubungi email support: vdnirekrutmen88@gmail.com."),
+                ("Butuh bantuan teknis", "Hubungi email support: support@vdnisite.com."),
             ],
             [5.0 * cm, 11.6 * cm],
         )
