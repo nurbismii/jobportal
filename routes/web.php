@@ -28,7 +28,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [App\Http\Controllers\BerandaController::class, 'index'])->name('beranda');
 
 Route::resource('lowongan-kerja', 'App\Http\Controllers\LowonganController');
-Route::resource('pengumuman', 'App\Http\Controllers\PengumumanController');
+Route::resource('pengumuman', 'App\Http\Controllers\PengumumanController')->only(['index', 'show']);
 Route::resource('bantuan', 'App\Http\Controllers\BantuanController');
 Route::resource('pendaftaran', 'App\Http\Controllers\PendaftaranController');
 
@@ -94,7 +94,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['redirect.role']], function 
     Route::post('/auto-update-field', [LamaranController::class, 'autoUpdate'])->name('data.autoUpdate');
     Route::post('/import-status-lamaran', [LamaranController::class, 'importStatusLamaran'])->name('import.status-lamaran');
 
-    Route::resource('/pengumumans', 'App\Http\Controllers\Admin\PengumumanController');
+    Route::resource('/pengumumans', 'App\Http\Controllers\Admin\PengumumanController')->except(['show']);
 
     Route::post('/refresh-data-pelamar', [LowonganController::class, 'refreshDataPelamar'])->name('refreshData');
 

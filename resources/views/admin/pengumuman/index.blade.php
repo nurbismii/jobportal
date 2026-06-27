@@ -40,7 +40,7 @@
                                     <td>{{ $data->pengumuman }}</td>
                                     <td>
                                         @if($data->thumbnail)
-                                        <img src="{{ asset('pengumuman/' . $data->thumbnail) }}" alt="Thumbnail" class="img-thumbnail" style="width: 100px; height: auto;">
+                                        <img src="{{ asset('thumbnail/' . $data->thumbnail) }}" alt="Thumbnail" class="img-thumbnail" style="width: 100px; height: auto;">
                                         @else
                                         <span class="text-muted">Tidak ada thumbnail</span>
                                         @endif
@@ -61,7 +61,7 @@
                                         </a>
                                     </td>
                                 </tr>
-                                @endforeach.
+                                @endforeach
                             </tbody>
                         </table>
                     </div>

@@ -17,6 +17,17 @@
         <h6 class="m-0 font-weight-bold text-primary">Form Pengumuman</h6>
     </div>
     <div class="card-body">
+        @if ($errors->any())
+        <div class="alert alert-danger">
+            <strong>Data belum bisa disimpan.</strong>
+            <ul class="mb-0 mt-2">
+                @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+        @endif
+
         <form action="{{ route('pengumumans.update', $pengumuman->id) }}" method="POST" enctype="multipart/form-data">
             @csrf
             {{ method_field('patch') }}
@@ -25,20 +36,29 @@
                     <label for="pengumuman">Pengumuman
                         <span class="text-danger">*</span>
                     </label>
-                    <input type="text" name="pengumuman" id="pengumuman" class="form-control" value="{{ $pengumuman->pengumuman }}" required>
+                    <input type="text" name="pengumuman" id="pengumuman" class="form-control @error('pengumuman') is-invalid @enderror" value="{{ old('pengumuman', $pengumuman->pengumuman) }}" required>
+                    @error('pengumuman')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
                 <div class="col-md-6 mb-3">
                     <label for="thumbnail">Thumbnail</label>
-                    <input type="file" name="thumbnail" class="form-control-file" accept=".png, .jpeg, .jpg" value="{{ $pengumuman->thumbnail }}">
+                    <input type="file" name="thumbnail" id="thumbnail" class="form-control-file @error('thumbnail') is-invalid @enderror" accept=".png, .jpeg, .jpg">
+                    @error('thumbnail')
+                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                    @enderror
                 </div>
             </div>
             <div class="row g-3">
                 <div class="col-md-12 mb-3">
-                    <label class="form-label" for="inputEmail">Keterangan
+                    <label class="form-label" for="quill-editor-area">Keterangan
                         <span class="text-danger">*</span>
                     </label>
                     <div id="quill-editor" class="mb-3" style="height: 300px;"></div>
-                    <textarea rows="3" class="mb-3 d-none" name="keterangan" id="quill-editor-area" required>{{ $pengumuman->keterangan }}</textarea>
+                    <textarea rows="3" class="mb-3 d-none" name="keterangan" id="quill-editor-area">{{ old('keterangan', $pengumuman->keterangan) }}</textarea>
+                    @error('keterangan')
+                    <div class="text-danger small">{{ $message }}</div>
+                    @enderror
                 </div>
             </div>
             <button type="submit" class="btn btn-primary float-right">Simpan</button>
