@@ -28,29 +28,6 @@
                                     <th>Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                @foreach($biodatas as $data)
-                                <tr>
-                                    <td>{{ $data->user->name ?? '-' }}</td>
-                                    <td>{{ $data->no_ktp }}</td>
-                                    <td>{{ $data->user->email ?? '-' }}</td>
-                                    <td>{{ $data->getLatestRiwayatLamaran->lowongan->nama_lowongan ?? '-' }}</td>
-                                    <td>{{ getLamaranLama($data->getLatestRiwayatLamaran->loker_id_lama ?? null) }}</td>
-                                    <td>{{ $data->getLatestRiwayatLamaran->status_proses ?? '-' }}</td>
-                                    <td>
-                                        <div class="d-flex justify-content-center">
-                                            <a href="{{ route('peralihan.edit', $data->id) }}" class="btn btn-success btn-sm btn-icon-split">
-                                                <span class="icon text-white-50">
-                                                    <i class="fas fa-pen"></i>
-                                                </span>
-                                                <span class="text">Alihkan</span>
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
-                                @endforeach
-                                <!-- Add more rows as needed -->
-                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -64,8 +41,59 @@
 <script src="{{ asset('admin/vendor/datatables/jquery.dataTables.min.js') }}"></script>
 <script src="{{ asset('admin/vendor/datatables/dataTables.bootstrap4.min.js') }}"></script>
 
-<!-- Page level custom scripts -->
-<script src="{{ asset('admin/js/demo/datatables-demo.js') }}"></script>
+<script>
+    $(document).ready(function() {
+        $('#dataTable').DataTable({
+            processing: true,
+            serverSide: true,
+            scrollX: true,
+            autoWidth: false,
+            order: [
+                [1, 'asc']
+            ],
+            ajax: "{{ route('peralihan.index') }}",
+            lengthMenu: [
+                [10, 25, 50, 100],
+                [10, 25, 50, 100]
+            ],
+            columns: [{
+                    data: 'nama',
+                    name: 'nama',
+                    orderable: false
+                },
+                {
+                    data: 'no_ktp',
+                    name: 'biodata.no_ktp'
+                },
+                {
+                    data: 'email',
+                    name: 'email',
+                    orderable: false
+                },
+                {
+                    data: 'lamaran',
+                    name: 'lamaran',
+                    orderable: false
+                },
+                {
+                    data: 'lamaran_lama',
+                    name: 'lamaran_lama',
+                    orderable: false
+                },
+                {
+                    data: 'proses',
+                    name: 'proses',
+                    orderable: false
+                },
+                {
+                    data: 'aksi',
+                    orderable: false,
+                    searchable: false
+                }
+            ]
+        });
+    });
+</script>
 @endpush
 
 @endsection

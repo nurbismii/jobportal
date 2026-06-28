@@ -22,6 +22,11 @@ class Lamaran extends Model
         return $this->hasOne(Lowongan::class, 'id', 'loker_id');
     }
 
+    public function lowonganLama()
+    {
+        return $this->belongsTo(Lowongan::class, 'loker_id_lama', 'id');
+    }
+
     public function biodata()
     {
         return $this->hasOne(Biodata::class, 'id', 'biodata_id');

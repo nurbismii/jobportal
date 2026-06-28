@@ -9,14 +9,86 @@ use App\Models\Lowongan;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
+use Yajra\DataTables\Facades\DataTables;
 
 class PeralihanPelamarController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $biodatas = Biodata::with('user', 'getLatestRiwayatLamaran')->get(['id', 'user_id', 'no_ktp']);
+        if ($request->ajax()) {
+            $query = Biodata::with([
+                'user:id,name,email',
+                'getLatestRiwayatLamaran' => function ($lamaranQuery) {
+                    $lamaranQuery
+                        ->select(['id', 'biodata_id', 'loker_id', 'loker_id_lama', 'status_proses', 'created_at'])
+                        ->with([
+                            'lowongan:id,nama_lowongan',
+                            'lowonganLama:id,nama_lowongan',
+                        ]);
+                },
+            ])->select(['biodata.id', 'biodata.user_id', 'biodata.no_ktp']);
 
-        return view('admin.peralihan-pelamar.index', compact('biodatas'))->with('no');
+            return DataTables::of($query)
+                ->addColumn('nama', function ($biodata) {
+                    return optional($biodata->user)->name ?? '-';
+                })
+                ->editColumn('no_ktp', function ($biodata) {
+                    return $biodata->no_ktp ?? '-';
+                })
+                ->addColumn('email', function ($biodata) {
+                    return optional($biodata->user)->email ?? '-';
+                })
+                ->addColumn('lamaran', function ($biodata) {
+                    return optional(optional($biodata->getLatestRiwayatLamaran)->lowongan)->nama_lowongan ?? '-';
+                })
+                ->addColumn('lamaran_lama', function ($biodata) {
+                    return optional(optional($biodata->getLatestRiwayatLamaran)->lowonganLama)->nama_lowongan ?? '-';
+                })
+                ->addColumn('proses', function ($biodata) {
+                    return optional($biodata->getLatestRiwayatLamaran)->status_proses ?? '-';
+                })
+                ->addColumn('aksi', function ($biodata) {
+                    return '
+                        <div class="d-flex justify-content-center">
+                            <a href="' . route('peralihan.edit', $biodata->id) . '" class="btn btn-success btn-sm btn-icon-split">
+                                <span class="icon text-white-50">
+                                    <i class="fas fa-pen"></i>
+                                </span>
+                                <span class="text">Alihkan</span>
+                            </a>
+                        </div>';
+                })
+                ->filterColumn('nama', function ($query, $keyword) {
+                    $query->whereHas('user', function ($userQuery) use ($keyword) {
+                        $userQuery->where('name', 'like', '%' . $keyword . '%');
+                    });
+                })
+                ->filterColumn('email', function ($query, $keyword) {
+                    $query->whereHas('user', function ($userQuery) use ($keyword) {
+                        $userQuery->where('email', 'like', '%' . $keyword . '%');
+                    });
+                })
+                ->filterColumn('lamaran', function ($query, $keyword) {
+                    $query->whereHas('getLatestRiwayatLamaran.lowongan', function ($lowonganQuery) use ($keyword) {
+                        $lowonganQuery->where('nama_lowongan', 'like', '%' . $keyword . '%');
+                    });
+                })
+                ->filterColumn('lamaran_lama', function ($query, $keyword) {
+                    $query->whereHas('getLatestRiwayatLamaran.lowonganLama', function ($lowonganQuery) use ($keyword) {
+                        $lowonganQuery->where('nama_lowongan', 'like', '%' . $keyword . '%');
+                    });
+                })
+                ->filterColumn('proses', function ($query, $keyword) {
+                    $query->whereHas('getLatestRiwayatLamaran', function ($lamaranQuery) use ($keyword) {
+                        $lamaranQuery->where('status_proses', 'like', '%' . $keyword . '%');
+                    });
+                })
+                ->only(['nama', 'no_ktp', 'email', 'lamaran', 'lamaran_lama', 'proses', 'aksi'])
+                ->rawColumns(['aksi'])
+                ->make(true);
+        }
+
+        return view('admin.peralihan-pelamar.index')->with('no');
     }
 
     public function edit($id)
