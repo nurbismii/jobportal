@@ -19,7 +19,7 @@
                     <h6 class="m-0 font-weight-bold text-primary">Form Peralihan Pelamar</h6>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('peralihan.update', $biodata->getLatestRiwayatLamaran->id) }}" method="POST">
+                    <form action="{{ route('peralihan.update', $latestLamaran->id) }}" method="POST">
                         @csrf
                         {{ method_field('patch') }}
                         <div class="row g-3">
@@ -49,8 +49,7 @@
                                 <label for="lowongan-dilamar">Lowongan yang Dilamar
                                     <span class="text-danger">*</span>
                                 </label>
-                                <input type="text" class="form-control" id="jumlah-permintaan" value="{{ $biodata->getLatestRiwayatLamaran->lowongan->nama_lowongan }}" required readonly>
-                                <input type="hidden" name="loker_id_lama" class="form-control" value="{{ $biodata->getLatestRiwayatLamaran->lowongan->id }}" required readonly>
+                                <input type="text" class="form-control" id="jumlah-permintaan" value="{{ $latestLamaran->lowongan->nama_lowongan ?? '-' }}" required readonly>
                             </div>
                         </div>
 
@@ -59,7 +58,7 @@
                                 <label for="alihkan">Alihkan Ke ?
                                     <span class="text-danger">*</span>
                                 </label>
-                                <select name="loker_id" class="form-control" id="tanggal-pengajuan">
+                                <select name="loker_id" class="form-control" id="tanggal-pengajuan" required>
                                     <option value="" disabled selected>-- Pilih Lowongan --</option>
                                     @foreach($lowongans as $lowongan)
                                     <option value="{{ $lowongan->id }}">{{ $lowongan->nama_lowongan }}</option> 

@@ -26,7 +26,9 @@ class PeralihanPelamarController extends Controller
                             'lowonganLama:id,nama_lowongan',
                         ]);
                 },
-            ])->select(['biodata.id', 'biodata.user_id', 'biodata.no_ktp']);
+            ])
+                ->whereHas('getLatestRiwayatLamaran')
+                ->select(['biodata.id', 'biodata.user_id', 'biodata.no_ktp']);
 
             return DataTables::of($query)
                 ->addColumn('nama', function ($biodata) {
@@ -93,7 +95,17 @@ class PeralihanPelamarController extends Controller
 
     public function edit($id)
     {
-        $biodata = Biodata::with('user', 'getLatestRiwayatLamaran')->where('id', $id)->first(['id', 'user_id', 'no_ktp']);
+        $biodata = Biodata::with([
+            'user',
+            'getLatestRiwayatLamaran.lowongan',
+        ])->where('id', $id)->firstOrFail(['id', 'user_id', 'no_ktp']);
+
+        $latestLamaran = $biodata->getLatestRiwayatLamaran;
+
+        if (! $latestLamaran) {
+            Alert::warning('Peringatan', 'Pelamar ini belum memiliki lamaran yang bisa dialihkan.');
+            return redirect()->route('peralihan.index');
+        }
 
         $lowongans = Lowongan::select('*')
             ->selectRaw("IF(tanggal_berakhir < ?, 'Kadaluwarsa', 'Aktif') as status_lowongan", [Carbon::now()])
@@ -102,17 +114,21 @@ class PeralihanPelamarController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('admin.peralihan-pelamar.edit', compact('biodata', 'lowongans'))->with('no');
+        return view('admin.peralihan-pelamar.edit', compact('biodata', 'latestLamaran', 'lowongans'))->with('no');
     }
 
     public function update(Request $request, $id)
     {
+        $validatedData = $request->validate([
+            'loker_id' => ['required', 'exists:lowongan,id'],
+        ]);
+
         $lamaran = Lamaran::find($id);
 
         if ($lamaran) {
             $lamaran->where('loker_id', $lamaran->loker_id)->where('biodata_id', $lamaran->biodata_id)->update([
-                'loker_id' => $request->loker_id,
-                'loker_id_lama' => $request->loker_id_lama
+                'loker_id' => $validatedData['loker_id'],
+                'loker_id_lama' => $lamaran->loker_id
             ]);
 
             Alert::success('Berhasil', 'Data pelamar berhasil dialihkan');
