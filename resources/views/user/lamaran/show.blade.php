@@ -18,7 +18,7 @@
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-3">
                         <h4 class="fw-bold mb-0">Detail Lowongan</h4>
-                        <a href="{{ route('lamaran.index') }}" class="ms-auto btn btn-link text-decoration-none">Tutup</a>
+                        <a href="{{ route('lamaran.index') }}" class="ms-auto btn btn-link text-decoration-none">Kembali</a>
 
                     </div>
                     <p class="mb-1"><strong>Posisi:</strong> {{ $lamaran->lowongan->nama_lowongan }}</p>
