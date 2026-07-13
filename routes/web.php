@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\LamaranController;
+use App\Http\Controllers\Admin\AssessmentLinkController;
 use App\Http\Controllers\Admin\AccountRecoveryRequestController;
 use App\Http\Controllers\BiodataController;
 use App\Http\Controllers\PkwtContractController;
@@ -88,6 +89,11 @@ Route::group(['prefix' => 'admin', 'middleware' => ['redirect.role']], function 
     Route::get('/lowongan/pendaftar/{loker_id}', [App\Http\Controllers\Admin\LowonganController::class, 'directToLamaran'])->name('directToLamaran');
 
     Route::resource('/lamarans', 'App\Http\Controllers\Admin\LamaranController');
+    Route::get('/assessment-links', [AssessmentLinkController::class, 'index'])->name('assessment-links.index');
+    Route::get('/assessment-links/create', [AssessmentLinkController::class, 'create'])->name('assessment-links.create');
+    Route::post('/assessment-links', [AssessmentLinkController::class, 'store'])->name('assessment-links.store');
+    Route::get('/assessment-links/{assessmentLink}', [AssessmentLinkController::class, 'show'])->name('assessment-links.show');
+    Route::post('/assessment-links/{assessmentLink}/deactivate', [AssessmentLinkController::class, 'deactivate'])->name('assessment-links.deactivate');
     
     Route::post('/lamaran/update-status-massal', [LamaranController::class, 'updateStatusMassal'])->name('lamaran.updateStatusMassal');
     Route::get('/lamaran-data', [LamaranController::class, 'getLamaranData'])->name('lamaran.data');

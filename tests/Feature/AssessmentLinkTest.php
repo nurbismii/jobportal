@@ -25,6 +25,7 @@ class AssessmentLinkTest extends TestCase
         parent::setUp();
 
         config([
+            'app.key' => 'base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
             'database.default' => 'assessment_testing',
             'database.connections.assessment_testing' => [
                 'driver' => 'sqlite',
@@ -83,6 +84,51 @@ class AssessmentLinkTest extends TestCase
         $this->assertTrue($link->isAccessibleAt($now));
         $this->assertTrue($link->candidates()->whereKey($candidate->id)->exists());
         $this->assertTrue($candidate->lamaran->is($lamaran));
+    }
+
+    public function test_admin_can_create_and_deactivate_a_lapangan_assessment_link()
+    {
+        $admin = User::create([
+            'name' => 'Assessment Admin',
+            'email' => 'admin-assessment-link@example.test',
+            'password' => 'secret',
+            'role' => 'admin',
+        ]);
+        $biodata = Biodata::create(['user_id' => $admin->id]);
+        $lamaran = Lamaran::create([
+            'biodata_id' => $biodata->id,
+            'user_id' => $admin->id,
+        ]);
+
+        $response = $this->actingAs($admin)->post(route('assessment-links.store'), [
+            'assessment_type' => 'lapangan',
+            'pin' => '123456',
+            'selected_ids' => [$lamaran->id],
+            'fields' => [[
+                'id' => 'run_time',
+                'label' => 'Waktu lari',
+                'type' => 'number',
+                'required' => '1',
+            ]],
+        ]);
+
+        $response->assertRedirect(route('assessment-links.index'));
+
+        $link = AssessmentLink::query()->sole();
+        $this->assertTrue(Hash::check('123456', $link->pin_hash));
+        $this->assertSame([$lamaran->id], $link->candidates()->pluck('lamaran_id')->map(function ($id) {
+            return (int) $id;
+        })->all());
+
+        $this->actingAs($admin)
+            ->post(route('assessment-links.deactivate', $link))
+            ->assertRedirect(route('assessment-links.show', $link));
+
+        $this->assertDatabaseHas('assessment_links', [
+            'id' => $link->id,
+            'is_active' => false,
+            'deactivated_by' => $admin->id,
+        ]);
     }
 
     public function test_health_link_keeps_standard_field_and_audits_each_result_save()
