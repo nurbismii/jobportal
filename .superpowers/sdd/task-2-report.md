@@ -74,3 +74,36 @@ Baseline failures observed:
 
 - The candidate table/migration does not enforce a foreign key to `lamaran`; the service intentionally does not alter that existing persistence design or status workflow.
 - Full-suite baseline failures remain environmental/unrelated and should be resolved separately before treating the repository suite as fully green.
+
+## Review fix: link-level lock and schema input validation
+
+Following review, `saveResult` now first locks the candidate row and then obtains the owning `AssessmentLink` by `assessment_link_id` with `lockForUpdate()` in the same transaction. `ensureAccessible()` runs against that locked link before server-side schema validation, candidate update, or audit insertion; validation also uses the locked link schema. This serializes a concurrent deactivation against result submission, eliminating the prior check-then-write window.
+
+`create` now rejects a supplied non-array `fields`/schema value with `ValidationException` instead of silently treating it as an empty schema.
+
+### Review fix RED
+
+Command:
+
+```powershell
+php artisan test --filter=AssessmentLinkTest
+```
+
+Output: **3 passed, 1 failed**. `test_create_rejects_non_array_schema_fields` failed as expected because the pre-fix service coerced `fields => 'not-an-array'` to `[]` and did not throw `ValidationException`. The inactive-link rejection test was also added and passed against the existing accessibility behavior.
+
+### Review fix GREEN
+
+Command:
+
+```powershell
+php artisan test --filter=AssessmentLinkTest
+```
+
+Output: **4 passed, 0 failed** in 0.22s:
+
+- assessment link persists schema accessibility and candidate lamaran relation
+- health link keeps standard field and audits each result save
+- create rejects non array schema fields
+- save result rejects an inactive link
+
+The focused tests cover malformed schema input and safe rejection when a link is inaccessible through deactivation. The same locked `ensureAccessible()` guard also rejects expired links because it delegates to `isAccessibleAt()`.

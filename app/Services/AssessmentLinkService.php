@@ -32,8 +32,11 @@ class AssessmentLinkService
     public function create(array $attributes, array $lamaranIds, int $creatorId): AssessmentLink
     {
         $type = $attributes['assessment_type'] ?? null;
-        $fields = $attributes['fields'] ?? $attributes['form_schema'] ?? [];
-        $schema = $this->schemaFor((string) $type, is_array($fields) ? $fields : []);
+        $fields = array_key_exists('fields', $attributes) ? $attributes['fields'] : ($attributes['form_schema'] ?? []);
+        if (!is_array($fields)) {
+            throw ValidationException::withMessages(['fields' => ['Field schema harus berupa array.']]);
+        }
+        $schema = $this->schemaFor((string) $type, $fields);
         $pin = $attributes['pin'] ?? null;
 
         if (!is_string($pin) || trim($pin) === '' || strlen($pin) > 255) {
@@ -140,14 +143,22 @@ class AssessmentLinkService
         return DB::transaction(function () use ($candidate, $values, $note, $request) {
             $lockedCandidate = AssessmentLinkCandidate::query()
                 ->lockForUpdate()
-                ->with('assessmentLink')
                 ->find($candidate->id);
 
-            if ($lockedCandidate === null || $lockedCandidate->assessmentLink === null || !$lockedCandidate->assessmentLink->isAccessibleAt(now('Asia/Makassar'))) {
+            if ($lockedCandidate === null) {
                 throw (new ModelNotFoundException())->setModel(AssessmentLinkCandidate::class, [$candidate->id]);
             }
 
-            $this->validateResult($lockedCandidate->assessmentLink->form_schema, $values, $note);
+            $lockedLink = AssessmentLink::query()
+                ->lockForUpdate()
+                ->find($lockedCandidate->assessment_link_id);
+
+            if ($lockedLink === null) {
+                throw (new ModelNotFoundException())->setModel(AssessmentLinkCandidate::class, [$candidate->id]);
+            }
+
+            $this->ensureAccessible($lockedLink);
+            $this->validateResult($lockedLink->form_schema, $values, $note);
 
             $oldValues = (array) ($lockedCandidate->result_values ?? []);
             $oldValues['petugas_note'] = $lockedCandidate->petugas_note;
@@ -218,5 +229,12 @@ class AssessmentLinkService
         } while (AssessmentLink::query()->where('public_token', $token)->exists());
 
         return $token;
+    }
+
+    private function ensureAccessible(AssessmentLink $link): void
+    {
+        if (!$link->isAccessibleAt(now('Asia/Makassar'))) {
+            throw (new ModelNotFoundException())->setModel(AssessmentLink::class, [$link->id]);
+        }
     }
 }

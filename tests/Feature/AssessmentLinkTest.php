@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Validation\ValidationException;
 use App\Services\AssessmentLinkService;
 use Tests\TestCase;
 
@@ -138,6 +140,44 @@ class AssessmentLinkTest extends TestCase
         $this->assertCount(2, $candidate->audits);
         $this->assertSame('Sehat', $candidate->audits->first()->new_values['health_status']);
         $this->assertSame('Tidak Sehat', $candidate->audits->last()->new_values['health_status']);
+    }
+
+    public function test_create_rejects_non_array_schema_fields()
+    {
+        $service = app(AssessmentLinkService::class);
+
+        $this->expectException(ValidationException::class);
+
+        $service->create([
+            'assessment_type' => 'lapangan',
+            'pin' => '123456',
+            'fields' => 'not-an-array',
+        ], [], 1);
+    }
+
+    public function test_save_result_rejects_an_inactive_link()
+    {
+        Carbon::setTestNow(Carbon::parse('2026-07-13 10:00:00', 'Asia/Makassar'));
+
+        $admin = User::create([
+            'name' => 'Assessment Admin',
+            'email' => 'inactive-link-admin@example.test',
+            'password' => 'secret',
+            'role' => 'admin',
+        ]);
+        $biodata = Biodata::create(['user_id' => $admin->id]);
+        $lamaran = Lamaran::create(['biodata_id' => $biodata->id, 'user_id' => $admin->id]);
+        $service = app(AssessmentLinkService::class);
+        $link = $service->create([
+            'assessment_type' => 'kesehatan',
+            'pin' => '123456',
+            'fields' => [],
+        ], [$lamaran->id], $admin->id);
+        $link->update(['is_active' => false]);
+
+        $this->expectException(ModelNotFoundException::class);
+
+        $service->saveResult($link->candidates->first(), ['health_status' => 'Sehat'], null, Request::create('/assessment', 'POST'));
     }
 
     protected function tearDown(): void
