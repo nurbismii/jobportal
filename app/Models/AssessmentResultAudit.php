@@ -1,0 +1,21 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class AssessmentResultAudit extends Model
+{
+    protected $guarded = [];
+
+    protected $casts = [
+        'old_values' => 'array',
+        'new_values' => 'array',
+    ];
+
+    public function assessmentLinkCandidate(): BelongsTo
+    {
+        return $this->belongsTo(AssessmentLinkCandidate::class);
+    }
+}

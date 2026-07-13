@@ -1,0 +1,115 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\AssessmentLink;
+use App\Models\AssessmentLinkCandidate;
+use App\Models\Biodata;
+use App\Models\Lamaran;
+use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
+use Tests\TestCase;
+
+class AssessmentLinkTest extends TestCase
+{
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        config([
+            'database.default' => 'assessment_testing',
+            'database.connections.assessment_testing' => [
+                'driver' => 'sqlite',
+                'database' => ':memory:',
+                'prefix' => '',
+                'foreign_key_constraints' => false,
+            ],
+        ]);
+
+        DB::purge('assessment_testing');
+        DB::setDefaultConnection('assessment_testing');
+
+        $this->createBaseSchema();
+
+        $migrationPath = database_path('migrations/2026_07_13_000000_create_assessment_link_tables.php');
+        $this->assertFileExists($migrationPath);
+        require_once $migrationPath;
+        (new \CreateAssessmentLinkTables())->up();
+    }
+
+    public function test_assessment_link_persists_schema_accessibility_and_candidate_lamaran_relation()
+    {
+        $now = Carbon::parse('2026-07-13 10:00:00');
+        Carbon::setTestNow($now);
+
+        $admin = User::create([
+            'name' => 'Assessment Admin',
+            'email' => 'admin@example.test',
+            'password' => 'secret',
+            'role' => 'admin',
+        ]);
+        $biodata = Biodata::create(['user_id' => $admin->id]);
+        $lamaran = Lamaran::create([
+            'biodata_id' => $biodata->id,
+            'user_id' => $admin->id,
+        ]);
+
+        $link = AssessmentLink::create([
+            'assessment_type' => 'lapangan',
+            'public_token' => str_repeat('a', 64),
+            'pin_hash' => Hash::make('123456'),
+            'form_schema' => [['id' => 'run_time', 'type' => 'number']],
+            'created_by' => $admin->id,
+            'expires_at' => $now->copy()->endOfDay(),
+            'is_active' => true,
+        ]);
+        $candidate = AssessmentLinkCandidate::create([
+            'assessment_link_id' => $link->id,
+            'lamaran_id' => $lamaran->id,
+        ]);
+
+        $link->refresh();
+
+        $this->assertSame([['id' => 'run_time', 'type' => 'number']], $link->form_schema);
+        $this->assertTrue(Hash::check('123456', $link->pin_hash));
+        $this->assertTrue($link->isAccessibleAt($now));
+        $this->assertTrue($link->candidates()->whereKey($candidate->id)->exists());
+        $this->assertTrue($candidate->lamaran->is($lamaran));
+    }
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+
+        parent::tearDown();
+    }
+
+    private function createBaseSchema(): void
+    {
+        Schema::create('users', function (Blueprint $table) {
+            $table->id();
+            $table->string('name')->nullable();
+            $table->string('email')->nullable();
+            $table->string('password')->nullable();
+            $table->string('role')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('biodata', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('lamaran', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('biodata_id')->nullable();
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->timestamps();
+        });
+    }
+}
