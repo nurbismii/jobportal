@@ -316,6 +316,22 @@ class AssessmentLinkTest extends TestCase
         }
     }
 
+    public function test_public_assessment_result_save_returns_not_found_for_expired_or_deactivated_link_even_with_session_access()
+    {
+        [$expired, $expiredCandidate] = $this->createPublicAssessmentLink([
+            'expires_at' => now('Asia/Makassar')->subMinute(),
+        ]);
+        [$inactive, $inactiveCandidate] = $this->createPublicAssessmentLink(['is_active' => false]);
+
+        foreach ([[$expired, $expiredCandidate], [$inactive, $inactiveCandidate]] as [$link, $candidate]) {
+            $this->withSession(['assessment_link_access.'.$link->id => true])
+                ->post(route('assessment-links.public.results.store', [$link->public_token, $candidate]), [
+                    'values' => ['run_time' => '12.5'],
+                ])
+                ->assertNotFound();
+        }
+    }
+
     public function test_public_assessment_rejects_candidate_from_another_link_and_invalid_select_option()
     {
         [$link, $candidate] = $this->createPublicAssessmentLink([

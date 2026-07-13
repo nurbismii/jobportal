@@ -32,3 +32,15 @@ Result: 33 passed, 8 failed. The eight failures match the supplied baseline: mis
 
 - The public form intentionally labels candidates only by assessment candidate ID until PIN/session access is established; no candidate data is loaded before unlock.
 - The global suite remains red due to the pre-existing unrelated baseline failures above; no task-4 regression was observed.
+
+## Review follow-up
+
+Added a regression test for `POST assessment-links.public.results.store` against both expired and deactivated links while the exact `assessment_link_access.{linkId}` session key is present. Both responses are verified as 404, confirming access is checked before candidate/result processing. The production controller already enforced this behavior, so no production change was required.
+
+Focused verification:
+
+```powershell
+php artisan test --filter=AssessmentLinkTest
+```
+
+Result: 12 passed.
