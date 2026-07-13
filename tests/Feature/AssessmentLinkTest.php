@@ -12,6 +12,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Http\Request;
+use App\Services\AssessmentLinkService;
 use Tests\TestCase;
 
 class AssessmentLinkTest extends TestCase
@@ -79,6 +81,63 @@ class AssessmentLinkTest extends TestCase
         $this->assertTrue($link->isAccessibleAt($now));
         $this->assertTrue($link->candidates()->whereKey($candidate->id)->exists());
         $this->assertTrue($candidate->lamaran->is($lamaran));
+    }
+
+    public function test_health_link_keeps_standard_field_and_audits_each_result_save()
+    {
+        Carbon::setTestNow(Carbon::parse('2026-07-13 10:00:00', 'Asia/Makassar'));
+
+        $admin = User::create([
+            'name' => 'Assessment Admin',
+            'email' => 'assessment-admin@example.test',
+            'password' => 'secret',
+            'role' => 'admin',
+        ]);
+        $biodata = Biodata::create(['user_id' => $admin->id]);
+        $lamaran = Lamaran::create([
+            'biodata_id' => $biodata->id,
+            'user_id' => $admin->id,
+        ]);
+
+        $service = app(AssessmentLinkService::class);
+        $link = $service->create([
+            'assessment_type' => 'kesehatan',
+            'pin' => '123456',
+            'fields' => [['id' => 'blood_pressure', 'label' => 'Tekanan darah', 'type' => 'number', 'required' => true]],
+        ], [$lamaran->id, $lamaran->id], $admin->id);
+
+        $this->assertSame([
+            'id' => 'health_status',
+            'label' => 'Hasil tes kesehatan',
+            'type' => 'select',
+            'required' => true,
+            'options' => ['Sehat', 'Tidak Sehat'],
+        ], $link->form_schema[0]);
+        $this->assertTrue($service->verifyPin($link, '123456'));
+        $this->assertCount(1, $link->candidates);
+
+        $candidate = $link->candidates->first();
+        $request = Request::create('/assessment', 'POST', [], [], [], [
+            'REMOTE_ADDR' => '127.0.0.1',
+            'HTTP_USER_AGENT' => 'Assessment Test',
+        ]);
+
+        $service->saveResult($candidate, [
+            'health_status' => 'Sehat',
+            'blood_pressure' => 120,
+        ], 'Layak bekerja', $request);
+        $service->saveResult($candidate, [
+            'health_status' => 'Tidak Sehat',
+            'blood_pressure' => 150,
+        ], 'Perlu pemeriksaan lanjutan', $request);
+
+        $candidate->refresh();
+
+        $this->assertSame('Tidak Sehat', $candidate->result_values['health_status']);
+        $this->assertSame('Perlu pemeriksaan lanjutan', $candidate->petugas_note);
+        $this->assertCount(2, $candidate->audits);
+        $this->assertSame('Sehat', $candidate->audits->first()->new_values['health_status']);
+        $this->assertSame('Tidak Sehat', $candidate->audits->last()->new_values['health_status']);
     }
 
     protected function tearDown(): void
