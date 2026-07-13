@@ -60,7 +60,7 @@ class AssessmentLinkController extends Controller
             return back()->withInput($request->except('pin'));
         }
 
-        $publicUrl = url('/assessment/' . $link->public_token);
+        $publicUrl = route('assessment-links.public.show', $link->public_token);
         session()->flash('assessment_link_url', $publicUrl);
         Alert::success('Berhasil', 'Link asesmen berhasil dibuat. Salin URL publik yang ditampilkan di halaman daftar.');
 

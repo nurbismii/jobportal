@@ -115,10 +115,15 @@ class AssessmentLinkTest extends TestCase
         $response->assertRedirect(route('assessment-links.index'));
 
         $link = AssessmentLink::query()->sole();
+        $publicUrl = route('assessment-links.public.show', $link->public_token);
+        $response->assertSessionHas('assessment_link_url', $publicUrl);
         $this->assertTrue(Hash::check('123456', $link->pin_hash));
         $this->assertSame([$lamaran->id], $link->candidates()->pluck('lamaran_id')->map(function ($id) {
             return (int) $id;
         })->all());
+        $this->get($publicUrl)->assertOk()->assertViewIs('public-assessment-links.pin');
+        $this->post(route('assessment-links.public.unlock', $link->public_token), ['pin' => '123456'])
+            ->assertRedirect($publicUrl);
 
         $this->actingAs($admin)
             ->post(route('assessment-links.deactivate', $link))
@@ -129,6 +134,7 @@ class AssessmentLinkTest extends TestCase
             'is_active' => false,
             'deactivated_by' => $admin->id,
         ]);
+
     }
 
     public function test_pin_is_never_flashed_back_after_assessment_link_submission_errors()
@@ -266,6 +272,14 @@ class AssessmentLinkTest extends TestCase
             'values' => ['run_time' => '12.5'],
             'petugas_note' => 'Catatan petugas',
         ])->assertForbidden();
+    }
+
+    public function test_public_assessment_rejects_an_unlocked_missing_payload_before_validation()
+    {
+        [$link, $candidate] = $this->createPublicAssessmentLink();
+
+        $this->post(route('assessment-links.public.results.store', [$link->public_token, $candidate]))
+            ->assertForbidden();
     }
 
     public function test_public_assessment_unlocks_with_valid_pin_and_saves_result_without_changing_lamaran()

@@ -13,7 +13,7 @@
 <div class="card shadow mb-3"><div class="card-body"><div class="row">
     <div class="col-md-8 mb-2">
         <label class="small font-weight-bold">URL publik</label>
-        <div class="input-group"><input id="assessmentPublicUrl" class="form-control" readonly value="{{ url('/assessment/' . $link->public_token) }}"><div class="input-group-append"><button type="button" class="btn btn-outline-primary" data-copy-target="assessmentPublicUrl">Salin</button></div></div>
+        <div class="input-group"><input id="assessmentPublicUrl" class="form-control" readonly value="{{ route('assessment-links.public.show', $link->public_token) }}"><div class="input-group-append"><button type="button" class="btn btn-outline-primary" data-copy-target="assessmentPublicUrl">Salin</button></div></div>
         <div class="small text-muted mt-1">PIN tidak ditampilkan kembali demi keamanan.</div>
     </div>
     <div class="col-md-4 mb-2">

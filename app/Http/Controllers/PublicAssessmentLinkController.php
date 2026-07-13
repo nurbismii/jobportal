@@ -39,8 +39,8 @@ class PublicAssessmentLinkController extends Controller
 
     public function storeResult(PublicAssessmentResultRequest $request, string $token, int $candidate, AssessmentLinkService $assessmentLinkService)
     {
-        $link = $this->accessibleLink($token);
-        abort_unless(session()->has($this->accessKey($link)), 403);
+        /** @var AssessmentLink $link */
+        $link = $request->attributes->get('publicAssessmentLink');
 
         $linkCandidate = AssessmentLinkCandidate::query()
             ->where('assessment_link_id', $link->id)
