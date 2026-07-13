@@ -2,11 +2,15 @@
 
 namespace App\Http\Requests\Admin;
 
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rule;
 
 class StoreAssessmentLinkRequest extends FormRequest
 {
+    protected $dontFlash = ['pin'];
+
     public function authorize()
     {
         return optional($this->user())->role === 'admin';
@@ -28,5 +32,14 @@ class StoreAssessmentLinkRequest extends FormRequest
             'fields.*.options' => ['nullable', 'array', 'max:20'],
             'fields.*.options.*' => ['required', 'string', 'max:100'],
         ];
+    }
+
+    protected function failedValidation(Validator $validator)
+    {
+        throw new HttpResponseException(
+            $this->redirector->to($this->getRedirectUrl())
+                ->withErrors($validator, $this->errorBag)
+                ->withInput($this->except($this->dontFlash))
+        );
     }
 }

@@ -131,6 +131,38 @@ class AssessmentLinkTest extends TestCase
         ]);
     }
 
+    public function test_pin_is_never_flashed_back_after_assessment_link_submission_errors()
+    {
+        $admin = User::create([
+            'name' => 'Assessment Admin',
+            'email' => 'assessment-link-errors@example.test',
+            'password' => 'secret',
+            'role' => 'admin',
+        ]);
+        $biodata = Biodata::create(['user_id' => $admin->id]);
+        $lamaran = Lamaran::create(['biodata_id' => $biodata->id, 'user_id' => $admin->id]);
+
+        $this->actingAs($admin)->from(route('assessment-links.create'))->post(route('assessment-links.store'), [
+            'assessment_type' => 'lapangan',
+            'pin' => '123',
+            'selected_ids' => [$lamaran->id],
+        ])->assertRedirect(route('assessment-links.create'))
+            ->assertSessionHasErrors('pin')
+            ->assertSessionMissing('_old_input.pin');
+
+        $this->actingAs($admin)->from(route('assessment-links.create'))->post(route('assessment-links.store'), [
+            'assessment_type' => 'lapangan',
+            'pin' => '123456',
+            'selected_ids' => [$lamaran->id],
+            'fields' => [[
+                'id' => 'surface',
+                'label' => 'Permukaan',
+                'type' => 'select',
+            ]],
+        ])->assertRedirect(route('assessment-links.create'))
+            ->assertSessionMissing('_old_input.pin');
+    }
+
     public function test_health_link_keeps_standard_field_and_audits_each_result_save()
     {
         Carbon::setTestNow(Carbon::parse('2026-07-13 10:00:00', 'Asia/Makassar'));

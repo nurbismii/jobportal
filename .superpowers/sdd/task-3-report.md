@@ -55,3 +55,21 @@ Kegagalan baseline tetap:
   publik, sesuai batas scope Task 3. Route publik dapat ditambahkan pada task berikutnya.
 - Form dinamis adalah bantuan UX. Service tetap melakukan normalisasi dan validasi schema sebagai
   source of truth.
+
+## Perbaikan Review
+
+- PIN sekarang dikecualikan dari seluruh old input: properti `$dontFlash` dipakai untuk jalur
+  validasi FormRequest, dan `failedValidation()` mengirim redirect dengan input yang telah disaring.
+  Jalur penolakan dari service juga menggunakan `withInput($request->except('pin'))`.
+- Detail audit menampilkan nilai dan `petugas_note` sebelum maupun sesudah revisi. Tampilan
+  mendukung format audit `values`/`petugas_note` serta format data lama yang sudah tersimpan.
+- Penonaktifan link kini memakai konfirmasi SweetAlert dan POST form; tidak lagi memakai
+  `confirm()` native browser.
+- Status detail kini menampilkan `Kadaluwarsa` untuk link yang masih aktif tetapi melewati waktu
+  kedaluwarsa, konsisten dengan daftar link.
+
+### Validasi perbaikan review
+
+- RED: test PIN gagal karena `_old_input.pin` masih tersimpan setelah validasi FormRequest.
+- GREEN: `php artisan test tests/Feature/AssessmentLinkTest.php --filter=pin_is_never_flashed_back_after_assessment_link_submission_errors` — **1 passed**.
+- Regresi Task 3: `php artisan test --filter=AssessmentLinkTest` — **6 passed**.

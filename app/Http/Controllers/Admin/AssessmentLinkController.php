@@ -53,11 +53,11 @@ class AssessmentLinkController extends Controller
         } catch (ValidationException $exception) {
             Alert::error('Gagal', 'Data link asesmen tidak valid. Silakan periksa kembali isian Anda.');
 
-            return back()->withInput();
+            return back()->withInput($request->except('pin'));
         } catch (InvalidArgumentException $exception) {
             Alert::error('Gagal', 'Link asesmen tidak dapat dibuat. Silakan periksa kembali isian Anda.');
 
-            return back()->withInput();
+            return back()->withInput($request->except('pin'));
         }
 
         $publicUrl = url('/assessment/' . $link->public_token);
