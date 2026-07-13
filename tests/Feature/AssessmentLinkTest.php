@@ -258,6 +258,83 @@ class AssessmentLinkTest extends TestCase
         $service->saveResult($link->candidates->first(), ['health_status' => 'Sehat'], null, Request::create('/assessment', 'POST'));
     }
 
+    public function test_public_assessment_requires_pin_before_results_can_be_saved()
+    {
+        [$link, $candidate] = $this->createPublicAssessmentLink();
+
+        $this->post(route('assessment-links.public.results.store', [$link->public_token, $candidate]), [
+            'values' => ['run_time' => '12.5'],
+            'petugas_note' => 'Catatan petugas',
+        ])->assertForbidden();
+    }
+
+    public function test_public_assessment_unlocks_with_valid_pin_and_saves_result_without_changing_lamaran()
+    {
+        [$link, $candidate] = $this->createPublicAssessmentLink();
+        $lamaranBefore = $candidate->lamaran->getAttributes();
+
+        $this->post(route('assessment-links.public.unlock', $link->public_token), ['pin' => '123456'])
+            ->assertRedirect(route('assessment-links.public.show', $link->public_token));
+
+        $this->assertTrue(session()->has('assessment_link_access.'.$link->id));
+
+        $this->post(route('assessment-links.public.results.store', [$link->public_token, $candidate]), [
+            'values' => ['run_time' => '12.5'],
+            'petugas_note' => 'Catatan petugas',
+        ])->assertRedirect(route('assessment-links.public.show', $link->public_token));
+
+        $candidate->refresh();
+        $candidate->lamaran->refresh();
+        $this->assertSame('12.5', $candidate->result_values['run_time']);
+        $this->assertSame('Catatan petugas', $candidate->petugas_note);
+        $this->assertSame($lamaranBefore, $candidate->lamaran->getAttributes());
+    }
+
+    public function test_public_assessment_does_not_unlock_with_invalid_pin()
+    {
+        [$link] = $this->createPublicAssessmentLink();
+
+        $this->from(route('assessment-links.public.show', $link->public_token))
+            ->post(route('assessment-links.public.unlock', $link->public_token), ['pin' => 'wrong-pin'])
+            ->assertRedirect(route('assessment-links.public.show', $link->public_token))
+            ->assertSessionHasErrors('pin');
+
+        $this->assertFalse(session()->has('assessment_link_access.'.$link->id));
+        $this->get(route('assessment-links.public.show', $link->public_token))
+            ->assertOk()
+            ->assertViewIs('public-assessment-links.pin');
+    }
+
+    public function test_public_assessment_returns_not_found_for_expired_or_deactivated_link()
+    {
+        [$expired] = $this->createPublicAssessmentLink(['expires_at' => now('Asia/Makassar')->subMinute()]);
+        [$inactive] = $this->createPublicAssessmentLink(['is_active' => false]);
+
+        foreach ([$expired, $inactive] as $link) {
+            $this->get(route('assessment-links.public.show', $link->public_token))->assertNotFound();
+            $this->post(route('assessment-links.public.unlock', $link->public_token), ['pin' => '123456'])->assertNotFound();
+        }
+    }
+
+    public function test_public_assessment_rejects_candidate_from_another_link_and_invalid_select_option()
+    {
+        [$link, $candidate] = $this->createPublicAssessmentLink([
+            'form_schema' => [[
+                'id' => 'result', 'label' => 'Hasil', 'type' => 'select', 'required' => true, 'options' => ['Lulus', 'Tidak Lulus'],
+            ]],
+        ]);
+        [, $foreignCandidate] = $this->createPublicAssessmentLink();
+        $this->withSession(['assessment_link_access.'.$link->id => true]);
+
+        $this->post(route('assessment-links.public.results.store', [$link->public_token, $foreignCandidate]), [
+            'values' => ['result' => 'Lulus'],
+        ])->assertNotFound();
+
+        $this->post(route('assessment-links.public.results.store', [$link->public_token, $candidate]), [
+            'values' => ['result' => 'Tidak Valid'],
+        ])->assertSessionHasErrors('values.result');
+    }
+
     protected function tearDown(): void
     {
         Carbon::setTestNow();
@@ -288,5 +365,34 @@ class AssessmentLinkTest extends TestCase
             $table->unsignedBigInteger('user_id')->nullable();
             $table->timestamps();
         });
+    }
+
+    /** @return array{0: AssessmentLink, 1: AssessmentLinkCandidate} */
+    private function createPublicAssessmentLink(array $overrides = []): array
+    {
+        $suffix = (string) (AssessmentLink::query()->count() + 1);
+        $user = User::create([
+            'name' => 'Public Assessment '.$suffix,
+            'email' => 'public-assessment-'.$suffix.'@example.test',
+            'password' => 'secret',
+            'role' => 'admin',
+        ]);
+        $biodata = Biodata::create(['user_id' => $user->id]);
+        $lamaran = Lamaran::create(['biodata_id' => $biodata->id, 'user_id' => $user->id]);
+        $link = AssessmentLink::create(array_merge([
+            'assessment_type' => 'lapangan',
+            'public_token' => str_pad($suffix, 64, 'p'),
+            'pin_hash' => Hash::make('123456'),
+            'form_schema' => [['id' => 'run_time', 'label' => 'Waktu lari', 'type' => 'number', 'required' => true]],
+            'created_by' => $user->id,
+            'expires_at' => now('Asia/Makassar')->addDay(),
+            'is_active' => true,
+        ], $overrides));
+        $candidate = AssessmentLinkCandidate::create([
+            'assessment_link_id' => $link->id,
+            'lamaran_id' => $lamaran->id,
+        ]);
+
+        return [$link, $candidate->load('lamaran')];
     }
 }

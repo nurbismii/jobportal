@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\LamaranController;
 use App\Http\Controllers\Admin\AssessmentLinkController;
+use App\Http\Controllers\PublicAssessmentLinkController;
 use App\Http\Controllers\Admin\AccountRecoveryRequestController;
 use App\Http\Controllers\BiodataController;
 use App\Http\Controllers\PkwtContractController;
@@ -27,6 +28,12 @@ use Illuminate\Support\Facades\Route;
 
 // User route
 Route::get('/', [App\Http\Controllers\BerandaController::class, 'index'])->name('beranda');
+
+Route::get('/penilaian/{token}', [PublicAssessmentLinkController::class, 'show'])->name('assessment-links.public.show');
+Route::post('/penilaian/{token}/unlock', [PublicAssessmentLinkController::class, 'unlock'])
+    ->middleware('throttle:5,1')->name('assessment-links.public.unlock');
+Route::post('/penilaian/{token}/kandidat/{candidate}/hasil', [PublicAssessmentLinkController::class, 'storeResult'])
+    ->middleware('throttle:30,1')->name('assessment-links.public.results.store');
 
 Route::resource('lowongan-kerja', 'App\Http\Controllers\LowonganController');
 Route::resource('pengumuman', 'App\Http\Controllers\PengumumanController')->only(['index', 'show']);
