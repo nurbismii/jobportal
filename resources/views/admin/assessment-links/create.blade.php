@@ -21,11 +21,15 @@
 </div></div>
 
 <div class="card shadow mb-3"><div class="card-header d-flex flex-wrap align-items-center justify-content-between"><strong>Kandidat</strong><span id="selectedCount" class="badge badge-primary">0 dipilih</span></div><div class="card-body">
-    <div class="form-group"><label for="candidateSearch">Cari kandidat</label><input id="candidateSearch" type="search" class="form-control" placeholder="Ketik nama atau nomor KTP"></div>
-    <div class="table-responsive"><table class="table table-bordered table-sm mb-0"><thead><tr><th>Pilih</th><th>Nama</th><th>No. KTP</th><th>Posisi dilamar</th><th>Status proses</th></tr></thead><tbody id="candidateRows">
+    <div class="row">
+        <div class="col-md-4 form-group"><label for="candidateSearch">Cari kandidat</label><input id="candidateSearch" type="search" class="form-control" placeholder="Ketik nama atau nomor KTP"></div>
+        <div class="col-md-4 form-group"><label for="lowonganFilter">Filter lowongan</label><select id="lowonganFilter" class="form-control"><option value="">Semua lowongan</option>@foreach($lowonganOptions as $lowongan)<option value="{{ $lowongan->id }}">{{ $lowongan->nama_lowongan }}</option>@endforeach</select></div>
+        <div class="col-md-4 form-group"><label for="candidatePerPage">Tampilkan</label><select id="candidatePerPage" class="form-control"><option value="25" selected>25 kandidat</option><option value="50">50 kandidat</option><option value="100">100 kandidat</option><option value="all">Semua kandidat</option></select></div>
+    </div>
+    <div class="table-responsive"><table class="table table-bordered table-sm mb-0"><thead><tr><th><div class="custom-control custom-checkbox"><input id="selectVisibleCandidates" type="checkbox" class="custom-control-input" aria-label="Pilih semua kandidat pada halaman ini"><label class="custom-control-label" for="selectVisibleCandidates">Pilih semua pada halaman ini</label></div></th><th>Nama</th><th>No. KTP</th><th>Posisi dilamar</th><th>Status proses</th></tr></thead><tbody id="candidateRows">
         @forelse($eligibleLamarans as $lamaran)
             @php $selected = in_array($lamaran->id, $selectedIds, true); @endphp
-            <tr data-candidate-row data-assessment-type="{{ $lamaran->status_proses === 'Tes Kesehatan' ? 'kesehatan' : 'lapangan' }}" data-search="{{ optional(optional($lamaran->biodata)->user)->name }} {{ optional($lamaran->biodata)->no_ktp }}">
+            <tr data-candidate-row data-assessment-type="{{ $lamaran->status_proses === 'Tes Kesehatan' ? 'kesehatan' : 'lapangan' }}" data-lowongan-id="{{ $lamaran->loker_id ?: '' }}" data-search="{{ optional(optional($lamaran->biodata)->user)->name }} {{ optional($lamaran->biodata)->no_ktp }}">
                 <td><input type="checkbox" name="selected_ids[]" value="{{ $lamaran->id }}" {{ $selected ? 'checked' : '' }} aria-label="Pilih kandidat"></td>
                 <td>{{ optional(optional($lamaran->biodata)->user)->name ?: 'Kandidat #'.$lamaran->id }}</td>
                 <td>{{ optional($lamaran->biodata)->no_ktp ?: '-' }}</td>
@@ -37,6 +41,7 @@
         @endforelse
     </tbody></table></div>
     <div id="candidateEmpty" class="text-muted text-center py-3 d-none">Tidak ada kandidat yang sesuai pencarian atau tipe asesmen.</div>
+    <nav id="candidatePagination" class="mt-3 d-none" aria-label="Navigasi kandidat"></nav>
 </div></div>
 
 <div class="card shadow"><div class="card-header d-flex justify-content-between align-items-center"><strong>Field tambahan</strong><button class="btn btn-outline-primary btn-sm" type="button" id="addField">Tambah field</button></div><div class="card-body"><div id="fields"></div><button class="btn btn-primary" type="submit" id="submitLink">Buat Link</button></div></div>
@@ -48,24 +53,39 @@
 (function () {
     var fields = document.getElementById('fields'), index = 0, assessmentType = document.getElementById('assessmentType'), healthNotice = document.getElementById('healthNotice');
     var rows = Array.prototype.slice.call(document.querySelectorAll('[data-candidate-row]'));
-    var search = document.getElementById('candidateSearch'), selectedCount = document.getElementById('selectedCount'), candidateEmpty = document.getElementById('candidateEmpty'), submitLink = document.getElementById('submitLink');
-    function refreshCandidates() {
-        var query = search.value.toLowerCase().trim(), visible = 0, selected = 0;
+    var search = document.getElementById('candidateSearch'), lowonganFilter = document.getElementById('lowonganFilter'), perPage = document.getElementById('candidatePerPage'), selectedCount = document.getElementById('selectedCount'), candidateEmpty = document.getElementById('candidateEmpty'), submitLink = document.getElementById('submitLink'), selectVisible = document.getElementById('selectVisibleCandidates'), pagination = document.getElementById('candidatePagination');
+    var currentPage = 1;
+    function matchingRows() {
+        var query = search.value.toLowerCase().trim(), lowonganId = lowonganFilter.value;
+        return rows.filter(function (row) {
+            return row.dataset.assessmentType === assessmentType.value
+                && (query === '' || row.dataset.search.toLowerCase().indexOf(query) !== -1)
+                && (lowonganId === '' || row.dataset.lowonganId === lowonganId);
+        });
+    }
+    function refreshCandidates(resetPage) {
+        if (resetPage) currentPage = 1;
+        var matches = matchingRows(), pageSize = perPage.value === 'all' ? matches.length || 1 : Number(perPage.value);
+        var pageCount = Math.max(1, Math.ceil(matches.length / pageSize));
+        if (currentPage > pageCount) currentPage = pageCount;
+        var start = (currentPage - 1) * pageSize, visibleRows = matches.slice(start, start + pageSize), selected = 0;
         rows.forEach(function (row) {
-            var matchesType = row.dataset.assessmentType === assessmentType.value;
-            var matchesSearch = query === '' || row.dataset.search.indexOf(query) !== -1;
             var checkbox = row.querySelector('input[type="checkbox"]');
-            row.classList.toggle('d-none', !matchesType || !matchesSearch);
-            checkbox.disabled = !matchesType;
-            if (!matchesType) checkbox.checked = false;
-            if (matchesType && matchesSearch) visible++;
+            var isEligibleType = row.dataset.assessmentType === assessmentType.value;
+            row.classList.toggle('d-none', visibleRows.indexOf(row) === -1);
+            checkbox.disabled = !isEligibleType;
+            if (!isEligibleType) checkbox.checked = false;
             if (checkbox.checked) selected++;
         });
         selectedCount.textContent = selected + ' dipilih';
-        candidateEmpty.classList.toggle('d-none', visible > 0);
+        candidateEmpty.classList.toggle('d-none', matches.length > 0);
         submitLink.disabled = selected === 0;
+        selectVisible.checked = visibleRows.length > 0 && visibleRows.every(function (row) { return row.querySelector('input[type="checkbox"]').checked; });
+        selectVisible.indeterminate = visibleRows.some(function (row) { return row.querySelector('input[type="checkbox"]').checked; }) && !selectVisible.checked;
+        pagination.classList.toggle('d-none', pageCount <= 1);
+        pagination.innerHTML = pageCount <= 1 ? '' : '<ul class="pagination pagination-sm mb-0"><li class="page-item ' + (currentPage === 1 ? 'disabled' : '') + '"><button type="button" class="page-link" data-page="' + (currentPage - 1) + '">Sebelumnya</button></li><li class="page-item disabled"><span class="page-link">Halaman ' + currentPage + ' dari ' + pageCount + '</span></li><li class="page-item ' + (currentPage === pageCount ? 'disabled' : '') + '"><button type="button" class="page-link" data-page="' + (currentPage + 1) + '">Berikutnya</button></li></ul>';
     }
-    function refreshHealthNotice() { healthNotice.classList.toggle('d-none', assessmentType.value !== 'kesehatan'); refreshCandidates(); }
+    function refreshHealthNotice() { healthNotice.classList.toggle('d-none', assessmentType.value !== 'kesehatan'); refreshCandidates(true); }
     function addField() {
         var i = index++;
         var row = document.createElement('div'); row.className = 'border rounded p-3 mb-3 field-row';
@@ -77,8 +97,12 @@
     }
     document.getElementById('addField').addEventListener('click', addField);
     assessmentType.addEventListener('change', refreshHealthNotice);
-    search.addEventListener('input', refreshCandidates);
+    search.addEventListener('input', function () { refreshCandidates(true); });
+    lowonganFilter.addEventListener('change', function () { refreshCandidates(true); });
+    perPage.addEventListener('change', function () { refreshCandidates(true); });
     rows.forEach(function (row) { row.querySelector('input[type="checkbox"]').addEventListener('change', refreshCandidates); });
+    selectVisible.addEventListener('change', function () { matchingRows().slice((currentPage - 1) * (perPage.value === 'all' ? matchingRows().length || 1 : Number(perPage.value)), currentPage * (perPage.value === 'all' ? matchingRows().length || 1 : Number(perPage.value))).forEach(function (row) { row.querySelector('input[type="checkbox"]').checked = selectVisible.checked; }); refreshCandidates(false); });
+    pagination.addEventListener('click', function (event) { var button = event.target.closest('[data-page]'); if (!button || button.closest('.disabled')) return; currentPage = Number(button.dataset.page); refreshCandidates(false); });
     refreshHealthNotice();
 })();
 </script>

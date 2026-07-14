@@ -20,13 +20,21 @@
     <div class="card-body">
         <div class="table-responsive">
             <table class="table table-sm table-bordered mb-0">
-                <thead><tr><th>Tipe</th><th>Pembuat</th><th>Kedaluwarsa</th><th>Status</th><th>Kandidat</th><th>Aksi</th></tr></thead>
+                <thead><tr><th>Tipe</th><th>Pembuat</th><th>Lowongan / Posisi</th><th>Kedaluwarsa</th><th>Status</th><th>Kandidat</th><th>Aksi</th></tr></thead>
                 <tbody>
                 @forelse($links as $link)
                     @php($expired = $link->expires_at && $link->expires_at->lte(now('Asia/Makassar')))
+                    @php($positions = $link->candidates->map(fn ($candidate) => optional(optional($candidate->lamaran)->lowongan)->nama_lowongan)->filter()->countBy())
                     <tr>
                         <td>{{ ucfirst($link->assessment_type) }}</td>
                         <td>{{ optional($link->creator)->name ?: '-' }}</td>
+                        <td>
+                            @forelse($positions as $position => $count)
+                                <div>{{ $position }} ({{ $count }})</div>
+                            @empty
+                                <span class="text-muted">-</span>
+                            @endforelse
+                        </td>
                         <td>{{ optional($link->expires_at)->format('d-m-Y H:i') ?: '-' }}</td>
                         <td>
                             @if(!$link->is_active)<span class="badge badge-secondary">Nonaktif</span>
@@ -38,7 +46,7 @@
                         <td><a href="{{ route('assessment-links.show', $link) }}" class="btn btn-info btn-sm">Detail</a></td>
                     </tr>
                 @empty
-                    <tr><td colspan="6" class="text-center text-muted py-4">Belum ada link asesmen. Pilih kandidat dari daftar pelamar atau buat link baru.</td></tr>
+                    <tr><td colspan="7" class="text-center text-muted py-4">Belum ada link asesmen. Buat link baru untuk memilih kandidat.</td></tr>
                 @endforelse
                 </tbody>
             </table>

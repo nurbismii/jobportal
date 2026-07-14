@@ -18,7 +18,7 @@ class AssessmentLinkController extends Controller
     public function index()
     {
         $links = AssessmentLink::query()
-            ->with('creator')
+            ->with(['creator', 'candidates.lamaran.lowongan'])
             ->withCount('candidates')
             ->latest()
             ->paginate(15);
@@ -35,7 +35,14 @@ class AssessmentLinkController extends Controller
             ->whereIn('status_proses', ['Tes Kesehatan', 'Tes Lapangan'])
             ->get();
 
-        return view('admin.assessment-links.create', compact('eligibleLamarans', 'selectedIds'));
+        $lowonganOptions = $eligibleLamarans
+            ->map(fn (Lamaran $lamaran) => $lamaran->lowongan)
+            ->filter()
+            ->unique('id')
+            ->sortBy('nama_lowongan')
+            ->values();
+
+        return view('admin.assessment-links.create', compact('eligibleLamarans', 'selectedIds', 'lowonganOptions'));
     }
 
     public function store(StoreAssessmentLinkRequest $request, AssessmentLinkService $assessmentLinkService)

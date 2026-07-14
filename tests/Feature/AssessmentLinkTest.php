@@ -454,6 +454,67 @@ class AssessmentLinkTest extends TestCase
             ->assertSee('value="'.$kesehatan->id.'"', false);
     }
 
+    public function test_create_page_exposes_lowongan_filter_pagination_and_visible_page_selection_controls()
+    {
+        $admin = User::create(['name' => 'Assessment Admin', 'email' => 'create-paging@example.test', 'password' => 'secret', 'role' => 'admin']);
+        $lowonganId = DB::table('lowongan')->insertGetId(['nama_lowongan' => 'Operator Produksi']);
+
+        for ($index = 1; $index <= 26; $index++) {
+            $user = User::create(['name' => 'Kandidat '.$index, 'email' => 'paging-'.$index.'@example.test', 'password' => 'secret']);
+            $biodata = Biodata::create(['user_id' => $user->id, 'no_ktp' => 'KTP-PAGING-'.$index]);
+            Lamaran::create([
+                'biodata_id' => $biodata->id,
+                'user_id' => $user->id,
+                'loker_id' => $lowonganId,
+                'status_proses' => 'Tes Lapangan',
+            ]);
+        }
+
+        $this->actingAs($admin)->get(route('assessment-links.create'))
+            ->assertOk()
+            ->assertSee('Filter lowongan')
+            ->assertSee('Operator Produksi')
+            ->assertSee('value="25"', false)
+            ->assertSee('value="50"', false)
+            ->assertSee('value="100"', false)
+            ->assertSee('value="all"', false)
+            ->assertSee('Pilih semua pada halaman ini')
+            ->assertSee('data-lowongan-id="'.$lowonganId.'"', false);
+    }
+
+    public function test_assessment_link_index_displays_unique_lowongan_summary_with_candidate_counts()
+    {
+        $admin = User::create(['name' => 'Assessment Admin', 'email' => 'index-positions@example.test', 'password' => 'secret', 'role' => 'admin']);
+        $operatorId = DB::table('lowongan')->insertGetId(['nama_lowongan' => 'Operator Produksi']);
+        $driverId = DB::table('lowongan')->insertGetId(['nama_lowongan' => 'Driver DT']);
+        $link = AssessmentLink::create([
+            'assessment_type' => 'lapangan',
+            'public_token' => str_repeat('s', 64),
+            'pin_hash' => Hash::make('123456'),
+            'form_schema' => [],
+            'created_by' => $admin->id,
+            'expires_at' => now('Asia/Makassar')->addDay(),
+            'is_active' => true,
+        ]);
+
+        foreach ([$operatorId, $operatorId, $driverId] as $index => $lowonganId) {
+            $user = User::create(['name' => 'Index Kandidat '.$index, 'email' => 'index-position-'.$index.'@example.test', 'password' => 'secret']);
+            $lamaran = Lamaran::create([
+                'biodata_id' => Biodata::create(['user_id' => $user->id])->id,
+                'user_id' => $user->id,
+                'loker_id' => $lowonganId,
+                'status_proses' => 'Tes Lapangan',
+            ]);
+            AssessmentLinkCandidate::create(['assessment_link_id' => $link->id, 'lamaran_id' => $lamaran->id]);
+        }
+
+        $this->actingAs($admin)->get(route('assessment-links.index'))
+            ->assertOk()
+            ->assertSee('Lowongan / Posisi')
+            ->assertSee('Operator Produksi (2)')
+            ->assertSee('Driver DT (1)');
+    }
+
     public function test_admin_cannot_create_link_with_candidate_from_another_assessment_stage()
     {
         $admin = User::create(['name' => 'Assessment Admin', 'email' => 'strict-create@example.test', 'password' => 'secret', 'role' => 'admin']);
