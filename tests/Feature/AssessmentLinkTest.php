@@ -105,11 +105,13 @@ class AssessmentLinkTest extends TestCase
             'assessment_type' => 'lapangan',
             'pin' => '123456',
             'selected_ids' => [$lamaran->id],
+            'eligibility_field_id' => 'run_result',
             'fields' => [[
-                'id' => 'run_time',
-                'label' => 'Waktu lari',
-                'type' => 'number',
+                'id' => 'run_result',
+                'label' => 'Hasil tes lari',
+                'type' => 'select',
                 'required' => '1',
+                'options' => ['Lulus', 'Tidak Lulus'],
             ]],
         ]);
 
@@ -589,6 +591,95 @@ class AssessmentLinkTest extends TestCase
         $this->assertSame(1, AssessmentLinkCandidate::query()->where('assessment_link_id', $link->id)->count());
     }
 
+    public function test_lapangan_link_stores_only_a_valid_lulus_tidak_lulus_decision_field()
+    {
+        $admin = User::create(['name' => 'HR Eligibility', 'email' => 'eligibility-field@example.test', 'password' => 'secret', 'role' => 'admin']);
+        $lamaran = $this->createLamaranForAssessment('Tes Lapangan');
+
+        $this->actingAs($admin)->post(route('assessment-links.store'), [
+            'assessment_type' => 'lapangan',
+            'pin' => '123456',
+            'selected_ids' => [$lamaran->id],
+            'eligibility_field_id' => 'hasil_mengemudi',
+            'fields' => [[
+                'id' => 'hasil_mengemudi',
+                'label' => 'Hasil mengemudi',
+                'type' => 'select',
+                'options' => ['Lulus', 'Tidak Lulus'],
+            ]],
+        ])->assertRedirect(route('assessment-links.index'));
+
+        $this->assertSame('hasil_mengemudi', AssessmentLink::query()->sole()->form_schema[0]['eligibility_decision_field']);
+
+        $this->actingAs($admin)->from(route('assessment-links.create'))->post(route('assessment-links.store'), [
+            'assessment_type' => 'lapangan',
+            'pin' => '123456',
+            'selected_ids' => [$lamaran->id],
+            'eligibility_field_id' => 'hasil_mengemudi',
+            'fields' => [[
+                'id' => 'hasil_mengemudi',
+                'label' => 'Hasil mengemudi',
+                'type' => 'select',
+                'options' => ['Lulus', 'Cadangan'],
+            ]],
+        ])->assertSessionHasErrors('eligibility_field_id');
+    }
+
+    public function test_detail_link_shows_and_filters_eligibility_without_changing_lamaran_status()
+    {
+        $admin = User::create(['name' => 'HR Eligibility Detail', 'email' => 'eligibility-detail@example.test', 'password' => 'secret', 'role' => 'admin']);
+        $link = AssessmentLink::create([
+            'assessment_type' => 'kesehatan',
+            'public_token' => str_repeat('e', 64),
+            'pin_hash' => Hash::make('123456'),
+            'form_schema' => [['id' => 'health_status', 'label' => 'Hasil tes kesehatan', 'type' => 'select', 'required' => true, 'options' => ['Sehat', 'Tidak Sehat']]],
+            'created_by' => $admin->id,
+            'expires_at' => now('Asia/Makassar')->addDay(),
+            'is_active' => true,
+        ]);
+        $healthy = $this->createLamaranForAssessment('Tes Kesehatan');
+        $unhealthy = $this->createLamaranForAssessment('Tes Kesehatan');
+        $waiting = $this->createLamaranForAssessment('Tes Kesehatan');
+        AssessmentLinkCandidate::create(['assessment_link_id' => $link->id, 'lamaran_id' => $healthy->id, 'result_values' => ['health_status' => 'Sehat']]);
+        AssessmentLinkCandidate::create(['assessment_link_id' => $link->id, 'lamaran_id' => $unhealthy->id, 'result_values' => ['health_status' => 'Tidak Sehat']]);
+        AssessmentLinkCandidate::create(['assessment_link_id' => $link->id, 'lamaran_id' => $waiting->id]);
+
+        $this->actingAs($admin)->get(route('assessment-links.show', $link))
+            ->assertOk()
+            ->assertSee('Layak lanjut')
+            ->assertSee('Tidak layak')
+            ->assertSee('Menunggu hasil');
+        $this->actingAs($admin)->get(route('assessment-links.show', [$link, 'eligibility' => 'eligible']))
+            ->assertOk()
+            ->assertSee(optional(optional($healthy->biodata)->user)->name)
+            ->assertDontSee('Tidak Sehat');
+        $this->assertSame('Tes Kesehatan', $healthy->fresh()->status_proses);
+    }
+
+    public function test_lapangan_eligibility_uses_the_configured_lulus_tidak_lulus_field()
+    {
+        $admin = User::create(['name' => 'HR Lapangan Eligibility', 'email' => 'lapangan-eligibility@example.test', 'password' => 'secret', 'role' => 'admin']);
+        $link = AssessmentLink::create([
+            'assessment_type' => 'lapangan',
+            'public_token' => str_repeat('l', 64),
+            'pin_hash' => Hash::make('123456'),
+            'form_schema' => [['id' => 'hasil_mengemudi', 'label' => 'Hasil mengemudi', 'type' => 'select', 'required' => true, 'options' => ['Lulus', 'Tidak Lulus'], 'eligibility_decision_field' => 'hasil_mengemudi']],
+            'created_by' => $admin->id,
+            'expires_at' => now('Asia/Makassar')->addDay(),
+            'is_active' => true,
+        ]);
+        $candidate = AssessmentLinkCandidate::create([
+            'assessment_link_id' => $link->id,
+            'lamaran_id' => $this->createLamaranForAssessment('Tes Lapangan')->id,
+            'result_values' => ['hasil_mengemudi' => 'Lulus'],
+        ]);
+        $candidate->setRelation('assessmentLink', $link);
+
+        $this->assertSame('eligible', app(AssessmentLinkService::class)->eligibilityStatus($candidate));
+        $candidate->result_values = ['hasil_mengemudi' => 'Tidak Lulus'];
+        $this->assertSame('ineligible', app(AssessmentLinkService::class)->eligibilityStatus($candidate));
+    }
+
     protected function tearDown(): void
     {
         Carbon::setTestNow();
@@ -627,6 +718,22 @@ class AssessmentLinkTest extends TestCase
             $table->id();
             $table->string('nama_lowongan')->nullable();
         });
+    }
+
+    private function createLamaranForAssessment(string $status): Lamaran
+    {
+        $suffix = (string) (Lamaran::query()->count() + 1);
+        $user = User::create([
+            'name' => 'Kandidat Eligibility '.$suffix,
+            'email' => 'eligibility-candidate-'.$suffix.'@example.test',
+            'password' => 'secret',
+        ]);
+
+        return Lamaran::create([
+            'biodata_id' => Biodata::create(['user_id' => $user->id, 'no_ktp' => 'KTP-ELIGIBILITY-'.$suffix])->id,
+            'user_id' => $user->id,
+            'status_proses' => $status,
+        ]);
     }
 
     /** @return array{0: AssessmentLink, 1: AssessmentLinkCandidate} */

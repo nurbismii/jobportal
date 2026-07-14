@@ -56,9 +56,9 @@
     </div>
 </div>
 
-<div class="card shadow"><div class="card-header"><strong>Hasil kandidat</strong></div><div class="card-body"><div class="table-responsive"><table class="table table-sm table-bordered"><thead><tr><th>Kandidat</th><th>No. KTP</th><th>Posisi dilamar</th><th>Hasil terbaru</th><th>Catatan</th><th>Terakhir dikirim</th><th>Audit</th></tr></thead><tbody>
+<div class="card shadow"><div class="card-header d-flex flex-wrap justify-content-between align-items-center"><strong>Hasil kandidat</strong><form method="GET" action="{{ route('assessment-links.show', $link) }}" class="form-inline mt-2 mt-md-0"><label class="mr-2" for="eligibilityFilter">Kelayakan</label><select id="eligibilityFilter" name="eligibility" class="form-control form-control-sm" onchange="this.form.submit()"><option value="all" {{ $eligibility === 'all' ? 'selected' : '' }}>Semua</option><option value="eligible" {{ $eligibility === 'eligible' ? 'selected' : '' }}>Layak lanjut</option><option value="ineligible" {{ $eligibility === 'ineligible' ? 'selected' : '' }}>Tidak layak</option><option value="pending" {{ $eligibility === 'pending' ? 'selected' : '' }}>Menunggu hasil</option></select></form></div><div class="card-body"><div class="table-responsive"><table class="table table-sm table-bordered"><thead><tr><th>Kandidat</th><th>No. KTP</th><th>Posisi dilamar</th><th>Kelayakan</th><th>Hasil terbaru</th><th>Catatan</th><th>Terakhir dikirim</th><th>Audit</th></tr></thead><tbody>
 @forelse($link->candidates as $candidate)
-<tr><td>{{ optional(optional(optional($candidate->lamaran)->biodata)->user)->name ?: 'Kandidat #' . $candidate->lamaran_id }}</td><td>{{ optional(optional($candidate->lamaran)->biodata)->no_ktp ?: '-' }}</td><td>{{ optional(optional($candidate->lamaran)->lowongan)->nama_lowongan ?: '-' }}</td><td><pre class="small mb-0">{{ json_encode($candidate->result_values ?: [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre></td><td>{{ $candidate->petugas_note ?: '-' }}</td><td>{{ optional($candidate->last_submitted_at)->format('d-m-Y H:i') ?: '-' }}</td><td>
+<tr><td>{{ optional(optional(optional($candidate->lamaran)->biodata)->user)->name ?: 'Kandidat #' . $candidate->lamaran_id }}</td><td>{{ optional(optional($candidate->lamaran)->biodata)->no_ktp ?: '-' }}</td><td>{{ optional(optional($candidate->lamaran)->lowongan)->nama_lowongan ?: '-' }}</td><td>@if($candidate->eligibility_status === 'eligible')<span class="badge badge-success">Layak lanjut</span>@elseif($candidate->eligibility_status === 'ineligible')<span class="badge badge-danger">Tidak layak</span>@else<span class="badge badge-secondary">Menunggu hasil</span>@endif</td><td><pre class="small mb-0">{{ json_encode($candidate->result_values ?: [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre></td><td>{{ $candidate->petugas_note ?: '-' }}</td><td>{{ optional($candidate->last_submitted_at)->format('d-m-Y H:i') ?: '-' }}</td><td>
 @forelse($candidate->audits->sortByDesc('id') as $audit)
 @php($oldAudit = (array) $audit->old_values)
 @php($newAudit = (array) $audit->new_values)
@@ -67,7 +67,7 @@
 <div class="border-bottom pb-2 mb-2 small"><strong>{{ optional($audit->created_at)->format('d-m-Y H:i') }}</strong><br>Nilai sebelumnya: {{ json_encode($oldValues, JSON_UNESCAPED_UNICODE) }}<br>Catatan sebelumnya: {{ data_get($oldAudit, 'petugas_note') ?: '-' }}<br>Nilai revisi: {{ json_encode($newValues, JSON_UNESCAPED_UNICODE) }}<br>Catatan revisi: {{ data_get($newAudit, 'petugas_note') ?: '-' }}</div>
 @empty<span class="text-muted">Belum ada audit.</span>@endforelse
 </td></tr>
-@empty<tr><td colspan="7" class="text-center text-muted py-4">Belum ada kandidat pada link ini.</td></tr>@endforelse
+@empty<tr><td colspan="8" class="text-center text-muted py-4">Belum ada kandidat pada link ini.</td></tr>@endforelse
 </tbody></table></div></div></div>
 @endsection
 

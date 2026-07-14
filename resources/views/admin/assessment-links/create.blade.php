@@ -18,6 +18,7 @@
         <div class="col-md-6 mb-3"><label>PIN (6–32 karakter)</label><input name="pin" type="password" class="form-control" minlength="6" maxlength="32" required autocomplete="new-password"></div>
     </div>
     <div id="healthNotice" class="alert alert-info mb-0 d-none">Hasil tes kesehatan standar (<strong>Sehat/Tidak Sehat</strong>) ditambahkan otomatis dan terkunci. Field tambahan di bawah bersifat pelengkap.</div>
+    <div id="eligibilityFieldGroup" class="form-group mt-3 mb-0"><label for="eligibilityField">Field penentu kelulusan</label><select name="eligibility_field_id" id="eligibilityField" class="form-control"><option value="">Pilih field Lulus/Tidak Lulus</option></select><small class="form-text text-muted">Kandidat dengan nilai <strong>Lulus</strong> pada field ini ditandai layak lanjut.</small>@error('eligibility_field_id')<div class="text-danger small">{{ $message }}</div>@enderror</div>
 </div></div>
 
 <div class="card shadow mb-3"><div class="card-header d-flex flex-wrap align-items-center justify-content-between"><strong>Kandidat</strong><span id="selectedCount" class="badge badge-primary">0 dipilih</span></div><div class="card-body">
@@ -26,7 +27,7 @@
         <div class="col-md-4 form-group"><label for="lowonganFilter">Filter lowongan</label><select id="lowonganFilter" class="form-control"><option value="">Semua lowongan</option>@foreach($lowonganOptions as $lowongan)<option value="{{ $lowongan->id }}">{{ $lowongan->nama_lowongan }}</option>@endforeach</select></div>
         <div class="col-md-4 form-group"><label for="candidatePerPage">Tampilkan</label><select id="candidatePerPage" class="form-control"><option value="25" selected>25 kandidat</option><option value="50">50 kandidat</option><option value="100">100 kandidat</option><option value="all">Semua kandidat</option></select></div>
     </div>
-    <div class="table-responsive"><table class="table table-bordered table-sm mb-0"><thead><tr><th><div class="custom-control custom-checkbox"><input id="selectVisibleCandidates" type="checkbox" class="custom-control-input" aria-label="Pilih semua kandidat pada halaman ini"><label class="custom-control-label" for="selectVisibleCandidates"></label></div></th><th>Nama</th><th>No. KTP</th><th>Posisi dilamar</th><th>Status proses</th></tr></thead><tbody id="candidateRows">
+    <div class="table-responsive"><table class="table table-bordered table-sm mb-0"><thead><tr><th><div class="custom-control custom-checkbox"><input id="selectVisibleCandidates" type="checkbox" class="custom-control-input" aria-label="Pilih semua pada halaman ini"><label class="custom-control-label" for="selectVisibleCandidates"><span class="sr-only">Pilih semua pada halaman ini</span></label></div></th><th>Nama</th><th>No. KTP</th><th>Posisi dilamar</th><th>Status proses</th></tr></thead><tbody id="candidateRows">
         @forelse($eligibleLamarans as $lamaran)
             @php $selected = in_array($lamaran->id, $selectedIds, true); @endphp
             <tr data-candidate-row data-assessment-type="{{ $lamaran->status_proses === 'Tes Kesehatan' ? 'kesehatan' : 'lapangan' }}" data-lowongan-id="{{ $lamaran->loker_id ?: '' }}" data-search="{{ optional(optional($lamaran->biodata)->user)->name }} {{ optional($lamaran->biodata)->no_ktp }}">
@@ -51,7 +52,7 @@
 @push('scripts')
 <script>
 (function () {
-    var fields = document.getElementById('fields'), index = 0, assessmentType = document.getElementById('assessmentType'), healthNotice = document.getElementById('healthNotice');
+    var fields = document.getElementById('fields'), index = 0, assessmentType = document.getElementById('assessmentType'), healthNotice = document.getElementById('healthNotice'), eligibilityGroup = document.getElementById('eligibilityFieldGroup'), eligibilityField = document.getElementById('eligibilityField');
     var rows = Array.prototype.slice.call(document.querySelectorAll('[data-candidate-row]'));
     var search = document.getElementById('candidateSearch'), lowonganFilter = document.getElementById('lowonganFilter'), perPage = document.getElementById('candidatePerPage'), selectedCount = document.getElementById('selectedCount'), candidateEmpty = document.getElementById('candidateEmpty'), submitLink = document.getElementById('submitLink'), selectVisible = document.getElementById('selectVisibleCandidates'), pagination = document.getElementById('candidatePagination');
     var currentPage = 1;
@@ -85,14 +86,26 @@
         pagination.classList.toggle('d-none', pageCount <= 1);
         pagination.innerHTML = pageCount <= 1 ? '' : '<ul class="pagination pagination-sm mb-0"><li class="page-item ' + (currentPage === 1 ? 'disabled' : '') + '"><button type="button" class="page-link" data-page="' + (currentPage - 1) + '">Sebelumnya</button></li><li class="page-item disabled"><span class="page-link">Halaman ' + currentPage + ' dari ' + pageCount + '</span></li><li class="page-item ' + (currentPage === pageCount ? 'disabled' : '') + '"><button type="button" class="page-link" data-page="' + (currentPage + 1) + '">Berikutnya</button></li></ul>';
     }
-    function refreshHealthNotice() { healthNotice.classList.toggle('d-none', assessmentType.value !== 'kesehatan'); refreshCandidates(true); }
+    function refreshEligibilityFields() {
+        var selected = eligibilityField.value;
+        eligibilityField.innerHTML = '<option value="">Pilih field Lulus/Tidak Lulus</option>';
+        fields.querySelectorAll('.field-row').forEach(function (row) {
+            var type = row.querySelector('.field-type').value, id = row.querySelector('[name$="[id]"]').value.trim(), label = row.querySelector('[name$="[label]"]').value.trim();
+            var options = Array.prototype.slice.call(row.querySelectorAll('.option-input')).map(function (input) { return input.value; });
+            if (type === 'select' && id && options.length === 2 && options[0] === 'Lulus' && options[1] === 'Tidak Lulus') {
+                var option = document.createElement('option'); option.value = id; option.textContent = label || id; option.selected = id === selected || (!selected && @json(old('eligibility_field_id')) === id); eligibilityField.appendChild(option);
+            }
+        });
+    }
+    function refreshHealthNotice() { var isHealth = assessmentType.value === 'kesehatan'; healthNotice.classList.toggle('d-none', !isHealth); eligibilityGroup.classList.toggle('d-none', isHealth); eligibilityField.disabled = isHealth; refreshEligibilityFields(); refreshCandidates(true); }
     function addField() {
         var i = index++;
         var row = document.createElement('div'); row.className = 'border rounded p-3 mb-3 field-row';
         row.innerHTML = '<div class="row"><div class="col-md-3 mb-2"><label>Label</label><input class="form-control form-control-sm" name="fields[' + i + '][label]" required></div><div class="col-md-3 mb-2"><label>ID field</label><input class="form-control form-control-sm" name="fields[' + i + '][id]" required></div><div class="col-md-2 mb-2"><label>Tipe</label><select class="form-control form-control-sm field-type" name="fields[' + i + '][type]"><option value="text">Teks</option><option value="number">Angka</option><option value="select">Pilihan</option></select></div><div class="col-md-2 mb-2 pt-md-4"><div class="form-check"><input type="hidden" name="fields[' + i + '][required]" value="0"><input class="form-check-input" type="checkbox" name="fields[' + i + '][required]" value="1" id="required' + i + '"><label class="form-check-label" for="required' + i + '">Wajib diisi</label></div></div><div class="col-md-2 mb-2 pt-md-4"><button class="btn btn-outline-danger btn-sm remove-field" type="button">Hapus</button></div></div><div class="field-options d-none"><label>Pilihan (satu per baris)</label><textarea class="form-control form-control-sm" rows="3" placeholder="Contoh pilihan 1&#10;Contoh pilihan 2"></textarea></div>';
-        row.querySelector('.remove-field').addEventListener('click', function () { row.remove(); });
-        row.querySelector('.field-type').addEventListener('change', function (event) { row.querySelector('.field-options').classList.toggle('d-none', event.target.value !== 'select'); });
-        row.querySelector('.field-options textarea').addEventListener('input', function (event) { var existing = row.querySelectorAll('.option-input'); existing.forEach(function (input) { input.remove(); }); event.target.value.split(/\r?\n/).filter(Boolean).forEach(function (option, optionIndex) { var input = document.createElement('input'); input.type = 'hidden'; input.className = 'option-input'; input.name = 'fields[' + i + '][options][' + optionIndex + ']'; input.value = option.trim(); row.appendChild(input); }); });
+        row.querySelector('.remove-field').addEventListener('click', function () { row.remove(); refreshEligibilityFields(); });
+        row.querySelector('.field-type').addEventListener('change', function (event) { row.querySelector('.field-options').classList.toggle('d-none', event.target.value !== 'select'); refreshEligibilityFields(); });
+        row.querySelector('.field-options textarea').addEventListener('input', function (event) { var existing = row.querySelectorAll('.option-input'); existing.forEach(function (input) { input.remove(); }); event.target.value.split(/\r?\n/).filter(Boolean).forEach(function (option, optionIndex) { var input = document.createElement('input'); input.type = 'hidden'; input.className = 'option-input'; input.name = 'fields[' + i + '][options][' + optionIndex + ']'; input.value = option.trim(); row.appendChild(input); }); refreshEligibilityFields(); });
+        row.querySelector('[name$="[id]"]').addEventListener('input', refreshEligibilityFields); row.querySelector('[name$="[label]"]').addEventListener('input', refreshEligibilityFields);
         fields.appendChild(row);
     }
     document.getElementById('addField').addEventListener('click', addField);

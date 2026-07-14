@@ -31,6 +31,7 @@ class StoreAssessmentLinkRequest extends FormRequest
             'fields.*.required' => ['nullable', 'boolean'],
             'fields.*.options' => ['nullable', 'array', 'max:20'],
             'fields.*.options.*' => ['required', 'string', 'max:100'],
+            'eligibility_field_id' => ['nullable', 'string', 'max:100'],
         ];
     }
 

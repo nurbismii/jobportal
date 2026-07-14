@@ -36,14 +36,14 @@ class AssessmentLinkService
         if (!is_array($fields)) {
             throw ValidationException::withMessages(['fields' => ['Field schema harus berupa array.']]);
         }
-        $schema = $this->schemaFor((string) $type, $fields);
+        $eligibilityFieldId = $attributes['eligibility_field_id'] ?? null;
         $pin = $attributes['pin'] ?? null;
 
         if (!is_string($pin) || trim($pin) === '' || strlen($pin) > 255) {
             throw ValidationException::withMessages(['pin' => ['PIN wajib diisi dan maksimal 255 karakter.']]);
         }
 
-        return DB::transaction(function () use ($type, $schema, $pin, $creatorId, $lamaranIds) {
+        return DB::transaction(function () use ($type, $fields, $eligibilityFieldId, $pin, $creatorId, $lamaranIds) {
             $ids = collect($lamaranIds)->map(fn ($id) => (int) $id)->values();
             if ($ids->count() !== $ids->unique()->count()) {
                 throw ValidationException::withMessages(['selected_ids' => ['Kandidat tidak boleh dipilih lebih dari satu kali.']]);
@@ -63,6 +63,8 @@ class AssessmentLinkService
                     throw ValidationException::withMessages(["selected_ids.$index" => ['Kandidat harus berada pada status '.$requiredStatus.'.']]);
                 }
             }
+
+            $schema = $this->schemaFor((string) $type, $fields, $eligibilityFieldId);
 
             $link = AssessmentLink::create([
                 'assessment_type' => $type,
@@ -89,7 +91,7 @@ class AssessmentLinkService
      * @param array<int, array<string, mixed>> $fields
      * @return array<int, array<string, mixed>>
      */
-    public function schemaFor(string $type, array $fields): array
+    public function schemaFor(string $type, array $fields, ?string $eligibilityFieldId = null): array
     {
         if (!in_array($type, ['kesehatan', 'lapangan'], true)) {
             throw ValidationException::withMessages(['assessment_type' => ['Tipe asesmen harus kesehatan atau lapangan.']]);
@@ -145,9 +147,45 @@ class AssessmentLinkService
             $schema[] = $normalized;
         }
 
-        return $type === 'kesehatan'
-            ? array_merge([self::HEALTH_SCHEMA], $schema)
-            : $schema;
+        if ($type === 'kesehatan') {
+            return array_merge([self::HEALTH_SCHEMA], $schema);
+        }
+
+        if (!is_string($eligibilityFieldId) || trim($eligibilityFieldId) === '') {
+            throw ValidationException::withMessages(['eligibility_field_id' => ['Field penentu kelulusan wajib dipilih untuk tes lapangan.']]);
+        }
+        foreach ($schema as $index => $field) {
+            if ($field['id'] !== $eligibilityFieldId) {
+                continue;
+            }
+            if ($field['type'] !== 'select' || $field['options'] !== ['Lulus', 'Tidak Lulus']) {
+                throw ValidationException::withMessages(['eligibility_field_id' => ['Field penentu kelulusan harus berupa pilihan Lulus dan Tidak Lulus.']]);
+            }
+            $schema[$index]['eligibility_decision_field'] = $eligibilityFieldId;
+
+            return $schema;
+        }
+
+        throw ValidationException::withMessages(['eligibility_field_id' => ['Field penentu kelulusan tidak ditemukan pada form.']]);
+    }
+
+    public function eligibilityStatus(AssessmentLinkCandidate $candidate): string
+    {
+        $link = $candidate->assessmentLink;
+        $values = (array) $candidate->result_values;
+        if ($link === null) {
+            return 'pending';
+        }
+        if ($link->assessment_type === 'kesehatan') {
+            return $this->statusFromDecision($values['health_status'] ?? null, 'Sehat', 'Tidak Sehat');
+        }
+        foreach ((array) $link->form_schema as $field) {
+            if (($field['eligibility_decision_field'] ?? null) === ($field['id'] ?? null)) {
+                return $this->statusFromDecision($values[$field['id']] ?? null, 'Lulus', 'Tidak Lulus');
+            }
+        }
+
+        return 'pending';
     }
 
     public function verifyPin(AssessmentLink $link, string $pin): bool
@@ -311,5 +349,17 @@ class AssessmentLinkService
         if (!$link->isAccessibleAt(now('Asia/Makassar'))) {
             throw (new ModelNotFoundException())->setModel(AssessmentLink::class, [$link->id]);
         }
+    }
+
+    private function statusFromDecision($value, string $eligibleValue, string $ineligibleValue): string
+    {
+        if ($value === $eligibleValue) {
+            return 'eligible';
+        }
+        if ($value === $ineligibleValue) {
+            return 'ineligible';
+        }
+
+        return 'pending';
     }
 }

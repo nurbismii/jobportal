@@ -49,7 +49,7 @@ class AssessmentLinkController extends Controller
     {
         try {
             $link = $assessmentLinkService->create(
-                $request->only(['assessment_type', 'pin', 'fields']),
+                $request->only(['assessment_type', 'pin', 'fields', 'eligibility_field_id']),
                 $request->input('selected_ids'),
                 $request->user()->id
             );
@@ -79,6 +79,20 @@ class AssessmentLinkController extends Controller
             'candidates.audits',
         ]);
 
+        $eligibility = trim((string) request('eligibility', 'all'));
+        if (!in_array($eligibility, ['all', 'eligible', 'ineligible', 'pending'], true)) {
+            $eligibility = 'all';
+        }
+        $assessmentLink->candidates->each(function ($candidate) use ($assessmentLink, $assessmentLinkService) {
+            $candidate->setRelation('assessmentLink', $assessmentLink);
+            $candidate->eligibility_status = $assessmentLinkService->eligibilityStatus($candidate);
+        });
+        if ($eligibility !== 'all') {
+            $assessmentLink->setRelation('candidates', $assessmentLink->candidates
+                ->filter(fn ($candidate) => $candidate->eligibility_status === $eligibility)
+                ->values());
+        }
+
         $candidateSearch = trim((string) request('candidate_search'));
         $eligibleLamarans = Lamaran::query()
             ->with(['biodata.user', 'lowongan'])
@@ -94,7 +108,7 @@ class AssessmentLinkController extends Controller
             ->paginate(10, ['*'], 'eligible_page')
             ->withQueryString();
 
-        return view('admin.assessment-links.show', compact('eligibleLamarans', 'candidateSearch') + ['link' => $assessmentLink]);
+        return view('admin.assessment-links.show', compact('eligibleLamarans', 'candidateSearch', 'eligibility') + ['link' => $assessmentLink]);
     }
 
     public function storeCandidates(AddAssessmentLinkCandidatesRequest $request, AssessmentLink $assessmentLink, AssessmentLinkService $assessmentLinkService)
