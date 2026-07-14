@@ -24,13 +24,14 @@
                 <tbody>
                 @forelse($links as $link)
                     @php($expired = $link->expires_at && $link->expires_at->lte(now('Asia/Makassar')))
-                    @php($positions = $link->candidates->map(fn ($candidate) => optional(optional($candidate->lamaran)->lowongan)->nama_lowongan)->filter()->countBy())
+                    @php($lowongans = $link->candidates->map(fn ($candidate) => optional($candidate->lamaran)->lowongan)->filter()->groupBy('id'))
                     <tr>
                         <td>{{ ucfirst($link->assessment_type) }}</td>
                         <td>{{ optional($link->creator)->name ?: '-' }}</td>
                         <td>
-                            @forelse($positions as $position => $count)
-                                <div>{{ $position }} ({{ $count }})</div>
+                            @forelse($lowongans as $candidatesByLowongan)
+                                @php($lowongan = $candidatesByLowongan->first())
+                                <div>{{ $lowongan->nama_lowongan }} - {{ $lowongan->created_at ? tanggalIndo($lowongan->created_at->toDateString()) : '-' }} ({{ $candidatesByLowongan->count() }})</div>
                             @empty
                                 <span class="text-muted">-</span>
                             @endforelse

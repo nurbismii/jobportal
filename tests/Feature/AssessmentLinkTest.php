@@ -485,11 +485,19 @@ class AssessmentLinkTest extends TestCase
             ->assertSee('data-lowongan-id="'.$lowonganId.'"', false);
     }
 
-    public function test_assessment_link_index_displays_unique_lowongan_summary_with_candidate_counts()
+    public function test_assessment_link_index_displays_each_unique_lowongan_with_its_creation_date_and_candidate_count()
     {
         $admin = User::create(['name' => 'Assessment Admin', 'email' => 'index-positions@example.test', 'password' => 'secret', 'role' => 'admin']);
-        $operatorId = DB::table('lowongan')->insertGetId(['nama_lowongan' => 'Operator Produksi']);
-        $driverId = DB::table('lowongan')->insertGetId(['nama_lowongan' => 'Driver DT']);
+        $operatorId = DB::table('lowongan')->insertGetId([
+            'nama_lowongan' => 'Operator Produksi',
+            'created_at' => '2026-07-13 08:00:00',
+            'updated_at' => '2026-07-13 08:00:00',
+        ]);
+        $driverId = DB::table('lowongan')->insertGetId([
+            'nama_lowongan' => 'Driver DT',
+            'created_at' => '2026-07-14 08:00:00',
+            'updated_at' => '2026-07-14 08:00:00',
+        ]);
         $link = AssessmentLink::create([
             'assessment_type' => 'lapangan',
             'public_token' => str_repeat('s', 64),
@@ -514,8 +522,8 @@ class AssessmentLinkTest extends TestCase
         $this->actingAs($admin)->get(route('assessment-links.index'))
             ->assertOk()
             ->assertSee('Lowongan / Posisi')
-            ->assertSee('Operator Produksi (2)')
-            ->assertSee('Driver DT (1)');
+            ->assertSee('Operator Produksi - 13 Juli 2026 (2)')
+            ->assertSee('Driver DT - 14 Juli 2026 (1)');
     }
 
     public function test_admin_cannot_create_link_with_candidate_from_another_assessment_stage()
@@ -760,6 +768,7 @@ class AssessmentLinkTest extends TestCase
             $table->boolean('status_sio')->default(false);
             $table->timestamp('tanggal_mulai')->nullable();
             $table->timestamp('tanggal_berakhir')->nullable();
+            $table->timestamps();
         });
 
         Schema::create('surat_peringatan', function (Blueprint $table) {
