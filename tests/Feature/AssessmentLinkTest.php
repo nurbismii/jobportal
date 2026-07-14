@@ -7,6 +7,7 @@ use App\Models\AssessmentLinkCandidate;
 use App\Models\Biodata;
 use App\Models\Lamaran;
 use App\Models\User;
+use App\Http\Controllers\Admin\LowonganController;
 use Carbon\Carbon;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -680,6 +681,44 @@ class AssessmentLinkTest extends TestCase
         $this->assertSame('ineligible', app(AssessmentLinkService::class)->eligibilityStatus($candidate));
     }
 
+    public function test_lowongan_pendaftar_uses_the_latest_assessment_result_and_filters_by_eligibility()
+    {
+        $admin = User::create(['name' => 'HR Lowongan', 'email' => 'lowongan-eligibility@example.test', 'password' => 'secret', 'role' => 'admin']);
+        DB::table('lowongan')->insert([
+            'id' => 1,
+            'nama_lowongan' => 'Operator Produksi',
+            'status_sim_b2' => 0,
+            'status_sio' => 0,
+            'tanggal_mulai' => now(),
+            'tanggal_berakhir' => now()->addDay(),
+        ]);
+
+        $lamaranLayak = $this->createLamaranForAssessment('Tes Kesehatan');
+        $lamaranTidakLayak = $this->createLamaranForAssessment('Tes Kesehatan');
+        $lamaranMenunggu = $this->createLamaranForAssessment('Tes Kesehatan');
+        Lamaran::query()->whereIn('id', [$lamaranLayak->id, $lamaranTidakLayak->id, $lamaranMenunggu->id])->update(['loker_id' => 1]);
+
+        $oldLink = $this->createHealthAssessmentLink($admin, 'old-health-link');
+        $latestLink = $this->createHealthAssessmentLink($admin, 'latest-health-link');
+        AssessmentLinkCandidate::create(['assessment_link_id' => $oldLink->id, 'lamaran_id' => $lamaranLayak->id, 'result_values' => ['health_status' => 'Tidak Sehat']]);
+        AssessmentLinkCandidate::create(['assessment_link_id' => $latestLink->id, 'lamaran_id' => $lamaranLayak->id, 'result_values' => ['health_status' => 'Sehat']]);
+        AssessmentLinkCandidate::create(['assessment_link_id' => $latestLink->id, 'lamaran_id' => $lamaranTidakLayak->id, 'result_values' => ['health_status' => 'Tidak Sehat']]);
+        AssessmentLinkCandidate::create(['assessment_link_id' => $latestLink->id, 'lamaran_id' => $lamaranMenunggu->id]);
+
+        $controller = app(LowonganController::class);
+        $allResponse = $controller->directToLamaran(Request::create('/admin/lowongan/pendaftar/1', 'GET'), 1);
+        $allLamarans = $allResponse->getData()['lamarans']->keyBy('id');
+
+        $this->assertSame('eligible', $allLamarans[$lamaranLayak->id]->assessment_eligibility_status);
+        $this->assertSame('kesehatan', $allLamarans[$lamaranLayak->id]->assessment_type);
+        $this->assertSame($latestLink->id, $allLamarans[$lamaranLayak->id]->assessment_link_id);
+        $this->assertSame('ineligible', $allLamarans[$lamaranTidakLayak->id]->assessment_eligibility_status);
+        $this->assertSame('pending', $allLamarans[$lamaranMenunggu->id]->assessment_eligibility_status);
+
+        $eligibleResponse = $controller->directToLamaran(Request::create('/admin/lowongan/pendaftar/1?assessment_eligibility=eligible', 'GET'), 1);
+        $this->assertSame([$lamaranLayak->id], $eligibleResponse->getData()['lamarans']->pluck('id')->all());
+    }
+
     protected function tearDown(): void
     {
         Carbon::setTestNow();
@@ -717,6 +756,16 @@ class AssessmentLinkTest extends TestCase
         Schema::create('lowongan', function (Blueprint $table) {
             $table->id();
             $table->string('nama_lowongan')->nullable();
+            $table->boolean('status_sim_b2')->default(false);
+            $table->boolean('status_sio')->default(false);
+            $table->timestamp('tanggal_mulai')->nullable();
+            $table->timestamp('tanggal_berakhir')->nullable();
+        });
+
+        Schema::create('surat_peringatan', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->timestamps();
         });
     }
 
@@ -733,6 +782,19 @@ class AssessmentLinkTest extends TestCase
             'biodata_id' => Biodata::create(['user_id' => $user->id, 'no_ktp' => 'KTP-ELIGIBILITY-'.$suffix])->id,
             'user_id' => $user->id,
             'status_proses' => $status,
+        ]);
+    }
+
+    private function createHealthAssessmentLink(User $admin, string $token): AssessmentLink
+    {
+        return AssessmentLink::create([
+            'assessment_type' => 'kesehatan',
+            'public_token' => str_pad($token, 64, 'x'),
+            'pin_hash' => Hash::make('123456'),
+            'form_schema' => [['id' => 'health_status', 'label' => 'Hasil tes kesehatan', 'type' => 'select', 'required' => true, 'options' => ['Sehat', 'Tidak Sehat']]],
+            'created_by' => $admin->id,
+            'expires_at' => now('Asia/Makassar')->addDay(),
+            'is_active' => true,
         ]);
     }
 

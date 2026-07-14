@@ -8,6 +8,7 @@ use App\Models\Hris\Kelurahan;
 use App\Models\Hris\Provinsi;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Lamaran extends Model
 {
@@ -52,5 +53,12 @@ class Lamaran extends Model
     public function riwayatProsesLamaran()
     {
         return $this->hasMany(RiwayatProsesLamaran::class, 'lamaran_id');
+    }
+
+    public function assessmentLinkCandidates(): HasMany
+    {
+        return $this->hasMany(AssessmentLinkCandidate::class, 'lamaran_id')
+            ->latest('assessment_link_candidates.created_at')
+            ->latest('assessment_link_candidates.id');
     }
 }

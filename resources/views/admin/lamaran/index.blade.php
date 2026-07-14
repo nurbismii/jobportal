@@ -221,6 +221,15 @@
                 </select>
             </div>
 
+            <div class="col-md-4 mb-3">
+                <select name="assessment_eligibility" class="form-control form-control-sm">
+                    <option value="">-- Filter Status Asesmen --</option>
+                    <option value="eligible" {{ request('assessment_eligibility') === 'eligible' ? 'selected' : '' }}>Layak lanjut</option>
+                    <option value="ineligible" {{ request('assessment_eligibility') === 'ineligible' ? 'selected' : '' }}>Tidak layak</option>
+                    <option value="pending" {{ request('assessment_eligibility') === 'pending' ? 'selected' : '' }}>Menunggu hasil</option>
+                </select>
+            </div>
+
             <div class="col-md-12">
                 <a href="{{ route('directToLamaran', $lowongan->id) }}" class="btn btn-secondary">Reset</a>
                 <button type="submit" class="btn btn-primary">Filter</button>
@@ -246,6 +255,9 @@
                             <th>Riwayat</th> <!-- tombol expand -->
                             <th><input type="checkbox" id="checkAll"></th>
                             <th>Status</th>
+                            <th>Status Asesmen</th>
+                            <th>Jenis Asesmen</th>
+                            <th>Link Asesmen</th>
                             <th>Nama</th>
                             <th>No KTP</th>
                             <th>No KK</th>
@@ -332,6 +344,25 @@
                             </td>
                             <td><input type="checkbox" name="selected_ids[]" value="{{ $data->id }}"></td>
                             <td>{{ $data->status_proses }}</td>
+                            <td>
+                                @if($data->assessment_eligibility_status === 'eligible')
+                                <span class="badge badge-success">Layak lanjut</span>
+                                @elseif($data->assessment_eligibility_status === 'ineligible')
+                                <span class="badge badge-danger">Tidak layak</span>
+                                @elseif($data->assessment_eligibility_status === 'pending')
+                                <span class="badge badge-warning">Menunggu hasil</span>
+                                @else
+                                <span class="text-muted">Belum ada asesmen</span>
+                                @endif
+                            </td>
+                            <td>{{ $data->assessment_type ? ucfirst($data->assessment_type) : '-' }}</td>
+                            <td>
+                                @if($data->assessment_link_id)
+                                <a href="{{ route('assessment-links.show', $data->assessment_link_id) }}" class="btn btn-outline-primary btn-sm">Lihat hasil</a>
+                                @else
+                                -
+                                @endif
+                            </td>
                             <td>{{ $data->biodata->user->name }}</td>
                             <td>{{ $data->biodata->no_ktp }}</td>
                             <td>{{ $data->biodata->no_kk }}</td>

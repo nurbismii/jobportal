@@ -7,6 +7,7 @@ use App\Models\Hris\Employee;
 use App\Models\Lamaran;
 use App\Models\Lowongan;
 use App\Models\PermintaanTenagaKerja;
+use App\Services\AssessmentLinkService;
 use App\Services\EmploymentStatusRefreshService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -118,6 +119,7 @@ class LowonganController extends Controller
             'biodata.getKecamatan',
             'biodata.getKelurahan',
             'biodata.user.suratPeringatan',
+            'assessmentLinkCandidates.assessmentLink',
         ])
             ->where('loker_id', $loker_id)
             ->whereHas('biodata.user');
@@ -199,9 +201,32 @@ class LowonganController extends Controller
             }
         }
 
+        $assessmentLinkService = app(AssessmentLinkService::class);
         $lamarans = $query->get();
 
-        return view('admin.lamaran.index', compact('lamarans', 'lowongan', 'userId'))->with('no');
+        $lamarans->each(function (Lamaran $lamaran) use ($assessmentLinkService) {
+            $candidate = $lamaran->assessmentLinkCandidates->first();
+            if ($candidate === null || $candidate->assessmentLink === null) {
+                $lamaran->setAttribute('assessment_eligibility_status', null);
+                $lamaran->setAttribute('assessment_type', null);
+                $lamaran->setAttribute('assessment_link_id', null);
+
+                return;
+            }
+
+            $lamaran->setAttribute('assessment_eligibility_status', $assessmentLinkService->eligibilityStatus($candidate));
+            $lamaran->setAttribute('assessment_type', $candidate->assessmentLink->assessment_type);
+            $lamaran->setAttribute('assessment_link_id', $candidate->assessmentLink->id);
+        });
+
+        $assessmentEligibility = $request->input('assessment_eligibility');
+        if (in_array($assessmentEligibility, ['eligible', 'ineligible', 'pending'], true)) {
+            $lamarans = $lamarans
+                ->filter(fn (Lamaran $lamaran) => $lamaran->assessment_eligibility_status === $assessmentEligibility)
+                ->values();
+        }
+
+        return view('admin.lamaran.index', compact('lamarans', 'lowongan', 'userId', 'assessmentEligibility'))->with('no');
     }
 
     public function refreshDataPelamar(Request $request)
