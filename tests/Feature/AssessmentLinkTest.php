@@ -480,7 +480,7 @@ class AssessmentLinkTest extends TestCase
         $this->actingAs($admin)->get(route('assessment-links.create'))
             ->assertOk()
             ->assertSee('Filter lowongan')
-            ->assertSee('Operator Produksi - 13 Juli 2026')
+            ->assertSee('<option value="'.$lowonganId.'">Operator Produksi - 13 Juli 2026</option>', false)
             ->assertSee('value="25"', false)
             ->assertSee('value="50"', false)
             ->assertSee('value="100"', false)
