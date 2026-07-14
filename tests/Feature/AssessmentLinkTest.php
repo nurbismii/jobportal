@@ -98,6 +98,7 @@ class AssessmentLinkTest extends TestCase
         $lamaran = Lamaran::create([
             'biodata_id' => $biodata->id,
             'user_id' => $admin->id,
+            'status_proses' => 'Tes Lapangan',
         ]);
 
         $response = $this->actingAs($admin)->post(route('assessment-links.store'), [
@@ -146,7 +147,11 @@ class AssessmentLinkTest extends TestCase
             'role' => 'admin',
         ]);
         $biodata = Biodata::create(['user_id' => $admin->id]);
-        $lamaran = Lamaran::create(['biodata_id' => $biodata->id, 'user_id' => $admin->id]);
+        $lamaran = Lamaran::create([
+            'biodata_id' => $biodata->id,
+            'user_id' => $admin->id,
+            'status_proses' => 'Tes Lapangan',
+        ]);
 
         $this->actingAs($admin)->from(route('assessment-links.create'))->post(route('assessment-links.store'), [
             'assessment_type' => 'lapangan',
@@ -183,6 +188,7 @@ class AssessmentLinkTest extends TestCase
         $lamaran = Lamaran::create([
             'biodata_id' => $biodata->id,
             'user_id' => $admin->id,
+            'status_proses' => 'Tes Kesehatan',
         ]);
 
         $service = app(AssessmentLinkService::class);
@@ -190,7 +196,7 @@ class AssessmentLinkTest extends TestCase
             'assessment_type' => 'kesehatan',
             'pin' => '123456',
             'fields' => [['id' => 'blood_pressure', 'label' => 'Tekanan darah', 'type' => 'number', 'required' => true]],
-        ], [$lamaran->id, $lamaran->id], $admin->id);
+        ], [$lamaran->id], $admin->id);
 
         $this->assertSame([
             'id' => 'health_status',
@@ -250,7 +256,11 @@ class AssessmentLinkTest extends TestCase
             'role' => 'admin',
         ]);
         $biodata = Biodata::create(['user_id' => $admin->id]);
-        $lamaran = Lamaran::create(['biodata_id' => $biodata->id, 'user_id' => $admin->id]);
+        $lamaran = Lamaran::create([
+            'biodata_id' => $biodata->id,
+            'user_id' => $admin->id,
+            'status_proses' => 'Tes Kesehatan',
+        ]);
         $service = app(AssessmentLinkService::class);
         $link = $service->create([
             'assessment_type' => 'kesehatan',
@@ -416,6 +426,52 @@ class AssessmentLinkTest extends TestCase
             ->assertSee('Cari nama atau nomor KTP')
             ->assertSee('Status simpan')
             ->assertSee('autosave');
+    }
+
+    public function test_create_page_only_lists_candidates_eligible_for_the_selected_assessment_type()
+    {
+        $admin = User::create(['name' => 'Assessment Admin', 'email' => 'create-list@example.test', 'password' => 'secret', 'role' => 'admin']);
+        $lapanganUser = User::create(['name' => 'Kandidat Lapangan', 'email' => 'lapangan@example.test', 'password' => 'secret']);
+        $kesehatanUser = User::create(['name' => 'Kandidat Kesehatan', 'email' => 'kesehatan@example.test', 'password' => 'secret']);
+        $lapangan = Lamaran::create([
+            'biodata_id' => Biodata::create(['user_id' => $lapanganUser->id, 'no_ktp' => 'KTP-LAP'])->id,
+            'user_id' => $lapanganUser->id,
+            'status_proses' => 'Tes Lapangan',
+        ]);
+        $kesehatan = Lamaran::create([
+            'biodata_id' => Biodata::create(['user_id' => $kesehatanUser->id, 'no_ktp' => 'KTP-KES'])->id,
+            'user_id' => $kesehatanUser->id,
+            'status_proses' => 'Tes Kesehatan',
+        ]);
+
+        $this->actingAs($admin)->get(route('assessment-links.create'))
+            ->assertOk()
+            ->assertSee('Kandidat Lapangan')
+            ->assertSee('Kandidat Kesehatan')
+            ->assertSee('data-assessment-type="lapangan"', false)
+            ->assertSee('data-assessment-type="kesehatan"', false)
+            ->assertSee('value="'.$lapangan->id.'"', false)
+            ->assertSee('value="'.$kesehatan->id.'"', false);
+    }
+
+    public function test_admin_cannot_create_link_with_candidate_from_another_assessment_stage()
+    {
+        $admin = User::create(['name' => 'Assessment Admin', 'email' => 'strict-create@example.test', 'password' => 'secret', 'role' => 'admin']);
+        $user = User::create(['name' => 'Kandidat Kesehatan', 'email' => 'strict-candidate@example.test', 'password' => 'secret']);
+        $lamaran = Lamaran::create([
+            'biodata_id' => Biodata::create(['user_id' => $user->id])->id,
+            'user_id' => $user->id,
+            'status_proses' => 'Tes Kesehatan',
+        ]);
+
+        $this->actingAs($admin)->from(route('assessment-links.create'))->post(route('assessment-links.store'), [
+            'assessment_type' => 'lapangan',
+            'pin' => '123456',
+            'selected_ids' => [$lamaran->id],
+        ])->assertRedirect(route('assessment-links.create'))
+            ->assertSessionHasErrors('selected_ids.0');
+
+        $this->assertSame(0, AssessmentLink::query()->count());
     }
 
     public function test_admin_can_add_only_candidates_in_the_matching_assessment_stage_and_see_their_position()

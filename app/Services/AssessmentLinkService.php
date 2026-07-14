@@ -44,6 +44,26 @@ class AssessmentLinkService
         }
 
         return DB::transaction(function () use ($type, $schema, $pin, $creatorId, $lamaranIds) {
+            $ids = collect($lamaranIds)->map(fn ($id) => (int) $id)->values();
+            if ($ids->count() !== $ids->unique()->count()) {
+                throw ValidationException::withMessages(['selected_ids' => ['Kandidat tidak boleh dipilih lebih dari satu kali.']]);
+            }
+
+            $requiredStatus = $this->requiredLamaranStatusForType((string) $type);
+            $eligibleIds = \App\Models\Lamaran::query()
+                ->lockForUpdate()
+                ->whereIn('id', $ids)
+                ->where('status_proses', $requiredStatus)
+                ->pluck('id')
+                ->map(fn ($id) => (int) $id)
+                ->all();
+
+            foreach ($ids as $index => $id) {
+                if (!in_array($id, $eligibleIds, true)) {
+                    throw ValidationException::withMessages(["selected_ids.$index" => ['Kandidat harus berada pada status '.$requiredStatus.'.']]);
+                }
+            }
+
             $link = AssessmentLink::create([
                 'assessment_type' => $type,
                 'public_token' => $this->uniquePublicToken(),
@@ -54,7 +74,7 @@ class AssessmentLinkService
                 'is_active' => true,
             ]);
 
-            foreach (array_unique($lamaranIds, SORT_REGULAR) as $lamaranId) {
+            foreach ($ids as $lamaranId) {
                 AssessmentLinkCandidate::create([
                     'assessment_link_id' => $link->id,
                     'lamaran_id' => $lamaranId,
@@ -137,7 +157,7 @@ class AssessmentLinkService
 
     public function requiredLamaranStatus(AssessmentLink $link): string
     {
-        return $link->assessment_type === 'kesehatan' ? 'Tes Kesehatan' : 'Tes Lapangan';
+        return $this->requiredLamaranStatusForType($link->assessment_type);
     }
 
     /** @param array<int, int|string> $lamaranIds */
@@ -271,6 +291,19 @@ class AssessmentLinkService
         } while (AssessmentLink::query()->where('public_token', $token)->exists());
 
         return $token;
+    }
+
+    private function requiredLamaranStatusForType(string $type): string
+    {
+        if ($type === 'kesehatan') {
+            return 'Tes Kesehatan';
+        }
+
+        if ($type === 'lapangan') {
+            return 'Tes Lapangan';
+        }
+
+        throw ValidationException::withMessages(['assessment_type' => ['Tipe asesmen harus kesehatan atau lapangan.']]);
     }
 
     private function ensureAccessible(AssessmentLink $link): void

@@ -28,19 +28,14 @@ class AssessmentLinkController extends Controller
 
     public function create()
     {
-        $selectedIds = collect(request()->input('selected_ids', []))
-            ->filter(function ($id) {
-                return filter_var($id, FILTER_VALIDATE_INT) !== false;
-            })
-            ->unique()
-            ->values();
+        $selectedIds = collect(old('selected_ids', []))->map(fn ($id) => (int) $id)->all();
 
-        $lamarans = Lamaran::query()
-            ->with('biodata.user')
-            ->whereIn('id', $selectedIds)
+        $eligibleLamarans = Lamaran::query()
+            ->with(['biodata.user', 'lowongan'])
+            ->whereIn('status_proses', ['Tes Kesehatan', 'Tes Lapangan'])
             ->get();
 
-        return view('admin.assessment-links.create', compact('lamarans'));
+        return view('admin.assessment-links.create', compact('eligibleLamarans', 'selectedIds'));
     }
 
     public function store(StoreAssessmentLinkRequest $request, AssessmentLinkService $assessmentLinkService)
@@ -54,7 +49,7 @@ class AssessmentLinkController extends Controller
         } catch (ValidationException $exception) {
             Alert::error('Gagal', 'Data link asesmen tidak valid. Silakan periksa kembali isian Anda.');
 
-            return back()->withInput($request->except('pin'));
+            return back()->withErrors($exception->errors())->withInput($request->except('pin'));
         } catch (InvalidArgumentException $exception) {
             Alert::error('Gagal', 'Link asesmen tidak dapat dibuat. Silakan periksa kembali isian Anda.');
 
