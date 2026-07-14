@@ -34,7 +34,7 @@
                 <td><input type="checkbox" name="selected_ids[]" value="{{ $lamaran->id }}" {{ $selected ? 'checked' : '' }} aria-label="Pilih kandidat"></td>
                 <td>{{ optional(optional($lamaran->biodata)->user)->name ?: 'Kandidat #'.$lamaran->id }}</td>
                 <td>{{ optional($lamaran->biodata)->no_ktp ?: '-' }}</td>
-                <td>{{ optional($lamaran->lowongan)->nama_lowongan ?: '-' }}</td>
+                <td>@php($lowongan = $lamaran->lowongan)@if($lowongan){{ $lowongan->nama_lowongan }} - {{ $lowongan->created_at ? tanggalIndo($lowongan->created_at->toDateString()) : '-' }}@else-@endif</td>
                 <td>{{ $lamaran->status_proses }}</td>
             </tr>
         @empty

@@ -460,7 +460,11 @@ class AssessmentLinkTest extends TestCase
     public function test_create_page_exposes_lowongan_filter_pagination_and_visible_page_selection_controls()
     {
         $admin = User::create(['name' => 'Assessment Admin', 'email' => 'create-paging@example.test', 'password' => 'secret', 'role' => 'admin']);
-        $lowonganId = DB::table('lowongan')->insertGetId(['nama_lowongan' => 'Operator Produksi']);
+        $lowonganId = DB::table('lowongan')->insertGetId([
+            'nama_lowongan' => 'Operator Produksi',
+            'created_at' => '2026-07-13 08:00:00',
+            'updated_at' => '2026-07-13 08:00:00',
+        ]);
 
         for ($index = 1; $index <= 26; $index++) {
             $user = User::create(['name' => 'Kandidat '.$index, 'email' => 'paging-'.$index.'@example.test', 'password' => 'secret']);
@@ -476,7 +480,7 @@ class AssessmentLinkTest extends TestCase
         $this->actingAs($admin)->get(route('assessment-links.create'))
             ->assertOk()
             ->assertSee('Filter lowongan')
-            ->assertSee('Operator Produksi')
+            ->assertSee('Operator Produksi - 13 Juli 2026')
             ->assertSee('value="25"', false)
             ->assertSee('value="50"', false)
             ->assertSee('value="100"', false)
