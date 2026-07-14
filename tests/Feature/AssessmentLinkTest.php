@@ -526,6 +526,38 @@ class AssessmentLinkTest extends TestCase
             ->assertSee('Driver DT - 14 Juli 2026 (1)');
     }
 
+    public function test_assessment_link_detail_displays_the_applied_position_with_its_creation_date()
+    {
+        $admin = User::create(['name' => 'Assessment Detail Admin', 'email' => 'detail-position@example.test', 'password' => 'secret', 'role' => 'admin']);
+        $lowonganId = DB::table('lowongan')->insertGetId([
+            'nama_lowongan' => 'Operator Produksi',
+            'created_at' => '2026-07-13 08:00:00',
+            'updated_at' => '2026-07-13 08:00:00',
+        ]);
+        $user = User::create(['name' => 'Kandidat Detail', 'email' => 'candidate-detail-position@example.test', 'password' => 'secret']);
+        $lamaran = Lamaran::create([
+            'biodata_id' => Biodata::create(['user_id' => $user->id, 'no_ktp' => 'KTP-DETAIL'])->id,
+            'user_id' => $user->id,
+            'loker_id' => $lowonganId,
+            'status_proses' => 'Tes Lapangan',
+        ]);
+        $link = AssessmentLink::create([
+            'assessment_type' => 'lapangan',
+            'public_token' => str_repeat('d', 64),
+            'pin_hash' => Hash::make('123456'),
+            'form_schema' => [],
+            'created_by' => $admin->id,
+            'expires_at' => now('Asia/Makassar')->addDay(),
+            'is_active' => true,
+        ]);
+        AssessmentLinkCandidate::create(['assessment_link_id' => $link->id, 'lamaran_id' => $lamaran->id]);
+
+        $this->actingAs($admin)->get(route('assessment-links.show', $link))
+            ->assertOk()
+            ->assertSee('Posisi dilamar')
+            ->assertSee('Operator Produksi - 13 Juli 2026');
+    }
+
     public function test_admin_cannot_create_link_with_candidate_from_another_assessment_stage()
     {
         $admin = User::create(['name' => 'Assessment Admin', 'email' => 'strict-create@example.test', 'password' => 'secret', 'role' => 'admin']);
