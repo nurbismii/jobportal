@@ -35,6 +35,10 @@ Route::post('/penilaian/{token}/unlock', [PublicAssessmentLinkController::class,
     ->middleware('throttle:5,1')->name('assessment-links.public.unlock');
 Route::post('/penilaian/{token}/kandidat/{candidate}/hasil', [PublicAssessmentLinkController::class, 'storeResult'])
     ->middleware(['throttle:30,1', EnsurePublicAssessmentAccess::class])->name('assessment-links.public.results.store');
+Route::get('/penilaian/{token}/kandidat', [PublicAssessmentLinkController::class, 'candidates'])
+    ->middleware(['throttle:30,1', EnsurePublicAssessmentAccess::class])->name('assessment-links.public.candidates');
+Route::post('/penilaian/{token}/kandidat/{candidate}/autosave', [PublicAssessmentLinkController::class, 'autosave'])
+    ->middleware(['throttle:30,1', EnsurePublicAssessmentAccess::class])->name('assessment-links.public.autosave');
 
 Route::resource('lowongan-kerja', 'App\Http\Controllers\LowonganController');
 Route::resource('pengumuman', 'App\Http\Controllers\PengumumanController')->only(['index', 'show']);
