@@ -418,6 +418,60 @@ class AssessmentLinkTest extends TestCase
             ->assertSee('autosave');
     }
 
+    public function test_admin_can_add_only_candidates_in_the_matching_assessment_stage_and_see_their_position()
+    {
+        $admin = User::create(['name' => 'HR Admin', 'email' => 'hr-add@example.test', 'password' => 'secret', 'role' => 'admin']);
+        $lowongan = DB::table('lowongan')->insertGetId(['nama_lowongan' => 'Operator Alat Berat']);
+        $eligibleUser = User::create(['name' => 'Kandidat Tes Lapangan', 'email' => 'eligible@example.test', 'password' => 'secret']);
+        $eligibleBiodata = Biodata::create(['user_id' => $eligibleUser->id, 'no_ktp' => 'KTP-ELIGIBLE']);
+        $eligibleLamaran = Lamaran::create([
+            'biodata_id' => $eligibleBiodata->id,
+            'user_id' => $eligibleUser->id,
+            'loker_id' => $lowongan,
+            'status_proses' => 'Tes Lapangan',
+        ]);
+        $otherLamaran = Lamaran::create([
+            'biodata_id' => $eligibleBiodata->id,
+            'user_id' => $eligibleUser->id,
+            'status_proses' => 'Tes Kesehatan',
+        ]);
+        $link = AssessmentLink::create([
+            'assessment_type' => 'lapangan',
+            'public_token' => str_repeat('a', 64),
+            'pin_hash' => Hash::make('123456'),
+            'form_schema' => [],
+            'created_by' => $admin->id,
+            'expires_at' => now('Asia/Makassar')->addDay(),
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('assessment-links.candidates.store', $link), ['lamaran_ids' => [$eligibleLamaran->id]])
+            ->assertRedirect(route('assessment-links.show', $link));
+
+        $this->assertDatabaseHas('assessment_link_candidates', ['assessment_link_id' => $link->id, 'lamaran_id' => $eligibleLamaran->id]);
+        $this->actingAs($admin)->get(route('assessment-links.show', $link))
+            ->assertOk()
+            ->assertSee('Operator Alat Berat')
+            ->assertSee('KTP-ELIGIBLE');
+
+        $this->actingAs($admin)
+            ->post(route('assessment-links.candidates.store', $link), ['lamaran_ids' => [$otherLamaran->id]])
+            ->assertSessionHasErrors('lamaran_ids.0');
+    }
+
+    public function test_admin_cannot_add_a_duplicate_assessment_candidate()
+    {
+        [$link, $candidate] = $this->createPublicAssessmentLink();
+        $admin = $link->creator;
+
+        $this->actingAs($admin)
+            ->post(route('assessment-links.candidates.store', $link), ['lamaran_ids' => [$candidate->lamaran_id]])
+            ->assertSessionHasErrors('lamaran_ids.0');
+
+        $this->assertSame(1, AssessmentLinkCandidate::query()->where('assessment_link_id', $link->id)->count());
+    }
+
     protected function tearDown(): void
     {
         Carbon::setTestNow();
@@ -447,7 +501,14 @@ class AssessmentLinkTest extends TestCase
             $table->id();
             $table->unsignedBigInteger('biodata_id')->nullable();
             $table->unsignedBigInteger('user_id')->nullable();
+            $table->unsignedBigInteger('loker_id')->nullable();
+            $table->string('status_proses')->nullable();
             $table->timestamps();
+        });
+
+        Schema::create('lowongan', function (Blueprint $table) {
+            $table->id();
+            $table->string('nama_lowongan')->nullable();
         });
     }
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreAssessmentLinkRequest;
+use App\Http\Requests\Admin\AddAssessmentLinkCandidatesRequest;
 use App\Models\AssessmentLink;
 use App\Models\Lamaran;
 use App\Services\AssessmentLinkService;
@@ -67,15 +68,44 @@ class AssessmentLinkController extends Controller
         return redirect()->route('assessment-links.index');
     }
 
-    public function show(AssessmentLink $assessmentLink)
+    public function show(AssessmentLink $assessmentLink, AssessmentLinkService $assessmentLinkService)
     {
         $assessmentLink->load([
             'creator',
             'candidates.lamaran.biodata.user',
+            'candidates.lamaran.lowongan',
             'candidates.audits',
         ]);
 
-        return view('admin.assessment-links.show', ['link' => $assessmentLink]);
+        $candidateSearch = trim((string) request('candidate_search'));
+        $eligibleLamarans = Lamaran::query()
+            ->with(['biodata.user', 'lowongan'])
+            ->where('status_proses', $assessmentLinkService->requiredLamaranStatus($assessmentLink))
+            ->whereNotIn('id', $assessmentLink->candidates->pluck('lamaran_id'))
+            ->when($candidateSearch !== '', function ($query) use ($candidateSearch) {
+                $query->whereHas('biodata', function ($biodataQuery) use ($candidateSearch) {
+                    $biodataQuery->where('no_ktp', 'like', "%{$candidateSearch}%")
+                        ->orWhereHas('user', fn ($userQuery) => $userQuery->where('name', 'like', "%{$candidateSearch}%"));
+                });
+            })
+            ->latest()
+            ->paginate(10, ['*'], 'eligible_page')
+            ->withQueryString();
+
+        return view('admin.assessment-links.show', compact('eligibleLamarans', 'candidateSearch') + ['link' => $assessmentLink]);
+    }
+
+    public function storeCandidates(AddAssessmentLinkCandidatesRequest $request, AssessmentLink $assessmentLink, AssessmentLinkService $assessmentLinkService)
+    {
+        try {
+            $assessmentLinkService->addCandidates($assessmentLink, $request->input('lamaran_ids'));
+        } catch (ValidationException $exception) {
+            return back()->withErrors($exception->errors())->withInput();
+        }
+
+        Alert::success('Berhasil', 'Kandidat berhasil ditambahkan ke link asesmen.');
+
+        return redirect()->route('assessment-links.show', $assessmentLink);
     }
 
     public function deactivate(AssessmentLink $assessmentLink)

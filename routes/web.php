@@ -105,6 +105,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['redirect.role']], function 
     Route::get('/assessment-links/create', [AssessmentLinkController::class, 'create'])->name('assessment-links.create');
     Route::post('/assessment-links', [AssessmentLinkController::class, 'store'])->name('assessment-links.store');
     Route::get('/assessment-links/{assessmentLink}', [AssessmentLinkController::class, 'show'])->name('assessment-links.show');
+    Route::post('/assessment-links/{assessmentLink}/candidates', [AssessmentLinkController::class, 'storeCandidates'])->name('assessment-links.candidates.store');
     Route::post('/assessment-links/{assessmentLink}/deactivate', [AssessmentLinkController::class, 'deactivate'])->name('assessment-links.deactivate');
     
     Route::post('/lamaran/update-status-massal', [LamaranController::class, 'updateStatusMassal'])->name('lamaran.updateStatusMassal');

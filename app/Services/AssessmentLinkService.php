@@ -135,6 +135,48 @@ class AssessmentLinkService
         return Hash::check($pin, $link->pin_hash);
     }
 
+    public function requiredLamaranStatus(AssessmentLink $link): string
+    {
+        return $link->assessment_type === 'kesehatan' ? 'Tes Kesehatan' : 'Tes Lapangan';
+    }
+
+    /** @param array<int, int|string> $lamaranIds */
+    public function addCandidates(AssessmentLink $link, array $lamaranIds): void
+    {
+        DB::transaction(function () use ($link, $lamaranIds) {
+            $lockedLink = AssessmentLink::query()->lockForUpdate()->findOrFail($link->id);
+            $ids = collect($lamaranIds)->map(fn ($id) => (int) $id)->unique()->values();
+            $existingIds = AssessmentLinkCandidate::query()
+                ->where('assessment_link_id', $lockedLink->id)
+                ->whereIn('lamaran_id', $ids)
+                ->pluck('lamaran_id')
+                ->map(fn ($id) => (int) $id)
+                ->all();
+            $eligibleIds = \App\Models\Lamaran::query()
+                ->whereIn('id', $ids)
+                ->where('status_proses', $this->requiredLamaranStatus($lockedLink))
+                ->pluck('id')
+                ->map(fn ($id) => (int) $id)
+                ->all();
+
+            foreach ($ids as $index => $id) {
+                if (in_array($id, $existingIds, true)) {
+                    throw ValidationException::withMessages(["lamaran_ids.$index" => ['Kandidat sudah ada pada link asesmen ini.']]);
+                }
+                if (!in_array($id, $eligibleIds, true)) {
+                    throw ValidationException::withMessages(["lamaran_ids.$index" => ['Kandidat harus berada pada status '.$this->requiredLamaranStatus($lockedLink).'.']]);
+                }
+            }
+
+            foreach ($ids as $id) {
+                AssessmentLinkCandidate::create([
+                    'assessment_link_id' => $lockedLink->id,
+                    'lamaran_id' => $id,
+                ]);
+            }
+        });
+    }
+
     /**
      * @param array<string, mixed> $values
      */
