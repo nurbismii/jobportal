@@ -759,6 +759,107 @@ class AssessmentLinkTest extends TestCase
         $this->assertSame([$lamaranLayak->id], $eligibleResponse->getData()['lamarans']->pluck('id')->all());
     }
 
+    public function test_lowongan_pendaftar_prefers_active_hris_position_and_otherwise_uses_latest_resignation()
+    {
+        config(['database.connections.mysql_hris' => [
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+            'prefix' => '',
+            'foreign_key_constraints' => false,
+        ]]);
+        DB::purge('mysql_hris');
+
+        foreach (['master_provinsi', 'master_kabupaten', 'master_kecamatan', 'master_kelurahan'] as $table) {
+            Schema::connection('mysql_hris')->create($table, function (Blueprint $table) {
+                $table->id();
+            });
+        }
+
+        Schema::connection('mysql_hris')->create('employees', function (Blueprint $table) {
+            $table->string('nik_karyawan')->primary();
+            $table->string('no_ktp')->nullable();
+            $table->string('nama_karyawan')->nullable();
+            $table->date('tgl_resign')->nullable();
+            $table->string('alasan_resign')->nullable();
+            $table->string('posisi')->nullable();
+            $table->string('status_resign')->nullable();
+            $table->string('area_kerja')->nullable();
+        });
+
+        DB::connection('mysql_hris')->table('employees')->insert([
+            [
+                'nik_karyawan' => 'HRIS-RESIGNED',
+                'no_ktp' => 'KTP-HRIS-POSITION',
+                'nama_karyawan' => 'Kandidat HRIS',
+                'tgl_resign' => '2026-06-01',
+                'posisi' => 'Supervisor Lama',
+                'status_resign' => 'Resign',
+            ],
+            [
+                'nik_karyawan' => 'HRIS-ACTIVE',
+                'no_ktp' => 'KTP-HRIS-POSITION',
+                'nama_karyawan' => 'Kandidat HRIS',
+                'tgl_resign' => null,
+                'posisi' => 'Operator Aktif',
+                'status_resign' => 'Aktif',
+            ],
+            [
+                'nik_karyawan' => 'HRIS-OLDER',
+                'no_ktp' => 'KTP-HRIS-RESIGNED',
+                'nama_karyawan' => 'Kandidat Resign',
+                'tgl_resign' => '2025-01-01',
+                'posisi' => 'Operator Lama',
+                'status_resign' => 'Resign',
+            ],
+            [
+                'nik_karyawan' => 'HRIS-LATEST',
+                'no_ktp' => 'KTP-HRIS-RESIGNED',
+                'nama_karyawan' => 'Kandidat Resign',
+                'tgl_resign' => '2026-02-01',
+                'posisi' => 'Supervisor Terbaru',
+                'status_resign' => 'Resign',
+            ],
+            [
+                'nik_karyawan' => 'HRIS-INVALID-DATE',
+                'no_ktp' => 'KTP-HRIS-RESIGNED',
+                'nama_karyawan' => 'Kandidat Resign',
+                'tgl_resign' => 'tanggal tidak valid',
+                'posisi' => 'Posisi Tidak Valid',
+                'status_resign' => 'Resign',
+            ],
+        ]);
+
+        DB::table('lowongan')->insert([
+            'id' => 1,
+            'nama_lowongan' => 'Operator Produksi',
+            'status_sim_b2' => 0,
+            'status_sio' => 0,
+            'tanggal_mulai' => now(),
+            'tanggal_berakhir' => now()->addDay(),
+        ]);
+        $user = User::create(['name' => 'Kandidat HRIS', 'email' => 'hris-position@example.test', 'password' => 'secret']);
+        $lamaran = Lamaran::create([
+            'biodata_id' => Biodata::create(['user_id' => $user->id, 'no_ktp' => 'KTP-HRIS-POSITION'])->id,
+            'user_id' => $user->id,
+            'loker_id' => 1,
+        ]);
+        $userResign = User::create(['name' => 'Kandidat Resign', 'email' => 'hris-resigned-position@example.test', 'password' => 'secret']);
+        $lamaranResign = Lamaran::create([
+            'biodata_id' => Biodata::create(['user_id' => $userResign->id, 'no_ktp' => 'KTP-HRIS-RESIGNED'])->id,
+            'user_id' => $userResign->id,
+            'loker_id' => 1,
+        ]);
+
+        $response = app(LowonganController::class)->directToLamaran(Request::create('/admin/lowongan/pendaftar/1', 'GET'), 1);
+
+        $lamarans = $response->getData()['lamarans'];
+        $lamaranAktif = $lamarans->firstWhere('id', $lamaran->id);
+
+        $this->assertTrue($lamaranAktif->biodata->relationLoaded('getRiwayatInHris'));
+        $this->assertSame('Operator Aktif', $lamaranAktif->biodata->latest_hris_position);
+        $this->assertSame('Supervisor Terbaru', $lamarans->firstWhere('id', $lamaranResign->id)->biodata->latest_hris_position);
+    }
+
     protected function tearDown(): void
     {
         Carbon::setTestNow();

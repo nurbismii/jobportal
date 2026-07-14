@@ -266,6 +266,7 @@
                             <th class="bg-warning">Tgl Resign</th>
                             <th class="bg-warning">Rentang</th>
                             <th class="bg-warning">Ex Area</th>
+                            <th class="bg-warning">Posisi Terakhir HRIS</th>
                             <th class="bg-warning">Alasan</th>
                             <th>Jenis Kelamin</th>
                             <th>Tempat Lahir</th>
@@ -411,6 +412,8 @@
                             @else
                             <td>{{ $data->biodata->user->area_kerja ?? '---' }}</td>
                             @endif
+                            <td class="bg-warning">{{ $data->biodata->latest_hris_position ?? '-' }}</td>
+
 
                             @if($data->biodata->user->ket_resign)
                             <td class="bg-warning">{{ $data->biodata->user->ket_resign }}</td>

@@ -58,6 +58,44 @@ class Biodata extends Model
             ->select(['no_ktp', 'no_ktp as no_ktp_hris', 'nama_karyawan', 'tgl_resign', 'alasan_resign', 'posisi', 'status_resign', 'area_kerja']);
     }
 
+    public function getLatestHrisPositionAttribute(): ?string
+    {
+        $riwayat = $this->relationLoaded('getRiwayatInHris')
+            ? $this->getRelation('getRiwayatInHris')
+            : $this->getRiwayatInHris()->get();
+
+        $riwayatAktif = $riwayat->first(function (Employee $employee) {
+            return strtoupper(trim((string) $employee->status_resign)) === 'AKTIF';
+        });
+
+        if ($riwayatAktif !== null) {
+            return filled($riwayatAktif->posisi) ? trim($riwayatAktif->posisi) : null;
+        }
+
+        $riwayatTerakhir = $riwayat
+            ->filter(function (Employee $employee) {
+                if (blank($employee->tgl_resign)) {
+                    return false;
+                }
+
+                try {
+                    Carbon::parse($employee->tgl_resign);
+
+                    return true;
+                } catch (\Throwable $exception) {
+                    return false;
+                }
+            })
+            ->sortByDesc(function (Employee $employee) {
+                return Carbon::parse($employee->tgl_resign)->getTimestamp();
+            })
+            ->first();
+
+        return $riwayatTerakhir !== null && filled($riwayatTerakhir->posisi)
+            ? trim($riwayatTerakhir->posisi)
+            : null;
+    }
+
     public function getRiwayatLamaran()
     {
         return $this->hasMany(Lamaran::class, 'biodata_id', 'id')
