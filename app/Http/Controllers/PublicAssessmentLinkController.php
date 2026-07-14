@@ -18,8 +18,6 @@ class PublicAssessmentLinkController extends Controller
             return view('public-assessment-links.pin', compact('link'));
         }
 
-        $link->load('candidates.lamaran.biodata');
-
         return view('public-assessment-links.form', compact('link'));
     }
 
@@ -55,6 +53,76 @@ class PublicAssessmentLinkController extends Controller
 
         return redirect()->route('assessment-links.public.show', $link->public_token)
             ->with('success', 'Hasil penilaian berhasil disimpan.');
+    }
+
+    public function candidates(Request $request, string $token)
+    {
+        /** @var AssessmentLink $link */
+        $link = $request->attributes->get('publicAssessmentLink');
+        $query = trim((string) $request->query('q', ''));
+        $status = (string) $request->query('status', 'all');
+
+        abort_unless(in_array($status, ['all', 'pending', 'completed'], true), 422);
+
+        $candidates = AssessmentLinkCandidate::query()
+            ->where('assessment_link_id', $link->id)
+            ->with('lamaran.biodata.user')
+            ->when($query !== '', function ($builder) use ($query) {
+                $builder->whereHas('lamaran', function ($lamaranQuery) use ($query) {
+                    $lamaranQuery->whereHas('biodata', function ($biodataQuery) use ($query) {
+                        $biodataQuery->where('no_ktp', 'like', '%'.$query.'%')
+                            ->orWhereHas('user', function ($userQuery) use ($query) {
+                                $userQuery->where('name', 'like', '%'.$query.'%');
+                            });
+                    });
+                });
+            })
+            ->when($status === 'pending', function ($builder) {
+                $builder->whereNull('last_submitted_at');
+            })
+            ->when($status === 'completed', function ($builder) {
+                $builder->whereNotNull('last_submitted_at');
+            })
+            ->orderBy('id')
+            ->paginate(25);
+
+        $candidates->setCollection($candidates->getCollection()->map(function (AssessmentLinkCandidate $candidate) {
+            $biodata = optional(optional($candidate->lamaran)->biodata);
+            $submittedAt = $candidate->last_submitted_at;
+
+            return [
+                'id' => $candidate->id,
+                'name' => optional($biodata->user)->name,
+                'no_ktp' => $biodata->no_ktp,
+                'result_values' => $candidate->result_values ?? [],
+                'petugas_note' => $candidate->petugas_note,
+                'last_submitted_at' => $submittedAt ? $submittedAt->timezone('Asia/Makassar')->toIso8601String() : null,
+            ];
+        })->values());
+
+        return response()->json($candidates);
+    }
+
+    public function autosave(PublicAssessmentResultRequest $request, string $token, int $candidate, AssessmentLinkService $assessmentLinkService)
+    {
+        /** @var AssessmentLink $link */
+        $link = $request->attributes->get('publicAssessmentLink');
+        $linkCandidate = AssessmentLinkCandidate::query()
+            ->where('assessment_link_id', $link->id)
+            ->findOrFail($candidate);
+
+        $savedCandidate = $assessmentLinkService->saveResult(
+            $linkCandidate,
+            $request->input('values'),
+            $request->input('petugas_note'),
+            $request
+        );
+
+        return response()->json([
+            'saved_at' => $savedCandidate->last_submitted_at->timezone('Asia/Makassar')->toIso8601String(),
+            'result_values' => $savedCandidate->result_values ?? [],
+            'petugas_note' => $savedCandidate->petugas_note,
+        ]);
     }
 
     private function accessibleLink(string $token): AssessmentLink

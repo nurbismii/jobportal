@@ -365,6 +365,59 @@ class AssessmentLinkTest extends TestCase
         ])->assertSessionHasErrors('values.result');
     }
 
+    public function test_unlocked_public_link_lists_candidates_by_name_or_ktp_with_pagination()
+    {
+        $link = $this->createLapanganLinkWithCandidates(30);
+
+        $this->withSession(['assessment_link_access.'.$link->id => true])
+            ->getJson(route('assessment-links.public.candidates', [$link->public_token, 'q' => 'KTP-001', 'status' => 'all']))
+            ->assertOk()
+            ->assertJsonPath('per_page', 25)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.no_ktp', 'KTP-001');
+    }
+
+    public function test_public_candidate_list_requires_pin_session()
+    {
+        $link = $this->createLapanganLinkWithCandidates(1);
+
+        $this->getJson(route('assessment-links.public.candidates', $link->public_token))
+            ->assertForbidden();
+    }
+
+    public function test_unlocked_public_link_autosaves_result_audits_and_preserves_lamaran()
+    {
+        [$link, $candidate] = $this->createPublicAssessmentLink();
+        $lamaranBefore = $candidate->lamaran->getAttributes();
+
+        $this->withSession(['assessment_link_access.'.$link->id => true])
+            ->postJson(route('assessment-links.public.autosave', [$link->public_token, $candidate]), [
+                'values' => ['run_time' => '12.5'],
+                'petugas_note' => 'Catatan autosave',
+            ])
+            ->assertOk()
+            ->assertJsonPath('result_values.run_time', '12.5')
+            ->assertJsonPath('petugas_note', 'Catatan autosave')
+            ->assertJsonStructure(['saved_at', 'result_values', 'petugas_note']);
+
+        $candidate->refresh();
+        $candidate->lamaran->refresh();
+        $this->assertCount(1, $candidate->audits);
+        $this->assertSame($lamaranBefore, $candidate->lamaran->getAttributes());
+    }
+
+    public function test_public_assessment_table_page_exposes_search_and_autosave_ui()
+    {
+        [$link] = $this->createPublicAssessmentLink();
+
+        $this->withSession(['assessment_link_access.'.$link->id => true])
+            ->get(route('assessment-links.public.show', $link->public_token))
+            ->assertOk()
+            ->assertSee('Cari nama atau nomor KTP')
+            ->assertSee('Status simpan')
+            ->assertSee('autosave');
+    }
+
     protected function tearDown(): void
     {
         Carbon::setTestNow();
@@ -386,6 +439,7 @@ class AssessmentLinkTest extends TestCase
         Schema::create('biodata', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id')->nullable();
+            $table->string('no_ktp')->nullable();
             $table->timestamps();
         });
 
@@ -424,5 +478,40 @@ class AssessmentLinkTest extends TestCase
         ]);
 
         return [$link, $candidate->load('lamaran')];
+    }
+
+    private function createLapanganLinkWithCandidates(int $count): AssessmentLink
+    {
+        $admin = User::create([
+            'name' => 'Assessment Admin',
+            'email' => 'assessment-list-admin-'.AssessmentLink::query()->count().'@example.test',
+            'password' => 'secret',
+            'role' => 'admin',
+        ]);
+        $link = AssessmentLink::create([
+            'assessment_type' => 'lapangan',
+            'public_token' => str_pad((string) (AssessmentLink::query()->count() + 1), 64, 'l'),
+            'pin_hash' => Hash::make('123456'),
+            'form_schema' => [['id' => 'run_time', 'label' => 'Waktu lari', 'type' => 'number', 'required' => true]],
+            'created_by' => $admin->id,
+            'expires_at' => now('Asia/Makassar')->addDay(),
+            'is_active' => true,
+        ]);
+
+        for ($index = 1; $index <= $count; $index++) {
+            $user = User::create([
+                'name' => 'Kandidat '.str_pad((string) $index, 3, '0', STR_PAD_LEFT),
+                'email' => 'assessment-list-'.$link->id.'-'.$index.'@example.test',
+                'password' => 'secret',
+            ]);
+            $biodata = Biodata::create([
+                'user_id' => $user->id,
+                'no_ktp' => 'KTP-'.str_pad((string) $index, 3, '0', STR_PAD_LEFT),
+            ]);
+            $lamaran = Lamaran::create(['biodata_id' => $biodata->id, 'user_id' => $user->id]);
+            AssessmentLinkCandidate::create(['assessment_link_id' => $link->id, 'lamaran_id' => $lamaran->id]);
+        }
+
+        return $link;
     }
 }
