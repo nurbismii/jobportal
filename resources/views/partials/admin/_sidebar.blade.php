@@ -62,6 +62,13 @@
         </a>
     </li>
 
+    <li class="nav-item {{ request()->routeIs('assessment-links.*') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('assessment-links.index') }}">
+            <i class="fas fa-fw fa-link"></i>
+            <span>Link Asesmen</span>
+        </a>
+    </li>
+
     <li class="nav-item {{ request()->routeIs('pkwt-contracts.*', 'pkwt-contract-settings.*') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('pkwt-contracts.index') }}">
             <i class="fas fa-fw fa-file-signature"></i>
