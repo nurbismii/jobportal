@@ -26,3 +26,4 @@ yarn-error.log
 /.vscode
 .worktrees/
 firebase.json
+/docs
