@@ -1041,18 +1041,62 @@ return $order[$item->level_sp] ?? 99;
                     customize: function(xlsx) {
                         let sheet = xlsx.xl.worksheets['sheet1.xml'];
 
-                        const textColumns = ['F', 'G'];
+                        const sharedStrings = xlsx.xl['sharedStrings.xml'];
+                        const identifierHeaders = ['No KTP', 'No KK', 'No HP', 'NPWP', 'Nomor HP darurat'];
+                        const textColumns = [];
+                        const headerRows = [];
+                        let hasFoundNpwp = false;
+
+                        const cellValue = function(cell) {
+                            const value = cell.find('v').text();
+
+                            if (cell.attr('t') === 's') {
+                                return $('si', sharedStrings).eq(Number(value)).text();
+                            }
+
+                            return cell.find('is t').text() || value;
+                        };
+
+                        const escapeXml = function(value) {
+                            return String(value).replace(/[<>&'\"]/g, function(character) {
+                                return {
+                                    '<': '&lt;',
+                                    '>': '&gt;',
+                                    '&': '&amp;',
+                                    "'": '&apos;',
+                                    '"': '&quot;'
+                                }[character];
+                            });
+                        };
+
+                        $('c', sheet).each(function() {
+                            const cell = $(this);
+                            const header = cellValue(cell);
+
+                            if (!identifierHeaders.includes(header) || (header === 'NPWP' && hasFoundNpwp)) {
+                                return;
+                            }
+
+                            if (header === 'NPWP') {
+                                hasFoundNpwp = true;
+                            }
+
+                            textColumns.push(cell.attr('r').replace(/\d+$/, ''));
+                            headerRows.push(cell.attr('r').replace(/^[A-Z]+/, ''));
+                        });
 
                         $(textColumns).each(function(i, col) {
                             $('c[r^="' + col + '"]', sheet).each(function() {
-                                let cell = $(this);
-                                let val = cell.find('v').text();
+                                const cell = $(this);
+                                const row = cell.attr('r').replace(/^[A-Z]+/, '');
 
-                                // Paksa jadi string
-                                cell.attr('t', 'str');
+                                if (headerRows.includes(row)) {
+                                    return;
+                                }
 
-                                // Jika Excel menghapus leading zero, kembali tambahkan val sebagai string
-                                cell.find('v').text(val);
+                                const value = cellValue(cell);
+                                cell.attr('t', 'inlineStr');
+                                cell.empty().append(`<is><t>${escapeXml(value)}</t></is>`);
                             });
                         });
 
