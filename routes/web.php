@@ -77,6 +77,7 @@ Route::middleware(['auth', 'verified.email'])->group(function () {
     Route::get('syarat-ketentuan-disetujui', [SyaratKetentuanController::class, 'approved'])->name('syarat-ketentuan.approved');
 
     Route::resource('biodata', 'App\Http\Controllers\BiodataController');
+    Route::post('/biodata/profile', [BiodataController::class, 'storeProfile'])->name('biodata.storeProfile');
     Route::post('/biodata/step-1-4', [BiodataController::class, 'storeStep1to4'])->name('biodata.storeStep1to4');
     Route::delete('/biodata/delete-file/{field}', [BiodataController::class, 'deleteFile'])->name('biodata.deleteFile');
     Route::post('/biodata/upload-document', [BiodataController::class, 'uploadDocument'])->name('biodata.upload.document');

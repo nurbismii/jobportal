@@ -310,7 +310,7 @@ def cover_page(canvas, doc):
     canvas.setFont("Helvetica-Bold", 11)
     canvas.drawCentredString(A4[0] / 2, A4[1] - 12.0 * cm, "Link resmi: https://recruitment.vdnisite.com/")
     canvas.setFont("Helvetica", 9.5)
-    canvas.drawCentredString(A4[0] / 2, 4.1 * cm, "Versi pembaruan: Mei 2026")
+    canvas.drawCentredString(A4[0] / 2, 4.1 * cm, "Versi pembaruan: Agustus 2026")
     canvas.drawCentredString(A4[0] / 2, 3.45 * cm, "HR PT VDNI - Rekrutmen Online")
     canvas.setFont("Helvetica-Bold", 9.5)
     canvas.drawCentredString(A4[0] / 2, 2.4 * cm, "Rekrutmen PT VDNI tidak memungut biaya dalam bentuk apa pun.")
@@ -326,7 +326,7 @@ def build_story():
         ("2", "Alur Singkat", "Urutan proses dari daftar akun sampai memantau lamaran."),
         ("3", "Daftar Akun dan Verifikasi Email", "Cara membuat akun, aktivasi email, dan kirim ulang verifikasi."),
         ("4", "Masuk dan Pemulihan Akun", "Cara login dan memakai menu lupa akun."),
-        ("5", "Lengkapi Biodata dan Upload Berkas", "Enam langkah data pelamar dan dokumen yang dibutuhkan."),
+        ("5", "Lengkapi Biodata dan Upload Berkas", "Delapan langkah data pelamar dan dokumen yang dibutuhkan."),
         ("6", "Melamar Lowongan", "Cara memilih posisi dan mengirim lamaran."),
         ("7", "Cek Status Lamaran", "Cara membaca status dan detail riwayat seleksi."),
         ("8", "Pengumuman, Kontrak, dan Kelola Akun", "Informasi lanjutan setelah proses lamaran."),
@@ -436,19 +436,21 @@ def build_story():
     story += section("5. Lengkapi Biodata dan Upload Berkas")
     story.append(
         p(
-            "Setelah login, buka menu Upload Berkas. Form biodata berbentuk wizard 6 langkah. Menu Daftar Lowongan Kerja dan Riwayat Proses Lamaran baru dapat digunakan setelah biodata serta dokumen selesai."
+            "Setelah login, buka menu Upload Berkas. Form biodata berbentuk wizard 8 langkah. Menu Daftar Lowongan Kerja dan Riwayat Proses Lamaran baru dapat digunakan setelah biodata serta dokumen selesai."
         )
     )
     story.append(
         table_data(
             ["Langkah", "Isi yang perlu dilengkapi", "Catatan"],
             [
-                ("01 Data Pribadi", "Nomor HP, No KK, NPWP, jenis kelamin, tempat/tanggal lahir, agama, vaksin, alamat, hobi, golongan darah, tinggi, berat.", "No KK tidak boleh sama dengan No KTP. Isi alamat sesuai data yang benar."),
-                ("02 Pendidikan", "Pendidikan terakhir, nama sekolah/kampus, jurusan, nilai/IPK, tahun lulus, dan prestasi jika ada.", "Pastikan pendidikan sesuai kualifikasi lowongan."),
-                ("03 Data Keluarga", "Nama ayah, nama ibu, status pernikahan, dan data pasangan/anak jika sudah menikah.", "Jika status Kawin, data pasangan wajib diisi."),
-                ("04 Kontak Darurat", "Nama kontak darurat, nomor telepon, dan hubungan keluarga/relasi.", "Gunakan kontak yang mudah dihubungi."),
-                ("05 Dokumen Pribadi", "Unggah seluruh dokumen sesuai format dan ukuran.", "KTP dan SIM B2 akan dibaca sistem; gunakan foto yang jelas."),
-                ("06 Syarat dan Ketentuan", "Baca dokumen sampai akhir, centang persetujuan, lalu klik Ajukan.", "Tombol Ajukan aktif setelah persetujuan dibaca dan dicentang."),
+                ("01 Data Pribadi", "Nomor HP, No KK, NPWP, jenis kelamin, tempat/tanggal lahir, agama, vaksin, alamat, golongan darah, tinggi, dan berat.", "No KK tidak boleh sama dengan No KTP. Isi alamat sesuai data yang benar."),
+                ("02 Pendidikan", "Pendidikan terakhir, nama sekolah/kampus, jurusan, nilai/IPK, dan tahun lulus.", "Pastikan pendidikan sesuai kualifikasi lowongan."),
+                ("03 Pengalaman Kerja", "Tambahkan nama perusahaan, posisi/jabatan, serta masa kerja untuk maksimal 3 pengalaman terbaru.", "Opsional dan boleh dilewati oleh fresh graduate."),
+                ("04 Minat, Bakat & Prestasi", "Tambahkan hobi dan bakat per kategori serta riwayat prestasi jika ada.", "Hobi dan bakat dapat berisi lebih dari satu isian."),
+                ("05 Data Keluarga", "Nama ayah, nama ibu, status pernikahan, dan data pasangan/anak jika sudah menikah.", "Jika status Kawin, data pasangan wajib diisi."),
+                ("06 Kontak Darurat", "Nama kontak darurat, nomor telepon, dan hubungan keluarga/relasi.", "Gunakan kontak yang mudah dihubungi."),
+                ("07 Dokumen Pribadi", "Unggah seluruh dokumen sesuai format dan ukuran.", "KTP dan SIM B2 akan dibaca sistem; gunakan foto yang jelas."),
+                ("08 Syarat dan Ketentuan", "Baca dokumen sampai akhir, centang persetujuan, lalu klik Ajukan.", "Tombol Ajukan aktif setelah persetujuan dibaca dan dicentang."),
             ],
             [3.0 * cm, 8.1 * cm, 5.5 * cm],
         )
@@ -457,7 +459,7 @@ def build_story():
     story.append(
         callout(
             "Penyimpanan bertahap",
-            "Saat berpindah dari langkah Kontak Darurat ke Dokumen Pribadi, data langkah 1 sampai 4 disimpan terlebih dahulu. Jika ada kolom wajib yang belum benar, sistem akan menandai kolom tersebut.",
+            "Saat berpindah dari langkah Kontak Darurat ke Dokumen Pribadi, data langkah 1 sampai 6 disimpan terlebih dahulu. Jika ada kolom wajib yang belum benar, sistem akan menandai kolom tersebut.",
             BLUE,
             BLUE_SOFT,
         )
@@ -606,7 +608,7 @@ def build_story():
     checklist = [
         "Saya sudah memakai website resmi https://recruitment.vdnisite.com/.",
         "Akun saya sudah terverifikasi melalui email.",
-        "Data pribadi, pendidikan, keluarga, dan kontak darurat sudah benar.",
+        "Data pribadi, pendidikan, pengalaman kerja (jika ada), minat/bakat, keluarga, dan kontak darurat sudah benar.",
         "Semua dokumen wajib sudah diunggah dengan format dan ukuran yang sesuai.",
         "KTP/SIM/SIO difoto jelas, tegak, dan dapat dibaca.",
         "Saya sudah membaca kualifikasi lowongan yang dipilih.",

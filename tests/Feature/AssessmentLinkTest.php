@@ -41,6 +41,16 @@ class AssessmentLinkTest extends TestCase
 
         $this->createBaseSchema();
 
+        $profileMigrationPath = database_path('migrations/2026_08_09_000000_create_biodata_minat_bakat_and_prestasi_tables.php');
+        $this->assertFileExists($profileMigrationPath);
+        require_once $profileMigrationPath;
+        (new \CreateBiodataMinatBakatAndPrestasiTables())->up();
+
+        $workExperienceMigrationPath = database_path('migrations/2026_08_09_010000_create_biodata_pengalaman_kerja_table.php');
+        $this->assertFileExists($workExperienceMigrationPath);
+        require_once $workExperienceMigrationPath;
+        (new \CreateBiodataPengalamanKerjaTable())->up();
+
         $migrationPath = database_path('migrations/2026_07_13_000000_create_assessment_link_tables.php');
         $this->assertFileExists($migrationPath);
         require_once $migrationPath;

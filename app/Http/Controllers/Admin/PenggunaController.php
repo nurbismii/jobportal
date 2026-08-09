@@ -160,7 +160,7 @@ class PenggunaController extends Controller
     {
         // Logic to edit a user
         $pengguna = User::with('biodata')->findOrFail($id);
-        $biodata = Biodata::where('user_id', $pengguna->id)->first();
+        $biodata = Biodata::with('minatBakat', 'daftarPrestasi', 'pengalamanKerja')->where('user_id', $pengguna->id)->first();
 
         if ($biodata) {
             $provinsis = Provinsi::all();
@@ -211,6 +211,7 @@ class PenggunaController extends Controller
             'rt' => ['required', 'string', 'max:3'],
             'rw' => ['required', 'string', 'max:3'],
             'hobi' => ['required', 'string', 'max:255'],
+            'bakat' => ['nullable', 'string', 'max:255'],
             'golongan_darah' => ['required', 'string'],
             'tinggi_badan' => ['required', 'numeric', 'min:0'],
             'berat_badan' => ['required', 'numeric', 'min:0'],
@@ -264,6 +265,7 @@ class PenggunaController extends Controller
             'rt' => 'RT',
             'rw' => 'RW',
             'hobi' => 'Hobi',
+            'bakat' => 'Bakat',
             'golongan_darah' => 'Golongan Darah',
             'tinggi_badan' => 'Tinggi Badan',
             'berat_badan' => 'Berat Badan',
@@ -348,6 +350,7 @@ class PenggunaController extends Controller
                 'rt' => $validatedData['rt'],
                 'rw' => $validatedData['rw'],
                 'hobi' => $validatedData['hobi'],
+                'bakat' => $validatedData['bakat'] ?? $biodata->bakat,
                 'golongan_darah' => $validatedData['golongan_darah'],
                 'tinggi_badan' => $validatedData['tinggi_badan'],
                 'berat_badan' => $validatedData['berat_badan'],

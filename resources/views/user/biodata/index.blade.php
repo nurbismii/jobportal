@@ -11,6 +11,130 @@
     .biodata-wizard .sticky-tabs {
         z-index: 10;
     }
+
+    .profile-repeater-card {
+        border: 1px solid #e7ebf0;
+        border-radius: 14px;
+        background: #fff;
+        padding: 1rem;
+        height: 100%;
+    }
+
+    .profile-repeater-list {
+        display: grid;
+        gap: .65rem;
+    }
+
+    .profile-repeater-item {
+        display: flex;
+        align-items: flex-start;
+        gap: .5rem;
+    }
+
+    .achievement-card {
+        border: 1px solid #e7ebf0;
+        border-radius: 14px;
+        background: #f9fafc;
+        padding: 1rem;
+    }
+
+    .work-experience-card {
+        border: 1px solid #e7ebf0;
+        border-radius: 14px;
+        background: #f9fafc;
+        padding: 1rem;
+    }
+
+    /* Navigator langkah dibuat satu baris agar tidak mengambil tinggi viewport. */
+    .biodata-wizard .sticky-tabs {
+        margin-bottom: .75rem !important;
+        padding: .4rem;
+        border-radius: 18px;
+    }
+
+    .biodata-wizard #formTabs.form-steps {
+        display: flex;
+        grid-template-columns: none;
+        align-items: stretch;
+        gap: .4rem;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding: .05rem;
+        scroll-padding-inline: .2rem;
+        scrollbar-width: none;
+    }
+
+    .biodata-wizard #formTabs.form-steps .nav-item {
+        flex: 1 0 132px;
+        min-width: 0;
+    }
+
+    .biodata-wizard #formTabs.form-steps .nav-link {
+        min-height: 50px;
+        padding: .5rem .6rem;
+        gap: .55rem;
+        border-radius: 14px;
+        box-shadow: none;
+    }
+
+    .biodata-wizard #formTabs.form-steps .nav-link:hover {
+        transform: none;
+    }
+
+    .biodata-wizard #formTabs.form-steps .nav-link.active {
+        box-shadow: 0 6px 14px rgba(11, 118, 183, .18);
+    }
+
+    .biodata-wizard .wizard-step__number {
+        width: 2.1rem;
+        height: 2.1rem;
+        border-radius: 11px;
+        font-size: .78rem;
+    }
+
+    .biodata-wizard .wizard-step__title {
+        display: -webkit-box;
+        overflow: hidden;
+        font-size: .78rem;
+        line-height: 1.18;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+    }
+
+    .biodata-wizard .wizard-step__caption {
+        display: none;
+    }
+
+    @media (max-width: 767.98px) {
+        .biodata-wizard .sticky-tabs {
+            padding: .35rem;
+            border-radius: 16px;
+        }
+
+        .biodata-wizard #formTabs.form-steps .nav-item {
+            flex: 0 0 132px;
+        }
+
+        .biodata-wizard #formTabs.form-steps .nav-link {
+            min-height: 46px;
+            padding: .42rem .5rem;
+        }
+    }
+
+    @media (max-width: 420px) {
+        .biodata-wizard #formTabs.form-steps .nav-item {
+            flex-basis: 116px;
+        }
+
+        .biodata-wizard .wizard-step__number {
+            width: 1.9rem;
+            height: 1.9rem;
+        }
+
+        .biodata-wizard .wizard-step__title {
+            font-size: .72rem;
+        }
+    }
 </style>
 @endpush
 
@@ -33,7 +157,7 @@
                 <div class="wizard-hero__progress">
                     <div class="wizard-hero__progress-top">
                         <span id="wizardCurrentStep">Langkah 1</span>
-                        <span id="wizardProgressText">1 dari 6 langkah</span>
+                        <span id="wizardProgressText">1 dari 8 langkah</span>
                     </div>
                     <span class="wizard-hero__progress-label" id="wizardStepLabel">Data Pribadi</span>
                     <div class="wizard-progress" aria-hidden="true">
@@ -77,8 +201,8 @@
                             <button class="nav-link" data-bs-toggle="tab" data-bs-target="#step3" type="button">
                                 <span class="wizard-step__number">03</span>
                                 <span class="wizard-step__content">
-                                    <span class="wizard-step__title">Data Keluarga</span>
-                                    <span class="wizard-step__caption">Informasi keluarga inti</span>
+                                    <span class="wizard-step__title">Pengalaman Kerja</span>
+                                    <span class="wizard-step__caption">Maksimal 3 pengalaman terbaru</span>
                                 </span>
                             </button>
                         </li>
@@ -86,8 +210,8 @@
                             <button class="nav-link" data-bs-toggle="tab" data-bs-target="#step4" type="button">
                                 <span class="wizard-step__number">04</span>
                                 <span class="wizard-step__content">
-                                    <span class="wizard-step__title">Kontak Darurat</span>
-                                    <span class="wizard-step__caption">Kontak yang bisa dihubungi</span>
+                                    <span class="wizard-step__title">Minat, Bakat & Prestasi</span>
+                                    <span class="wizard-step__caption">Potensi dan pencapaian</span>
                                 </span>
                             </button>
                         </li>
@@ -95,14 +219,32 @@
                             <button class="nav-link" data-bs-toggle="tab" data-bs-target="#step5" type="button">
                                 <span class="wizard-step__number">05</span>
                                 <span class="wizard-step__content">
-                                    <span class="wizard-step__title">Dokumen Pribadi</span>
-                                    <span class="wizard-step__caption">Unggah berkas wajib</span>
+                                    <span class="wizard-step__title">Data Keluarga</span>
+                                    <span class="wizard-step__caption">Informasi keluarga inti</span>
                                 </span>
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" data-bs-toggle="tab" data-bs-target="#step6" type="button">
                                 <span class="wizard-step__number">06</span>
+                                <span class="wizard-step__content">
+                                    <span class="wizard-step__title">Kontak Darurat</span>
+                                    <span class="wizard-step__caption">Kontak yang bisa dihubungi</span>
+                                </span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#step7" type="button">
+                                <span class="wizard-step__number">07</span>
+                                <span class="wizard-step__content">
+                                    <span class="wizard-step__title">Dokumen Pribadi</span>
+                                    <span class="wizard-step__caption">Unggah berkas wajib</span>
+                                </span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#step8" type="button">
+                                <span class="wizard-step__number">08</span>
                                 <span class="wizard-step__content">
                                     <span class="wizard-step__title">Syarat dan Ketentuan</span>
                                     <span class="wizard-step__caption">Review akhir dan ajukan</span>
@@ -350,13 +492,6 @@
                     @endphp
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
-                            <label>Hobi <span class="text-danger">*</span> </label>
-                            <input type="text" name="hobi"
-                                class="form-control"
-                                value="{{ old('hobi', $biodata->hobi ?? '') }}" required>
-                        </div>
-
-                        <div class="col-md-6 mb-3">
                             <label>Golongan Darah <span class="text-danger">*</span> </label>
                             <select name="golongan_darah" class="form-select" required>
                                 <option value="">Pilih</option>
@@ -475,17 +610,253 @@
                         </div>
                     </div>
 
-                    <div class="col-md-12 mb-3">
-                        <label>Prestasi</label>
-                        <textarea
-                            name="prestasi"
-                            rows="5"
-                            class="form-control">{{ old('prestasi', $biodata->prestasi ?? '') }}</textarea>
+                </div>
+
+                <!-- Step Pengalaman Kerja -->
+                <div class="tab-pane fade" id="step3">
+                    @php
+                        $savedPengalamanKerja = old('pengalaman_kerja');
+                        if (! is_array($savedPengalamanKerja)) {
+                            $savedPengalamanKerja = $biodata
+                                ? $biodata->pengalamanKerja->map(function ($item) {
+                                    return $item->only([
+                                        'nama_perusahaan',
+                                        'posisi',
+                                        'tanggal_mulai',
+                                        'tanggal_selesai',
+                                        'masih_bekerja',
+                                    ]);
+                                })->values()->all()
+                                : [];
+                        }
+                    @endphp
+
+                    <section>
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                            <div>
+                                <h6 class="text-primary mb-1">Pengalaman Kerja</h6>
+                                <small class="text-muted">Opsional. Tambahkan maksimal 3 pengalaman kerja terbaru.</small>
+                            </div>
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="addPengalamanKerjaBtn" @if($accountDataLocked) disabled @endif>
+                                <i class="fa fa-plus me-1"></i> Tambah Pengalaman
+                            </button>
+                        </div>
+
+                        <div id="pengalamanKerjaEmptyState" class="text-center border rounded-3 p-4 text-muted {{ count($savedPengalamanKerja) ? 'd-none' : '' }}">
+                            Belum ada pengalaman kerja. Bagian ini boleh dikosongkan untuk fresh graduate.
+                        </div>
+
+                        <div id="pengalamanKerjaList" class="d-grid gap-3">
+                            @foreach($savedPengalamanKerja as $index => $pengalaman)
+                                @php $masihBekerja = (bool) ($pengalaman['masih_bekerja'] ?? false); @endphp
+                                <div class="work-experience-card" data-pengalaman-kerja-item>
+                                    <div class="d-flex align-items-center justify-content-between mb-3">
+                                        <strong>Pengalaman Kerja <span data-pengalaman-kerja-number>{{ $loop->iteration }}</span></strong>
+                                        <button type="button" class="btn btn-outline-danger btn-sm remove-pengalaman-kerja" @if($accountDataLocked) disabled @endif>
+                                            <i class="fa fa-trash me-1"></i> Hapus
+                                        </button>
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Nama Perusahaan / Tempat Kerja <span class="text-danger">*</span></label>
+                                            <input type="text" name="pengalaman_kerja[{{ $index }}][nama_perusahaan]" class="form-control" maxlength="150" value="{{ $pengalaman['nama_perusahaan'] ?? '' }}" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Posisi / Jabatan <span class="text-danger">*</span></label>
+                                            <input type="text" name="pengalaman_kerja[{{ $index }}][posisi]" class="form-control" maxlength="150" value="{{ $pengalaman['posisi'] ?? '' }}" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Mulai Bekerja <span class="text-danger">*</span></label>
+                                            <input type="month" name="pengalaman_kerja[{{ $index }}][tanggal_mulai]" class="form-control pengalaman-tanggal-mulai" value="{{ $pengalaman['tanggal_mulai'] ?? '' }}" max="{{ now()->format('Y-m') }}" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Selesai Bekerja <span class="text-danger">*</span></label>
+                                            <input type="month" name="pengalaman_kerja[{{ $index }}][tanggal_selesai]" class="form-control pengalaman-tanggal-selesai" value="{{ $pengalaman['tanggal_selesai'] ?? '' }}" max="{{ now()->format('Y-m') }}" @if($masihBekerja) disabled @else required @endif>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="form-check">
+                                                <input type="checkbox" name="pengalaman_kerja[{{ $index }}][masih_bekerja]" value="1" class="form-check-input pengalaman-masih-bekerja" id="masih-bekerja-{{ $index }}" @if($masihBekerja) checked @endif>
+                                                <label class="form-check-label" for="masih-bekerja-{{ $index }}">Saya masih bekerja di tempat ini</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </section>
+
+                </div>
+
+                <!-- Step Minat, Bakat & Prestasi -->
+                <div class="tab-pane fade" id="step4">
+                    @php
+                        $types = ['hobi' => 'Hobi', 'bakat' => 'Bakat'];
+                        $categories = ['olahraga' => 'Olahraga', 'seni' => 'Seni', 'lainnya' => 'Lainnya'];
+                        $savedMinatBakat = [];
+
+                        foreach (array_keys($types) as $type) {
+                            foreach (array_keys($categories) as $category) {
+                                $savedMinatBakat[$type][$category] = [];
+                            }
+                        }
+
+                        if (is_array(old('minat_bakat'))) {
+                            $savedMinatBakat = array_replace_recursive($savedMinatBakat, old('minat_bakat'));
+                        } elseif ($biodata) {
+                            foreach ($biodata->minatBakat as $item) {
+                                $savedMinatBakat[$item->tipe][$item->kategori][] = $item->nama;
+                            }
+
+                            if ($biodata->minatBakat->isEmpty() && filled($biodata->hobi)) {
+                                $savedMinatBakat['hobi']['lainnya'][] = $biodata->hobi;
+                            }
+
+                            if ($biodata->minatBakat->isEmpty() && filled($biodata->bakat)) {
+                                $savedMinatBakat['bakat']['lainnya'][] = $biodata->bakat;
+                            }
+                        }
+
+                        $savedPrestasi = old('prestasi_data');
+                        if (! is_array($savedPrestasi)) {
+                            $savedPrestasi = $biodata
+                                ? $biodata->daftarPrestasi->map(function ($item) {
+                                    return $item->only([
+                                        'bidang',
+                                        'bidang_lainnya',
+                                        'jenis_prestasi',
+                                        'peringkat',
+                                        'tingkat',
+                                        'periode',
+                                    ]);
+                                })->values()->all()
+                                : [];
+                        }
+                    @endphp
+
+                    <div class="alert alert-light border rounded-3">
+                        Tambahkan satu atau beberapa isian pada kategori yang sesuai. Hobi dan bakat masing-masing wajib memiliki minimal satu isian.
                     </div>
+
+                    @foreach($types as $type => $typeLabel)
+                        <section class="mb-4" data-minat-bakat-type="{{ $type }}">
+                            <h6 class="text-primary mb-3">{{ $typeLabel }} <span class="text-danger">*</span></h6>
+                            <div class="row g-3">
+                                @foreach($categories as $category => $categoryLabel)
+                                    @php
+                                        $values = array_values(array_filter(
+                                            (array) ($savedMinatBakat[$type][$category] ?? []),
+                                            function ($value) { return filled($value); }
+                                        ));
+                                        if (empty($values)) {
+                                            $values = [''];
+                                        }
+                                    @endphp
+                                    <div class="col-lg-4">
+                                        <div class="profile-repeater-card" data-minat-bakat-group data-type="{{ $type }}" data-category="{{ $category }}">
+                                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                                <strong>{{ $categoryLabel }}</strong>
+                                                <button type="button" class="btn btn-outline-primary btn-sm add-minat-bakat" @if($accountDataLocked) disabled @endif>
+                                                    <i class="fa fa-plus me-1"></i> Tambah
+                                                </button>
+                                            </div>
+                                            <div class="profile-repeater-list">
+                                                @foreach($values as $value)
+                                                    <div class="profile-repeater-item">
+                                                        <input type="text"
+                                                            name="minat_bakat[{{ $type }}][{{ $category }}][]"
+                                                            class="form-control"
+                                                            maxlength="100"
+                                                            placeholder="Contoh: {{ $category === 'olahraga' ? 'Futsal' : ($category === 'seni' ? 'Fotografi' : 'Memasak') }}"
+                                                            value="{{ $value }}">
+                                                        <button type="button" class="btn btn-outline-danger remove-minat-bakat" aria-label="Hapus isian" @if($accountDataLocked) disabled @endif>
+                                                            <i class="fa fa-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </section>
+                    @endforeach
+
+                    <section class="mt-4">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                            <div>
+                                <h6 class="text-primary mb-1">Prestasi</h6>
+                                <small class="text-muted">Opsional, maksimal 10 prestasi.</small>
+                            </div>
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="addPrestasiBtn" @if($accountDataLocked) disabled @endif>
+                                <i class="fa fa-plus me-1"></i> Tambah Prestasi
+                            </button>
+                        </div>
+
+                        @if($biodata && filled($biodata->prestasi) && $biodata->daftarPrestasi->isEmpty())
+                            <div class="alert alert-warning">
+                                <strong>Prestasi lama:</strong><br>
+                                {!! nl2br(e($biodata->prestasi)) !!}
+                                <div class="small mt-1">Tambahkan kembali sebagai data terstruktur bila masih relevan.</div>
+                            </div>
+                        @endif
+
+                        <div id="prestasiEmptyState" class="text-center border rounded-3 p-4 text-muted {{ count($savedPrestasi) ? 'd-none' : '' }}">
+                            Belum ada prestasi yang ditambahkan.
+                        </div>
+
+                        <div id="prestasiList" class="d-grid gap-3">
+                            @foreach($savedPrestasi as $index => $prestasi)
+                                <div class="achievement-card" data-prestasi-item>
+                                    <div class="d-flex align-items-center justify-content-between mb-3">
+                                        <strong>Prestasi <span data-prestasi-number>{{ $loop->iteration }}</span></strong>
+                                        <button type="button" class="btn btn-outline-danger btn-sm remove-prestasi" @if($accountDataLocked) disabled @endif>
+                                            <i class="fa fa-trash me-1"></i> Hapus
+                                        </button>
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Bidang <span class="text-danger">*</span></label>
+                                            <select name="prestasi_data[{{ $index }}][bidang]" class="form-select prestasi-bidang" required>
+                                                <option value="">Pilih bidang</option>
+                                                @foreach(\App\Models\BiodataPrestasi::FIELDS as $field)
+                                                    <option value="{{ $field }}" {{ ($prestasi['bidang'] ?? '') === $field ? 'selected' : '' }}>{{ $field }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 bidang-lainnya-wrapper {{ ($prestasi['bidang'] ?? '') === 'Lainnya' ? '' : 'd-none' }}">
+                                            <label class="form-label">Bidang lainnya <span class="text-danger">*</span></label>
+                                            <input type="text" name="prestasi_data[{{ $index }}][bidang_lainnya]" class="form-control bidang-lainnya" maxlength="100" value="{{ $prestasi['bidang_lainnya'] ?? '' }}" {{ ($prestasi['bidang'] ?? '') === 'Lainnya' ? 'required' : 'disabled' }}>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Nama/Jenis Prestasi <span class="text-danger">*</span></label>
+                                            <input type="text" name="prestasi_data[{{ $index }}][jenis_prestasi]" class="form-control" maxlength="150" value="{{ $prestasi['jenis_prestasi'] ?? '' }}" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Peringkat/Pencapaian <span class="text-danger">*</span></label>
+                                            <input type="text" name="prestasi_data[{{ $index }}][peringkat]" class="form-control" maxlength="100" placeholder="Contoh: Juara 1" value="{{ $prestasi['peringkat'] ?? '' }}" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Tingkat <span class="text-danger">*</span></label>
+                                            <select name="prestasi_data[{{ $index }}][tingkat]" class="form-select" required>
+                                                <option value="">Pilih tingkat</option>
+                                                @foreach(\App\Models\BiodataPrestasi::LEVELS as $level)
+                                                    <option value="{{ $level }}" {{ ($prestasi['tingkat'] ?? '') === $level ? 'selected' : '' }}>{{ $level }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Periode <span class="text-danger">*</span></label>
+                                            <input type="month" name="prestasi_data[{{ $index }}][periode]" class="form-control" value="{{ $prestasi['periode'] ?? '' }}" max="{{ now()->format('Y-m') }}" required>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </section>
                 </div>
 
                 <!-- Step Keluarga -->
-                <div class="tab-pane fade" id="step3">
+                <div class="tab-pane fade" id="step5">
                     <h6 class="text-primary">Nama Orang Tua</h6>
 
                     <div class="row g-3">
@@ -603,7 +974,7 @@
                 </div>
 
                 <!-- Step Kontak Darurat -->
-                <div class="tab-pane fade" id="step4">
+                <div class="tab-pane fade" id="step6">
 
                     <div class="col-md-6 mb-3">
                         <label>Nama kontak darurat <span class="text-danger">*</span></label>
@@ -646,7 +1017,7 @@
                 </div>
 
                 <!-- Step 5 -->
-                <div class="tab-pane fade" id="step5">
+                <div class="tab-pane fade" id="step7">
 
                     <div class="accordion" id="alertAccordion">
                         <div class="accordion-item rounded-3 shadow-sm mb-3">
@@ -803,8 +1174,8 @@
                     <div id="ocr-compare-result" class="mt-3"></div>
                 </div>
 
-                <!-- Step 6 -->
-                <div class="tab-pane fade" id="step6">
+                <!-- Step 8 -->
+                <div class="tab-pane fade" id="step8">
                     <div class="row g-3">
                         <div class="col-12">
                             <div id="termsBox" class="terms-document-frame">
@@ -1537,6 +1908,332 @@
 </script>
 
 <script>
+    function bindDynamicProfileField(field) {
+        if (typeof bindInlineValidation === 'function') {
+            bindInlineValidation(field);
+        }
+    }
+
+    function validateMinatBakatStep() {
+        let valid = true;
+
+        document.querySelectorAll('[data-minat-bakat-type]').forEach(function(section) {
+            const inputs = Array.from(section.querySelectorAll('input[type="text"]'));
+            const filledInputs = inputs.filter(function(input) {
+                return input.value.trim() !== '';
+            });
+            const firstInput = inputs[0];
+
+            inputs.forEach(function(input) {
+                input.setCustomValidity('');
+            });
+
+            if (filledInputs.length === 0 && firstInput) {
+                const label = section.dataset.minatBakatType === 'hobi' ? 'Hobi' : 'Bakat';
+                firstInput.setCustomValidity(`${label} wajib memiliki minimal satu isian.`);
+
+                if (typeof setFieldError === 'function') {
+                    setFieldError(firstInput, firstInput.validationMessage);
+                }
+
+                if (valid && typeof focusField === 'function') {
+                    focusField(firstInput);
+                }
+
+                valid = false;
+            }
+        });
+
+        return valid;
+    }
+
+    function updatePrestasiNumbers() {
+        const items = Array.from(document.querySelectorAll('[data-prestasi-item]'));
+        items.forEach(function(item, index) {
+            const number = item.querySelector('[data-prestasi-number]');
+            if (number) {
+                number.textContent = index + 1;
+            }
+        });
+
+        const emptyState = document.getElementById('prestasiEmptyState');
+        if (emptyState) {
+            emptyState.classList.toggle('d-none', items.length > 0);
+        }
+    }
+
+    function togglePrestasiBidang(select) {
+        const item = select.closest('[data-prestasi-item]');
+        const wrapper = item?.querySelector('.bidang-lainnya-wrapper');
+        const input = wrapper?.querySelector('.bidang-lainnya');
+        const isOther = select.value === 'Lainnya';
+
+        wrapper?.classList.toggle('d-none', !isOther);
+        if (input) {
+            input.disabled = !isOther;
+            input.required = isOther;
+            if (!isOther) {
+                input.value = '';
+                input.setCustomValidity('');
+            }
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const maxItemsPerCategory = 10;
+        const minatBakatStep = document.getElementById('step4');
+        const prestasiList = document.getElementById('prestasiList');
+        const addPrestasiBtn = document.getElementById('addPrestasiBtn');
+        const prestasiFields = @json(\App\Models\BiodataPrestasi::FIELDS);
+        const prestasiLevels = @json(\App\Models\BiodataPrestasi::LEVELS);
+        const maxPeriod = @json(now()->format('Y-m'));
+        let prestasiIndex = {{ count($savedPrestasi ?? []) }};
+
+        minatBakatStep?.addEventListener('click', function(event) {
+            const addButton = event.target.closest('.add-minat-bakat');
+            const removeButton = event.target.closest('.remove-minat-bakat');
+
+            if (addButton) {
+                const group = addButton.closest('[data-minat-bakat-group]');
+                const list = group.querySelector('.profile-repeater-list');
+                const currentItems = list.querySelectorAll('.profile-repeater-item');
+
+                if (currentItems.length >= maxItemsPerCategory) {
+                    Swal.fire({ icon: 'info', text: 'Maksimal 10 isian untuk setiap kategori.' });
+                    return;
+                }
+
+                const item = currentItems[0].cloneNode(true);
+                const input = item.querySelector('input');
+                input.value = '';
+                input.classList.remove('is-invalid');
+                input.removeAttribute('aria-invalid');
+                item.querySelector('.invalid-feedback')?.remove();
+                list.appendChild(item);
+                bindDynamicProfileField(input);
+                input.focus();
+                return;
+            }
+
+            if (removeButton) {
+                const item = removeButton.closest('.profile-repeater-item');
+                const list = item.parentElement;
+
+                if (list.querySelectorAll('.profile-repeater-item').length === 1) {
+                    const input = item.querySelector('input');
+                    input.value = '';
+                    input.setCustomValidity('');
+                    input.classList.remove('is-invalid');
+                } else {
+                    item.remove();
+                }
+            }
+        });
+
+        minatBakatStep?.addEventListener('input', function(event) {
+            if (event.target.matches('[data-minat-bakat-type] input[type="text"]')) {
+                const section = event.target.closest('[data-minat-bakat-type]');
+                section.querySelectorAll('input[type="text"]').forEach(function(input) {
+                    input.setCustomValidity('');
+                });
+            }
+        });
+
+        addPrestasiBtn?.addEventListener('click', function() {
+            if (prestasiList.querySelectorAll('[data-prestasi-item]').length >= 10) {
+                Swal.fire({ icon: 'info', text: 'Maksimal 10 prestasi.' });
+                return;
+            }
+
+            const fieldOptions = prestasiFields.map(function(field) {
+                return `<option value="${field}">${field}</option>`;
+            }).join('');
+            const levelOptions = prestasiLevels.map(function(level) {
+                return `<option value="${level}">${level}</option>`;
+            }).join('');
+            const index = prestasiIndex++;
+            const item = document.createElement('div');
+            item.className = 'achievement-card';
+            item.dataset.prestasiItem = '';
+            item.innerHTML = `
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <strong>Prestasi <span data-prestasi-number></span></strong>
+                    <button type="button" class="btn btn-outline-danger btn-sm remove-prestasi">
+                        <i class="fa fa-trash me-1"></i> Hapus
+                    </button>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Bidang <span class="text-danger">*</span></label>
+                        <select name="prestasi_data[${index}][bidang]" class="form-select prestasi-bidang" required>
+                            <option value="">Pilih bidang</option>${fieldOptions}
+                        </select>
+                    </div>
+                    <div class="col-md-6 bidang-lainnya-wrapper d-none">
+                        <label class="form-label">Bidang lainnya <span class="text-danger">*</span></label>
+                        <input type="text" name="prestasi_data[${index}][bidang_lainnya]" class="form-control bidang-lainnya" maxlength="100" disabled>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Nama/Jenis Prestasi <span class="text-danger">*</span></label>
+                        <input type="text" name="prestasi_data[${index}][jenis_prestasi]" class="form-control" maxlength="150" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Peringkat/Pencapaian <span class="text-danger">*</span></label>
+                        <input type="text" name="prestasi_data[${index}][peringkat]" class="form-control" maxlength="100" placeholder="Contoh: Juara 1" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Tingkat <span class="text-danger">*</span></label>
+                        <select name="prestasi_data[${index}][tingkat]" class="form-select" required>
+                            <option value="">Pilih tingkat</option>${levelOptions}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Periode <span class="text-danger">*</span></label>
+                        <input type="month" name="prestasi_data[${index}][periode]" class="form-control" max="${maxPeriod}" required>
+                    </div>
+                </div>`;
+
+            prestasiList.appendChild(item);
+            item.querySelectorAll('input, select').forEach(bindDynamicProfileField);
+            updatePrestasiNumbers();
+            item.querySelector('select')?.focus();
+        });
+
+        prestasiList?.addEventListener('click', function(event) {
+            const button = event.target.closest('.remove-prestasi');
+            if (button) {
+                button.closest('[data-prestasi-item]').remove();
+                updatePrestasiNumbers();
+            }
+        });
+
+        prestasiList?.addEventListener('change', function(event) {
+            if (event.target.matches('.prestasi-bidang')) {
+                togglePrestasiBidang(event.target);
+            }
+        });
+
+        document.querySelectorAll('.prestasi-bidang').forEach(togglePrestasiBidang);
+        updatePrestasiNumbers();
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const list = document.getElementById('pengalamanKerjaList');
+        const emptyState = document.getElementById('pengalamanKerjaEmptyState');
+        const addButton = document.getElementById('addPengalamanKerjaBtn');
+        const maxPeriod = @json(now()->format('Y-m'));
+        const maxPengalaman = 3;
+        let pengalamanIndex = {{ count($savedPengalamanKerja ?? []) }};
+
+        function updatePengalamanState() {
+            const items = Array.from(list?.querySelectorAll('[data-pengalaman-kerja-item]') || []);
+
+            items.forEach(function(item, index) {
+                const number = item.querySelector('[data-pengalaman-kerja-number]');
+                if (number) number.textContent = index + 1;
+            });
+
+            emptyState?.classList.toggle('d-none', items.length > 0);
+            if (addButton) {
+                addButton.disabled = Boolean(window.accountDataLocked) || items.length >= maxPengalaman;
+                addButton.title = items.length >= maxPengalaman
+                    ? 'Maksimal 3 pengalaman kerja terbaru.'
+                    : '';
+            }
+        }
+
+        function syncPengalamanPeriod(item) {
+            const startInput = item?.querySelector('.pengalaman-tanggal-mulai');
+            const endInput = item?.querySelector('.pengalaman-tanggal-selesai');
+            const currentCheckbox = item?.querySelector('.pengalaman-masih-bekerja');
+            if (!startInput || !endInput || !currentCheckbox) return;
+
+            endInput.min = startInput.value || '';
+            endInput.disabled = currentCheckbox.checked;
+            endInput.required = !currentCheckbox.checked;
+            endInput.setCustomValidity('');
+
+            if (currentCheckbox.checked) {
+                endInput.value = '';
+            } else if (startInput.value && endInput.value && endInput.value < startInput.value) {
+                endInput.setCustomValidity('Periode selesai kerja tidak boleh lebih awal dari periode mulai.');
+            }
+        }
+
+        addButton?.addEventListener('click', function() {
+            if (list.querySelectorAll('[data-pengalaman-kerja-item]').length >= maxPengalaman) {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({ icon: 'info', text: 'Maksimal 3 pengalaman kerja terbaru.' });
+                }
+                return;
+            }
+
+            const index = pengalamanIndex++;
+            const item = document.createElement('div');
+            item.className = 'work-experience-card';
+            item.dataset.pengalamanKerjaItem = '';
+            item.innerHTML = `
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <strong>Pengalaman Kerja <span data-pengalaman-kerja-number></span></strong>
+                    <button type="button" class="btn btn-outline-danger btn-sm remove-pengalaman-kerja">
+                        <i class="fa fa-trash me-1"></i> Hapus
+                    </button>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Nama Perusahaan / Tempat Kerja <span class="text-danger">*</span></label>
+                        <input type="text" name="pengalaman_kerja[${index}][nama_perusahaan]" class="form-control" maxlength="150" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Posisi / Jabatan <span class="text-danger">*</span></label>
+                        <input type="text" name="pengalaman_kerja[${index}][posisi]" class="form-control" maxlength="150" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Mulai Bekerja <span class="text-danger">*</span></label>
+                        <input type="month" name="pengalaman_kerja[${index}][tanggal_mulai]" class="form-control pengalaman-tanggal-mulai" max="${maxPeriod}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Selesai Bekerja <span class="text-danger">*</span></label>
+                        <input type="month" name="pengalaman_kerja[${index}][tanggal_selesai]" class="form-control pengalaman-tanggal-selesai" max="${maxPeriod}" required>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check">
+                            <input type="checkbox" name="pengalaman_kerja[${index}][masih_bekerja]" value="1" class="form-check-input pengalaman-masih-bekerja" id="masih-bekerja-${index}">
+                            <label class="form-check-label" for="masih-bekerja-${index}">Saya masih bekerja di tempat ini</label>
+                        </div>
+                    </div>
+                </div>`;
+
+            list.appendChild(item);
+            item.querySelectorAll('input').forEach(bindDynamicProfileField);
+            syncPengalamanPeriod(item);
+            updatePengalamanState();
+            item.querySelector('input')?.focus();
+        });
+
+        list?.addEventListener('click', function(event) {
+            const removeButton = event.target.closest('.remove-pengalaman-kerja');
+            if (!removeButton) return;
+
+            removeButton.closest('[data-pengalaman-kerja-item]')?.remove();
+            updatePengalamanState();
+        });
+
+        list?.addEventListener('change', function(event) {
+            const item = event.target.closest('[data-pengalaman-kerja-item]');
+            if (item && event.target.matches('.pengalaman-tanggal-mulai, .pengalaman-tanggal-selesai, .pengalaman-masih-bekerja')) {
+                syncPengalamanPeriod(item);
+            }
+        });
+
+        list?.querySelectorAll('[data-pengalaman-kerja-item]').forEach(syncPengalamanPeriod);
+        updatePengalamanState();
+    });
+</script>
+
+<script>
     const tabs = Array.from(document.querySelectorAll('#formTabs .nav-link'));
     const stepPanes = Array.from(document.querySelectorAll('#formWizard .tab-pane'));
 
@@ -1560,7 +2257,15 @@
             return null;
         }
 
-        return form.querySelector(`[name="${escapeAttributeValue(name)}"]`);
+        const directField = form.querySelector(`[name="${escapeAttributeValue(name)}"]`);
+        if (directField) {
+            return directField;
+        }
+
+        const parts = name.split('.');
+        const bracketName = parts.shift() + parts.map((part) => `[${part}]`).join('');
+
+        return form.querySelector(`[name="${escapeAttributeValue(bracketName)}"]`);
     }
 
     function getFieldWrapper(field) {
@@ -1899,6 +2604,10 @@
             return false;
         }
 
+        if (index === 3 && !validateMinatBakatStep()) {
+            return false;
+        }
+
         const inputs = stepPane.querySelectorAll('input, select, textarea');
         for (const input of inputs) {
             if (!isFieldVisible(input)) {
@@ -1916,8 +2625,8 @@
     function goToNextStep(targetIndex = currentStep + 1) {
         if (!validateStep(currentStep)) return;
 
-        if (currentStep === 3) {
-            saveStep1to4Ajax(targetIndex);
+        if (currentStep === 5) {
+            saveProfileAjax(targetIndex);
             return;
         }
 
@@ -2179,14 +2888,14 @@
         formatNpwpInput();
     });
 
-    function saveStep1to4Ajax(targetStep = currentStep + 1) {
+    function saveProfileAjax(targetStep = currentStep + 1) {
 
         nextBtn.disabled = true;
         nextBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Menyimpan...';
 
         let formData = new FormData(document.getElementById('formWizard'));
 
-        fetch("{{ route('biodata.storeStep1to4') }}", {
+        fetch("{{ route('biodata.storeProfile') }}", {
                 method: "POST",
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),

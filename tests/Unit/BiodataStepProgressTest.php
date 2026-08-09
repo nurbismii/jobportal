@@ -6,22 +6,22 @@ use PHPUnit\Framework\TestCase;
 
 class BiodataStepProgressTest extends TestCase
 {
-    public function test_complete_documents_without_terms_approval_stops_at_step_five()
+    public function test_complete_documents_without_terms_approval_stops_at_step_seven()
     {
         $biodata = (object) array_merge($this->completeBiodataFields(), [
             'status_pernyataan' => null,
         ]);
 
-        $this->assertSame(5, calcutaionStep($biodata));
+        $this->assertSame(7, calcutaionStep($biodata));
     }
 
-    public function test_complete_documents_with_terms_approval_reaches_step_six()
+    public function test_complete_documents_with_terms_approval_reaches_step_eight()
     {
         $biodata = (object) array_merge($this->completeBiodataFields(), [
             'status_pernyataan' => '<p>Disetujui</p>',
         ]);
 
-        $this->assertSame(6, calcutaionStep($biodata));
+        $this->assertSame(8, calcutaionStep($biodata));
     }
 
     private function completeBiodataFields(): array
@@ -45,6 +45,7 @@ class BiodataStepProgressTest extends TestCase
             'rt' => '001',
             'rw' => '002',
             'hobi' => 'Membaca',
+            'bakat' => 'Public Speaking',
             'golongan_darah' => 'O',
             'tinggi_badan' => 170,
             'berat_badan' => 65,

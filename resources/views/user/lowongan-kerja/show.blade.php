@@ -24,7 +24,7 @@ $hasApprovedTerms = $biodata && filled($biodata->status_pernyataan);
         @else
         <div class="alert alert-warning alert-dismissible fade show mt-3" role="alert">
             <strong>Perhatian!</strong> Harap perbarui dokumen jika ada perubahan
-            <a href="{{ route('biodata.index') }}#step5" class="btn btn-sm btn-warning mr-2"> Perbarui Dokumen </a>
+            <a href="{{ route('biodata.index') }}#step7" class="btn btn-sm btn-warning mr-2"> Perbarui Dokumen </a>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
         @endif
@@ -125,7 +125,7 @@ $hasApprovedTerms = $biodata && filled($biodata->status_pernyataan);
                         <i class="fa fa-lock me-2"></i>Lamaran Dinonaktifkan
                     </button>
                     @elseif(! $hasApprovedTerms)
-                    <a class="btn btn-warning" href="{{ route('biodata.index') }}#step6">
+                    <a class="btn btn-warning" href="{{ route('biodata.index') }}#step8">
                         <i class="fa fa-file-signature me-2"></i>Setujui Syarat Dulu
                     </a>
                     @else

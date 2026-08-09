@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Biodata;
+use App\Models\BiodataMinatBakat;
+use App\Models\BiodataPrestasi;
 use App\Models\Hris\Provinsi;
 use App\Models\SyaratKetentuan;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
@@ -31,7 +34,7 @@ class BiodataController extends Controller
         return 'Biodata dan dokumen tidak dapat diubah karena akun Anda tercatat aktif bekerja.';
     }
 
-    private function step1to4ValidationRules(): array
+    private function profileValidationRules(): array
     {
         return [
             'no_telp' => 'required|digits_between:11,13',
@@ -50,7 +53,6 @@ class BiodataController extends Controller
             'kode_pos' => 'required|digits:5',
             'rt' => 'required|string|max:3',
             'rw' => 'required|string|max:3',
-            'hobi' => 'required|string|max:255',
             'golongan_darah' => 'required|string',
             'tinggi_badan' => 'required|numeric|min:0',
             'berat_badan' => 'required|numeric|min:0',
@@ -59,6 +61,12 @@ class BiodataController extends Controller
             'jurusan' => 'required|string|max:255',
             'nilai_ipk' => 'required|string|max:50',
             'tahun_lulus' => 'required|date',
+            'pengalaman_kerja' => 'nullable|array|max:3',
+            'pengalaman_kerja.*.nama_perusahaan' => 'required|string|max:150',
+            'pengalaman_kerja.*.posisi' => 'required|string|max:150',
+            'pengalaman_kerja.*.tanggal_mulai' => 'required|date_format:Y-m|before_or_equal:' . now()->format('Y-m'),
+            'pengalaman_kerja.*.tanggal_selesai' => 'nullable|required_unless:pengalaman_kerja.*.masih_bekerja,1|date_format:Y-m|before_or_equal:' . now()->format('Y-m'),
+            'pengalaman_kerja.*.masih_bekerja' => 'nullable|boolean',
             'nama_ayah' => 'required|string|max:255',
             'nama_ibu' => 'required|string|max:255',
             'status_pernikahan' => 'required|string',
@@ -67,14 +75,27 @@ class BiodataController extends Controller
             'nama_kontak_darurat' => 'required|string|max:255',
             'no_telp_darurat' => 'required|digits_between:11,13',
             'status_hubungan' => 'required|string',
+            'minat_bakat' => 'required|array',
+            'minat_bakat.hobi' => 'required|array',
+            'minat_bakat.bakat' => 'required|array',
+            'minat_bakat.*.*' => 'nullable|array|max:10',
+            'minat_bakat.*.*.*' => 'nullable|string|max:100',
+            'prestasi_data' => 'nullable|array|max:10',
+            'prestasi_data.*.bidang' => 'required|string|in:' . implode(',', BiodataPrestasi::FIELDS),
+            'prestasi_data.*.bidang_lainnya' => 'nullable|string|max:100|required_if:prestasi_data.*.bidang,Lainnya',
+            'prestasi_data.*.jenis_prestasi' => 'required|string|max:150',
+            'prestasi_data.*.peringkat' => 'required|string|max:100',
+            'prestasi_data.*.tingkat' => 'required|string|in:' . implode(',', BiodataPrestasi::LEVELS),
+            'prestasi_data.*.periode' => 'required|date_format:Y-m|before_or_equal:' . now()->format('Y-m'),
         ];
     }
 
-    private function step1to4ValidationMessages(): array
+    private function profileValidationMessages(): array
     {
         return [
             'required' => ':attribute wajib diisi.',
             'required_if' => ':attribute wajib diisi saat :other adalah :value.',
+            'required_unless' => ':attribute wajib diisi.',
             'string' => ':attribute tidak valid.',
             'numeric' => ':attribute harus berupa angka.',
             'date' => ':attribute harus berupa tanggal yang valid.',
@@ -82,11 +103,16 @@ class BiodataController extends Controller
             'digits_between' => ':attribute harus terdiri dari :min sampai :max digit.',
             'max.string' => ':attribute maksimal :max karakter.',
             'max.numeric' => ':attribute maksimal :max.',
+            'max.array' => ':attribute maksimal :max data.',
             'min.numeric' => ':attribute minimal :min.',
+            'array' => ':attribute tidak valid.',
+            'in' => ':attribute tidak valid.',
+            'date_format' => ':attribute harus menggunakan format bulan dan tahun.',
+            'before_or_equal' => ':attribute tidak boleh melewati periode saat ini.',
         ];
     }
 
-    private function step1to4ValidationAttributes(): array
+    private function profileValidationAttributes(): array
     {
         return [
             'no_telp' => 'No Telp',
@@ -105,7 +131,6 @@ class BiodataController extends Controller
             'kode_pos' => 'Kode Pos',
             'rt' => 'RT',
             'rw' => 'RW',
-            'hobi' => 'Hobi',
             'golongan_darah' => 'Golongan Darah',
             'tinggi_badan' => 'Tinggi Badan',
             'berat_badan' => 'Berat Badan',
@@ -122,10 +147,25 @@ class BiodataController extends Controller
             'nama_kontak_darurat' => 'Nama Kontak Darurat',
             'no_telp_darurat' => 'No Telepon Darurat',
             'status_hubungan' => 'Status Hubungan',
+            'minat_bakat.hobi' => 'Hobi',
+            'minat_bakat.bakat' => 'Bakat',
+            'minat_bakat.*.*.*' => 'Isian minat atau bakat',
+            'prestasi_data.*.bidang' => 'Bidang prestasi',
+            'prestasi_data.*.bidang_lainnya' => 'Bidang lainnya',
+            'prestasi_data.*.jenis_prestasi' => 'Nama/Jenis prestasi',
+            'prestasi_data.*.peringkat' => 'Peringkat/Pencapaian',
+            'prestasi_data.*.tingkat' => 'Tingkat prestasi',
+            'prestasi_data.*.periode' => 'Periode prestasi',
+            'pengalaman_kerja' => 'Pengalaman kerja',
+            'pengalaman_kerja.*.nama_perusahaan' => 'Nama perusahaan',
+            'pengalaman_kerja.*.posisi' => 'Posisi/Jabatan',
+            'pengalaman_kerja.*.tanggal_mulai' => 'Periode mulai kerja',
+            'pengalaman_kerja.*.tanggal_selesai' => 'Periode selesai kerja',
+            'pengalaman_kerja.*.masih_bekerja' => 'Status masih bekerja',
         ];
     }
 
-    private function completedStep1to4BiodataFields(): array
+    private function completedProfileBiodataFields(): array
     {
         return [
             'no_telp',
@@ -144,7 +184,6 @@ class BiodataController extends Controller
             'kode_pos',
             'rt',
             'rw',
-            'hobi',
             'golongan_darah',
             'tinggi_badan',
             'berat_badan',
@@ -162,13 +201,13 @@ class BiodataController extends Controller
         ];
     }
 
-    private function hasCompletedStep1to4(?Biodata $biodata): bool
+    private function hasCompletedProfile(?Biodata $biodata): bool
     {
         if (! $biodata) {
             return false;
         }
 
-        foreach ($this->completedStep1to4BiodataFields() as $field) {
+        foreach ($this->completedProfileBiodataFields() as $field) {
             $value = $biodata->{$field};
 
             if (is_string($value)) {
@@ -190,12 +229,154 @@ class BiodataController extends Controller
             }
         }
 
+        if (blank($biodata->hobi) || blank($biodata->bakat)) {
+            return false;
+        }
+
         return true;
     }
 
-    private function incompleteStep1to4Message(): string
+    private function incompleteProfileMessage(): string
     {
-        return 'Lengkapi data biodata pada langkah 1 sampai 4 terlebih dahulu sebelum melanjutkan ke dokumen.';
+        return 'Lengkapi data profil pada langkah 1 sampai 6 terlebih dahulu sebelum melanjutkan ke dokumen.';
+    }
+
+    private function normalizeText($value): string
+    {
+        return trim((string) preg_replace('/\s+/u', ' ', (string) $value));
+    }
+
+    private function normalizedMinatBakatRows(Request $request): array
+    {
+        $rows = [];
+
+        foreach (BiodataMinatBakat::TYPES as $type) {
+            foreach (BiodataMinatBakat::CATEGORIES as $category) {
+                foreach ((array) $request->input("minat_bakat.{$type}.{$category}", []) as $name) {
+                    $name = $this->normalizeText($name);
+
+                    if ($name !== '') {
+                        $rows[] = [
+                            'tipe' => $type,
+                            'kategori' => $category,
+                            'nama' => $name,
+                        ];
+                    }
+                }
+            }
+        }
+
+        return $rows;
+    }
+
+    private function normalizedPrestasiRows(Request $request): array
+    {
+        return collect($request->input('prestasi_data', []))
+            ->map(function ($row) {
+                return [
+                    'bidang' => $this->normalizeText($row['bidang'] ?? ''),
+                    'bidang_lainnya' => $this->normalizeText($row['bidang_lainnya'] ?? '') ?: null,
+                    'jenis_prestasi' => $this->normalizeText($row['jenis_prestasi'] ?? ''),
+                    'peringkat' => $this->normalizeText($row['peringkat'] ?? ''),
+                    'tingkat' => $this->normalizeText($row['tingkat'] ?? ''),
+                    'periode' => $this->normalizeText($row['periode'] ?? ''),
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
+    private function normalizedPengalamanKerjaRows(Request $request): array
+    {
+        return collect($request->input('pengalaman_kerja', []))
+            ->map(function ($row) {
+                $masihBekerja = filter_var(
+                    $row['masih_bekerja'] ?? false,
+                    FILTER_VALIDATE_BOOLEAN
+                );
+
+                return [
+                    'nama_perusahaan' => $this->normalizeText($row['nama_perusahaan'] ?? ''),
+                    'posisi' => $this->normalizeText($row['posisi'] ?? ''),
+                    'tanggal_mulai' => $this->normalizeText($row['tanggal_mulai'] ?? ''),
+                    'tanggal_selesai' => $masihBekerja
+                        ? null
+                        : ($this->normalizeText($row['tanggal_selesai'] ?? '') ?: null),
+                    'masih_bekerja' => $masihBekerja,
+                ];
+            })
+            ->sortByDesc(function ($row) {
+                $periodeTerbaru = $row['masih_bekerja']
+                    ? '9999-12'
+                    : ($row['tanggal_selesai'] ?? '0000-00');
+
+                return $periodeTerbaru . '|' . $row['tanggal_mulai'];
+            })
+            ->values()
+            ->map(function ($row, $index) {
+                $row['urutan'] = $index + 1;
+
+                return $row;
+            })
+            ->all();
+    }
+
+    private function validateProfile(Request $request): array
+    {
+        $validator = Validator::make(
+            $request->all(),
+            $this->profileValidationRules(),
+            $this->profileValidationMessages(),
+            $this->profileValidationAttributes()
+        );
+
+        $validator->after(function ($validator) use ($request) {
+            $rows = $this->normalizedMinatBakatRows($request);
+
+            foreach (BiodataMinatBakat::TYPES as $type) {
+                $typeRows = collect($rows)->where('tipe', $type);
+
+                if ($typeRows->isEmpty()) {
+                    $validator->errors()->add(
+                        "minat_bakat.{$type}.olahraga.0",
+                        ucfirst($type) . ' wajib memiliki minimal satu isian.'
+                    );
+                }
+
+                $duplicates = $typeRows
+                    ->groupBy(function ($row) {
+                        return $row['kategori'] . '|' . mb_strtolower($row['nama']);
+                    })
+                    ->filter(function ($items) {
+                        return $items->count() > 1;
+                    });
+
+                if ($duplicates->isNotEmpty()) {
+                    $validator->errors()->add(
+                        "minat_bakat.{$type}.olahraga.0",
+                        ucfirst($type) . ' tidak boleh memiliki isian duplikat dalam kategori yang sama.'
+                    );
+                }
+            }
+
+            foreach ((array) $request->input('pengalaman_kerja', []) as $index => $row) {
+                $tanggalMulai = $this->normalizeText($row['tanggal_mulai'] ?? '');
+                $tanggalSelesai = $this->normalizeText($row['tanggal_selesai'] ?? '');
+                $masihBekerja = filter_var(
+                    $row['masih_bekerja'] ?? false,
+                    FILTER_VALIDATE_BOOLEAN
+                );
+
+                if (! $masihBekerja && $tanggalMulai !== '' && $tanggalSelesai !== '' && $tanggalSelesai < $tanggalMulai) {
+                    $validator->errors()->add(
+                        "pengalaman_kerja.{$index}.tanggal_selesai",
+                        'Periode selesai kerja tidak boleh lebih awal dari periode mulai.'
+                    );
+                }
+            }
+        });
+
+        return $validator->validate();
     }
 
     private function currentSyaratKetentuan(): ?SyaratKetentuan
@@ -215,7 +396,15 @@ class BiodataController extends Controller
         }
 
         $provinsis = Provinsi::all();
-        $biodata = Biodata::with('getProvinsi', 'getKabupaten', 'getKecamatan', 'getKelurahan')->where('user_id', auth()->id())->first();
+        $biodata = Biodata::with(
+            'getProvinsi',
+            'getKabupaten',
+            'getKecamatan',
+            'getKelurahan',
+            'minatBakat',
+            'daftarPrestasi',
+            'pengalamanKerja'
+        )->where('user_id', auth()->id())->first();
         $syaratKetentuan = $this->currentSyaratKetentuan();
 
         return view('user.biodata.index', compact('provinsis', 'biodata', 'syaratKetentuan'));
@@ -231,8 +420,8 @@ class BiodataController extends Controller
         try {
             $biodata = Biodata::where('user_id', auth()->id())->first();
 
-            if (! $this->hasCompletedStep1to4($biodata)) {
-                Alert::warning('Peringatan', $this->incompleteStep1to4Message());
+            if (! $this->hasCompletedProfile($biodata)) {
+                Alert::warning('Peringatan', $this->incompleteProfileMessage());
                 return redirect()->to(route('biodata.index') . '#step1')->withInput();
             }
 
@@ -244,14 +433,14 @@ class BiodataController extends Controller
 
             if ($validator->fails()) {
                 Alert::warning('Peringatan', 'Anda wajib membaca dan menyetujui syarat dan ketentuan rekrutmen.');
-                return redirect()->to(route('biodata.index') . '#step6')->withErrors($validator)->withInput();
+                return redirect()->to(route('biodata.index') . '#step8')->withErrors($validator)->withInput();
             }
 
             $syaratKetentuan = $this->currentSyaratKetentuan();
 
             if (! $syaratKetentuan) {
                 Alert::error('Error', 'Syarat dan ketentuan rekrutmen belum tersedia. Silakan hubungi admin.');
-                return redirect()->to(route('biodata.index') . '#step6')->withInput();
+                return redirect()->to(route('biodata.index') . '#step8')->withInput();
             }
 
             $dokumenFields = [
@@ -300,7 +489,7 @@ class BiodataController extends Controller
         }
     }
 
-    public function storeStep1to4(Request $request)
+    public function storeProfile(Request $request)
     {
         if (auth()->user()->hasActiveEmploymentStatusLock()) {
             return response()->json([
@@ -309,17 +498,59 @@ class BiodataController extends Controller
             ], 403);
         }
 
-        $validatedData = $request->validate(
-            $this->step1to4ValidationRules(),
-            $this->step1to4ValidationMessages(),
-            $this->step1to4ValidationAttributes()
+        $validatedData = $this->validateProfile($request);
+        $minatBakatRows = $this->normalizedMinatBakatRows($request);
+        $prestasiRows = $this->normalizedPrestasiRows($request);
+        $pengalamanKerjaRows = $this->normalizedPengalamanKerjaRows($request);
+        $existingBiodata = Biodata::where('user_id', auth()->id())->first();
+        $hadStructuredPrestasi = $existingBiodata
+            ? $existingBiodata->daftarPrestasi()->exists()
+            : false;
+        $hobiSummary = Str::limit(
+            collect($minatBakatRows)->where('tipe', 'hobi')->pluck('nama')->implode(', '),
+            255,
+            ''
         );
+        $bakatSummary = Str::limit(
+            collect($minatBakatRows)->where('tipe', 'bakat')->pluck('nama')->implode(', '),
+            255,
+            ''
+        );
+        $prestasiSummary = collect($prestasiRows)->map(function ($row) {
+            $field = $row['bidang'] === 'Lainnya' && $row['bidang_lainnya']
+                ? $row['bidang_lainnya']
+                : $row['bidang'];
 
-        Biodata::updateOrCreate(
-            [
-                'user_id' => auth()->id()
-            ],
-            array_merge($this->biodataIdentityDefaults(), [
+            return sprintf(
+                '%s - %s (%s, %s, %s)',
+                $field,
+                $row['jenis_prestasi'],
+                $row['peringkat'],
+                $row['tingkat'],
+                $row['periode']
+            );
+        })->implode("\n");
+
+        if ($prestasiSummary === '' && $existingBiodata && ! $hadStructuredPrestasi) {
+            // Data textarea lama tidak bisa dipetakan otomatis ke field terstruktur.
+            $prestasiSummary = $existingBiodata->prestasi;
+        }
+
+        DB::transaction(function () use (
+            $validatedData,
+            $request,
+            $minatBakatRows,
+            $prestasiRows,
+            $pengalamanKerjaRows,
+            $hobiSummary,
+            $bakatSummary,
+            $prestasiSummary
+        ) {
+            $biodata = Biodata::updateOrCreate(
+                [
+                    'user_id' => auth()->id()
+                ],
+                array_merge($this->biodataIdentityDefaults(), [
                 // Biodata Pribadi
                 'no_ktp' => auth()->user()->no_ktp,
                 'no_telp' => $validatedData['no_telp'],
@@ -339,7 +570,8 @@ class BiodataController extends Controller
                 'kode_pos' => $validatedData['kode_pos'],
                 'rt' => $validatedData['rt'],
                 'rw' => $validatedData['rw'],
-                'hobi' => $validatedData['hobi'],
+                'hobi' => $hobiSummary,
+                'bakat' => $bakatSummary,
                 'golongan_darah' => $validatedData['golongan_darah'],
                 'tinggi_badan' => $validatedData['tinggi_badan'],
                 'berat_badan' => $validatedData['berat_badan'],
@@ -351,7 +583,7 @@ class BiodataController extends Controller
                 'nilai_ipk' => $validatedData['nilai_ipk'],
                 'tahun_masuk' => $request->tahun_masuk,
                 'tahun_lulus' => $validatedData['tahun_lulus'],
-                'prestasi' => $request->prestasi,
+                'prestasi' => $prestasiSummary ?: null,
 
                 // Keluarga
                 'nama_ayah' => ucwords($validatedData['nama_ayah']),
@@ -368,13 +600,31 @@ class BiodataController extends Controller
                 'nama_kontak_darurat' => ucwords($validatedData['nama_kontak_darurat']),
                 'no_telepon_darurat' => $validatedData['no_telp_darurat'],
                 'status_hubungan' => $validatedData['status_hubungan'],
-            ])
-        );
+                ])
+            );
+
+            $biodata->minatBakat()->delete();
+            $biodata->minatBakat()->createMany($minatBakatRows);
+
+            $biodata->daftarPrestasi()->delete();
+            $biodata->daftarPrestasi()->createMany($prestasiRows);
+
+            $biodata->pengalamanKerja()->delete();
+            $biodata->pengalamanKerja()->createMany($pengalamanKerjaRows);
+        });
 
         return response()->json([
             'status' => true,
             'message' => 'Data berhasil disimpan.',
         ]);
+    }
+
+    /**
+     * Dipertahankan agar endpoint lama tidak menjadi breaking change.
+     */
+    public function storeStep1to4(Request $request)
+    {
+        return $this->storeProfile($request);
     }
 
     public function deleteFile($field)
@@ -410,7 +660,7 @@ class BiodataController extends Controller
 
             Alert::warning('Peringatan', $message);
 
-            return redirect()->to(route('biodata.index') . '#step5');
+            return redirect()->to(route('biodata.index') . '#step7');
         }
 
         $biodata = Biodata::where('user_id', auth()->id())->firstOrFail();
@@ -446,7 +696,7 @@ class BiodataController extends Controller
             ]);
         }
 
-        return redirect()->to(route('biodata.index') . '#step5');
+        return redirect()->to(route('biodata.index') . '#step7');
     }
 
     public function uploadDocument(Request $request)
@@ -521,10 +771,10 @@ class BiodataController extends Controller
 
             $biodata = Biodata::where('user_id', auth()->id())->first();
 
-            if (! $this->hasCompletedStep1to4($biodata)) {
+            if (! $this->hasCompletedProfile($biodata)) {
                 return response()->json([
                     'success' => false,
-                    'message' => $this->incompleteStep1to4Message(),
+                    'message' => $this->incompleteProfileMessage(),
                 ], 422);
             }
 

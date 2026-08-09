@@ -257,7 +257,6 @@ if (!function_exists('calcutaionStep')) {
                 'kode_pos',
                 'rt',
                 'rw',
-                'hobi',
                 'golongan_darah',
                 'tinggi_badan',
                 'berat_badan',
@@ -270,11 +269,18 @@ if (!function_exists('calcutaionStep')) {
                 'tahun_lulus',
             ],
             3 => [
+                // Pengalaman kerja bersifat opsional untuk fresh graduate.
+            ],
+            4 => [
+                'hobi',
+                'bakat',
+            ],
+            5 => [
                 'nama_ayah',
                 'nama_ibu',
                 'status_pernikahan',
             ],
-            4 => [
+            6 => [
                 'nama_kontak_darurat',
                 'no_telepon_darurat',
                 'status_hubungan',
@@ -307,13 +313,13 @@ if (!function_exists('calcutaionStep')) {
             return $step;
         }
 
-        $step = 5;
+        $step = 7;
 
         if (blank($biodata->status_pernyataan)) {
             return $step;
         }
 
-        return 6;
+        return 8;
     }
 }
 

@@ -15,7 +15,7 @@ class SyaratKetentuanController extends Controller
         if (! $biodata || blank($biodata->status_pernyataan)) {
             Alert::warning('Peringatan', 'Anda belum menyetujui syarat dan ketentuan rekrutmen.');
 
-            return redirect()->to(route('biodata.index') . '#step6');
+            return redirect()->to(route('biodata.index') . '#step8');
         }
 
         $approvedAt = $biodata->status_pernyataan_disetujui_pada ?: $biodata->updated_at;

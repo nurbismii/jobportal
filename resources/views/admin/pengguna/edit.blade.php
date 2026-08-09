@@ -317,7 +317,13 @@
                             <label>Hobi
                                 <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="hobi" class="form-control" value="{{ old('hobi', $biodata->hobi ?? '') }}">
+                            <input type="text" name="hobi" class="form-control" value="{{ old('hobi', $biodata->hobi ?? '') }}" readonly>
+                            <small class="text-muted">Dikelola oleh pelamar melalui langkah Minat, Bakat & Prestasi.</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label>Bakat</label>
+                            <input type="text" name="bakat" class="form-control" value="{{ old('bakat', $biodata->bakat ?? '') }}" readonly>
+                            <small class="text-muted">Dikelola oleh pelamar melalui langkah Minat, Bakat & Prestasi.</small>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label>Golongan Darah
@@ -430,12 +436,72 @@
                         </div>
                     </div>
 
+                    <h6 class="text-primary">Pengalaman Kerja Terbaru</h6>
+                    @if($biodata->pengalamanKerja->isNotEmpty())
+                        <div class="table-responsive mb-3">
+                            <table class="table table-sm table-bordered align-middle">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 60px;">No.</th>
+                                        <th>Perusahaan / Tempat Kerja</th>
+                                        <th>Posisi / Jabatan</th>
+                                        <th>Masa Kerja</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($biodata->pengalamanKerja as $pengalaman)
+                                        <tr>
+                                            <td>{{ $loop->iteration }}</td>
+                                            <td>{{ $pengalaman->nama_perusahaan }}</td>
+                                            <td>{{ $pengalaman->posisi }}</td>
+                                            <td>
+                                                {{ \Carbon\Carbon::createFromFormat('Y-m', $pengalaman->tanggal_mulai)->translatedFormat('M Y') }}
+                                                &ndash;
+                                                {{ $pengalaman->masih_bekerja ? 'Sekarang' : \Carbon\Carbon::createFromFormat('Y-m', $pengalaman->tanggal_selesai)->translatedFormat('M Y') }}
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <div class="alert alert-light border mb-3">Pelamar belum menambahkan pengalaman kerja.</div>
+                    @endif
+
+                    <h6 class="text-primary">Prestasi</h6>
                     <div class="row g-3">
                         <div class="col-md-12 mb-3">
-                            <label>Prestasi</label>
-                            <textarea type="text" name="prestasi" rows="5" class="form-control">{{ old('prestasi', $biodata->prestasi ?? '') }}</textarea>
+                            <textarea type="text" name="prestasi" rows="5" class="form-control" readonly>{{ old('prestasi', $biodata->prestasi ?? '') }}</textarea>
+                            <small class="text-muted">Dikelola oleh pelamar melalui langkah Minat, Bakat & Prestasi.</small>
                         </div>
                     </div>
+
+                    @if($biodata->daftarPrestasi->isNotEmpty())
+                        <div class="table-responsive mb-3">
+                            <table class="table table-sm table-bordered align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Bidang</th>
+                                        <th>Nama/Jenis</th>
+                                        <th>Peringkat</th>
+                                        <th>Tingkat</th>
+                                        <th>Periode</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($biodata->daftarPrestasi as $item)
+                                        <tr>
+                                            <td>{{ $item->bidang === 'Lainnya' ? $item->bidang_lainnya : $item->bidang }}</td>
+                                            <td>{{ $item->jenis_prestasi }}</td>
+                                            <td>{{ $item->peringkat }}</td>
+                                            <td>{{ $item->tingkat }}</td>
+                                            <td>{{ \Carbon\Carbon::createFromFormat('Y-m', $item->periode)->translatedFormat('F Y') }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @endif
 
                     <h6 class="text-primary">Nama orang tua</h6>
                     <div class="row g-3">

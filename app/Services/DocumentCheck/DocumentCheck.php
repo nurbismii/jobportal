@@ -52,12 +52,12 @@ class DocumentCheck
 
             if (empty($biodata->sim_b_2)) {
                 Alert::info('Opss!', 'Untuk melamar lowongan ini, silakan upload foto SIM B II Umum terlebih dahulu.');
-                return redirect()->to(route('biodata.index') . '#step5');
+                return redirect()->to(route('biodata.index') . '#step7');
             }
 
             if (empty($biodata->parsed_sim_b2)) {
                 Alert::info('Opss!', 'Silakan kirim ulang foto SIM B II Umum kamu.');
-                return redirect()->to(route('biodata.index') . '#step5');
+                return redirect()->to(route('biodata.index') . '#step7');
             }
 
             $res_ocr_simb2 = $biodata->parsed_sim_b2 ?? [];
@@ -70,7 +70,7 @@ class DocumentCheck
         if ($lowongan->status_sio == $aktif) {
             if (empty($biodata->sio)) {
                 Alert::info('Opss!', 'Untuk melamar lowongan ini, silakan upload foto SIO terlebih dahulu.');
-                return redirect()->to(route('biodata.index') . '#step5');
+                return redirect()->to(route('biodata.index') . '#step7');
             }
         }
 
@@ -79,12 +79,12 @@ class DocumentCheck
 
         if (!$biodata->ktp || !file_exists($filePath)) {
             Alert::warning('Gagal', 'File KTP tidak ditemukan, silakan upload KTP terlebih dahulu.');
-            return redirect()->to(route('biodata.index') . '#step5');
+            return redirect()->to(route('biodata.index') . '#step7');
         }
 
         if (!$biodata->ocr_ktp) {
             Alert::info('Opss!', 'Silakan kirim ulang foto KTP kamu.');
-            return redirect()->to(route('biodata.index') . '#step5');
+            return redirect()->to(route('biodata.index') . '#step7');
         }
 
         $ocrData = $biodata->ocr_ktp;
@@ -92,7 +92,7 @@ class DocumentCheck
         // === Gunakan hasil OCR ===
         if (!$ocrData) {
             Alert::info('Opss!', 'Silakan lengkapi dokumen pribadi yang dibutuhkan terlebih dahulu.');
-            return redirect()->to(route('biodata.index') . '#step5');
+            return redirect()->to(route('biodata.index') . '#step7');
         }
 
         $ocrResult = [
@@ -191,7 +191,7 @@ class DocumentCheck
 
         if (blank($biodata->status_pernyataan)) {
             Alert::info('Opss!', 'Silakan baca dan setujui syarat dan ketentuan rekrutmen terlebih dahulu.');
-            return redirect()->to(route('biodata.index') . '#step6');
+            return redirect()->to(route('biodata.index') . '#step8');
         }
 
         return; // lanjut ke store()
@@ -221,6 +221,7 @@ class DocumentCheck
 
             // Informasi Pribadi Tambahan
             'hobi' => 'Hobi',
+            'bakat' => 'Bakat',
             'golongan_darah' => 'Golongan Darah',
             'tinggi_badan' => 'Tinggi Badan (cm)',
             'berat_badan' => 'Berat Badan (kg)',

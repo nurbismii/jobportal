@@ -61,12 +61,12 @@
                     </a>
 
                     <a href="{{ route('lowongan-kerja.index') }}"
-                        class="nav-item nav-link {{ request()->routeIs('lowongan-kerja.*') ? 'active' : '' }} {{ disableIf(6, $step) }}">
+                        class="nav-item nav-link {{ request()->routeIs('lowongan-kerja.*') ? 'active' : '' }} {{ disableIf(7, $step) }}">
                         Daftar Lowongan Kerja
                     </a>
 
                     <a href="{{ route('lamaran.index') }}"
-                        class="nav-item nav-link {{ request()->routeIs('lamaran.*') ? 'active' : '' }} {{ disableIf(6, $step) }}">
+                        class="nav-item nav-link {{ request()->routeIs('lamaran.*') ? 'active' : '' }} {{ disableIf(7, $step) }}">
                         Riwayat Proses Lamaran
                     </a>
 

@@ -32,6 +32,21 @@ class Biodata extends Model
         return $this->belongsTo(User::class, 'user_id', 'id');
     }
 
+    public function minatBakat()
+    {
+        return $this->hasMany(BiodataMinatBakat::class);
+    }
+
+    public function daftarPrestasi()
+    {
+        return $this->hasMany(BiodataPrestasi::class)->orderByDesc('periode');
+    }
+
+    public function pengalamanKerja()
+    {
+        return $this->hasMany(BiodataPengalamanKerja::class)->orderBy('urutan');
+    }
+
     public function getProvinsi()
     {
         return $this->hasOne(Provinsi::class, 'id', 'provinsi');

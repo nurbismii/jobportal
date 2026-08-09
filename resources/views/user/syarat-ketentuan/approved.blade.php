@@ -21,7 +21,7 @@
                 </p>
             </div>
 
-            <a href="{{ route('biodata.index') }}#step6" class="btn btn-light">
+            <a href="{{ route('biodata.index') }}#step8" class="btn btn-light">
                 Kembali ke Upload Berkas
             </a>
         </div>

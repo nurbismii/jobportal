@@ -298,7 +298,13 @@
                             <th>Anak ke-2</th>
                             <th>Anak ke-3</th>
                             <th>Vaksin</th>
-                            <th>Hobi</th>
+                            <th>Pengalaman Kerja</th>
+                            <th>Nama Perusahaan</th>
+                            <th>Masa Kerja</th>
+                            <th>Posisi Pengalaman</th>
+                            <th>Minat</th>
+                            <th>Bakat</th>
+                            <th>Prestasi</th>
                             <th>Nomor HP darurat</th>
                             <th>Pemilik kontak darurat</th>
                             <th>Hubungan kontak darurat</th>
@@ -331,6 +337,74 @@
                     </thead>
                     <tbody>
                         @foreach($lamarans as $data)
+                        @php
+                            $pengalamanKerja = $data->biodata->pengalamanKerja;
+                            $namaPerusahaan = $pengalamanKerja
+                                ->pluck('nama_perusahaan')
+                                ->filter()
+                                ->values();
+                            $posisiPengalaman = $pengalamanKerja
+                                ->pluck('posisi')
+                                ->filter()
+                                ->values();
+                            $masaKerja = $pengalamanKerja->map(function ($pengalaman) {
+                                try {
+                                    $mulai = \Carbon\Carbon::createFromFormat('Y-m', $pengalaman->tanggal_mulai)->startOfMonth();
+                                    $selesai = $pengalaman->masih_bekerja
+                                        ? now()->startOfMonth()
+                                        : \Carbon\Carbon::createFromFormat('Y-m', $pengalaman->tanggal_selesai)->startOfMonth();
+                                    $selisih = $mulai->diff($selesai);
+                                    $durasi = collect([
+                                        $selisih->y > 0 ? $selisih->y . ' tahun' : null,
+                                        $selisih->m > 0 ? $selisih->m . ' bulan' : null,
+                                    ])->filter()->implode(' ');
+
+                                    return $mulai->translatedFormat('M Y') . ' - '
+                                        . ($pengalaman->masih_bekerja ? 'Sekarang' : $selesai->translatedFormat('M Y'))
+                                        . ' (' . ($durasi ?: 'kurang dari 1 bulan') . ')';
+                                } catch (\Throwable $exception) {
+                                    return collect([$pengalaman->tanggal_mulai, $pengalaman->tanggal_selesai])
+                                        ->filter()
+                                        ->implode(' - ') ?: '-';
+                                }
+                            })->values();
+                            $minatTerstruktur = $data->biodata->minatBakat
+                                ->where('tipe', 'hobi')
+                                ->map(function ($item) {
+                                    return ucfirst($item->kategori) . ': ' . $item->nama;
+                                })
+                                ->values();
+                            $bakatTerstruktur = $data->biodata->minatBakat
+                                ->where('tipe', 'bakat')
+                                ->map(function ($item) {
+                                    return ucfirst($item->kategori) . ': ' . $item->nama;
+                                })
+                                ->values();
+                            $prestasiTerstruktur = $data->biodata->daftarPrestasi
+                                ->map(function ($prestasi) {
+                                    $bidang = $prestasi->bidang === 'Lainnya' && filled($prestasi->bidang_lainnya)
+                                        ? $prestasi->bidang_lainnya
+                                        : $prestasi->bidang;
+
+                                    return collect([
+                                        $bidang,
+                                        $prestasi->jenis_prestasi,
+                                        $prestasi->peringkat,
+                                        $prestasi->tingkat,
+                                        $prestasi->periode,
+                                    ])->filter()->implode(' - ');
+                                })
+                                ->values();
+                            $minat = $minatTerstruktur->isNotEmpty()
+                                ? $minatTerstruktur
+                                : collect([$data->biodata->hobi])->filter();
+                            $bakat = $bakatTerstruktur->isNotEmpty()
+                                ? $bakatTerstruktur
+                                : collect([$data->biodata->bakat])->filter();
+                            $prestasi = $prestasiTerstruktur->isNotEmpty()
+                                ? $prestasiTerstruktur
+                                : collect([$data->biodata->prestasi])->filter();
+                        @endphp
                         <tr class="{{ $userId == $data->biodata->user->id ? 'table-warning' : '' }}">
                             <td>{{ ++$no }}</td>
                             <td>
@@ -457,7 +531,49 @@
                             <td>{{ $data->biodata->nama_anak_2 }}</td>
                             <td>{{ $data->biodata->nama_anak_3 }}</td>
                             <td>{{ $data->biodata->vaksin }}</td>
-                            <td>{{ $data->biodata->hobi }}</td>
+                            <td>{{ $pengalamanKerja->isNotEmpty() ? $pengalamanKerja->count() . ' pengalaman' : '-' }}</td>
+                            <td data-export-value="{{ $namaPerusahaan->implode(' | ') }}">
+                                @forelse($namaPerusahaan as $perusahaan)
+                                <div>{{ $perusahaan }}</div>
+                                @empty
+                                -
+                                @endforelse
+                            </td>
+                            <td data-export-value="{{ $masaKerja->implode(' | ') }}">
+                                @forelse($masaKerja as $masa)
+                                <div>{{ $masa }}</div>
+                                @empty
+                                -
+                                @endforelse
+                            </td>
+                            <td data-export-value="{{ $posisiPengalaman->implode(' | ') }}">
+                                @forelse($posisiPengalaman as $posisi)
+                                <div>{{ $posisi }}</div>
+                                @empty
+                                -
+                                @endforelse
+                            </td>
+                            <td data-export-value="{{ $minat->implode(' | ') }}">
+                                @forelse($minat as $item)
+                                <div>{{ $item }}</div>
+                                @empty
+                                -
+                                @endforelse
+                            </td>
+                            <td data-export-value="{{ $bakat->implode(' | ') }}">
+                                @forelse($bakat as $item)
+                                <div>{{ $item }}</div>
+                                @empty
+                                -
+                                @endforelse
+                            </td>
+                            <td data-export-value="{{ $prestasi->implode(' | ') }}">
+                                @forelse($prestasi as $item)
+                                <div>{!! nl2br(e($item)) !!}</div>
+                                @empty
+                                -
+                                @endforelse
+                            </td>
                             <td>{{ $data->biodata->no_telepon_darurat }}</td>
                             <td>{{ $data->biodata->nama_kontak_darurat }}</td>
                             <td>{{ $data->biodata->status_hubungan }}</td>
@@ -1025,6 +1141,9 @@ return $order[$item->level_sp] ?? 99;
                         format: {
                             body: function(data, row, column, node) {
                                 let $node = $(node);
+                                if ($node.is('[data-export-value]')) {
+                                    return $node.attr('data-export-value');
+                                }
                                 if ($node.find('input').length > 0) {
                                     return $node.find('input').val();
                                 }

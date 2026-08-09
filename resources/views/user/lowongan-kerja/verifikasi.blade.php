@@ -79,7 +79,7 @@
                         Mohon periksa kembali KTP atau SIM Anda karena dokumen tersebut belum terbaca dengan baik. Silakan perbaiki agar sesuai dengan format yang ditentukan sebelum melamar.
                     </small>
                 </span>
-                <a href="{{ route('biodata.index') }}#step5" class="btn btn-primary mb-0">Perbarui KTP atau SIM</a>
+                <a href="{{ route('biodata.index') }}#step7" class="btn btn-primary mb-0">Perbarui KTP atau SIM</a>
             </div>
         </div>
     </div>
@@ -99,7 +99,7 @@
                 <ul class="mb-0 ps-3">
                     <li class="mb-1">{{ $msg_no_ktp }}</li>
                 </ul>
-                <a href="{{ route('biodata.index') }}#step5" class="btn btn-primary mb-0">Perbarui KTP</a>
+                <a href="{{ route('biodata.index') }}#step7" class="btn btn-primary mb-0">Perbarui KTP</a>
             </div>
         </div>
     </div>
@@ -140,7 +140,7 @@
                     <li class="mb-1">{{ $field }}</li>
                     @endforeach
                 </ul>
-                <a href="{{ route('biodata.index') }}#step5" class="btn btn-primary mb-0">Lengkapi Data</a>
+                <a href="{{ route('biodata.index') }}#step7" class="btn btn-primary mb-0">Lengkapi Data</a>
             </div>
         </div>
     </div>

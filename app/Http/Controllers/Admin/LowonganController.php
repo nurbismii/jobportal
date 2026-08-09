@@ -118,6 +118,9 @@ class LowonganController extends Controller
             'biodata.getKabupaten',
             'biodata.getKecamatan',
             'biodata.getKelurahan',
+            'biodata.pengalamanKerja',
+            'biodata.minatBakat',
+            'biodata.daftarPrestasi',
             'biodata.user.suratPeringatan',
             'assessmentLinkCandidates.assessmentLink',
         ])

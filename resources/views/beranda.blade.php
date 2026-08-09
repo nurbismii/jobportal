@@ -82,10 +82,12 @@
 $steps = [
 1 => 'Data Pribadi',
 2 => 'Pendidikan',
-3 => 'Data Keluarga',
-4 => 'Kontak Darurat',
-5 => 'Dokumen Pribadi',
-6 => 'Selesai'
+3 => 'Pengalaman Kerja',
+4 => 'Minat, Bakat & Prestasi',
+5 => 'Data Keluarga',
+6 => 'Kontak Darurat',
+7 => 'Dokumen Pribadi',
+8 => 'Selesai'
 ];
 
 $maxStep = count($steps);
@@ -285,7 +287,7 @@ $activeStep = $completedStep < $maxStep ? $completedStep + 1 : $maxStep;
         </div>
 
         {{-- Lowongan --}}
-        @if(($step == 6) || (Auth::check() && Auth::user()->role == 'admin'))
+        @if(($step == 8) || (Auth::check() && Auth::user()->role == 'admin'))
         <div class="home-section-head mb-3">
             <div>
                 <h5>Lowongan Tersedia</h5>
