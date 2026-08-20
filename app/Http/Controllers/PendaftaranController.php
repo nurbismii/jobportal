@@ -148,8 +148,9 @@ class PendaftaranController extends Controller
 
             // Handle duplicate entry (MySQL error 1062)
             if (isset($e->errorInfo[1]) && $e->errorInfo[1] == 1062) {
-                Alert::error('Gagal', 'Nomor KTP atau Email sudah terdaftar.');
-                return back()->withInput($request->except(['password', 'password_confirmation']));
+                Alert::warning('Akun sudah terdaftar', 'Silakan login, Anda telah terdaftar.');
+
+                return redirect()->route('login');
             }
 
             Log::error('Register Query Error: ' . $e->getMessage(), [
@@ -330,7 +331,9 @@ class PendaftaranController extends Controller
         }
 
         if (! empty($errors)) {
-            throw ValidationException::withMessages($errors);
+            Alert::warning('Akun sudah terdaftar', 'Silakan login, Anda telah terdaftar.');
+
+            return redirect()->route('login');
         }
 
         $pendingUser = $emailUser && $this->isPendingVerificationUser($emailUser)

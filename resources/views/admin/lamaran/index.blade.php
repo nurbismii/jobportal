@@ -160,6 +160,7 @@
                         <option value="Lamaran Dikirim" {{ collect(request('status'))->contains('Lamaran Dikirim') ? 'selected' : '' }}>Lamaran Dikirim</option>
                         <option value="Verifikasi Online" {{ collect(request('status'))->contains('Verifikasi Online') ? 'selected' : '' }}>Verifikasi Online</option>
                         <option value="Verifikasi Berkas" {{ collect(request('status'))->contains('Verifikasi Berkas') ? 'selected' : '' }}>Verifikasi Berkas</option>
+                        <option value="Daftar Tunggu" {{ collect(request('status'))->contains('Daftar Tunggu') ? 'selected' : '' }}>Daftar Tunggu</option>
                         <option value="Tes Kesehatan" {{ collect(request('status'))->contains('Tes Kesehatan') ? 'selected' : '' }}>Tes Kesehatan</option>
                         <option value="Tes Lapangan" {{ collect(request('status'))->contains('Tes Lapangan') ? 'selected' : '' }}>Tes Lapangan</option>
                         <option value="Medical Check-Up" {{ collect(request('status'))->contains('Medical Check-Up') ? 'selected' : '' }}>Medical Check-Up</option>
@@ -338,72 +339,72 @@
                     <tbody>
                         @foreach($lamarans as $data)
                         @php
-                            $pengalamanKerja = $data->biodata->pengalamanKerja;
-                            $namaPerusahaan = $pengalamanKerja
-                                ->pluck('nama_perusahaan')
-                                ->filter()
-                                ->values();
-                            $posisiPengalaman = $pengalamanKerja
-                                ->pluck('posisi')
-                                ->filter()
-                                ->values();
-                            $masaKerja = $pengalamanKerja->map(function ($pengalaman) {
-                                try {
-                                    $mulai = \Carbon\Carbon::createFromFormat('Y-m', $pengalaman->tanggal_mulai)->startOfMonth();
-                                    $selesai = $pengalaman->masih_bekerja
-                                        ? now()->startOfMonth()
-                                        : \Carbon\Carbon::createFromFormat('Y-m', $pengalaman->tanggal_selesai)->startOfMonth();
-                                    $selisih = $mulai->diff($selesai);
-                                    $durasi = collect([
-                                        $selisih->y > 0 ? $selisih->y . ' tahun' : null,
-                                        $selisih->m > 0 ? $selisih->m . ' bulan' : null,
-                                    ])->filter()->implode(' ');
+                        $pengalamanKerja = $data->biodata->pengalamanKerja;
+                        $namaPerusahaan = $pengalamanKerja
+                        ->pluck('nama_perusahaan')
+                        ->filter()
+                        ->values();
+                        $posisiPengalaman = $pengalamanKerja
+                        ->pluck('posisi')
+                        ->filter()
+                        ->values();
+                        $masaKerja = $pengalamanKerja->map(function ($pengalaman) {
+                        try {
+                        $mulai = \Carbon\Carbon::createFromFormat('Y-m', $pengalaman->tanggal_mulai)->startOfMonth();
+                        $selesai = $pengalaman->masih_bekerja
+                        ? now()->startOfMonth()
+                        : \Carbon\Carbon::createFromFormat('Y-m', $pengalaman->tanggal_selesai)->startOfMonth();
+                        $selisih = $mulai->diff($selesai);
+                        $durasi = collect([
+                        $selisih->y > 0 ? $selisih->y . ' tahun' : null,
+                        $selisih->m > 0 ? $selisih->m . ' bulan' : null,
+                        ])->filter()->implode(' ');
 
-                                    return $mulai->translatedFormat('M Y') . ' - '
-                                        . ($pengalaman->masih_bekerja ? 'Sekarang' : $selesai->translatedFormat('M Y'))
-                                        . ' (' . ($durasi ?: 'kurang dari 1 bulan') . ')';
-                                } catch (\Throwable $exception) {
-                                    return collect([$pengalaman->tanggal_mulai, $pengalaman->tanggal_selesai])
-                                        ->filter()
-                                        ->implode(' - ') ?: '-';
-                                }
-                            })->values();
-                            $minatTerstruktur = $data->biodata->minatBakat
-                                ->where('tipe', 'hobi')
-                                ->map(function ($item) {
-                                    return ucfirst($item->kategori) . ': ' . $item->nama;
-                                })
-                                ->values();
-                            $bakatTerstruktur = $data->biodata->minatBakat
-                                ->where('tipe', 'bakat')
-                                ->map(function ($item) {
-                                    return ucfirst($item->kategori) . ': ' . $item->nama;
-                                })
-                                ->values();
-                            $prestasiTerstruktur = $data->biodata->daftarPrestasi
-                                ->map(function ($prestasi) {
-                                    $bidang = $prestasi->bidang === 'Lainnya' && filled($prestasi->bidang_lainnya)
-                                        ? $prestasi->bidang_lainnya
-                                        : $prestasi->bidang;
+                        return $mulai->translatedFormat('M Y') . ' - '
+                        . ($pengalaman->masih_bekerja ? 'Sekarang' : $selesai->translatedFormat('M Y'))
+                        . ' (' . ($durasi ?: 'kurang dari 1 bulan') . ')';
+                        } catch (\Throwable $exception) {
+                        return collect([$pengalaman->tanggal_mulai, $pengalaman->tanggal_selesai])
+                        ->filter()
+                        ->implode(' - ') ?: '-';
+                        }
+                        })->values();
+                        $minatTerstruktur = $data->biodata->minatBakat
+                        ->where('tipe', 'hobi')
+                        ->map(function ($item) {
+                        return ucfirst($item->kategori) . ': ' . $item->nama;
+                        })
+                        ->values();
+                        $bakatTerstruktur = $data->biodata->minatBakat
+                        ->where('tipe', 'bakat')
+                        ->map(function ($item) {
+                        return ucfirst($item->kategori) . ': ' . $item->nama;
+                        })
+                        ->values();
+                        $prestasiTerstruktur = $data->biodata->daftarPrestasi
+                        ->map(function ($prestasi) {
+                        $bidang = $prestasi->bidang === 'Lainnya' && filled($prestasi->bidang_lainnya)
+                        ? $prestasi->bidang_lainnya
+                        : $prestasi->bidang;
 
-                                    return collect([
-                                        $bidang,
-                                        $prestasi->jenis_prestasi,
-                                        $prestasi->peringkat,
-                                        $prestasi->tingkat,
-                                        $prestasi->periode,
-                                    ])->filter()->implode(' - ');
-                                })
-                                ->values();
-                            $minat = $minatTerstruktur->isNotEmpty()
-                                ? $minatTerstruktur
-                                : collect([$data->biodata->hobi])->filter();
-                            $bakat = $bakatTerstruktur->isNotEmpty()
-                                ? $bakatTerstruktur
-                                : collect([$data->biodata->bakat])->filter();
-                            $prestasi = $prestasiTerstruktur->isNotEmpty()
-                                ? $prestasiTerstruktur
-                                : collect([$data->biodata->prestasi])->filter();
+                        return collect([
+                        $bidang,
+                        $prestasi->jenis_prestasi,
+                        $prestasi->peringkat,
+                        $prestasi->tingkat,
+                        $prestasi->periode,
+                        ])->filter()->implode(' - ');
+                        })
+                        ->values();
+                        $minat = $minatTerstruktur->isNotEmpty()
+                        ? $minatTerstruktur
+                        : collect([$data->biodata->hobi])->filter();
+                        $bakat = $bakatTerstruktur->isNotEmpty()
+                        ? $bakatTerstruktur
+                        : collect([$data->biodata->bakat])->filter();
+                        $prestasi = $prestasiTerstruktur->isNotEmpty()
+                        ? $prestasiTerstruktur
+                        : collect([$data->biodata->prestasi])->filter();
                         @endphp
                         <tr class="{{ $userId == $data->biodata->user->id ? 'table-warning' : '' }}">
                             <td>{{ ++$no }}</td>
@@ -712,6 +713,7 @@
                                     <optgroup label="Tahapan Proses">
                                         <option value="Verifikasi Online">Verifikasi Online</option>
                                         <option value="Verifikasi Berkas">Verifikasi Berkas</option>
+                                        <option value="Daftar Tunggu">Daftar Tunggu</option>
                                         <option value="Tes Kesehatan">Tes Kesehatan</option>
                                         <option value="Tes Lapangan">Tes Lapangan</option>
                                         <option value="Medical Check-Up">Medical Check-Up (MCU)</option>
