@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Jobs\SyncContractSignatureStatusToHris;
 use App\Jobs\SyncOnboardingCandidateToHris;
-use App\Http\Middleware\VerifyCsrfToken;
+use App\Http\Middleware\PreventRequestForgery;
 use App\Models\Biodata;
 use App\Models\Lamaran;
 use App\Models\User;
@@ -270,7 +270,7 @@ class VhirePkwtIntegrationTest extends TestCase
             'employee_nik' => 'EMP-0001',
         ]));
 
-        $this->withoutMiddleware(VerifyCsrfToken::class)
+        $this->withoutMiddleware(PreventRequestForgery::class)
             ->actingAs($admin)
             ->post(route('pkwt-contracts.bulk-visibility'), [
                 'selected_ids' => [
@@ -318,7 +318,7 @@ class VhirePkwtIntegrationTest extends TestCase
             'contract_content' => '<p>Isi kontrak PKWT 1</p><div class="contract-signature-slot" data-contract-signature="employee" style="height: 86px; text-align: center;">&nbsp;</div>',
         ]));
 
-        $this->withoutMiddleware(VerifyCsrfToken::class)
+        $this->withoutMiddleware(PreventRequestForgery::class)
             ->actingAs($user)
             ->post(route('kontrak-pkwt.sign', $contract->id), [
                 'signature_data' => 'data:image/png;base64,' . base64_encode($signatureBytes),
@@ -428,7 +428,7 @@ class VhirePkwtIntegrationTest extends TestCase
     {
         $previous = new PDOException('SQLSTATE[42S22]: Column not found: 1054 Unknown column matched_biodata_id');
         $previous->errorInfo = ['42S22', 1054, 'Unknown column matched_biodata_id'];
-        $exception = new QueryException('insert into vhire_pkwt_contracts values (?)', [], $previous);
+        $exception = new QueryException('testing', 'insert into vhire_pkwt_contracts values (?)', [], $previous);
 
         $this->app->instance(PkwtContractService::class, new class($exception) extends PkwtContractService {
             private $exception;

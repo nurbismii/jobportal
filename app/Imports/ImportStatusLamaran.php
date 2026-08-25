@@ -6,6 +6,7 @@ use App\Models\Biodata;
 use App\Models\Lamaran;
 use App\Services\LamaranStatusService;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
@@ -26,7 +27,7 @@ class ImportStatusLamaran implements ToModel, WithHeadingRow, WithChunkReading, 
         $this->lamaranStatusService = app(LamaranStatusService::class);
     }
 
-    public function model(array $row)
+    public function model(array $row): ?Model
     {
         $this->validateHeaders($row);
 

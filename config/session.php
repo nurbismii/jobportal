@@ -20,6 +20,9 @@ return [
 
     'driver' => env('SESSION_DRIVER', 'file'),
 
+    // Keep PHP serialization during deployment so existing users remain logged in.
+    'serialization' => env('SESSION_SERIALIZATION', 'php'),
+
     /*
     |--------------------------------------------------------------------------
     | Session Lifetime

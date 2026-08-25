@@ -3,6 +3,7 @@
 namespace App\Imports;
 
 use App\Models\Biodata;
+use Illuminate\Database\Eloquent\Model;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
@@ -15,7 +16,7 @@ class KemampuanPengalamanImport implements ToModel, WithHeadingRow, SkipsOnFailu
     // Header yang wajib ada
     protected $requiredHeaders = ['no_ktp', 'kemampuan_pengalaman'];
 
-    public function model(array $row)
+    public function model(array $row): ?Model
     {
         // Pastikan semua header wajib ada
         foreach ($this->requiredHeaders as $header) {
