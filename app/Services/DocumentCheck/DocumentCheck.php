@@ -220,8 +220,6 @@ class DocumentCheck
             'rw' => 'RW',
 
             // Informasi Pribadi Tambahan
-            'hobi' => 'Hobi',
-            'bakat' => 'Bakat',
             'golongan_darah' => 'Golongan Darah',
             'tinggi_badan' => 'Tinggi Badan (cm)',
             'berat_badan' => 'Berat Badan (kg)',

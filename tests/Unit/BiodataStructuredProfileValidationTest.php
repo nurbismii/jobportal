@@ -20,24 +20,34 @@ class BiodataStructuredProfileValidationTest extends TestCase
         $this->assertCount(2, $validated['pengalaman_kerja']);
     }
 
-    public function test_profile_requires_at_least_one_talent()
+    public function test_profile_accepts_empty_hobbies_and_talents()
     {
         $payload = $this->validPayload();
+        $payload['minat_bakat']['hobi'] = [
+            'olahraga' => [''],
+            'seni' => [''],
+            'lainnya' => [''],
+        ];
         $payload['minat_bakat']['bakat'] = [
             'olahraga' => [''],
             'seni' => [''],
             'lainnya' => [''],
         ];
 
-        try {
-            $this->validateProfile($payload);
-            $this->fail('Validasi seharusnya menolak bakat kosong.');
-        } catch (ValidationException $exception) {
-            $this->assertArrayHasKey(
-                'minat_bakat.bakat.olahraga.0',
-                $exception->errors()
-            );
-        }
+        $validated = $this->validateProfile($payload);
+
+        $this->assertSame('', $validated['minat_bakat']['hobi']['olahraga'][0]);
+        $this->assertSame('', $validated['minat_bakat']['bakat']['olahraga'][0]);
+    }
+
+    public function test_profile_accepts_missing_hobbies_and_talents()
+    {
+        $payload = $this->validPayload();
+        unset($payload['minat_bakat']);
+
+        $validated = $this->validateProfile($payload);
+
+        $this->assertArrayNotHasKey('minat_bakat', $validated);
     }
 
     public function test_profile_rejects_duplicate_value_in_the_same_category()

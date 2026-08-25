@@ -24,6 +24,17 @@ class BiodataStepProgressTest extends TestCase
         $this->assertSame(8, calcutaionStep($biodata));
     }
 
+    public function test_empty_hobbies_and_talents_do_not_block_profile_progress()
+    {
+        $biodata = (object) array_merge($this->completeBiodataFields(), [
+            'hobi' => null,
+            'bakat' => null,
+            'status_pernyataan' => null,
+        ]);
+
+        $this->assertSame(7, calcutaionStep($biodata));
+    }
+
     private function completeBiodataFields(): array
     {
         return [

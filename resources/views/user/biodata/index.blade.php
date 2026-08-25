@@ -734,12 +734,12 @@
                     @endphp
 
                     <div class="alert alert-light border rounded-3">
-                        Tambahkan satu atau beberapa isian pada kategori yang sesuai. Hobi dan bakat masing-masing wajib memiliki minimal satu isian.
+                        Hobi dan bakat bersifat opsional. Jika ingin mengisi, tambahkan satu atau beberapa isian pada kategori yang sesuai.
                     </div>
 
                     @foreach($types as $type => $typeLabel)
                         <section class="mb-4" data-minat-bakat-type="{{ $type }}">
-                            <h6 class="text-primary mb-3">{{ $typeLabel }} <span class="text-danger">*</span></h6>
+                            <h6 class="text-primary mb-3">{{ $typeLabel }} <small class="text-muted fw-normal">(Opsional)</small></h6>
                             <div class="row g-3">
                                 @foreach($categories as $category => $categoryLabel)
                                     @php
@@ -1914,39 +1914,6 @@
         }
     }
 
-    function validateMinatBakatStep() {
-        let valid = true;
-
-        document.querySelectorAll('[data-minat-bakat-type]').forEach(function(section) {
-            const inputs = Array.from(section.querySelectorAll('input[type="text"]'));
-            const filledInputs = inputs.filter(function(input) {
-                return input.value.trim() !== '';
-            });
-            const firstInput = inputs[0];
-
-            inputs.forEach(function(input) {
-                input.setCustomValidity('');
-            });
-
-            if (filledInputs.length === 0 && firstInput) {
-                const label = section.dataset.minatBakatType === 'hobi' ? 'Hobi' : 'Bakat';
-                firstInput.setCustomValidity(`${label} wajib memiliki minimal satu isian.`);
-
-                if (typeof setFieldError === 'function') {
-                    setFieldError(firstInput, firstInput.validationMessage);
-                }
-
-                if (valid && typeof focusField === 'function') {
-                    focusField(firstInput);
-                }
-
-                valid = false;
-            }
-        });
-
-        return valid;
-    }
-
     function updatePrestasiNumbers() {
         const items = Array.from(document.querySelectorAll('[data-prestasi-item]'));
         items.forEach(function(item, index) {
@@ -2601,10 +2568,6 @@
         }
 
         if (index === 0 && typeof window.validateNoKk === 'function' && !window.validateNoKk(true)) {
-            return false;
-        }
-
-        if (index === 3 && !validateMinatBakatStep()) {
             return false;
         }
 

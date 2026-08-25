@@ -75,9 +75,9 @@ class BiodataController extends Controller
             'nama_kontak_darurat' => 'required|string|max:255',
             'no_telp_darurat' => 'required|digits_between:11,13',
             'status_hubungan' => 'required|string',
-            'minat_bakat' => 'required|array',
-            'minat_bakat.hobi' => 'required|array',
-            'minat_bakat.bakat' => 'required|array',
+            'minat_bakat' => 'nullable|array',
+            'minat_bakat.hobi' => 'nullable|array',
+            'minat_bakat.bakat' => 'nullable|array',
             'minat_bakat.*.*' => 'nullable|array|max:10',
             'minat_bakat.*.*.*' => 'nullable|string|max:100',
             'prestasi_data' => 'nullable|array|max:10',
@@ -229,10 +229,6 @@ class BiodataController extends Controller
             }
         }
 
-        if (blank($biodata->hobi) || blank($biodata->bakat)) {
-            return false;
-        }
-
         return true;
     }
 
@@ -335,13 +331,6 @@ class BiodataController extends Controller
 
             foreach (BiodataMinatBakat::TYPES as $type) {
                 $typeRows = collect($rows)->where('tipe', $type);
-
-                if ($typeRows->isEmpty()) {
-                    $validator->errors()->add(
-                        "minat_bakat.{$type}.olahraga.0",
-                        ucfirst($type) . ' wajib memiliki minimal satu isian.'
-                    );
-                }
 
                 $duplicates = $typeRows
                     ->groupBy(function ($row) {
@@ -516,6 +505,10 @@ class BiodataController extends Controller
             255,
             ''
         );
+
+        $hobiSummary = $hobiSummary !== '' ? $hobiSummary : null;
+        $bakatSummary = $bakatSummary !== '' ? $bakatSummary : null;
+
         $prestasiSummary = collect($prestasiRows)->map(function ($row) {
             $field = $row['bidang'] === 'Lainnya' && $row['bidang_lainnya']
                 ? $row['bidang_lainnya']

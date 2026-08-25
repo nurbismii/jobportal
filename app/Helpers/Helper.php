@@ -272,8 +272,7 @@ if (!function_exists('calcutaionStep')) {
                 // Pengalaman kerja bersifat opsional untuk fresh graduate.
             ],
             4 => [
-                'hobi',
-                'bakat',
+                // Hobi dan bakat bersifat opsional.
             ],
             5 => [
                 'nama_ayah',
