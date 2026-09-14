@@ -49,8 +49,8 @@ class AssessmentLinkController extends Controller
     {
         try {
             $link = $assessmentLinkService->create(
-                $request->only(['assessment_type', 'pin', 'fields', 'eligibility_field_id']),
-                $request->input('selected_ids'),
+                $request->safe()->only(['assessment_type', 'pin', 'fields', 'eligibility_field_id', 'expires_on']),
+                $request->validated('selected_ids', []),
                 $request->user()->id
             );
         } catch (ValidationException $exception) {
@@ -72,6 +72,11 @@ class AssessmentLinkController extends Controller
 
     public function show(AssessmentLink $assessmentLink, AssessmentLinkService $assessmentLinkService)
     {
+        if ($assessmentLink->isDocumentOnly()) {
+            $assessmentLink->load('creator');
+
+            return view('admin.assessment-links.show', ['link' => $assessmentLink]);
+        }
         $assessmentLink->load([
             'creator',
             'candidates.lamaran.biodata.user',
@@ -137,6 +142,20 @@ class AssessmentLinkController extends Controller
         } else {
             Alert::warning('Tidak ada perubahan', 'Link asesmen sudah tidak aktif.');
         }
+
+        return redirect()->route('assessment-links.show', $assessmentLink);
+    }
+
+    public function extendExpiry(\Illuminate\Http\Request $request, AssessmentLink $assessmentLink)
+    {
+        abort_unless($assessmentLink->isDocumentOnly() && $assessmentLink->is_active, 403);
+        $data = $request->validate(['expires_on' => ['required', 'date_format:Y-m-d', 'after_or_equal:today']]);
+        $expiry = Carbon::createFromFormat('!Y-m-d', $data['expires_on'], 'Asia/Makassar')->endOfDay();
+        if ($assessmentLink->expires_at && $expiry->lte($assessmentLink->expires_at)) {
+            return back()->withErrors(['expires_on' => 'Tanggal baru harus melewati masa berlaku sebelumnya.']);
+        }
+        $assessmentLink->update(['expires_at' => $expiry]);
+        Alert::success('Berhasil', 'Masa berlaku diperpanjang. URL dan PIN tetap sama.');
 
         return redirect()->route('assessment-links.show', $assessmentLink);
     }

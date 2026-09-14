@@ -21,6 +21,67 @@ use Tests\TestCase;
 
 class AssessmentLinkTest extends TestCase
 {
+    public function test_mcu_link_is_created_without_candidates_and_opens_document_upload(): void
+    {
+        $admin = User::create(['name' => 'MCU Admin', 'email' => 'mcu-admin@example.test', 'password' => 'secret', 'role' => 'admin']);
+        $this->actingAs($admin)->post(route('assessment-links.store'), [
+            'assessment_type' => 'mcu', 'pin' => '123456',
+        ])->assertSessionHasNoErrors()->assertRedirect(route('assessment-links.index'));
+        $link = AssessmentLink::latest('id')->firstOrFail();
+        $this->assertSame('Hasil MCU', $link->type_label);
+        $this->assertSame([], $link->form_schema);
+        $this->assertSame(0, $link->candidates()->count());
+        $this->get(route('assessment-links.show', $link))->assertOk()->assertSee('Hasil MCU')
+            ->assertDontSee('Tambah kandidat')->assertDontSee('Hasil kandidat');
+        auth()->logout();
+        $this->post(route('assessment-links.public.unlock', $link->public_token), ['pin' => '123456'])->assertRedirect();
+        $this->get(route('assessment-links.public.show', $link->public_token))
+            ->assertRedirect(route('assessment-documents.index', $link->public_token));
+    }
+
+    public function test_mcu_service_discards_candidate_selection_and_rejects_adding_candidates(): void
+    {
+        $service = app(AssessmentLinkService::class);
+        $link = $service->create(['assessment_type' => 'mcu', 'pin' => '123456'], [99999], 1);
+        $this->assertSame(0, $link->candidates()->count());
+        $this->expectException(ValidationException::class);
+        $service->addCandidates($link, [99999]);
+    }
+
+    public function test_mcu_expiry_can_be_extended_without_changing_url_or_reactivating_revoked_link(): void
+    {
+        $admin = User::create(['name' => 'Admin', 'email' => 'expiry@example.test', 'password' => 'secret', 'role' => 'admin']);
+        $this->actingAs($admin)->post(route('assessment-links.store'), [
+            'assessment_type' => 'mcu', 'pin' => '123456', 'expires_on' => now()->addMonth()->toDateString(),
+        ])->assertSessionHasNoErrors();
+        $link = AssessmentLink::latest('id')->firstOrFail();
+        $token = $link->public_token;
+        $pin = $link->pin_hash;
+        $this->assertSame(now()->addMonth()->toDateString(), $link->expires_at->toDateString());
+        $this->patch(route('assessment-links.expiry', $link), ['expires_on' => now()->addMonths(2)->toDateString()])->assertSessionHasNoErrors();
+        $link->refresh();
+        $this->assertSame($token, $link->public_token);
+        $this->assertSame($pin, $link->pin_hash);
+        $this->assertSame(now()->addMonths(2)->toDateString(), $link->expires_at->toDateString());
+        $link->update(['is_active' => false]);
+        $this->patch(route('assessment-links.expiry', $link), ['expires_on' => now()->addMonths(3)->toDateString()])->assertForbidden();
+        $admin->role = 'user';
+        $this->actingAs($admin)->patch(route('assessment-links.expiry', $link), ['expires_on' => now()->addMonths(3)->toDateString()])->assertRedirect('/');
+    }
+
+    public function test_detail_loads_confirmation_library_without_a_flash_alert(): void
+    {
+        config(['sweetalert.alwaysLoadJS' => false, 'sweetalert.neverLoadJS' => false]);
+        $admin = User::create(['name' => 'Admin', 'email' => 'confirm@example.test', 'password' => 'secret', 'role' => 'admin']);
+        $link = app(AssessmentLinkService::class)->create(['assessment_type' => 'mcu', 'pin' => '123456'], [], $admin->id);
+        session()->forget(['alert.config', 'alert.delete']);
+
+        $response = $this->actingAs($admin)->get(route('assessment-links.show', $link));
+        $response->assertOk()->assertSeeInOrder(['vendor/sweetalert/sweetalert.all.js', 'Swal.fire('], false);
+        $this->assertSame(1, substr_count($response->getContent(), 'vendor/sweetalert/sweetalert.all.js'));
+        $this->assertFileExists(public_path('vendor/sweetalert/sweetalert.all.js'));
+    }
+
     protected function setUp(): void
     {
         parent::setUp();

@@ -19,11 +19,12 @@ class StoreAssessmentLinkRequest extends FormRequest
     public function rules()
     {
         return [
-            'assessment_type' => ['required', Rule::in(['kesehatan', 'lapangan'])],
+            'assessment_type' => ['required', Rule::in(['kesehatan', 'lapangan', 'mcu'])],
             'pin' => ['required', 'string', 'min:6', 'max:32'],
-            'selected_ids' => ['required', 'array', 'min:1'],
+            'expires_on' => ['exclude_unless:assessment_type,mcu', 'nullable', 'date_format:Y-m-d', 'after_or_equal:today'],
+            'selected_ids' => ['exclude_if:assessment_type,mcu', 'required', 'array', 'min:1'],
             'selected_ids.*' => ['required', 'integer', 'distinct', 'exists:lamaran,id'],
-            'fields' => ['nullable', 'array', 'max:20'],
+            'fields' => ['exclude_if:assessment_type,mcu', 'nullable', 'array', 'max:20'],
             'fields.*' => ['required', 'array'],
             'fields.*.id' => ['required', 'string', 'max:100'],
             'fields.*.label' => ['required', 'string', 'max:100'],
@@ -31,7 +32,7 @@ class StoreAssessmentLinkRequest extends FormRequest
             'fields.*.required' => ['nullable', 'boolean'],
             'fields.*.options' => ['nullable', 'array', 'max:20'],
             'fields.*.options.*' => ['required', 'string', 'max:100'],
-            'eligibility_field_id' => ['nullable', 'string', 'max:100'],
+            'eligibility_field_id' => ['exclude_if:assessment_type,mcu', 'nullable', 'string', 'max:100'],
         ];
     }
 

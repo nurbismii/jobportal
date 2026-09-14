@@ -26,7 +26,7 @@
                     @php($expired = $link->expires_at && $link->expires_at->lte(now('Asia/Makassar')))
                     @php($lowongans = $link->candidates->map(fn ($candidate) => optional($candidate->lamaran)->lowongan)->filter()->groupBy('id'))
                     <tr>
-                        <td>{{ ucfirst($link->assessment_type) }}</td>
+                        <td>{{ $link->type_label }}</td>
                         <td>{{ optional($link->creator)->name ?: '-' }}</td>
                         <td>
                             @forelse($lowongans as $candidatesByLowongan)
@@ -43,7 +43,7 @@
                             @else<span class="badge badge-success">Aktif</span>
                             @endif
                         </td>
-                        <td>{{ $link->candidates_count }}</td>
+                        <td>{{ $link->isDocumentOnly() ? 'Tidak diperlukan' : $link->candidates_count }}</td>
                         <td><a href="{{ route('assessment-links.show', $link) }}" class="btn btn-info btn-sm">Detail</a></td>
                     </tr>
                 @empty

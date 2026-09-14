@@ -1,11 +1,14 @@
 @extends('layouts.app-pic')
 
+@section('requires-sweetalert', 'true')
+
 @section('content-admin')
 @php($expired = $link->expires_at && $link->expires_at->lte(now('Asia/Makassar')))
 <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
     <div>
         <h2 class="m-0 font-weight-bold text-primary">Detail Link Asesmen</h2>
-        <div class="small text-muted">{{ ucfirst($link->assessment_type) }} · dibuat oleh {{ optional($link->creator)->name ?: '-' }}</div>
+        <a class="btn btn-outline-primary my-2" href="{{ route('assessment-documents.admin.index', $link) }}">Dokumen Klinik Rapha</a>
+        <div class="small text-muted">{{ $link->type_label }} · dibuat oleh {{ optional($link->creator)->name ?: '-' }}</div>
     </div>
     <a href="{{ route('assessment-links.index') }}" class="btn btn-secondary btn-sm mt-2 mt-md-0">Kembali</a>
 </div>
@@ -25,6 +28,21 @@
     </div>
 </div></div></div>
 
+@if($link->isDocumentOnly() && $link->is_active)
+<div class="card shadow mb-3"><div class="card-body">
+    <h3 class="h6">Perpanjang masa berlaku link klinik</h3>
+    <p class="small text-muted">URL dan PIN tetap sama. Gunakan folder / batch baru untuk setiap periode pemeriksaan.</p>
+    <form method="POST" action="{{ route('assessment-links.expiry', $link) }}">
+        @csrf @method('PATCH')
+        <label for="expiresOn">Berlaku sampai</label>
+        <input id="expiresOn" name="expires_on" type="date" class="form-control mb-2" value="{{ old('expires_on') }}" min="{{ now('Asia/Makassar')->toDateString() }}" required>
+        @error('expires_on')<p class="text-danger">{{ $message }}</p>@enderror
+        <button class="btn btn-primary" type="submit">Perpanjang link</button>
+    </form>
+</div></div>
+@endif
+
+@unless($link->isDocumentOnly())
 <div class="card shadow mb-3">
     <div class="card-header d-flex flex-wrap justify-content-between align-items-center"><strong>Tambah kandidat</strong><span class="small text-muted">Hanya status {{ $link->assessment_type === 'kesehatan' ? 'Tes Kesehatan' : 'Tes Lapangan' }}</span></div>
     <div class="card-body">
@@ -69,6 +87,9 @@
 </td></tr>
 @empty<tr><td colspan="8" class="text-center text-muted py-4">Belum ada kandidat pada link ini.</td></tr>@endforelse
 </tbody></table></div></div></div>
+@else
+<div class="alert alert-info">Link Hasil MCU digunakan untuk mengirim daftar hadir, PDF detail MCU, dan Excel rekap. Tidak memerlukan kandidat.</div>
+@endunless
 @endsection
 
 @push('scripts')

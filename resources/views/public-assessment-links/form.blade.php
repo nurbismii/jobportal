@@ -12,6 +12,7 @@
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
             <div>
                 <h1 class="h3 mb-1">Form Penilaian</h1>
+                <a class="btn btn-outline-primary my-2" href="{{ route('assessment-documents.index', $link->public_token) }}">Kirim daftar hadir{{ $link->assessment_type === 'kesehatan' ? ' & hasil MCU' : '' }}</a>
                 <p class="text-muted mb-0">Hasil disimpan otomatis setelah Anda selesai mengisi satu baris.</p>
             </div>
         </div>

@@ -2,6 +2,11 @@
 /public
 !/public/
 /public/*
+!/public/admin/
+/public/admin/*
+!/public/admin/js/
+/public/admin/js/*
+!/public/admin/js/assessment-document-upload.js
 !/public/pdf/
 /public/pdf/*
 !/public/pdf/manual-book-v-hire-user.pdf

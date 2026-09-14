@@ -32,6 +32,10 @@ class AssessmentLinkService
     public function create(array $attributes, array $lamaranIds, int $creatorId): AssessmentLink
     {
         $type = $attributes['assessment_type'] ?? null;
+        if ($type === AssessmentLink::TYPE_MCU) {
+            $lamaranIds = [];
+            $attributes['fields'] = [];
+        }
         $fields = array_key_exists('fields', $attributes) ? $attributes['fields'] : ($attributes['form_schema'] ?? []);
         if (!is_array($fields)) {
             throw ValidationException::withMessages(['fields' => ['Field schema harus berupa array.']]);
@@ -43,27 +47,37 @@ class AssessmentLinkService
             throw ValidationException::withMessages(['pin' => ['PIN wajib diisi dan maksimal 255 karakter.']]);
         }
 
-        return DB::transaction(function () use ($type, $fields, $eligibilityFieldId, $pin, $creatorId, $lamaranIds) {
+        $expiresAt = now('Asia/Makassar')->endOfDay();
+        if ($type === AssessmentLink::TYPE_MCU && !empty($attributes['expires_on'])) {
+            $validated = validator(['expires_on' => $attributes['expires_on']], [
+                'expires_on' => ['required', 'date_format:Y-m-d', 'after_or_equal:today'],
+            ])->validate();
+            $expiresAt = Carbon::createFromFormat('!Y-m-d', $validated['expires_on'], 'Asia/Makassar')->endOfDay();
+        }
+
+        return DB::transaction(function () use ($type, $fields, $eligibilityFieldId, $pin, $creatorId, $lamaranIds, $expiresAt) {
             $ids = collect($lamaranIds)->map(fn ($id) => (int) $id)->values();
             if ($ids->count() !== $ids->unique()->count()) {
                 throw ValidationException::withMessages(['selected_ids' => ['Kandidat tidak boleh dipilih lebih dari satu kali.']]);
             }
 
-            $requiredStatus = $this->requiredLamaranStatusForType((string) $type);
-            $eligibleIds = \App\Models\Lamaran::query()
-                ->lockForUpdate()
-                ->whereIn('id', $ids)
-                ->where('status_proses', $requiredStatus)
-                ->pluck('id')
-                ->map(fn ($id) => (int) $id)
-                ->all();
+            if ($type !== AssessmentLink::TYPE_MCU) {
+                $requiredStatus = $this->requiredLamaranStatusForType((string) $type);
+                $eligibleIds = \App\Models\Lamaran::query()
+                    ->lockForUpdate()
+                    ->whereIn('id', $ids)
+                    ->where('status_proses', $requiredStatus)
+                    ->pluck('id')
+                    ->map(fn ($id) => (int) $id)
+                    ->all();
 
-            foreach ($ids as $index => $id) {
-                if (!in_array($id, $eligibleIds, true)) {
-                    throw ValidationException::withMessages(["selected_ids.$index" => ['Kandidat harus berada pada status '.$requiredStatus.'.']]);
+                foreach ($ids as $index => $id) {
+                    if (!in_array($id, $eligibleIds, true)) {
+                        throw ValidationException::withMessages(["selected_ids.$index" => ['Kandidat harus berada pada status '.$requiredStatus.'.']]);
+                    }
                 }
-            }
 
+            }
             $schema = $this->schemaFor((string) $type, $fields, $eligibilityFieldId);
 
             $link = AssessmentLink::create([
@@ -72,7 +86,7 @@ class AssessmentLinkService
                 'pin_hash' => Hash::make($pin),
                 'form_schema' => $schema,
                 'created_by' => $creatorId,
-                'expires_at' => now('Asia/Makassar')->endOfDay(),
+                'expires_at' => $expiresAt,
                 'is_active' => true,
             ]);
 
@@ -93,6 +107,9 @@ class AssessmentLinkService
      */
     public function schemaFor(string $type, array $fields, ?string $eligibilityFieldId = null): array
     {
+        if ($type === AssessmentLink::TYPE_MCU) {
+            return [];
+        }
         if (!in_array($type, ['kesehatan', 'lapangan'], true)) {
             throw ValidationException::withMessages(['assessment_type' => ['Tipe asesmen harus kesehatan atau lapangan.']]);
         }
@@ -201,6 +218,9 @@ class AssessmentLinkService
     /** @param array<int, int|string> $lamaranIds */
     public function addCandidates(AssessmentLink $link, array $lamaranIds): void
     {
+        if ($link->isDocumentOnly()) {
+            throw ValidationException::withMessages(['lamaran_ids' => ['Link Hasil MCU hanya untuk pengiriman dokumen, tanpa kandidat.']]);
+        }
         DB::transaction(function () use ($link, $lamaranIds) {
             $lockedLink = AssessmentLink::query()->lockForUpdate()->findOrFail($link->id);
             $ids = collect($lamaranIds)->map(fn ($id) => (int) $id)->unique()->values();

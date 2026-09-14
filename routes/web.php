@@ -28,6 +28,14 @@ use Illuminate\Support\Facades\Route;
 */
 
 // User route
+Route::prefix('/penilaian/{token}/dokumen')->middleware(EnsurePublicAssessmentAccess::class)->group(function () {
+    Route::get('/', [App\Http\Controllers\AssessmentDocumentController::class, 'index'])->name('assessment-documents.index');
+    Route::post('/', [App\Http\Controllers\AssessmentDocumentController::class, 'store'])->middleware('throttle:10,1')->name('assessment-documents.store');
+    Route::post('/queue', [App\Http\Controllers\AssessmentDocumentController::class, 'queue'])->middleware('throttle:60,1')->name('assessment-documents.queue');
+    Route::post('/folder', [App\Http\Controllers\AssessmentDocumentController::class, 'storeFolder'])->middleware('throttle:10,1')->name('assessment-documents.folders.store');
+    Route::get('/{document}/download', [App\Http\Controllers\AssessmentDocumentController::class, 'download'])->name('assessment-documents.download');
+    Route::delete('/{document}', [App\Http\Controllers\AssessmentDocumentController::class, 'destroy'])->middleware('throttle:30,1')->name('assessment-documents.destroy');
+});
 Route::get('/', [App\Http\Controllers\BerandaController::class, 'index'])->name('beranda');
 
 Route::get('/penilaian/{token}', [PublicAssessmentLinkController::class, 'show'])->name('assessment-links.public.show');
@@ -87,6 +95,9 @@ Auth::routes();
 
 // Admin route
 Route::group(['prefix' => 'admin', 'middleware' => ['redirect.role']], function () {
+    Route::get('/assessment-links/{assessmentLink}/documents', [App\Http\Controllers\AssessmentDocumentController::class, 'adminIndex'])->name('assessment-documents.admin.index');
+    Route::get('/assessment-links/{assessmentLink}/documents/{document}/download', [App\Http\Controllers\AssessmentDocumentController::class, 'adminDownload'])->name('assessment-documents.admin.download');
+    Route::delete('/assessment-links/{assessmentLink}/documents/{document}', [App\Http\Controllers\AssessmentDocumentController::class, 'adminDestroy'])->name('assessment-documents.admin.destroy');
 
     Route::get('/', [App\Http\Controllers\Admin\DasborController::class, 'index']);
     Route::get('/dasbor', [App\Http\Controllers\Admin\DasborController::class, 'index'])->name('home');
@@ -108,6 +119,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['redirect.role']], function 
     Route::get('/assessment-links/{assessmentLink}', [AssessmentLinkController::class, 'show'])->name('assessment-links.show');
     Route::post('/assessment-links/{assessmentLink}/candidates', [AssessmentLinkController::class, 'storeCandidates'])->name('assessment-links.candidates.store');
     Route::post('/assessment-links/{assessmentLink}/deactivate', [AssessmentLinkController::class, 'deactivate'])->name('assessment-links.deactivate');
+    Route::patch('/assessment-links/{assessmentLink}/expiry', [AssessmentLinkController::class, 'extendExpiry'])->name('assessment-links.expiry');
     
     Route::post('/lamaran/update-status-massal', [LamaranController::class, 'updateStatusMassal'])->name('lamaran.updateStatusMassal');
     Route::get('/lamaran-data', [LamaranController::class, 'getLamaranData'])->name('lamaran.data');

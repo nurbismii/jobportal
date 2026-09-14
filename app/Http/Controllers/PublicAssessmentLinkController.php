@@ -18,6 +18,10 @@ class PublicAssessmentLinkController extends Controller
             return view('public-assessment-links.pin', compact('link'));
         }
 
+        if ($link->isDocumentOnly()) {
+            return redirect()->route('assessment-documents.index', $link->public_token);
+        }
+
         return view('public-assessment-links.form', compact('link'));
     }
 

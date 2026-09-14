@@ -2,7 +2,7 @@
 
 @section('content-admin')
 <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
-    <div><h2 class="m-0 font-weight-bold text-primary">Buat Link Asesmen</h2><div class="small text-muted">Pilih kandidat dari tahapan yang sesuai. PIN hanya dipakai untuk verifikasi dan tidak akan ditampilkan kembali.</div></div>
+    <div><h2 class="m-0 font-weight-bold text-primary">Buat Link Asesmen</h2><div class="small text-muted">Pilih tipe asesmen. Hasil MCU digunakan untuk pengiriman dokumen tanpa kandidat. PIN hanya dipakai untuk verifikasi dan tidak akan ditampilkan kembali.</div></div>
     <a href="{{ route('assessment-links.index') }}" class="btn btn-secondary btn-sm mt-2 mt-md-0">Kembali</a>
 </div>
 
@@ -14,14 +14,20 @@
 @csrf
 <div class="card shadow mb-3"><div class="card-body">
     <div class="row">
-        <div class="col-md-6 mb-3"><label for="assessmentType">Tipe asesmen</label><select name="assessment_type" id="assessmentType" class="form-control" required><option value="lapangan" {{ old('assessment_type') === 'kesehatan' ? '' : 'selected' }}>Lapangan</option><option value="kesehatan" {{ old('assessment_type') === 'kesehatan' ? 'selected' : '' }}>Kesehatan</option></select></div>
+        <div class="col-md-6 mb-3"><label for="assessmentType">Tipe asesmen</label><select name="assessment_type" id="assessmentType" class="form-control" required><option value="lapangan" {{ old('assessment_type', 'lapangan') === 'lapangan' ? 'selected' : '' }}>Lapangan</option><option value="kesehatan" {{ old('assessment_type') === 'kesehatan' ? 'selected' : '' }}>Kesehatan</option><option value="mcu" {{ old('assessment_type') === 'mcu' ? 'selected' : '' }}>Hasil MCU</option></select></div>
         <div class="col-md-6 mb-3"><label>PIN (6–32 karakter)</label><input name="pin" type="password" class="form-control" minlength="6" maxlength="32" required autocomplete="new-password"></div>
+    </div>
+    <div id="mcuNotice" class="alert alert-info mb-0 d-none">Pengiriman daftar hadir dan hasil MCU oleh pihak ketiga tanpa memilih kandidat. Setelah memasukkan PIN, penerima langsung membuka halaman unggah dokumen.</div>
+    <div id="mcuExpiryGroup" class="form-group mt-3" hidden>
+        <label for="mcuExpiry">Masa berlaku link Hasil MCU sampai</label>
+        <input id="mcuExpiry" name="expires_on" type="date" class="form-control" min="{{ now('Asia/Makassar')->toDateString() }}" value="{{ old('expires_on', now('Asia/Makassar')->toDateString()) }}" disabled>
+        <small class="form-text text-muted">Pilih masa berlaku sesuai kerja sama klinik. URL yang sama dapat dipakai untuk beberapa batch dan diperpanjang melalui detail link.</small>
     </div>
     <div id="healthNotice" class="alert alert-info mb-0 d-none">Hasil tes kesehatan standar (<strong>Sehat/Tidak Sehat</strong>) ditambahkan otomatis dan terkunci. Field tambahan di bawah bersifat pelengkap.</div>
     <div id="eligibilityFieldGroup" class="form-group mt-3 mb-0"><label for="eligibilityField">Field penentu kelulusan</label><select name="eligibility_field_id" id="eligibilityField" class="form-control"><option value="">Pilih field Lulus/Tidak Lulus</option></select><small class="form-text text-muted">Kandidat dengan nilai <strong>Lulus</strong> pada field ini ditandai layak lanjut.</small>@error('eligibility_field_id')<div class="text-danger small">{{ $message }}</div>@enderror</div>
 </div></div>
 
-<div class="card shadow mb-3"><div class="card-header d-flex flex-wrap align-items-center justify-content-between"><strong>Kandidat</strong><span id="selectedCount" class="badge badge-primary">0 dipilih</span></div><div class="card-body">
+<div id="candidateSection" class="card shadow mb-3"><div class="card-header d-flex flex-wrap align-items-center justify-content-between"><strong>Kandidat</strong><span id="selectedCount" class="badge badge-primary">0 dipilih</span></div><div class="card-body">
     <div class="row">
         <div class="col-md-4 form-group"><label for="candidateSearch">Cari kandidat</label><input id="candidateSearch" type="search" class="form-control" placeholder="Ketik nama atau nomor KTP"></div>
         <div class="col-md-4 form-group"><label for="lowonganFilter">Filter lowongan</label><select id="lowonganFilter" class="form-control"><option value="">Semua lowongan</option>@foreach($lowonganOptions as $lowongan)<option value="{{ $lowongan->id }}">{{ $lowongan->nama_lowongan }} - {{ $lowongan->created_at ? tanggalIndo($lowongan->created_at->toDateString()) : '-' }}</option>@endforeach</select></div>
@@ -45,7 +51,8 @@
     <nav id="candidatePagination" class="mt-3 d-none" aria-label="Navigasi kandidat"></nav>
 </div></div>
 
-<div class="card shadow"><div class="card-header d-flex justify-content-between align-items-center"><strong>Field tambahan</strong><button class="btn btn-outline-primary btn-sm" type="button" id="addField">Tambah field</button></div><div class="card-body"><div id="fields"></div><button class="btn btn-primary" type="submit" id="submitLink">Buat Link</button></div></div>
+<div id="additionalFieldsSection" class="card shadow"><div class="card-header d-flex justify-content-between align-items-center"><strong>Field tambahan</strong><button class="btn btn-outline-primary btn-sm" type="button" id="addField">Tambah field</button></div><div class="card-body"><div id="fields"></div></div></div>
+<button class="btn btn-primary mt-3" type="submit" id="submitLink">Buat Link</button>
 </form>
 @endsection
 
@@ -80,7 +87,7 @@
         });
         selectedCount.textContent = selected + ' dipilih';
         candidateEmpty.classList.toggle('d-none', matches.length > 0);
-        submitLink.disabled = selected === 0;
+        submitLink.disabled = assessmentType.value !== 'mcu' && selected === 0;
         selectVisible.checked = visibleRows.length > 0 && visibleRows.every(function (row) { return row.querySelector('input[type="checkbox"]').checked; });
         selectVisible.indeterminate = visibleRows.some(function (row) { return row.querySelector('input[type="checkbox"]').checked; }) && !selectVisible.checked;
         pagination.classList.toggle('d-none', pageCount <= 1);
@@ -97,7 +104,20 @@
             }
         });
     }
-    function refreshHealthNotice() { var isHealth = assessmentType.value === 'kesehatan'; healthNotice.classList.toggle('d-none', !isHealth); eligibilityGroup.classList.toggle('d-none', isHealth); eligibilityField.disabled = isHealth; refreshEligibilityFields(); refreshCandidates(true); }
+    function refreshHealthNotice() {
+        var isHealth = assessmentType.value === 'kesehatan', isMcu = assessmentType.value === 'mcu';
+        healthNotice.classList.toggle('d-none', !isHealth);
+        document.getElementById('mcuNotice').classList.toggle('d-none', !isMcu);
+        document.getElementById('mcuExpiryGroup').hidden = !isMcu;
+        document.getElementById('mcuExpiry').disabled = !isMcu;
+        document.getElementById('candidateSection').hidden = isMcu;
+        document.getElementById('additionalFieldsSection').hidden = isMcu;
+        fields.querySelectorAll('input, select, textarea, button').forEach(function (input) { input.disabled = isMcu; });
+        eligibilityGroup.classList.toggle('d-none', isHealth || isMcu);
+        eligibilityField.disabled = isHealth || isMcu;
+        refreshEligibilityFields();
+        refreshCandidates(true);
+    }
     function addField() {
         var i = index++;
         var row = document.createElement('div'); row.className = 'border rounded p-3 mb-3 field-row';

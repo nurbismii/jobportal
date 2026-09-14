@@ -9,6 +9,22 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class AssessmentLink extends Model
 {
+    public const TYPE_MCU = 'mcu';
+
+    public function isDocumentOnly(): bool
+    {
+        return $this->assessment_type === self::TYPE_MCU;
+    }
+
+    public function supportsMcuDocuments(): bool
+    {
+        return $this->isDocumentOnly() || $this->assessment_type === 'kesehatan';
+    }
+
+    public function getTypeLabelAttribute(): string
+    {
+        return $this->isDocumentOnly() ? 'Hasil MCU' : ucfirst($this->assessment_type);
+    }
     protected $guarded = [];
 
     protected $casts = [
