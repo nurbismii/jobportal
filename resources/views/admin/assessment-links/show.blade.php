@@ -17,7 +17,16 @@
     <div class="col-md-8 mb-2">
         <label class="small font-weight-bold">URL publik</label>
         <div class="input-group"><input id="assessmentPublicUrl" class="form-control" readonly value="{{ route('assessment-links.public.show', $link->public_token) }}"><div class="input-group-append"><button type="button" class="btn btn-outline-primary" data-copy-target="assessmentPublicUrl">Salin</button></div></div>
-        <div class="small text-muted mt-1">PIN tidak ditampilkan kembali demi keamanan.</div>
+        <label for="detailPin" class="small font-weight-bold mt-3">PIN asesmen</label>
+        @if($link->getRawOriginal('pin_encrypted') !== null)
+        <div class="input-group">
+            <input id="detailPin" class="form-control" type="password" readonly placeholder="••••••" autocomplete="off">
+            <div class="input-group-append"><button type="button" class="btn btn-outline-secondary" id="revealPin" aria-controls="detailPin" aria-pressed="false" data-url="{{ route('assessment-links.pin', $link) }}">Tampilkan PIN</button></div>
+        </div>
+        <div id="pinStatus" class="small text-danger mt-1" role="status"></div>
+        @else
+        <div class="small text-muted">PIN link lama tidak dapat ditampilkan karena hanya disimpan sebagai hash. PIN tersebut tetap dapat digunakan untuk verifikasi.</div>
+        @endif
     </div>
     <div class="col-md-4 mb-2">
         <div>Kedaluwarsa: {{ optional($link->expires_at)->format('d-m-Y H:i') ?: '-' }}</div>
@@ -27,6 +36,24 @@
         @endif
     </div>
 </div></div></div>
+
+<div class="card shadow mb-3"><div class="card-body">
+    <h3 class="h6">Ubah PIN asesmen</h3>
+    <p class="small text-muted">URL tetap sama. Setelah disimpan, pihak klinik harus memasukkan PIN baru. Status dan masa berlaku link tidak berubah.</p>
+    <form method="POST" action="{{ route('assessment-links.pin.update', $link) }}" id="updatePinForm">
+        @csrf @method('PATCH')
+        <div class="row">
+            @foreach(['pin' => 'PIN baru', 'pin_confirmation' => 'Konfirmasi PIN baru'] as $field => $label)
+            <div class="col-md-6 mb-3"><label for="update-{{ $field }}">{{ $label }}</label>
+                <div class="input-group"><input id="update-{{ $field }}" name="{{ $field }}" type="password" class="form-control" required minlength="6" maxlength="32" autocomplete="new-password" spellcheck="false" autocapitalize="none">
+                <div class="input-group-append"><button type="button" class="btn btn-outline-secondary" data-toggle-pin aria-controls="update-{{ $field }}" aria-pressed="false" aria-label="Tampilkan {{ $label }}">Tampilkan</button></div></div>
+            </div>
+            @endforeach
+        </div>
+        @error('pin')<p class="text-danger" role="alert">{{ $message }}</p>@enderror
+        <button type="submit" class="btn btn-primary">Simpan PIN baru</button>
+    </form>
+</div></div>
 
 @if($link->isDocumentOnly() && $link->is_active)
 <div class="card shadow mb-3"><div class="card-body">
@@ -93,7 +120,27 @@
 @endsection
 
 @push('scripts')
+@include('partials.assessment-pin-toggle')
 <script>
+document.getElementById('updatePinForm').addEventListener('submit', function () {
+    var button = this.querySelector('button[type=submit]');
+    button.disabled = true; button.textContent = 'Menyimpan…';
+});
+var revealPin = document.getElementById('revealPin');
+if (revealPin) revealPin.addEventListener('click', async function () {
+    var input = document.getElementById('detailPin'), status = document.getElementById('pinStatus');
+    if (input.type === 'text') {
+        input.type = 'password'; input.value = ''; revealPin.textContent = 'Tampilkan PIN'; revealPin.setAttribute('aria-pressed', 'false'); return;
+    }
+    revealPin.disabled = true; status.textContent = 'Memuat PIN…';
+    try {
+        var response = await fetch(revealPin.dataset.url, { headers: { Accept: 'application/json' }, cache: 'no-store' });
+        if (!response.ok) throw new Error('PIN tidak dapat ditampilkan. Periksa akses admin lalu coba kembali.');
+        var data = await response.json();
+        input.value = data.pin; input.type = 'text'; revealPin.textContent = 'Sembunyikan PIN'; revealPin.setAttribute('aria-pressed', 'true'); status.textContent = '';
+    } catch (error) { status.textContent = error.message; }
+    finally { revealPin.disabled = false; }
+});
 document.querySelectorAll('[data-copy-target]').forEach(function (button) { button.addEventListener('click', function () { var input = document.getElementById(button.dataset.copyTarget); if (navigator.clipboard) navigator.clipboard.writeText(input.value); input.select(); button.textContent = 'Tersalin'; }); });
 var deactivateButton = document.querySelector('[data-deactivate-link]');
 if (deactivateButton) {

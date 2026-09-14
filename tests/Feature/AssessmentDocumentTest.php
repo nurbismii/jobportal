@@ -25,6 +25,7 @@ class AssessmentDocumentTest extends TestCase
         DB::setDefaultConnection('documents_testing');
         require_once database_path('migrations/2026_07_13_000000_create_assessment_link_tables.php');
         (new \CreateAssessmentLinkTables())->up();
+        (require database_path('migrations/2026_09_14_030000_add_pin_version_to_assessment_links.php'))->up();
         (require database_path('migrations/2026_09_14_000000_create_assessment_documents_tables.php'))->up();
         (require database_path('migrations/2026_09_14_010000_add_deletion_tracking_to_assessment_documents.php'))->up();
         Storage::fake('assessment_private');

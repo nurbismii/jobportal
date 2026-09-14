@@ -19,8 +19,11 @@
                             @csrf
                             <div class="mb-3">
                                 <label for="pin" class="form-label">PIN</label>
-                                <input id="pin" name="pin" type="password" class="form-control @error('pin') is-invalid @enderror" required autocomplete="off">
-                                @error('pin')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                <div class="input-group">
+                                    <input id="pin" name="pin" type="password" class="form-control @error('pin') is-invalid @enderror" required autocomplete="off" spellcheck="false" autocapitalize="none" @error('pin') aria-invalid="true" aria-describedby="pin-error" @enderror>
+                                    <button type="button" class="btn btn-outline-secondary" data-toggle-pin aria-controls="pin" aria-pressed="false" aria-label="Tampilkan PIN">Tampilkan</button>
+                                </div>
+                                @error('pin')<div id="pin-error" class="invalid-feedback d-block">{{ $message }}</div>@enderror
                             </div>
                             <button class="btn btn-primary w-100" type="submit">Buka Formulir</button>
                         </form>
@@ -29,5 +32,6 @@
             </div>
         </div>
     </main>
+    @include('partials.assessment-pin-toggle')
 </body>
 </html>

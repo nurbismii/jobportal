@@ -21,6 +21,61 @@ use Tests\TestCase;
 
 class AssessmentLinkTest extends TestCase
 {
+    public function test_pin_update_supports_legacy_links_and_invalidates_previous_public_access(): void
+    {
+        $admin = User::create(['name' => 'Admin', 'email' => 'update-pin@example.test', 'password' => 'secret', 'role' => 'admin']);
+        $link = app(AssessmentLinkService::class)->create(['assessment_type' => 'mcu', 'pin' => 'old-pin'], [], $admin->id);
+        $link->update(['pin_encrypted' => null]);
+        $token = $link->public_token;
+        $this->post(route('assessment-links.public.unlock', $token), ['pin' => 'old-pin'])->assertRedirect();
+        $this->get(route('assessment-links.public.show', $token))->assertRedirect();
+        $this->actingAs($admin)->patch(route('assessment-links.pin.update', $link), ['pin' => 'new-pin', 'pin_confirmation' => 'new-pin'])->assertSessionHasNoErrors();
+        $link->refresh();
+        $this->assertSame($token, $link->public_token);
+        $this->assertSame('new-pin', $link->pin_encrypted);
+        $this->assertTrue(Hash::check('new-pin', $link->pin_hash));
+        $this->assertFalse(Hash::check('old-pin', $link->pin_hash));
+        $this->get(route('assessment-links.pin', $link))->assertJson(['pin' => 'new-pin']);
+        $this->get(route('assessment-links.public.show', $token))->assertOk()->assertSee('Verifikasi PIN');
+        $this->get(route('assessment-documents.index', $token))->assertForbidden();
+        $this->post(route('assessment-links.public.unlock', $token), ['pin' => 'new-pin'])->assertRedirect();
+        $this->get(route('assessment-links.public.show', $token))->assertRedirect();
+    }
+
+    public function test_invalid_pin_update_never_flashes_secrets_and_requires_admin(): void
+    {
+        $admin = User::create(['name' => 'Admin', 'email' => 'invalid-pin@example.test', 'password' => 'secret', 'role' => 'admin']);
+        $link = app(AssessmentLinkService::class)->create(['assessment_type' => 'mcu', 'pin' => 'old-pin'], [], $admin->id);
+        $url = route('assessment-links.pin.update', $link);
+        $this->patch($url, ['pin' => 'new-pin', 'pin_confirmation' => 'new-pin'])->assertRedirect('/login');
+        $this->actingAs($admin)->patch($url, ['pin' => 'new-pin', 'pin_confirmation' => 'mismatch'])->assertSessionHasErrors('pin');
+        $this->assertNull(session()->getOldInput('pin'));
+        $this->assertNull(session()->getOldInput('pin_confirmation'));
+        $this->assertTrue(Hash::check('old-pin', $link->fresh()->pin_hash));
+        $admin->role = 'user';
+        $this->actingAs($admin)->patch($url, ['pin' => 'new-pin', 'pin_confirmation' => 'new-pin'])->assertRedirect('/');
+    }
+
+    public function test_pin_is_encrypted_hidden_from_serialization_and_only_revealed_to_admin(): void
+    {
+        $admin = User::create(['name' => 'Admin', 'email' => 'pin-admin@example.test', 'password' => 'secret', 'role' => 'admin']);
+        $link = app(AssessmentLinkService::class)->create(['assessment_type' => 'mcu', 'pin' => 'ClinicTest827'], [], $admin->id);
+        $this->assertNotSame('ClinicTest827', DB::table('assessment_links')->where('id', $link->id)->value('pin_encrypted'));
+        $this->assertArrayNotHasKey('pin_encrypted', $link->toArray());
+        $this->assertArrayNotHasKey('pin_hash', $link->toArray());
+        $this->get(route('assessment-links.pin', $link))->assertRedirect('/login');
+        $this->actingAs($admin)->get(route('assessment-links.show', $link))->assertOk()->assertDontSee('ClinicTest827');
+        $response = $this->get(route('assessment-links.pin', $link));
+        $response->assertOk()->assertJson(['pin' => 'ClinicTest827']);
+        $this->assertStringContainsString('no-store', $response->headers->get('Cache-Control'));
+        $admin->role = 'user';
+        $this->actingAs($admin)->get(route('assessment-links.pin', $link))->assertRedirect('/');
+        $admin->role = 'admin';
+        $link->update(['pin_encrypted' => null]);
+        $this->actingAs($admin)->get(route('assessment-links.pin', $link))->assertNotFound();
+        $this->assertTrue(app(AssessmentLinkService::class)->verifyPin($link, 'ClinicTest827'));
+    }
+
     public function test_mcu_link_is_created_without_candidates_and_opens_document_upload(): void
     {
         $admin = User::create(['name' => 'MCU Admin', 'email' => 'mcu-admin@example.test', 'password' => 'secret', 'role' => 'admin']);
@@ -116,6 +171,8 @@ class AssessmentLinkTest extends TestCase
         $this->assertFileExists($migrationPath);
         require_once $migrationPath;
         (new \CreateAssessmentLinkTables())->up();
+        (require database_path('migrations/2026_09_14_030000_add_pin_version_to_assessment_links.php'))->up();
+        (require database_path('migrations/2026_09_14_020000_add_encrypted_pin_to_assessment_links.php'))->up();
     }
 
     public function test_assessment_link_persists_schema_accessibility_and_candidate_lamaran_relation()

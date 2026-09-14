@@ -2,7 +2,7 @@
 
 @section('content-admin')
 <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
-    <div><h2 class="m-0 font-weight-bold text-primary">Buat Link Asesmen</h2><div class="small text-muted">Pilih tipe asesmen. Hasil MCU digunakan untuk pengiriman dokumen tanpa kandidat. PIN hanya dipakai untuk verifikasi dan tidak akan ditampilkan kembali.</div></div>
+    <div><h2 class="m-0 font-weight-bold text-primary">Buat Link Asesmen</h2><div class="small text-muted">Pilih tipe asesmen. Hasil MCU digunakan untuk pengiriman dokumen tanpa kandidat. PIN dipakai untuk verifikasi dan dapat ditampilkan kembali oleh admin pada detail link.</div></div>
     <a href="{{ route('assessment-links.index') }}" class="btn btn-secondary btn-sm mt-2 mt-md-0">Kembali</a>
 </div>
 
@@ -15,7 +15,13 @@
 <div class="card shadow mb-3"><div class="card-body">
     <div class="row">
         <div class="col-md-6 mb-3"><label for="assessmentType">Tipe asesmen</label><select name="assessment_type" id="assessmentType" class="form-control" required><option value="lapangan" {{ old('assessment_type', 'lapangan') === 'lapangan' ? 'selected' : '' }}>Lapangan</option><option value="kesehatan" {{ old('assessment_type') === 'kesehatan' ? 'selected' : '' }}>Kesehatan</option><option value="mcu" {{ old('assessment_type') === 'mcu' ? 'selected' : '' }}>Hasil MCU</option></select></div>
-        <div class="col-md-6 mb-3"><label>PIN (6–32 karakter)</label><input name="pin" type="password" class="form-control" minlength="6" maxlength="32" required autocomplete="new-password"></div>
+        <div class="col-md-6 mb-3">
+            <label for="assessmentPin">PIN (6–32 karakter)</label>
+            <div class="input-group">
+                <input id="assessmentPin" name="pin" type="password" class="form-control" minlength="6" maxlength="32" required autocomplete="new-password" spellcheck="false" autocapitalize="none">
+                <div class="input-group-append"><button type="button" class="btn btn-outline-secondary" data-toggle-pin aria-controls="assessmentPin" aria-pressed="false" aria-label="Tampilkan PIN">Tampilkan</button></div>
+            </div>
+        </div>
     </div>
     <div id="mcuNotice" class="alert alert-info mb-0 d-none">Pengiriman daftar hadir dan hasil MCU oleh pihak ketiga tanpa memilih kandidat. Setelah memasukkan PIN, penerima langsung membuka halaman unggah dokumen.</div>
     <div id="mcuExpiryGroup" class="form-group mt-3" hidden>
@@ -57,6 +63,7 @@
 @endsection
 
 @push('scripts')
+@include('partials.assessment-pin-toggle')
 <script>
 (function () {
     var fields = document.getElementById('fields'), index = 0, assessmentType = document.getElementById('assessmentType'), healthNotice = document.getElementById('healthNotice'), eligibilityGroup = document.getElementById('eligibilityFieldGroup'), eligibilityField = document.getElementById('eligibilityField');

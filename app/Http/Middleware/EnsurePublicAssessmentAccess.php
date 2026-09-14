@@ -12,7 +12,7 @@ class EnsurePublicAssessmentAccess
     {
         $link = AssessmentLink::query()->where('public_token', $request->route('token'))->firstOrFail();
         abort_unless($link->isAccessibleAt(now('Asia/Makassar')), 404);
-        abort_unless(session()->has('assessment_link_access.'.$link->id), 403);
+        abort_unless($link->hasPublicSessionAccess(), 403);
 
         $request->attributes->set('publicAssessmentLink', $link);
 

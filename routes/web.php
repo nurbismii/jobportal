@@ -117,6 +117,8 @@ Route::group(['prefix' => 'admin', 'middleware' => ['redirect.role']], function 
     Route::get('/assessment-links/create', [AssessmentLinkController::class, 'create'])->name('assessment-links.create');
     Route::post('/assessment-links', [AssessmentLinkController::class, 'store'])->name('assessment-links.store');
     Route::get('/assessment-links/{assessmentLink}', [AssessmentLinkController::class, 'show'])->name('assessment-links.show');
+    Route::get('/assessment-links/{assessmentLink}/pin', [AssessmentLinkController::class, 'revealPin'])->middleware('throttle:10,1')->name('assessment-links.pin');
+    Route::patch('/assessment-links/{assessmentLink}/pin', [AssessmentLinkController::class, 'updatePin'])->middleware('throttle:10,1')->name('assessment-links.pin.update');
     Route::post('/assessment-links/{assessmentLink}/candidates', [AssessmentLinkController::class, 'storeCandidates'])->name('assessment-links.candidates.store');
     Route::post('/assessment-links/{assessmentLink}/deactivate', [AssessmentLinkController::class, 'deactivate'])->name('assessment-links.deactivate');
     Route::patch('/assessment-links/{assessmentLink}/expiry', [AssessmentLinkController::class, 'extendExpiry'])->name('assessment-links.expiry');

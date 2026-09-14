@@ -11,6 +11,12 @@ class AssessmentLink extends Model
 {
     public const TYPE_MCU = 'mcu';
 
+    public function hasPublicSessionAccess(): bool
+    {
+        return session()->has('assessment_link_access.'.$this->id)
+            && (int) session('assessment_link_pin_version.'.$this->id, 0) === (int) $this->pin_version;
+    }
+
     public function isDocumentOnly(): bool
     {
         return $this->assessment_type === self::TYPE_MCU;
@@ -27,7 +33,10 @@ class AssessmentLink extends Model
     }
     protected $guarded = [];
 
+    protected $hidden = ['pin_hash', 'pin_encrypted'];
+
     protected $casts = [
+        'pin_encrypted' => 'encrypted',
         'form_schema' => 'array',
         'expires_at' => 'datetime',
         'is_active' => 'boolean',

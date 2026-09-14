@@ -14,7 +14,7 @@ class PublicAssessmentLinkController extends Controller
     {
         $link = $this->accessibleLink($token);
 
-        if (!session()->has($this->accessKey($link))) {
+        if (!$link->hasPublicSessionAccess()) {
             return view('public-assessment-links.pin', compact('link'));
         }
 
@@ -35,6 +35,7 @@ class PublicAssessmentLinkController extends Controller
         }
 
         session()->put($this->accessKey($link), true);
+        session()->put('assessment_link_pin_version.'.$link->id, (int) $link->pin_version);
 
         return redirect()->route('assessment-links.public.show', $link->public_token);
     }

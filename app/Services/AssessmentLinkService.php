@@ -84,6 +84,7 @@ class AssessmentLinkService
                 'assessment_type' => $type,
                 'public_token' => $this->uniquePublicToken(),
                 'pin_hash' => Hash::make($pin),
+                'pin_encrypted' => $pin,
                 'form_schema' => $schema,
                 'created_by' => $creatorId,
                 'expires_at' => $expiresAt,

@@ -146,6 +146,31 @@ class AssessmentLinkController extends Controller
         return redirect()->route('assessment-links.show', $assessmentLink);
     }
 
+    public function revealPin(AssessmentLink $assessmentLink)
+    {
+        $pin = $assessmentLink->pin_encrypted;
+        return response()->json(
+            $pin === null ? ['message' => 'PIN link lama tidak tersedia karena hanya disimpan sebagai hash.'] : ['pin' => $pin],
+            $pin === null ? 404 : 200,
+            ['Cache-Control' => 'private, no-store', 'Pragma' => 'no-cache']
+        );
+    }
+
+    public function updatePin(\App\Http\Requests\Admin\UpdateAssessmentLinkPinRequest $request, AssessmentLink $assessmentLink)
+    {
+        \Illuminate\Support\Facades\DB::transaction(function () use ($request, $assessmentLink) {
+            $link = AssessmentLink::whereKey($assessmentLink->id)->lockForUpdate()->firstOrFail();
+            $link->update([
+                'pin_hash' => \Illuminate\Support\Facades\Hash::make($request->validated('pin')),
+                'pin_encrypted' => $request->validated('pin'),
+                'pin_version' => (int) $link->pin_version + 1,
+            ]);
+        });
+        Alert::success('Berhasil', 'PIN diperbarui. Klinik perlu membuka link dan memasukkan PIN baru.');
+
+        return redirect()->route('assessment-links.show', $assessmentLink);
+    }
+
     public function extendExpiry(\Illuminate\Http\Request $request, AssessmentLink $assessmentLink)
     {
         abort_unless($assessmentLink->isDocumentOnly() && $assessmentLink->is_active, 403);
