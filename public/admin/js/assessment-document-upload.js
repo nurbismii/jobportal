@@ -228,6 +228,7 @@
                     form.closest('[data-category]').querySelector('[data-stage-status]').textContent = 'Sudah dikirim';
                     const recap = document.querySelector('[data-category=mcu_recap]');
                     if (recap) {
+                        recap.classList.remove('is-locked');
                         recap.querySelectorAll('input[type=file], button[type=submit]').forEach(control => { control.disabled = false; });
                         const hint = recap.querySelector('[data-stage-hint]');
                         if (hint) hint.hidden = true;
