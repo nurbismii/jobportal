@@ -12,6 +12,7 @@ use Illuminate\Notifications\Notifiable;
 use App\Notifications\VerifikasiEmailNotification;
 use Illuminate\Support\Facades\Schema;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Validation\ValidationException;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -20,6 +21,17 @@ class User extends Authenticatable implements MustVerifyEmail
     private const LOCKABLE_ACTIVE_EMPLOYMENT_AREAS = ['VDNI', 'VDNIP'];
 
     private static ?bool $supportsVerificationResendTracking = null;
+
+    protected static function booted(): void
+    {
+        static::deleting(function (User $user) {
+            if ($user->biodata()->exists()) {
+                throw ValidationException::withMessages([
+                    'user' => 'Akun masih memiliki biodata. Selesaikan penanganan biodata melalui proses penghapusan pengguna terlebih dahulu.',
+                ]);
+            }
+        });
+    }
 
     /**
      * The attributes that are mass assignable.

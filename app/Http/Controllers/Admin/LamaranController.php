@@ -142,6 +142,10 @@ class LamaranController extends Controller
             Excel::import($import, $request->file('file'));
 
             if ($import->failures()->isNotEmpty()) {
+                $details = $import->failures()->take(10)->map(function ($failure) {
+                    return 'Baris ' . $failure->row() . ': ' . implode(' ', $failure->errors());
+                })->implode("\n");
+                Alert::warning('Import selesai dengan catatan', $import->failures()->count() . " baris dilewati. Baris valid tetap diproses.\n" . $details);
                 return back()->with('errors_import', $import->failures());
             }
 

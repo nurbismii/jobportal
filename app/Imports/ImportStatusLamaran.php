@@ -12,10 +12,13 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Maatwebsite\Excel\Concerns\SkipsFailures;
+use Maatwebsite\Excel\Concerns\RemembersRowNumber;
+use Maatwebsite\Excel\Validators\Failure;
+use Illuminate\Validation\ValidationException;
 
 class ImportStatusLamaran implements ToModel, WithHeadingRow, WithChunkReading, SkipsOnFailure
 {
-    use SkipsFailures;
+    use SkipsFailures, RemembersRowNumber;
 
     protected $requiredHeaders = ['no_ktp', 'status_tahapan', 'tanggal_proses', 'tempat'];
 
@@ -51,6 +54,17 @@ class ImportStatusLamaran implements ToModel, WithHeadingRow, WithChunkReading, 
             throw new \Exception("No KTP '$noKtp' tidak ditemukan dalam database.");
         }
 
+        if (! $biodata->user()->exists()) {
+            $this->onFailure(new Failure(
+                $this->getRowNumber(),
+                'no_ktp',
+                ["Biodata ID {$biodata->id} tidak memiliki akun user yang valid. Pulihkan relasi akun sebelum memperbarui status."],
+                $row
+            ));
+
+            return null;
+        }
+
         $lamaran = Lamaran::with('lowongan:id,permintaan_tenaga_kerja_id')
             ->where('biodata_id', $biodata->id)
             ->latest('id')
@@ -62,17 +76,26 @@ class ImportStatusLamaran implements ToModel, WithHeadingRow, WithChunkReading, 
 
         $tanggalProses = $this->parseDate($row['tanggal_proses'] ?? null);
 
-        $this->lamaranStatusService->apply(
-            $lamaran,
-            (string) ($row['status_tahapan'] ?? ''),
-            $tanggalProses ?: ($row['tanggal_proses'] ?? null),
-            now()->format('H:i:s'),
-            $row['tempat'] ?? '-',
-            '-',
-            [
-                'signing_method' => $this->normalizeSigningMethod($row['signing_method'] ?? null),
-            ]
-        );
+        try {
+            $this->lamaranStatusService->apply(
+                $lamaran,
+                (string) ($row['status_tahapan'] ?? ''),
+                $tanggalProses ?: ($row['tanggal_proses'] ?? null),
+                now()->format('H:i:s'),
+                $row['tempat'] ?? '-',
+                '-',
+                [
+                    'signing_method' => $this->normalizeSigningMethod($row['signing_method'] ?? null),
+                ]
+            );
+        } catch (ValidationException $exception) {
+            $this->onFailure(new Failure(
+                $this->getRowNumber(),
+                'no_ktp',
+                array_merge(...array_values($exception->errors())),
+                $row
+            ));
+        }
 
         return null;
     }

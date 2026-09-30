@@ -539,6 +539,9 @@ class BiodataController extends Controller
             $bakatSummary,
             $prestasiSummary
         ) {
+            // Serialize profile creation with automatic account cleanup.
+            \App\Models\User::whereKey(auth()->id())->lockForUpdate()->firstOrFail();
+
             $biodata = Biodata::updateOrCreate(
                 [
                     'user_id' => auth()->id()

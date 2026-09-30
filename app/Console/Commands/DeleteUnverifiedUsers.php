@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class DeleteUnverifiedUsers extends Command
 {
@@ -16,6 +17,7 @@ class DeleteUnverifiedUsers extends Command
         $limit = Carbon::now()->subHours(1);
 
         $usersQuery = User::whereNull('email_verified_at')
+            ->whereDoesntHave('biodata')
             ->where('role', 'user');
 
         if (User::supportsVerificationResendTracking()) {
@@ -32,15 +34,19 @@ class DeleteUnverifiedUsers extends Command
             $usersQuery->where('updated_at', '<=', $limit);
         }
 
-        $users = $usersQuery->get();
+        $count = 0;
+        $usersQuery->select('users.id')->chunkById(100, function ($users) use ($usersQuery, &$count) {
+            foreach ($users as $candidate) {
+                $count += DB::transaction(function () use ($candidate, $usersQuery) {
+                    $user = User::whereKey($candidate->id)->lockForUpdate()->first();
+                    if (! $user || ! (clone $usersQuery)->whereKey($user->id)->exists()) {
+                        return 0;
+                    }
 
-        $count = $users->count();
-
-        if ($count > 0) {
-            foreach ($users as $user) {
-                $user->delete();
+                    return $user->delete() ? 1 : 0;
+                });
             }
-        }
+        });
 
         $this->info($count . ' unverified users deleted.');
     }
