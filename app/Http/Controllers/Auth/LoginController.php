@@ -53,8 +53,10 @@ class LoginController extends Controller
 
     protected function authenticated($request, $user)
     {
-        if ((int) $user->status_akun !== 1) {
+        if ((int) $user->status_akun !== 1 || ($user->role === 'user' && ! $user->hasVerifiedEmail())) {
             Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
 
             return redirect()->route('verification.notice.public', [
                 'email' => $user->email,

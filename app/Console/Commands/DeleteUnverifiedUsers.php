@@ -17,6 +17,7 @@ class DeleteUnverifiedUsers extends Command
         $limit = Carbon::now()->subHours(1);
 
         $usersQuery = User::whereNull('email_verified_at')
+            ->where('status_akun', 0)
             ->whereDoesntHave('biodata')
             ->where('role', 'user');
 

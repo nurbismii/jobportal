@@ -180,22 +180,33 @@ class PendaftaranController extends Controller
 
     public function konfirmasiEmailToken($token)
     {
-        $check = User::where('email_verifikasi_token', $token)->first();
+        $check = DB::transaction(function () use ($token) {
+            $user = User::where('email_verifikasi_token', $token)->lockForUpdate()->first();
+
+            if ($user && ! $user->hasVerifiedEmail()) {
+                $user->forceFill([
+                    'email_verified_at' => Carbon::now(),
+                    'status_akun' => 1,
+                ])->save();
+            }
+
+            return $user;
+        });
 
         if (!$check) {
             Alert::error('Tautan tidak valid', 'Tautan verifikasi tidak valid atau sudah kedaluwarsa. Jika akun masih menunggu verifikasi, kirim ulang email verifikasi. Jika sudah lewat 1 jam, silakan daftar ulang.');
             return redirect()->route('verification.notice.public');
         }
 
-        if ($check->status_akun == 1) {
+        if (! $check->wasChanged('email_verified_at')) {
+            if ((int) $check->status_akun !== 1) {
+                Alert::warning('Akun tidak aktif', 'Email sudah terverifikasi, tetapi akun tidak aktif. Hubungi admin untuk pemeriksaan akun.');
+                return redirect()->route('login');
+            }
+
             Alert::success('Akun sudah aktif', 'Email Anda sudah terverifikasi. Silakan login.');
             return redirect()->route('login');
         }
-
-        User::where('email_verifikasi_token', $token)->update([
-            'email_verified_at' => Carbon::now(),
-            'status_akun' => 1
-        ]);
 
         return view('verifikasi-berhasil');
     }
@@ -213,7 +224,7 @@ class PendaftaranController extends Controller
         try {
             $user = User::where('email', $validatedData['email'])
                 ->where('role', 'user')
-                ->where('status_akun', 0)
+                ->whereIn('status_akun', [0, 1])
                 ->whereNull('email_verified_at')
                 ->first();
             $supportsVerificationResendTracking = User::supportsVerificationResendTracking();

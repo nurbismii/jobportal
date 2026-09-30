@@ -31,6 +31,11 @@ class OrphanBiodataTest extends TestCase
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('role')->default('user');
+            $table->unsignedTinyInteger('status_akun')->default(0);
+            $table->string('email')->nullable();
+            $table->string('password')->nullable();
+            $table->string('email_verifikasi_token')->nullable();
+            $table->string('remember_token')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->timestamps();
         });
@@ -176,6 +181,85 @@ class OrphanBiodataTest extends TestCase
         $this->assertEmpty(Schema::getForeignKeys('biodata'));
     }
 
+    public function test_cleanup_preserves_active_account_even_when_verification_timestamp_is_missing(): void
+    {
+        $user = User::create(['status_akun' => 1]);
+        User::whereKey($user->id)->update(['created_at' => now()->subHours(2), 'updated_at' => now()->subHours(2)]);
+        $this->artisan('users:cleanup-unverified')->assertSuccessful();
+        $this->assertNotNull($user->fresh());
+    }
+
+    public function test_active_candidate_without_verified_email_cannot_login_or_use_existing_session(): void
+    {
+        $user = User::create(['email' => 'pending@example.test', 'password' => bcrypt('secret123'), 'status_akun' => 1]);
+        $this->post('/login', ['email' => $user->email, 'password' => 'secret123'])
+            ->assertRedirect(route('verification.notice.public', ['email' => $user->email]));
+        $this->assertGuest();
+        $this->actingAs($user->fresh())->get('/biodata')
+            ->assertRedirect(route('verification.notice.public', ['email' => $user->email]));
+        $this->assertGuest();
+    }
+
+    public function test_verification_repairs_active_account_with_missing_timestamp_and_allows_login(): void
+    {
+        $user = User::create(['email' => 'verify@example.test', 'password' => bcrypt('secret123'), 'status_akun' => 1, 'email_verifikasi_token' => 'valid-token']);
+        $this->get('/konfirmasi-email-token/valid-token')->assertOk();
+        $this->assertTrue($user->fresh()->hasVerifiedEmail());
+        $this->post('/login', ['email' => $user->email, 'password' => 'secret123'])->assertRedirect();
+        $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_active_admin_login_remains_compatible(): void
+    {
+        $user = User::create(['email' => 'admin@example.test', 'password' => bcrypt('secret123'), 'status_akun' => 1, 'role' => 'admin']);
+        $this->post('/login', ['email' => $user->email, 'password' => 'secret123'])->assertRedirect();
+        $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_verification_activates_pending_account_but_does_not_reactivate_disabled_verified_account(): void
+    {
+        $user = User::create(['status_akun' => 0, 'email_verifikasi_token' => 'pending-token']);
+        $this->get('/konfirmasi-email-token/pending-token')->assertOk();
+        $this->assertTrue($user->fresh()->hasVerifiedEmail());
+        $this->assertSame(1, (int) $user->fresh()->status_akun);
+        $user->refresh()->update(['status_akun' => 0]);
+        $this->get('/konfirmasi-email-token/pending-token')->assertRedirect(route('login'));
+        $this->assertSame(0, (int) $user->fresh()->status_akun);
+        $this->get('/konfirmasi-email-token/invalid-token')->assertRedirect(route('verification.notice.public'));
+    }
+
+    public function test_active_unverified_candidate_can_request_verification_email(): void
+    {
+        $user = User::create(['email' => 'resend@example.test', 'status_akun' => 1, 'email_verifikasi_token' => 'old-token']);
+        $this->mock(\App\Services\FallbackMailService::class)->shouldReceive('send')->once();
+        $this->post('/verifikasi-email/kirim-ulang', ['email' => $user->email])->assertRedirect();
+        $this->assertNotSame('old-token', $user->fresh()->email_verifikasi_token);
+        $this->assertFalse($user->fresh()->hasVerifiedEmail());
+    }
+
+    public function test_recovered_account_with_biodata_survives_expired_reverification(): void
+    {
+        Schema::create('password_resets', function (Blueprint $table) {
+            $table->string('email');
+            $table->string('token');
+            $table->timestamp('created_at');
+        });
+        $user = User::create(['email' => 'old@example.test', 'status_akun' => 1, 'email_verified_at' => now(), 'email_verifikasi_token' => 'recovery-token']);
+        $biodata = Biodata::create(['user_id' => $user->id]);
+        Lamaran::create(['biodata_id' => $biodata->id]);
+        DB::table('password_resets')->insert(['email' => $user->email, 'token' => 'recovery-token', 'created_at' => now()]);
+        $this->mock(\App\Services\FallbackMailService::class)->shouldReceive('send')->once();
+        $this->patch('/lupa-akun/recovery-token', [
+            'email' => 'new@example.test', 'password' => 'secret123', 'password_confirmation' => 'secret123',
+        ])->assertRedirect(route('verification.notice.public', ['email' => 'new@example.test']));
+        $this->assertFalse($user->fresh()->hasVerifiedEmail());
+        User::whereKey($user->id)->update(['created_at' => now()->subHours(2), 'updated_at' => now()->subHours(2)]);
+        $this->artisan('users:cleanup-unverified')->assertSuccessful();
+        $this->assertNotNull($user->fresh());
+        $this->assertDatabaseHas('biodata', ['id' => $biodata->id, 'user_id' => $user->id]);
+        $this->assertDatabaseCount('lamaran', 1);
+    }
+
     public function test_database_constraints_prevent_orphans_even_without_model_events(): void
     {
         DB::statement('PRAGMA foreign_keys = ON');
@@ -204,5 +288,62 @@ class OrphanBiodataTest extends TestCase
         $this->assertSame(1, DB::table('users')->where('id', $user->id)->delete());
         $migration->down();
         $this->assertEmpty(Schema::getForeignKeys('biodata'));
+    }
+
+    public function test_delete_command_previews_then_backs_up_and_deletes_only_selected_records(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('local');
+        $target = Biodata::create(['user_id' => 999]);
+        $other = Biodata::create(['user_id' => 998]);
+        $lamaran = Lamaran::create(['biodata_id' => $target->id]);
+        DB::table('riwayat_proses_lamaran')->insert(['user_id' => 999, 'lamaran_id' => $lamaran->id]);
+        $args = ['ids' => [(string) $target->id], '--database-name' => ':memory:', '--expected-lamaran' => '1'];
+        $this->artisan('biodata:delete-orphans', $args)->assertSuccessful();
+        $this->assertDatabaseCount('biodata', 2);
+        $this->assertSame([], \Illuminate\Support\Facades\Storage::disk('local')->allFiles());
+        $this->artisan('biodata:delete-orphans', $args + ['--execute' => true])->assertSuccessful();
+        $this->assertDatabaseHas('biodata', ['id' => $other->id]);
+        $this->assertDatabaseMissing('biodata', ['id' => $target->id]);
+        $this->assertDatabaseCount('lamaran', 0);
+        $this->assertDatabaseCount('riwayat_proses_lamaran', 0);
+        $disk = \Illuminate\Support\Facades\Storage::disk('local');
+        $files = $disk->allFiles('private/orphan-backups');
+        $this->assertCount(1, $files);
+        $backup = json_decode($disk->get($files[0]), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertSame($target->id, $backup['tables']['biodata'][0]['id']);
+        $this->assertCount(1, $backup['tables']['riwayat_proses_lamaran']);
+    }
+
+    public function test_delete_command_rejects_valid_user_wrong_database_count_and_assessment_dependency(): void
+    {
+        $user = User::create([]);
+        $target = Biodata::create(['user_id' => $user->id]);
+        $args = ['ids' => [(string) $target->id], '--database-name' => ':memory:', '--expected-lamaran' => '0', '--execute' => true];
+        $this->artisan('biodata:delete-orphans', $args)->assertFailed();
+        $target->update(['user_id' => 999]);
+        $this->artisan('biodata:delete-orphans', array_replace($args, ['--database-name' => 'wrong']))->assertFailed();
+        $this->artisan('biodata:delete-orphans', array_replace($args, ['--expected-lamaran' => '1']))->assertFailed();
+        $lamaran = Lamaran::create(['biodata_id' => $target->id]);
+        Schema::create('assessment_link_candidates', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('lamaran_id');
+        });
+        DB::table('assessment_link_candidates')->insert(['lamaran_id' => $lamaran->id]);
+        $this->artisan('biodata:delete-orphans', array_replace($args, ['--expected-lamaran' => '1']))->assertFailed();
+        $this->assertDatabaseCount('biodata', 1);
+        $this->assertDatabaseCount('lamaran', 1);
+    }
+
+    public function test_delete_command_rolls_back_when_database_rejects_deletion(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('local');
+        $target = Biodata::create(['user_id' => 999]);
+        Lamaran::create(['biodata_id' => $target->id]);
+        DB::unprepared("CREATE TRIGGER prevent_delete BEFORE DELETE ON biodata BEGIN SELECT RAISE(ABORT, 'test failure'); END");
+        $this->artisan('biodata:delete-orphans', [
+            'ids' => [(string) $target->id], '--database-name' => ':memory:', '--expected-lamaran' => '1', '--execute' => true,
+        ])->assertFailed();
+        $this->assertDatabaseCount('biodata', 1);
+        $this->assertDatabaseCount('lamaran', 1);
     }
 }

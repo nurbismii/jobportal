@@ -15,7 +15,7 @@ class CekVerifikasiEmail
             return redirect()->route('login');
         }
 
-        if (Auth::user()->status_akun != 1) {
+        if (Auth::user()->status_akun != 1 || (Auth::user()->role === 'user' && ! Auth::user()->hasVerifiedEmail())) {
             $email = Auth::user()->email;
 
             Auth::logout();
