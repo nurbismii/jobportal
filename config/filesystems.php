@@ -30,6 +30,13 @@ return [
 
     'disks' => [
 
+        'hr_email_private' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/hr-email-attachments'),
+            'visibility' => 'private',
+            'throw' => true,
+        ],
+
         'assessment_private' => [
             'driver' => 'local',
             'root' => storage_path('app/private/assessment-documents'),

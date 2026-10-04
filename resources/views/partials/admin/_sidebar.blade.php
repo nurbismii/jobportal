@@ -105,6 +105,13 @@
         </a>
     </li>
 
+    <li class="nav-item {{ request()->routeIs('email-blast-log.create') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('email-blast-log.create') }}">
+            <i class="fas fa-fw fa-envelope"></i>
+            <span>Blast Email HR</span>
+        </a>
+    </li>
+
     <li class="nav-item {{ request()->routeIs('account-recovery-requests.*') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('account-recovery-requests.index') }}">
             <i class="fas fa-fw fa-unlock-alt"></i>

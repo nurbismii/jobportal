@@ -41,7 +41,7 @@ return [
             'encryption' => env('MAIL_ENCRYPTION', 'tls'),
             'username' => env('MAIL_USERNAME'),
             'password' => env('MAIL_PASSWORD'),
-            'timeout' => null,
+            'timeout' => (int) env('MAIL_TIMEOUT', 20),
             'auth_mode' => null,
         ],
 
@@ -52,7 +52,7 @@ return [
             'encryption' => env('MAIL_ENCRYPTION_SECOND', 'tls'),
             'username' => env('MAIL_USERNAME_SECOND'),
             'password' => env('MAIL_PASSWORD_SECOND'),
-            'timeout' => null,
+            'timeout' => (int) env('MAIL_TIMEOUT_SECOND', 20),
             'auth_mode' => null,
         ],
 

@@ -134,7 +134,8 @@ Route::group(['prefix' => 'admin', 'middleware' => ['redirect.role']], function 
 
     Route::resource('/personal-file', 'App\Http\Controllers\Admin\PersonalController');
     Route::resource('/permintaan-tenaga-kerja', 'App\Http\Controllers\Admin\PermintaanTenagaKerjaController');
-    Route::resource('/email-blast-log', 'App\Http\Controllers\Admin\EmailBlastController');
+    Route::post('/email-blast-log', [App\Http\Controllers\Admin\EmailBlastController::class, 'store'])->middleware('throttle:2,1')->name('email-blast-log.store');
+    Route::resource('/email-blast-log', 'App\Http\Controllers\Admin\EmailBlastController')->only(['index', 'create']);
     Route::resource('/kandidat-potensial', 'App\Http\Controllers\Admin\KandidatPotensialController');
     Route::get('/pkwt-contracts', [App\Http\Controllers\Admin\PkwtContractController::class, 'index'])->name('pkwt-contracts.index');
     Route::post('/pkwt-contracts/visibility/bulk', [App\Http\Controllers\Admin\PkwtContractController::class, 'bulkUpdateVisibility'])->name('pkwt-contracts.bulk-visibility');

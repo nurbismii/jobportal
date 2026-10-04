@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use InvalidArgumentException;
 use Swift_TransportException;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Throwable;
 
 class FallbackMailService
@@ -86,6 +87,7 @@ class FallbackMailService
         }
 
         return $exception instanceof Swift_TransportException
+            || $exception instanceof TransportExceptionInterface
             || $exception instanceof InvalidArgumentException;
     }
 
