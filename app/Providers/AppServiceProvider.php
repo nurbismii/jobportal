@@ -67,7 +67,7 @@ class AppServiceProvider extends ServiceProvider
         View::composer('partials.admin._sidebar', function ($view) {
             $pendingAccountRecoveryRequests = 0;
 
-            if (Schema::hasTable('account_recovery_requests')) {
+            if (auth()->user()?->hasModulePermission('recovery') && Schema::hasTable('account_recovery_requests')) {
                 $pendingAccountRecoveryRequests = AccountRecoveryRequest::where('status', 'pending')->count();
             }
 

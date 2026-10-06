@@ -138,10 +138,12 @@
         <div class="scroll"><table><thead><tr><th>Dokumen</th><th>Folder / batch</th><th>Ukuran</th><th>Dikirim</th><th class="history-actions-cell" scope="col">Aksi</th></tr></thead><tbody>
             @forelse($documents as $document)
             <tr><td>{{ $document->original_name }}</td><td>{{ $document->folder?->name ?: 'Tanpa folder' }}</td><td>{{ number_format($document->size / 1024, 1) }} KB</td><td>{{ $document->created_at->timezone('Asia/Makassar')->format('d-m-Y H:i') }}</td><td class="history-actions-cell"><div class="history-actions"><a class="history-action" aria-label="Unduh {{ $document->original_name }}" href="{{ $admin ? route('assessment-documents.admin.download', [$link, $document->id]) : route('assessment-documents.download', [$link->public_token, $document->id]) }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v4h16v-4"/></svg><span>Unduh</span></a>
-                <form method="POST" action="{{ $admin ? route('assessment-documents.admin.destroy', [$link, $document->id]) : route('assessment-documents.destroy', [$link->public_token, $document->id]) }}" data-delete-history data-file-name="{{ $document->original_name }}">
+                @if(! $admin || auth()->user()->hasModulePermission('assessment', 'delete'))
+<form method="POST" action="{{ $admin ? route('assessment-documents.admin.destroy', [$link, $document->id]) : route('assessment-documents.destroy', [$link->public_token, $document->id]) }}" data-delete-history data-file-name="{{ $document->original_name }}">
                     @csrf @method('DELETE')
                     <button type="submit" class="history-action history-action-danger" aria-label="Hapus riwayat {{ $document->original_name }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/></svg><span>Hapus</span></button>
-                </form>
+                </form>
+@endif
             </div></td></tr>
             @empty<tr><td colspan="5">Tidak ada file yang sesuai dengan pencarian atau filter.</td></tr>@endforelse
         </tbody></table></div>

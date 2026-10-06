@@ -17,7 +17,7 @@ class AccountRecoveryRequestController extends Controller
 {
     public function index()
     {
-        $requests = AccountRecoveryRequest::with(['user', 'processor'])
+        $requests = AccountRecoveryRequest::whereHas('user', fn ($query) => $query->where('role', 'user'))->with(['user', 'processor'])
             ->orderByRaw("CASE WHEN status = 'pending' THEN 0 WHEN status = 'approved' THEN 1 ELSE 2 END")
             ->orderBy('created_at', 'desc')
             ->paginate(15);
@@ -138,7 +138,7 @@ class AccountRecoveryRequestController extends Controller
 
         $user = $requestItem->user;
 
-        if (! $user) {
+        if (! $user || $user->role !== 'user') {
             return [
                 'success' => false,
                 'message' => 'Akun yang terkait dengan request ini tidak ditemukan.',

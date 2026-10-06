@@ -74,12 +74,42 @@ class User extends Authenticatable implements MustVerifyEmail
      * @var array<string, string>
      */
     protected $casts = [
+        'module_permissions' => 'array',
         'email_verified_at' => 'datetime',
         'employment_lock_active' => 'boolean',
         'last_hris_sync_at' => 'datetime',
         'verification_email_last_sent_at' => 'datetime',
         'verification_resend_count_date' => 'date',
     ];
+
+    public function isInternalUser(): bool
+    {
+        return in_array($this->role, ['admin', 'manager', 'supervisor'], true);
+    }
+
+    public function hasModulePermission(string $module, string $action = 'view'): bool
+    {
+        if ($this->role === 'admin') {
+            return true;
+        }
+
+        $allowedActions = config("admin_access.modules.$module.actions", []);
+        $permissions = $this->module_permissions[$module] ?? [];
+
+        return $this->isInternalUser()
+            && in_array($action, $allowedActions, true)
+            && in_array('view', $permissions, true)
+            && in_array($action, $permissions, true);
+    }
+
+    public function canAccessAdminRoute(string $name): bool
+    {
+        $route = app('router')->getRoutes()->getByName($name);
+        $requirement = $route ? \App\Support\AdminAccess::requirement($route) : null;
+
+        return $this->role === 'admin'
+            || ($requirement && $this->hasModulePermission(...$requirement));
+    }
 
     public static function supportsVerificationResendTracking(): bool
     {

@@ -3,14 +3,16 @@
 @section('content-admin')
 <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
     <div><h2 class="m-0 font-weight-bold text-primary">Buat Link Asesmen</h2><div class="small text-muted">Pilih tipe asesmen. Hasil MCU digunakan untuk pengiriman dokumen tanpa kandidat. PIN dipakai untuk verifikasi dan dapat ditampilkan kembali oleh admin pada detail link.</div></div>
+    @if(auth()->user()->canAccessAdminRoute('assessment-links.index'))
     <a href="{{ route('assessment-links.index') }}" class="btn btn-secondary btn-sm mt-2 mt-md-0">Kembali</a>
+    @endif
 </div>
 
 @if($errors->any())
 <div class="alert alert-danger"><strong>Periksa kembali isian:</strong><ul class="mb-0">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
 @endif
 
-<form method="POST" action="{{ route('assessment-links.store') }}" id="assessmentLinkForm">
+<form method="POST" action="{{ route('assessment-links.store') }}" id="assessmentLinkForm" data-permission-allowed="{{ auth()->user()->canAccessAdminRoute('assessment-links.store') ? '1' : '0' }}">
 @csrf
 <div class="card shadow mb-3"><div class="card-body">
     <div class="row">

@@ -58,7 +58,7 @@
                     ->pluck('id');
             @endphp
 
-            <form id="bulk-request-form" action="{{ route('account-recovery-requests.bulk-action') }}" method="POST">
+            <form id="bulk-request-form" action="{{ route('account-recovery-requests.bulk-action') }}" method="POST" data-permission-allowed="{{ auth()->user()->canAccessAdminRoute('account-recovery-requests.bulk-action') ? '1' : '0' }}">
                 @csrf
             </form>
 
@@ -149,13 +149,13 @@
                             </td>
                             <td>
                                 @if($requestItem->status === 'pending')
-                                <form action="{{ route('account-recovery-requests.approve', $requestItem->id) }}" method="POST" class="mb-2">
+                                <form action="{{ route('account-recovery-requests.approve', $requestItem->id) }}" method="POST" class="mb-2" data-permission-allowed="{{ auth()->user()->canAccessAdminRoute('account-recovery-requests.approve') ? '1' : '0' }}">
                                     @csrf
                                     <button type="submit" class="btn btn-success btn-sm btn-block" onclick="return confirm('Approve request ini? Email akun akan diganti dan password random baru akan dikirim ke email terbaru.')">
                                         <i class="fas fa-check mr-1"></i> Approve
                                     </button>
                                 </form>
-                                <form action="{{ route('account-recovery-requests.reject', $requestItem->id) }}" method="POST">
+                                <form action="{{ route('account-recovery-requests.reject', $requestItem->id) }}" method="POST" data-permission-allowed="{{ auth()->user()->canAccessAdminRoute('account-recovery-requests.reject') ? '1' : '0' }}">
                                     @csrf
                                     <button type="submit" class="btn btn-outline-danger btn-sm btn-block" onclick="return confirm('Tolak request lupa akun ini?')">
                                         <i class="fas fa-times mr-1"></i> Reject

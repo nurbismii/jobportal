@@ -13,7 +13,7 @@ class StoreAssessmentLinkRequest extends FormRequest
 
     public function authorize()
     {
-        return optional($this->user())->role === 'admin';
+        return $this->user()?->canAccessAdminRoute('assessment-links.store') ?? false;
     }
 
     public function rules()

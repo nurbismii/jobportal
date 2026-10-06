@@ -3,9 +3,11 @@
 @section('content-admin')
 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between mb-3">
     <h2 class="m-0 font-weight-bold text-primary">Kontrak PKWT 1</h2>
+    @if(auth()->user()->canAccessAdminRoute('pkwt-contract-settings.edit'))
     <a href="{{ route('pkwt-contract-settings.edit') }}" class="btn btn-primary btn-sm">
         <i class="fas fa-cog"></i> Pengaturan Durasi
     </a>
+    @endif
 </div>
 
 <div class="card shadow mb-3">
@@ -46,7 +48,7 @@
 
 <div class="card shadow">
     <div class="card-body">
-        <form id="bulkPkwtVisibilityForm" method="POST" action="{{ route('pkwt-contracts.bulk-visibility') }}" class="mb-3">
+        <form id="bulkPkwtVisibilityForm" method="POST" action="{{ route('pkwt-contracts.bulk-visibility') }}" class="mb-3" data-permission-allowed="{{ auth()->user()->canAccessAdminRoute('pkwt-contracts.bulk-visibility') ? '1' : '0' }}">
             @csrf
             <div class="row align-items-end">
                 <div class="col-md-5 mb-2">
@@ -137,13 +139,13 @@
                         <td>{{ $contract->employee_nik ?: '-' }}</td>
                         <td style="min-width: 240px">
                             @if($contract->match_status !== 'matched_to_candidate')
-                            <form method="POST" action="{{ route('pkwt-contracts.rematch', $contract->id) }}" class="mb-2">
+                            <form method="POST" action="{{ route('pkwt-contracts.rematch', $contract->id) }}" class="mb-2" data-permission-allowed="{{ auth()->user()->canAccessAdminRoute('pkwt-contracts.rematch') ? '1' : '0' }}">
                                 @csrf
                                 <button class="btn btn-info btn-sm btn-block">Rematch No KTP</button>
                             </form>
                             @endif
 
-                            <form method="POST" action="{{ route('pkwt-contracts.visibility', $contract->id) }}" class="mb-2">
+                            <form method="POST" action="{{ route('pkwt-contracts.visibility', $contract->id) }}" class="mb-2" data-permission-allowed="{{ auth()->user()->canAccessAdminRoute('pkwt-contracts.visibility') ? '1' : '0' }}">
                                 @csrf
                                 @method('PATCH')
                                 <input type="hidden" name="visible_in_vhire" value="{{ $contract->visible_in_vhire ? 0 : 1 }}">
@@ -156,7 +158,7 @@
                             </form>
 
                             @if($contract->last_hris_sync_error)
-                            <form method="POST" action="{{ route('pkwt-contracts.retry-signature-sync', $contract->id) }}" class="mb-2">
+                            <form method="POST" action="{{ route('pkwt-contracts.retry-signature-sync', $contract->id) }}" class="mb-2" data-permission-allowed="{{ auth()->user()->canAccessAdminRoute('pkwt-contracts.retry-signature-sync') ? '1' : '0' }}">
                                 @csrf
                                 <button class="btn btn-warning btn-sm btn-block">Retry Sync Signature</button>
                                 <div class="small text-danger mt-1">{{ $contract->last_hris_sync_error }}</div>
@@ -164,7 +166,9 @@
                             @endif
 
                             @if($contract->contract_file_path)
+                            @if(auth()->user()->canAccessAdminRoute('pkwt-contracts.download'))
                             <a class="btn btn-outline-primary btn-sm btn-block" href="{{ route('pkwt-contracts.download', $contract->id) }}" target="_blank">Lihat File</a>
+                            @endif
                             @endif
                         </td>
                     </tr>

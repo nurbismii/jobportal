@@ -103,9 +103,11 @@
         </div>
 
         <div class="mt-3">
+            @if(auth()->user()->canAccessAdminRoute('permintaan-tenaga-kerja.index'))
             <a href="{{ route('permintaan-tenaga-kerja.index') }}" class="btn btn-secondary btn-sm">
                 <i class="fa fa-arrow-left"></i> Kembali
             </a>
+            @endif
         </div>
     </div>
 </div>

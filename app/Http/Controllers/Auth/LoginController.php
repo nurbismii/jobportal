@@ -63,7 +63,9 @@ class LoginController extends Controller
             ]);
         }
 
-        return redirect()->intended($this->redirectPath());
+        return redirect()->intended($user->isInternalUser()
+            ? ($user->hasModulePermission('dashboard') ? route('home') : route('internal-accounts.landing'))
+            : $this->redirectPath());
     }
 
     protected function sendFailedLoginResponse(Request $request)

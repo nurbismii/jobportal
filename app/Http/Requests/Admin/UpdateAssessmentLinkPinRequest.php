@@ -10,7 +10,7 @@ class UpdateAssessmentLinkPinRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->role === 'admin';
+        return $this->user()?->canAccessAdminRoute('assessment-links.pin.update') ?? false;
     }
 
     public function rules(): array

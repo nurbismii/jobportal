@@ -3,14 +3,16 @@
 @section('content-admin')
 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between mb-3">
     <h2 class="m-0 font-weight-bold text-primary">Pengaturan PKWT 1</h2>
+    @if(auth()->user()->canAccessAdminRoute('pkwt-contracts.index'))
     <a href="{{ route('pkwt-contracts.index') }}" class="btn btn-secondary btn-sm">
         <i class="fas fa-arrow-left"></i> Kembali
     </a>
+    @endif
 </div>
 
 <div class="card shadow">
     <div class="card-body">
-        <form method="POST" action="{{ route('pkwt-contract-settings.update') }}">
+        <form method="POST" action="{{ route('pkwt-contract-settings.update') }}" data-permission-allowed="{{ auth()->user()->canAccessAdminRoute('pkwt-contract-settings.update') ? '1' : '0' }}">
             @csrf
             @method('PATCH')
 

@@ -7,10 +7,14 @@
 <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
     <div>
         <h2 class="m-0 font-weight-bold text-primary">Detail Link Asesmen</h2>
+        @if(auth()->user()->canAccessAdminRoute('assessment-documents.admin.index'))
         <a class="btn btn-outline-primary my-2" href="{{ route('assessment-documents.admin.index', $link) }}">Dokumen Klinik Rapha</a>
+        @endif
         <div class="small text-muted">{{ $link->type_label }} · dibuat oleh {{ optional($link->creator)->name ?: '-' }}</div>
     </div>
+    @if(auth()->user()->canAccessAdminRoute('assessment-links.index'))
     <a href="{{ route('assessment-links.index') }}" class="btn btn-secondary btn-sm mt-2 mt-md-0">Kembali</a>
+    @endif
 </div>
 
 <div class="card shadow mb-3"><div class="card-body"><div class="row">
@@ -32,7 +36,7 @@
         <div>Kedaluwarsa: {{ optional($link->expires_at)->format('d-m-Y H:i') ?: '-' }}</div>
         <div>Status: @if(!$link->is_active) Nonaktif @elseif($expired) Kadaluwarsa @else Aktif @endif</div>
         @if($link->is_active)
-        <form id="deactivateAssessmentLinkForm" method="POST" action="{{ route('assessment-links.deactivate', $link) }}" class="mt-2">@csrf<button type="button" class="btn btn-danger btn-sm" data-deactivate-link>Nonaktifkan link</button></form>
+        <form id="deactivateAssessmentLinkForm" method="POST" action="{{ route('assessment-links.deactivate', $link) }}" class="mt-2" data-permission-allowed="{{ auth()->user()->canAccessAdminRoute('assessment-links.deactivate') ? '1' : '0' }}">@csrf<button type="button" class="btn btn-danger btn-sm" data-deactivate-link>Nonaktifkan link</button></form>
         @endif
     </div>
 </div></div></div>
@@ -40,7 +44,7 @@
 <div class="card shadow mb-3"><div class="card-body">
     <h3 class="h6">Ubah PIN asesmen</h3>
     <p class="small text-muted">URL tetap sama. Setelah disimpan, pihak klinik harus memasukkan PIN baru. Status dan masa berlaku link tidak berubah.</p>
-    <form method="POST" action="{{ route('assessment-links.pin.update', $link) }}" id="updatePinForm">
+    <form method="POST" action="{{ route('assessment-links.pin.update', $link) }}" id="updatePinForm" data-permission-allowed="{{ auth()->user()->canAccessAdminRoute('assessment-links.pin.update') ? '1' : '0' }}">
         @csrf @method('PATCH')
         <div class="row">
             @foreach(['pin' => 'PIN baru', 'pin_confirmation' => 'Konfirmasi PIN baru'] as $field => $label)
@@ -59,7 +63,7 @@
 <div class="card shadow mb-3"><div class="card-body">
     <h3 class="h6">Perpanjang masa berlaku link klinik</h3>
     <p class="small text-muted">URL dan PIN tetap sama. Gunakan folder / batch baru untuk setiap periode pemeriksaan.</p>
-    <form method="POST" action="{{ route('assessment-links.expiry', $link) }}">
+    <form method="POST" action="{{ route('assessment-links.expiry', $link) }}" data-permission-allowed="{{ auth()->user()->canAccessAdminRoute('assessment-links.expiry') ? '1' : '0' }}">
         @csrf @method('PATCH')
         <label for="expiresOn">Berlaku sampai</label>
         <input id="expiresOn" name="expires_on" type="date" class="form-control mb-2" value="{{ old('expires_on') }}" min="{{ now('Asia/Makassar')->toDateString() }}" required>
@@ -80,7 +84,7 @@
             </div>
         </form>
         @if($errors->has('lamaran_ids'))<div class="alert alert-danger">{{ $errors->first('lamaran_ids') }}</div>@endif
-        <form method="POST" action="{{ route('assessment-links.candidates.store', $link) }}">
+        <form method="POST" action="{{ route('assessment-links.candidates.store', $link) }}" data-permission-allowed="{{ auth()->user()->canAccessAdminRoute('assessment-links.candidates.store') ? '1' : '0' }}">
             @csrf
             <div class="table-responsive"><table class="table table-sm table-bordered mb-2"><thead><tr><th class="text-center" style="width:45px">Pilih</th><th>Nama</th><th>No. KTP</th><th>Posisi dilamar</th><th>Status proses</th></tr></thead><tbody>
             @forelse($eligibleLamarans as $lamaran)

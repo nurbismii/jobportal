@@ -270,9 +270,11 @@
         <h1>Bukti Persetujuan Syarat dan Ketentuan</h1>
 
         <div class="btn-group">
+            @if(auth()->user()->canAccessAdminRoute('pengguna.show'))
             <a href="{{ route('pengguna.show', $pengguna->id) }}" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Kembali
             </a>
+            @endif
             <button type="button" class="btn btn-primary" id="printTermsProof">
                 <i class="fas fa-print"></i> Cetak
             </button>

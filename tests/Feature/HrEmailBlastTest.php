@@ -43,7 +43,7 @@ class HrEmailBlastTest extends TestCase
     {
         Storage::fake('hr_email_private');
         Queue::fake();
-        $this->actingAs(User::create(['email' => 'attachment-hr@example.test', 'role' => 'admin']));
+        $this->actingAs(User::create(['email' => 'attachment-hr@example.test', 'role' => 'admin', 'status_akun' => 1]));
         User::create(['email' => 'one@example.test', 'email_verified_at' => now()]);
         User::create(['email' => 'two@example.test', 'email_verified_at' => now()]);
         $this->post(route('email-blast-log.store'), [
@@ -70,7 +70,7 @@ class HrEmailBlastTest extends TestCase
     {
         Storage::fake('hr_email_private');
         Queue::fake();
-        $this->actingAs(User::create(['email' => 'invalid-file-hr@example.test', 'role' => 'admin']));
+        $this->actingAs(User::create(['email' => 'invalid-file-hr@example.test', 'role' => 'admin', 'status_akun' => 1]));
         User::create(['email' => 'recipient@example.test', 'email_verified_at' => now()]);
         $sets = [
             [UploadedFile::fake()->createWithContent('evil.php', '<?php echo 1;')],
@@ -90,7 +90,7 @@ class HrEmailBlastTest extends TestCase
     public function test_enqueue_failure_rolls_back_and_removes_uploaded_files(): void
     {
         Storage::fake('hr_email_private');
-        $this->actingAs(User::create(['email' => 'rollback-hr@example.test', 'role' => 'admin']));
+        $this->actingAs(User::create(['email' => 'rollback-hr@example.test', 'role' => 'admin', 'status_akun' => 1]));
         User::create(['email' => 'recipient@example.test', 'email_verified_at' => now()]);
         Schema::drop('jobs');
         $this->post(route('email-blast-log.store'), [
@@ -110,7 +110,7 @@ class HrEmailBlastTest extends TestCase
         $first = User::create(['email' => 'first@example.test', 'email_verified_at' => now()]);
         User::create(['email' => 'second@example.test', 'email_verified_at' => now()]);
         $this->actingAs($first->fresh())->post($url, $payload)->assertRedirect('/');
-        $admin = User::create(['email' => 'hr@example.test', 'role' => 'admin']);
+        $admin = User::create(['email' => 'hr@example.test', 'role' => 'admin', 'status_akun' => 1]);
         $this->actingAs($admin)->post($url, $payload)->assertSessionHasNoErrors()->assertRedirect(route('email-blast-log.create'));
         $this->assertSame(2, HrEmailDelivery::count());
         Queue::assertPushed(SendHrEmail::class, 2);
@@ -121,7 +121,7 @@ class HrEmailBlastTest extends TestCase
     public function test_invalid_unknown_unverified_inactive_and_excessive_recipients_are_rejected_atomically(): void
     {
         Queue::fake();
-        $this->actingAs(User::create(['email' => 'hr@example.test', 'role' => 'admin']));
+        $this->actingAs(User::create(['email' => 'hr@example.test', 'role' => 'admin', 'status_akun' => 1]));
         User::create(['email' => 'valid@example.test', 'email_verified_at' => now()]);
         User::create(['email' => 'unverified@example.test']);
         User::create(['email' => 'inactive@example.test', 'email_verified_at' => now(), 'status_akun' => 0]);
@@ -136,7 +136,7 @@ class HrEmailBlastTest extends TestCase
 
     public function test_database_queue_enqueues_without_sending_in_the_request(): void
     {
-        $admin = User::create(['email' => 'hr@example.test', 'role' => 'admin']);
+        $admin = User::create(['email' => 'hr@example.test', 'role' => 'admin', 'status_akun' => 1]);
         User::create(['email' => 'valid@example.test', 'email_verified_at' => now()]);
         $this->mock(FallbackMailService::class)->shouldNotReceive('send');
         $this->actingAs($admin)->post(route('email-blast-log.store'), ['recipients' => 'valid@example.test', 'subject' => 'Info', 'message' => 'Pesan'])->assertSessionHasNoErrors();
@@ -178,7 +178,7 @@ class HrEmailBlastTest extends TestCase
         $this->assertSame('<p>Halo <strong>pelamar</strong></p><ul><li>Tes</li></ul>Tautan', $html);
         $this->assertSame("Baris 1<br />\nBaris 2", HrBlastEmail::sanitizeMessage("Baris 1\nBaris 2"));
         Queue::fake();
-        $this->actingAs(User::create(['email' => 'hr-editor@example.test', 'role' => 'admin']));
+        $this->actingAs(User::create(['email' => 'hr-editor@example.test', 'role' => 'admin', 'status_akun' => 1]));
         User::create(['email' => 'editor-user@example.test', 'email_verified_at' => now()]);
         foreach (['<p><br></p>', '<p>&nbsp;</p>', '<script>alert(1)</script>'] as $message) {
             $this->post(route('email-blast-log.store'), ['recipients' => 'editor-user@example.test', 'subject' => 'Info', 'message' => $message])->assertSessionHasErrors('message');

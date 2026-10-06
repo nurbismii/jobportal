@@ -44,7 +44,7 @@
             $step = calcutaionStep(auth()->user()->biodata ?? null);
 
             function disableIf($requiredStep, $currentStep) {
-            if (auth()->check() && auth()->user()->role === 'admin') {
+            if (auth()->check() && auth()->user()->isInternalUser()) {
             return '';
             }
             return $currentStep < $requiredStep ? 'disabled opacity-50 pointer-events-none' : '' ;

@@ -43,12 +43,13 @@ class PenggunaController extends Controller
                         ->whereRaw('TRIM(status_pernyataan) <> ?', ['']),
                     'has_approved_terms'
                 )
-                ->where('role', '!=', 'admin');
+                ->where('role', 'user');
 
             return DataTables::of($query)
 
                 ->addColumn('status', function ($pengguna) {
                     $checked = $pengguna->status_akun == 1 ? 'checked' : '';
+                    $disabled = auth()->user()->hasModulePermission('pengguna', 'update') ? '' : 'disabled';
 
                     return '
             <label class="toggle-switch">
@@ -56,7 +57,7 @@ class PenggunaController extends Controller
                     class="toggle-input toggle-status"
                     data-id="' . $pengguna->id . '"
                     data-old="' . $pengguna->status_akun . '"
-                    ' . $checked . '>
+                    ' . $checked . ' ' . $disabled . '>
                 <span class="toggle-slider">
                     <span class="toggle-text">ON</span>
                 </span>
@@ -130,22 +131,22 @@ class PenggunaController extends Controller
             <div class="d-flex">
                 ' . $termsButton . '
 
-                <a href="' . route('pengguna.edit', $pengguna->id) . '"
+                ' . (auth()->user()->hasModulePermission('pengguna', 'update') ? '<a href="' . route('pengguna.edit', $pengguna->id) . '"
                 class="btn btn-success btn-sm btn-icon-split mr-2">
                     <span class="icon text-white-50">
                         <i class="fas fa-pen"></i>
                     </span>
                     <span class="text">Edit</span>
-                </a>
+                </a>' : '') . '
 
-                <a href="' . route('pengguna.destroy', $pengguna->id) . '"
+                ' . (auth()->user()->hasModulePermission('pengguna', 'delete') ? '<a href="' . route('pengguna.destroy', $pengguna->id) . '"
                 class="btn btn-danger btn-sm btn-icon-split"
                 data-confirm-delete="true">
                     <span class="icon text-white-50">
                         <i class="fas fa-trash"></i>
                     </span>
                     <span class="text">Hapus</span>
-                </a>
+                </a>' : '') . '
             </div>';
                 })
 
@@ -159,7 +160,7 @@ class PenggunaController extends Controller
     public function edit($id)
     {
         // Logic to edit a user
-        $pengguna = User::with('biodata')->findOrFail($id);
+        $pengguna = User::where('role', 'user')->with('biodata')->findOrFail($id);
         $biodata = Biodata::with('minatBakat', 'daftarPrestasi', 'pengalamanKerja')->where('user_id', $pengguna->id)->first();
 
         if ($biodata) {
@@ -173,7 +174,7 @@ class PenggunaController extends Controller
 
     public function update(Request $request, $id)
     {
-        $user = User::with('biodata')->findOrFail($id);
+        $user = User::where('role', 'user')->with('biodata')->findOrFail($id);
         $biodata = $user->biodata;
 
         if (! $biodata) {
@@ -406,7 +407,7 @@ class PenggunaController extends Controller
     public function show($id)
     {
         // Logic to show user details
-        $user = User::with('biodata', 'biodataUser.getRiwayatLamaran.lowongan')->findOrFail($id);
+        $user = User::where('role', 'user')->with('biodata', 'biodataUser.getRiwayatLamaran.lowongan')->findOrFail($id);
 
         return view('admin.pengguna.show', compact('user'));
     }
@@ -416,7 +417,7 @@ class PenggunaController extends Controller
         DB::beginTransaction();
 
         try {
-            $user = User::findOrFail($id);
+            $user = User::where('role', 'user')->findOrFail($id);
 
             $biodata = Biodata::where('user_id', $user->id)->first();
 
@@ -451,11 +452,11 @@ class PenggunaController extends Controller
     public function updateStatusAkun(Request $request)
     {
         $request->validate([
-            'id' => 'required|exists:users,id',
+            'id' => ['required', Rule::exists('users', 'id')->where('role', 'user')],
             'status_akun' => 'required|in:0,1',
         ]);
 
-        User::where('id', $request->id)->update([
+        User::where('role', 'user')->where('id', $request->id)->update([
             'status_akun' => $request->status_akun
         ]);
 

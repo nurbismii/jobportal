@@ -74,7 +74,7 @@ class AssessmentDocumentTest extends TestCase
             ->assertSeeInOrder(['Buat folder / batch MCU', 'Daftar Hadir', 'Hasil MCU - Detail', 'Hasil MCU - Rekap']);
         $this->get(route('assessment-documents.download', [$link->public_token, $document->id]))->assertDownload('hasil.pdf');
         $admin = new \App\Models\User();
-        $admin->forceFill(['id' => 1, 'role' => 'admin']);
+        $admin->forceFill(['id' => 1, 'role' => 'admin', 'status_akun' => 1]);
         $this->actingAs($admin)->get(route('assessment-documents.admin.index', $link))->assertOk()->assertSee('hasil.pdf');
         $this->get(route('assessment-documents.admin.download', [$link, $document->id]))->assertDownload('hasil.pdf');
 
@@ -243,7 +243,7 @@ class AssessmentDocumentTest extends TestCase
         $this->delete(route('assessment-documents.destroy', [$link->public_token, $document->id]))->assertNotFound();
         $this->delete(route('assessment-documents.admin.destroy', [$link, $document->id]))->assertRedirect('/login');
         $admin = new \App\Models\User();
-        $admin->forceFill(['id' => 7, 'role' => 'admin']);
+        $admin->forceFill(['id' => 7, 'role' => 'admin', 'status_akun' => 1]);
         $this->actingAs($admin)->delete(route('assessment-documents.admin.destroy', [$link, $document->id]))->assertSessionHasNoErrors();
         $this->assertSame(7, AssessmentDocument::withTrashed()->findOrFail($document->id)->deleted_by);
     }
@@ -269,7 +269,7 @@ class AssessmentDocumentTest extends TestCase
         }
         AssessmentDocument::create(['assessment_link_id' => $other->id, 'category' => 'mcu_detail', 'original_name' => 'private.pdf', 'path' => 'private', 'size' => 50]);
         $admin = new \App\Models\User();
-        $admin->forceFill(['id' => 1, 'role' => 'admin']);
+        $admin->forceFill(['id' => 1, 'role' => 'admin', 'status_akun' => 1]);
         $url = route('assessment-documents.admin.index', $link);
         $response = $this->actingAs($admin)->get($url.'?mcu_detail_page=2');
         $response->assertOk()->assertDontSee('private.pdf');

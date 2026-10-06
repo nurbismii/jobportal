@@ -6,7 +6,9 @@
         <h2 class="m-0 font-weight-bold text-primary">Link Asesmen</h2>
         <div class="small text-muted">Kelola tautan pengisian hasil tes untuk petugas.</div>
     </div>
+    @if(auth()->user()->canAccessAdminRoute('assessment-links.create'))
     <a href="{{ route('assessment-links.create') }}" class="btn btn-primary btn-sm mt-2 mt-md-0"><i class="fas fa-plus"></i> Buat Link</a>
+    @endif
 </div>
 
 @if(session('assessment_link_url'))
@@ -44,7 +46,9 @@
                             @endif
                         </td>
                         <td>{{ $link->isDocumentOnly() ? 'Tidak diperlukan' : $link->candidates_count }}</td>
-                        <td><a href="{{ route('assessment-links.show', $link) }}" class="btn btn-info btn-sm">Detail</a></td>
+                        <td>@if(auth()->user()->canAccessAdminRoute('assessment-links.show'))
+<a href="{{ route('assessment-links.show', $link) }}" class="btn btn-info btn-sm">Detail</a>
+@endif</td>
                     </tr>
                 @empty
                     <tr><td colspan="7" class="text-center text-muted py-4">Belum ada link asesmen. Buat link baru untuk memilih kandidat.</td></tr>

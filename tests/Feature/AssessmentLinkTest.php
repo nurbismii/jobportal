@@ -23,7 +23,7 @@ class AssessmentLinkTest extends TestCase
 {
     public function test_pin_update_supports_legacy_links_and_invalidates_previous_public_access(): void
     {
-        $admin = User::create(['name' => 'Admin', 'email' => 'update-pin@example.test', 'password' => 'secret', 'role' => 'admin']);
+        $admin = User::create(['name' => 'Admin', 'email' => 'update-pin@example.test', 'password' => 'secret', 'role' => 'admin', 'status_akun' => 1]);
         $link = app(AssessmentLinkService::class)->create(['assessment_type' => 'mcu', 'pin' => 'old-pin'], [], $admin->id);
         $link->update(['pin_encrypted' => null]);
         $token = $link->public_token;
@@ -44,7 +44,7 @@ class AssessmentLinkTest extends TestCase
 
     public function test_invalid_pin_update_never_flashes_secrets_and_requires_admin(): void
     {
-        $admin = User::create(['name' => 'Admin', 'email' => 'invalid-pin@example.test', 'password' => 'secret', 'role' => 'admin']);
+        $admin = User::create(['name' => 'Admin', 'email' => 'invalid-pin@example.test', 'password' => 'secret', 'role' => 'admin', 'status_akun' => 1]);
         $link = app(AssessmentLinkService::class)->create(['assessment_type' => 'mcu', 'pin' => 'old-pin'], [], $admin->id);
         $url = route('assessment-links.pin.update', $link);
         $this->patch($url, ['pin' => 'new-pin', 'pin_confirmation' => 'new-pin'])->assertRedirect('/login');
@@ -58,7 +58,7 @@ class AssessmentLinkTest extends TestCase
 
     public function test_pin_is_encrypted_hidden_from_serialization_and_only_revealed_to_admin(): void
     {
-        $admin = User::create(['name' => 'Admin', 'email' => 'pin-admin@example.test', 'password' => 'secret', 'role' => 'admin']);
+        $admin = User::create(['name' => 'Admin', 'email' => 'pin-admin@example.test', 'password' => 'secret', 'role' => 'admin', 'status_akun' => 1]);
         $link = app(AssessmentLinkService::class)->create(['assessment_type' => 'mcu', 'pin' => 'ClinicTest827'], [], $admin->id);
         $this->assertNotSame('ClinicTest827', DB::table('assessment_links')->where('id', $link->id)->value('pin_encrypted'));
         $this->assertArrayNotHasKey('pin_encrypted', $link->toArray());
@@ -78,7 +78,7 @@ class AssessmentLinkTest extends TestCase
 
     public function test_mcu_link_is_created_without_candidates_and_opens_document_upload(): void
     {
-        $admin = User::create(['name' => 'MCU Admin', 'email' => 'mcu-admin@example.test', 'password' => 'secret', 'role' => 'admin']);
+        $admin = User::create(['name' => 'MCU Admin', 'email' => 'mcu-admin@example.test', 'password' => 'secret', 'role' => 'admin', 'status_akun' => 1]);
         $this->actingAs($admin)->post(route('assessment-links.store'), [
             'assessment_type' => 'mcu', 'pin' => '123456',
         ])->assertSessionHasNoErrors()->assertRedirect(route('assessment-links.index'));
@@ -105,7 +105,7 @@ class AssessmentLinkTest extends TestCase
 
     public function test_mcu_expiry_can_be_extended_without_changing_url_or_reactivating_revoked_link(): void
     {
-        $admin = User::create(['name' => 'Admin', 'email' => 'expiry@example.test', 'password' => 'secret', 'role' => 'admin']);
+        $admin = User::create(['name' => 'Admin', 'email' => 'expiry@example.test', 'password' => 'secret', 'role' => 'admin', 'status_akun' => 1]);
         $this->actingAs($admin)->post(route('assessment-links.store'), [
             'assessment_type' => 'mcu', 'pin' => '123456', 'expires_on' => now()->addMonth()->toDateString(),
         ])->assertSessionHasNoErrors();
@@ -127,7 +127,7 @@ class AssessmentLinkTest extends TestCase
     public function test_detail_loads_confirmation_library_without_a_flash_alert(): void
     {
         config(['sweetalert.alwaysLoadJS' => false, 'sweetalert.neverLoadJS' => false]);
-        $admin = User::create(['name' => 'Admin', 'email' => 'confirm@example.test', 'password' => 'secret', 'role' => 'admin']);
+        $admin = User::create(['name' => 'Admin', 'email' => 'confirm@example.test', 'password' => 'secret', 'role' => 'admin', 'status_akun' => 1]);
         $link = app(AssessmentLinkService::class)->create(['assessment_type' => 'mcu', 'pin' => '123456'], [], $admin->id);
         session()->forget(['alert.config', 'alert.delete']);
 
@@ -184,7 +184,7 @@ class AssessmentLinkTest extends TestCase
             'name' => 'Assessment Admin',
             'email' => 'admin@example.test',
             'password' => 'secret',
-            'role' => 'admin',
+            'role' => 'admin', 'status_akun' => 1,
         ]);
         $biodata = Biodata::create(['user_id' => $admin->id]);
         $lamaran = Lamaran::create([
@@ -221,7 +221,7 @@ class AssessmentLinkTest extends TestCase
             'name' => 'Assessment Admin',
             'email' => 'admin-assessment-link@example.test',
             'password' => 'secret',
-            'role' => 'admin',
+            'role' => 'admin', 'status_akun' => 1,
         ]);
         $biodata = Biodata::create(['user_id' => $admin->id]);
         $lamaran = Lamaran::create([
@@ -275,7 +275,7 @@ class AssessmentLinkTest extends TestCase
             'name' => 'Assessment Admin',
             'email' => 'assessment-link-errors@example.test',
             'password' => 'secret',
-            'role' => 'admin',
+            'role' => 'admin', 'status_akun' => 1,
         ]);
         $biodata = Biodata::create(['user_id' => $admin->id]);
         $lamaran = Lamaran::create([
@@ -313,7 +313,7 @@ class AssessmentLinkTest extends TestCase
             'name' => 'Assessment Admin',
             'email' => 'assessment-admin@example.test',
             'password' => 'secret',
-            'role' => 'admin',
+            'role' => 'admin', 'status_akun' => 1,
         ]);
         $biodata = Biodata::create(['user_id' => $admin->id]);
         $lamaran = Lamaran::create([
@@ -384,7 +384,7 @@ class AssessmentLinkTest extends TestCase
             'name' => 'Assessment Admin',
             'email' => 'inactive-link-admin@example.test',
             'password' => 'secret',
-            'role' => 'admin',
+            'role' => 'admin', 'status_akun' => 1,
         ]);
         $biodata = Biodata::create(['user_id' => $admin->id]);
         $lamaran = Lamaran::create([
@@ -561,7 +561,7 @@ class AssessmentLinkTest extends TestCase
 
     public function test_create_page_only_lists_candidates_eligible_for_the_selected_assessment_type()
     {
-        $admin = User::create(['name' => 'Assessment Admin', 'email' => 'create-list@example.test', 'password' => 'secret', 'role' => 'admin']);
+        $admin = User::create(['name' => 'Assessment Admin', 'email' => 'create-list@example.test', 'password' => 'secret', 'role' => 'admin', 'status_akun' => 1]);
         $lapanganUser = User::create(['name' => 'Kandidat Lapangan', 'email' => 'lapangan@example.test', 'password' => 'secret']);
         $kesehatanUser = User::create(['name' => 'Kandidat Kesehatan', 'email' => 'kesehatan@example.test', 'password' => 'secret']);
         $lapangan = Lamaran::create([
@@ -587,7 +587,7 @@ class AssessmentLinkTest extends TestCase
 
     public function test_create_page_exposes_lowongan_filter_pagination_and_visible_page_selection_controls()
     {
-        $admin = User::create(['name' => 'Assessment Admin', 'email' => 'create-paging@example.test', 'password' => 'secret', 'role' => 'admin']);
+        $admin = User::create(['name' => 'Assessment Admin', 'email' => 'create-paging@example.test', 'password' => 'secret', 'role' => 'admin', 'status_akun' => 1]);
         $lowonganId = DB::table('lowongan')->insertGetId([
             'nama_lowongan' => 'Operator Produksi',
             'created_at' => '2026-07-13 08:00:00',
@@ -619,7 +619,7 @@ class AssessmentLinkTest extends TestCase
 
     public function test_assessment_link_index_displays_each_unique_lowongan_with_its_creation_date_and_candidate_count()
     {
-        $admin = User::create(['name' => 'Assessment Admin', 'email' => 'index-positions@example.test', 'password' => 'secret', 'role' => 'admin']);
+        $admin = User::create(['name' => 'Assessment Admin', 'email' => 'index-positions@example.test', 'password' => 'secret', 'role' => 'admin', 'status_akun' => 1]);
         $operatorId = DB::table('lowongan')->insertGetId([
             'nama_lowongan' => 'Operator Produksi',
             'created_at' => '2026-07-13 08:00:00',
@@ -660,7 +660,7 @@ class AssessmentLinkTest extends TestCase
 
     public function test_assessment_link_detail_displays_the_applied_position_with_its_creation_date()
     {
-        $admin = User::create(['name' => 'Assessment Detail Admin', 'email' => 'detail-position@example.test', 'password' => 'secret', 'role' => 'admin']);
+        $admin = User::create(['name' => 'Assessment Detail Admin', 'email' => 'detail-position@example.test', 'password' => 'secret', 'role' => 'admin', 'status_akun' => 1]);
         $lowonganId = DB::table('lowongan')->insertGetId([
             'nama_lowongan' => 'Operator Produksi',
             'created_at' => '2026-07-13 08:00:00',
@@ -692,7 +692,7 @@ class AssessmentLinkTest extends TestCase
 
     public function test_admin_cannot_create_link_with_candidate_from_another_assessment_stage()
     {
-        $admin = User::create(['name' => 'Assessment Admin', 'email' => 'strict-create@example.test', 'password' => 'secret', 'role' => 'admin']);
+        $admin = User::create(['name' => 'Assessment Admin', 'email' => 'strict-create@example.test', 'password' => 'secret', 'role' => 'admin', 'status_akun' => 1]);
         $user = User::create(['name' => 'Kandidat Kesehatan', 'email' => 'strict-candidate@example.test', 'password' => 'secret']);
         $lamaran = Lamaran::create([
             'biodata_id' => Biodata::create(['user_id' => $user->id])->id,
@@ -712,7 +712,7 @@ class AssessmentLinkTest extends TestCase
 
     public function test_admin_can_add_only_candidates_in_the_matching_assessment_stage_and_see_their_position()
     {
-        $admin = User::create(['name' => 'HR Admin', 'email' => 'hr-add@example.test', 'password' => 'secret', 'role' => 'admin']);
+        $admin = User::create(['name' => 'HR Admin', 'email' => 'hr-add@example.test', 'password' => 'secret', 'role' => 'admin', 'status_akun' => 1]);
         $lowongan = DB::table('lowongan')->insertGetId(['nama_lowongan' => 'Operator Alat Berat']);
         $eligibleUser = User::create(['name' => 'Kandidat Tes Lapangan', 'email' => 'eligible@example.test', 'password' => 'secret']);
         $eligibleBiodata = Biodata::create(['user_id' => $eligibleUser->id, 'no_ktp' => 'KTP-ELIGIBLE']);
@@ -766,7 +766,7 @@ class AssessmentLinkTest extends TestCase
 
     public function test_lapangan_link_stores_only_a_valid_lulus_tidak_lulus_decision_field()
     {
-        $admin = User::create(['name' => 'HR Eligibility', 'email' => 'eligibility-field@example.test', 'password' => 'secret', 'role' => 'admin']);
+        $admin = User::create(['name' => 'HR Eligibility', 'email' => 'eligibility-field@example.test', 'password' => 'secret', 'role' => 'admin', 'status_akun' => 1]);
         $lamaran = $this->createLamaranForAssessment('Tes Lapangan');
 
         $this->actingAs($admin)->post(route('assessment-links.store'), [
@@ -800,7 +800,7 @@ class AssessmentLinkTest extends TestCase
 
     public function test_detail_link_shows_and_filters_eligibility_without_changing_lamaran_status()
     {
-        $admin = User::create(['name' => 'HR Eligibility Detail', 'email' => 'eligibility-detail@example.test', 'password' => 'secret', 'role' => 'admin']);
+        $admin = User::create(['name' => 'HR Eligibility Detail', 'email' => 'eligibility-detail@example.test', 'password' => 'secret', 'role' => 'admin', 'status_akun' => 1]);
         $link = AssessmentLink::create([
             'assessment_type' => 'kesehatan',
             'public_token' => str_repeat('e', 64),
@@ -831,7 +831,7 @@ class AssessmentLinkTest extends TestCase
 
     public function test_lapangan_eligibility_uses_the_configured_lulus_tidak_lulus_field()
     {
-        $admin = User::create(['name' => 'HR Lapangan Eligibility', 'email' => 'lapangan-eligibility@example.test', 'password' => 'secret', 'role' => 'admin']);
+        $admin = User::create(['name' => 'HR Lapangan Eligibility', 'email' => 'lapangan-eligibility@example.test', 'password' => 'secret', 'role' => 'admin', 'status_akun' => 1]);
         $link = AssessmentLink::create([
             'assessment_type' => 'lapangan',
             'public_token' => str_repeat('l', 64),
@@ -855,7 +855,7 @@ class AssessmentLinkTest extends TestCase
 
     public function test_lowongan_pendaftar_uses_the_latest_assessment_result_and_filters_by_eligibility()
     {
-        $admin = User::create(['name' => 'HR Lowongan', 'email' => 'lowongan-eligibility@example.test', 'password' => 'secret', 'role' => 'admin']);
+        $admin = User::create(['name' => 'HR Lowongan', 'email' => 'lowongan-eligibility@example.test', 'password' => 'secret', 'role' => 'admin', 'status_akun' => 1]);
         DB::table('lowongan')->insert([
             'id' => 1,
             'nama_lowongan' => 'Operator Produksi',
@@ -1007,6 +1007,7 @@ class AssessmentLinkTest extends TestCase
             $table->string('email')->nullable();
             $table->string('password')->nullable();
             $table->string('role')->nullable();
+            $table->integer('status_akun')->default(1);
             $table->timestamps();
         });
 
@@ -1080,7 +1081,7 @@ class AssessmentLinkTest extends TestCase
             'name' => 'Public Assessment '.$suffix,
             'email' => 'public-assessment-'.$suffix.'@example.test',
             'password' => 'secret',
-            'role' => 'admin',
+            'role' => 'admin', 'status_akun' => 1,
         ]);
         $biodata = Biodata::create(['user_id' => $user->id]);
         $lamaran = Lamaran::create(['biodata_id' => $biodata->id, 'user_id' => $user->id]);
@@ -1107,7 +1108,7 @@ class AssessmentLinkTest extends TestCase
             'name' => 'Assessment Admin',
             'email' => 'assessment-list-admin-'.AssessmentLink::query()->count().'@example.test',
             'password' => 'secret',
-            'role' => 'admin',
+            'role' => 'admin', 'status_akun' => 1,
         ]);
         $link = AssessmentLink::create([
             'assessment_type' => 'lapangan',

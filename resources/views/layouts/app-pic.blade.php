@@ -48,6 +48,10 @@
                 <div class="container-fluid">
 
                     <!-- Content Row -->
+                    @php($moduleAccess = \App\Support\AdminAccess::requirement(request()->route()))
+                    @if($moduleAccess && !auth()->user()->hasModulePermission($moduleAccess[0], 'create') && !auth()->user()->hasModulePermission($moduleAccess[0], 'update') && !auth()->user()->hasModulePermission($moduleAccess[0], 'delete'))
+                    <div class="alert alert-info" role="status">Akses modul ini hanya baca. Anda dapat melihat data, tetapi tidak dapat mengubah atau menghapusnya.</div>
+                    @endif
                     @yield('content-admin')
                     <!-- Content Row -->
                     @include('sweetalert::alert')
@@ -89,6 +93,15 @@
     <!-- Custom scripts for all pages-->
     <script src="{{ asset('admin/js/sb-admin-2.min.js') }}"></script>
 
+    <script>
+        // Presentation only; the server independently enforces every permission.
+        document.querySelectorAll('form[data-permission-allowed="0"]').forEach(form => {
+            form.querySelectorAll('input:not([type="hidden"]), select, textarea, button:not([data-dismiss]):not([data-bs-dismiss])').forEach(control => {
+                control.disabled = true;
+            });
+            form.addEventListener('submit', event => event.preventDefault());
+        });
+    </script>
     @stack('scripts')
 </body>
 

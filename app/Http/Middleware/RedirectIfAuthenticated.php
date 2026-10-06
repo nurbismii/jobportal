@@ -23,7 +23,8 @@ class RedirectIfAuthenticated
 
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
-                return redirect(RouteServiceProvider::HOME);
+                return redirect(Auth::guard($guard)->user()->isInternalUser()
+                    ? route('internal-accounts.landing') : RouteServiceProvider::HOME);
             }
         }
 

@@ -7,9 +7,11 @@
 @endpush
 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
     <h6 class="m-0 font-weight-bold text-primary"></h6>
+    @if(auth()->user()->canAccessAdminRoute('pengumumans.index'))
     <a href="{{ route('pengumumans.index') }}" class="btn btn-sm btn-danger">
         <i class="fas fa-arrow-left"></i> Kembali
     </a>
+    @endif
 </div>
 
 <div class="card shadow mb-4">
@@ -28,7 +30,7 @@
         </div>
         @endif
 
-        <form action="{{ route('pengumumans.update', $pengumuman->id) }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('pengumumans.update', $pengumuman->id) }}" method="POST" enctype="multipart/form-data" data-permission-allowed="{{ auth()->user()->canAccessAdminRoute('pengumumans.update') ? '1' : '0' }}">
             @csrf
             {{ method_field('patch') }}
             <div class="row g-3">

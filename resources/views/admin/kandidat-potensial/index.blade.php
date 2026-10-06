@@ -9,10 +9,12 @@
 <div class="container-fluid">
     <h1 class="h3 mb-4 text-gray-800">
         Kandidat Potensial
+        @if(auth()->user()->canAccessAdminRoute('kandidat-potensial.store'))
         <a data-toggle="modal" data-target="#uploadSkillExp" class="btn btn-primary btn-sm btn-icon-split float-right">
             <span class="icon text-white-50"><i class="fas fa-plus"></i></span>
             <span class="text">Upload Kemampuan/Pengalaman</span>
         </a>
+        @endif
     </h1>
 
     <div class="row mb-3">
@@ -52,12 +54,14 @@
                                                 </span>
                                                 <span class="text">Detail</span>
                                             </a>
+                                            @if(auth()->user()->canAccessAdminRoute('kandidat-potensial.destroy'))
                                             <a href="{{ route('kandidat-potensial.destroy', $kandidat->id) }}" class="btn btn-danger btn-sm btn-icon-split" data-confirm-delete="true">
                                                 <span class="icon text-white-50">
                                                     <i class="fas fa-trash"></i>
                                                 </span>
                                                 <span class="text">Hapus</span>
                                             </a>
+                                            @endif
                                         </div>
 
                                     </td>
@@ -86,7 +90,7 @@
             </div>
 
             <!-- BODY -->
-            <form action="{{ route('kandidat-potensial.store') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('kandidat-potensial.store') }}" method="POST" enctype="multipart/form-data" data-permission-allowed="{{ auth()->user()->canAccessAdminRoute('kandidat-potensial.store') ? '1' : '0' }}">
                 @csrf
 
                 <div class="modal-body">

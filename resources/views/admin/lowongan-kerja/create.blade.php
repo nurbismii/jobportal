@@ -49,11 +49,13 @@
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
         <h3 class="text-gray-800 mb-2 mb-md-0">Tambah Lowongan</h3>
 
+        @if(auth()->user()->canAccessAdminRoute('lowongan.index'))
         <a href="{{ route('lowongan.index') }}"
             class="btn btn-primary btn-sm btn-icon-split">
             <span class="icon text-white-50"><i class="fas fa-arrow-left"></i></span>
             <span class="text">Kembali</span>
         </a>
+        @endif
     </div>
 
     <div class="row mb-3">
@@ -66,7 +68,7 @@
                 </button>
             </div>
 
-            <form action="{{ route('lowongan.store') }}" method="POST">
+            <form action="{{ route('lowongan.store') }}" method="POST" data-permission-allowed="{{ auth()->user()->canAccessAdminRoute('lowongan.store') ? '1' : '0' }}">
                 @csrf
                 <div class="card shadow mb-3">
                     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">

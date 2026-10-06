@@ -290,7 +290,7 @@
                     orderable: false,
                     createdCell: function(td, cellData, rowData) {
                         $(td)
-                            .addClass('editable')
+                            .toggleClass('editable', @json(auth()->user()->hasModulePermission('pengguna', 'update')))
                             .attr('data-id', rowData.id)
                             .attr('data-model', 'user')
                             .attr('data-field', 'rekomendasi')
@@ -325,6 +325,8 @@
     // Aktifkan editable saat klik
     $('#dataTable').on('click', 'td.editable', function() {
         let $td = $(this);
+        if (!@json(auth()->user()->hasModulePermission('pengguna', 'update'))) return;
+        if (!@json(auth()->user()->hasModulePermission('pengguna', 'update'))) return;
         if (!$td.is('[contenteditable="true"]')) {
             $td.attr('contenteditable', 'true').focus();
         }
@@ -332,6 +334,8 @@
 
     $('#dataTable').on('blur', 'td.editable', function() {
         let $td = $(this);
+        if (!@json(auth()->user()->hasModulePermission('pengguna', 'update'))) return;
+        if (!@json(auth()->user()->hasModulePermission('pengguna', 'update'))) return;
         $td.attr('contenteditable', 'false');
 
         const newValue = $td.text().trim();

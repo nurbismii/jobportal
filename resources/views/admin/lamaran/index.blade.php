@@ -106,16 +106,20 @@
     <h2 class="m-0 font-weight-bold text-primary">{{ $lowongan->nama_lowongan }} - {{ tanggalIndo($lowongan->tanggal_mulai) }}</h2>
     <div class="d-flex align-items-center">
 
-        <button type="button" class="btn btn-warning btn-sm mr-2" data-toggle="modal" data-target="#modalRefreshStatus">
+        @if(auth()->user()->hasModulePermission('lamaran', 'update'))
+<button type="button" class="btn btn-warning btn-sm mr-2" data-toggle="modal" data-target="#modalRefreshStatus">
             Refresh Status Pelamar
         </button>
+@endif
 
+        @if(auth()->user()->canAccessAdminRoute('lowongan.index'))
         <a href="{{ route('lowongan.index') }}" class="btn btn-danger btn-sm btn-icon-split">
             <span class="icon text-white-50">
                 <i class="fas fa-arrow-left"></i>
             </span>
             <span class="text">Kembali</span>
         </a>
+        @endif
 
     </div>
 
@@ -129,7 +133,7 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <form action="{{ route('refreshData') }}" method="post">
+                <form action="{{ route('refreshData') }}" method="post" data-permission-allowed="{{ auth()->user()->canAccessAdminRoute('refreshData') ? '1' : '0' }}">
                     @csrf
                     <div class="modal-body">
                         Kamu yakin ingin melakukan refresh status pelamar ?
@@ -232,14 +236,16 @@
             </div>
 
             <div class="col-md-12">
+                @if(auth()->user()->canAccessAdminRoute('directToLamaran'))
                 <a href="{{ route('directToLamaran', $lowongan->id) }}" class="btn btn-secondary">Reset</a>
+                @endif
                 <button type="submit" class="btn btn-primary">Filter</button>
             </div>
         </form>
     </div>
 </div>
 
-<form action="{{ route('lamaran.updateStatusMassal') }}" method="POST">
+<form action="{{ route('lamaran.updateStatusMassal') }}" method="POST" data-permission-allowed="{{ auth()->user()->canAccessAdminRoute('lamaran.updateStatusMassal') ? '1' : '0' }}">
 
     @csrf
 
@@ -435,7 +441,9 @@
                             <td>{{ $data->assessment_type ? ucfirst($data->assessment_type) : '-' }}</td>
                             <td>
                                 @if($data->assessment_link_id)
+                                @if(auth()->user()->canAccessAdminRoute('assessment-links.show'))
                                 <a href="{{ route('assessment-links.show', $data->assessment_link_id) }}" class="btn btn-outline-primary btn-sm">Lihat hasil</a>
+                                @endif
                                 @else
                                 -
                                 @endif
@@ -596,7 +604,7 @@
                                     {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->ktp) }}
                                 </a>
                             </td>
-                            <td class="editable"
+                            <td class="{{ auth()->user()->hasModulePermission('lamaran', 'update') ? 'editable' : '' }}"
                                 data-id="{{ $data->biodata_id }}"
                                 data-model="biodata"
                                 data-field="status_ktp">
@@ -608,7 +616,7 @@
                                     {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sim_b_2) }}
                                 </a>
                             </td>
-                            <td class="editable"
+                            <td class="{{ auth()->user()->hasModulePermission('lamaran', 'update') ? 'editable' : '' }}"
                                 data-id="{{ $data->biodata_id }}"
                                 data-model="biodata"
                                 data-field="status_sim_b2">
@@ -621,7 +629,7 @@
                                     {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sio) }}
                                 </a>
                             </td>
-                            <td class="editable"
+                            <td class="{{ auth()->user()->hasModulePermission('lamaran', 'update') ? 'editable' : '' }}"
                                 data-id="{{ $data->biodata_id }}"
                                 data-model="biodata"
                                 data-field="status_sio">
@@ -643,7 +651,7 @@
                                     {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->skck) }}
                                 </a>
                             </td>
-                            <td class="editable"
+                            <td class="{{ auth()->user()->hasModulePermission('lamaran', 'update') ? 'editable' : '' }}"
                                 data-id="{{ $data->biodata_id }}"
                                 data-model="biodata"
                                 data-field="status_skck">
@@ -674,13 +682,13 @@
                                     {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sertifikat_pendukung) }}
                                 </a>
                             </td>
-                            <td class="editable"
+                            <td class="{{ auth()->user()->hasModulePermission('lamaran', 'update') ? 'editable' : '' }}"
                                 data-id="{{ $data->biodata_id }}"
                                 data-model="biodata"
                                 data-field="status_sertifikat">
                                 {{ $data->biodata->status_sertifikat }}
                             </td>
-                            <td class="editable"
+                            <td class="{{ auth()->user()->hasModulePermission('lamaran', 'update') ? 'editable' : '' }}"
                                 data-id="{{ $data->id }}"
                                 data-model="lamaran"
                                 data-field="rekomendasi">
@@ -1253,6 +1261,7 @@ return $order[$item->level_sp] ?? 99;
         // Aktifkan editable saat klik
         $('#dataTable').on('click', 'td.editable', function() {
             let $td = $(this);
+        if (!@json(auth()->user()->hasModulePermission('lamaran', 'update'))) return;
             if (!$td.is('[contenteditable="true"]')) {
                 $td.attr('contenteditable', 'true').focus();
             }
@@ -1261,6 +1270,7 @@ return $order[$item->level_sp] ?? 99;
         // Saat selesai edit
         $('#dataTable').on('blur', 'td.editable', function() {
             let $td = $(this);
+        if (!@json(auth()->user()->hasModulePermission('lamaran', 'update'))) return;
             $td.attr('contenteditable', 'false');
 
             const newValue = $td.text().trim();

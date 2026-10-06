@@ -11,6 +11,7 @@ class SyaratKetentuanController extends Controller
 {
     public function show(User $pengguna)
     {
+        abort_unless($pengguna->role === 'user', 404);
         $biodata = Biodata::where('user_id', $pengguna->id)->first();
 
         if (! $biodata || blank($biodata->status_pernyataan)) {

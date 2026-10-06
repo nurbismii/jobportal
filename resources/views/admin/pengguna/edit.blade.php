@@ -101,9 +101,11 @@
 @endpush
 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
     <h6 class="m-0 font-weight-bold text-primary">Edit Data Pengguna</h6>
+    @if(auth()->user()->canAccessAdminRoute('pengguna.index'))
     <a href="{{ route('pengguna.index') }}" class="btn btn-sm btn-primary">
         <i class="fas fa-arrow-left"></i> Kembali
     </a>
+    @endif
 </div>
 
 <div class="card shadow mb-4">
@@ -122,7 +124,7 @@
         </div>
         @endif
 
-        <form action="{{ route('pengguna.update', $pengguna->id) }}" method="POST">
+        <form action="{{ route('pengguna.update', $pengguna->id) }}" method="POST" data-permission-allowed="{{ auth()->user()->canAccessAdminRoute('pengguna.update') ? '1' : '0' }}">
             @csrf
             {{ method_field('patch') }}
             <div class="row">

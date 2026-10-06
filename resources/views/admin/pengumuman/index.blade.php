@@ -9,10 +9,12 @@
 <div class="container-fluid">
 
     <h1 class="h3 mb-3 text-gray-800">Pengumuman
+        @if(auth()->user()->canAccessAdminRoute('pengumumans.create'))
         <a href="{{ route('pengumumans.create') }}" class="btn btn-primary btn-sm btn-icon-split float-right">
             <span class="icon text-white-50"><i class="fas fa-plus"></i></span>
             <span class="text">Pengumuman</span>
         </a>
+        @endif
     </h1>
 
     <div class="row">
@@ -47,18 +49,22 @@
                                     </td>
                                     <td>{{ tanggalIndo($data->created_at) }}</td>
                                     <td>
+                                        @if(auth()->user()->canAccessAdminRoute('pengumumans.edit'))
                                         <a href="{{ route('pengumumans.edit', $data->id) }}" class="btn btn-success btn-sm btn-icon-split">
                                             <span class="icon text-white-50">
                                                 <i class="fas fa-pen"></i>
                                             </span>
                                             <span class="text">Edit</span>
                                         </a>
+                                        @endif
+                                        @if(auth()->user()->canAccessAdminRoute('pengumumans.destroy'))
                                         <a href="{{ route('pengumumans.destroy', $data->id) }}" class="btn btn-danger btn-sm btn-icon-split" data-confirm-delete="true">
                                             <span class="icon text-white-50">
                                                 <i class="fas fa-trash"></i>
                                             </span>
                                             <span class="text">Hapus</span>
                                         </a>
+                                        @endif
                                     </td>
                                 </tr>
                                 @endforeach

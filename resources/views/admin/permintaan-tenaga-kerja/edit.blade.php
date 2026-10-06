@@ -10,10 +10,12 @@
 <div class="container-fluid">
 
     <h3 class="h3 mb-3 text-gray-800">Edit Permintaan Tenaga Kerja
+        @if(auth()->user()->canAccessAdminRoute('permintaan-tenaga-kerja.index'))
         <a href="{{ route('permintaan-tenaga-kerja.index') }}" class="btn btn-primary btn-sm btn-icon-split float-right">
             <span class="icon text-white-50"><i class="fas fa-arrow-left"></i></span>
             <span class="text">Kembali</span>
         </a>
+        @endif
     </h3>
 
 
@@ -35,7 +37,7 @@
                     </div>
                     @endif
 
-                    <form action="{{ route('permintaan-tenaga-kerja.update', $permintaanTenagaKerja->id) }}" method="POST">
+                    <form action="{{ route('permintaan-tenaga-kerja.update', $permintaanTenagaKerja->id) }}" method="POST" data-permission-allowed="{{ auth()->user()->canAccessAdminRoute('permintaan-tenaga-kerja.update') ? '1' : '0' }}">
                         @csrf
                         {{ method_field('patch') }}
                         <div class="row g-3">

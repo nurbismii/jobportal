@@ -7,9 +7,11 @@
 @endpush
 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
     <h6 class="m-0 font-weight-bold text-primary"></h6>
+    @if(auth()->user()->canAccessAdminRoute('pengumumans.index'))
     <a href="{{ route('pengumumans.index') }}" class="btn btn-sm btn-primary">
         <i class="fas fa-arrow-left"></i> Kembali
     </a>
+    @endif
 </div>
 
 
@@ -29,7 +31,7 @@
         </div>
         @endif
 
-        <form action="{{ route('pengumumans.store') }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('pengumumans.store') }}" method="POST" enctype="multipart/form-data" data-permission-allowed="{{ auth()->user()->canAccessAdminRoute('pengumumans.store') ? '1' : '0' }}">
             @csrf
             <div class="row g-3">
                 <div class="col-md-6 mb-3">

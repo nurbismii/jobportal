@@ -5,10 +5,12 @@
 <div class="container-fluid">
 
     <h3 class="h3 mb-3 text-gray-800">Peralihan Pelamar
+        @if(auth()->user()->canAccessAdminRoute('peralihan.index'))
         <a href="{{ route('peralihan.index') }}" class="btn btn-primary btn-sm btn-icon-split float-right">
             <span class="icon text-white-50"><i class="fas fa-arrow-left"></i></span>
             <span class="text">Kembali</span>
         </a>
+        @endif
     </h3>
 
     <div class="row mb-3">
@@ -19,7 +21,7 @@
                     <h6 class="m-0 font-weight-bold text-primary">Form Peralihan Pelamar</h6>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('peralihan.update', $latestLamaran->id) }}" method="POST">
+                    <form action="{{ route('peralihan.update', $latestLamaran->id) }}" method="POST" data-permission-allowed="{{ auth()->user()->canAccessAdminRoute('peralihan.update') ? '1' : '0' }}">
                         @csrf
                         {{ method_field('patch') }}
                         <div class="row g-3">

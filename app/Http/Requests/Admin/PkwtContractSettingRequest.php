@@ -9,7 +9,7 @@ class PkwtContractSettingRequest extends FormRequest
 {
     public function authorize()
     {
-        return optional($this->user())->role === 'admin';
+        return $this->user()?->canAccessAdminRoute('pkwt-contract-settings.update') ?? false;
     }
 
     public function rules()

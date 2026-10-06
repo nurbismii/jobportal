@@ -8,10 +8,12 @@
 <div class="container-fluid">
 
     <h1 class="h3 mb-3 text-gray-800">Permintaan Tenaga Kerja
+        @if(auth()->user()->canAccessAdminRoute('permintaan-tenaga-kerja.create'))
         <a href="{{ route('permintaan-tenaga-kerja.create') }}" class="btn btn-primary btn-sm btn-icon-split float-right">
             <span class="icon text-white-50"><i class="fas fa-plus"></i></span>
             <span class="text">Permintaan Tenaga Kerja</span>
         </a>
+        @endif
     </h1>
 
     <div class="row">
@@ -62,12 +64,16 @@
                                     <td class="text-center">{{ $permintaan->jumlah_ptk }}</td>
                                     <td class="text-center">{{ $permintaan->jumlah_masuk }}</td>
                                     <td>
+                                        @if(auth()->user()->canAccessAdminRoute('permintaan-tenaga-kerja.show'))
                                         <a href="{{ route('permintaan-tenaga-kerja.show', $permintaan->id) }}" class="btn btn-info btn-sm">
                                             <i class="fas fa-eye"></i> Detail
                                         </a>
+                                        @endif
+                                        @if(auth()->user()->canAccessAdminRoute('permintaan-tenaga-kerja.edit'))
                                         <a href="{{ route('permintaan-tenaga-kerja.edit', $permintaan->id) }}" class="btn btn-warning btn-sm">
                                             <i class="fas fa-edit"></i> Edit
                                         </a>
+                                        @endif
                                     </td>
                                 </tr>
                                 @endforeach

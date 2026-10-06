@@ -9,10 +9,12 @@
 <div class="container-fluid">
 
     <h3 class="h3 mb-3 text-gray-800">Edit Lowongan Kerja
+        @if(auth()->user()->canAccessAdminRoute('lowongan.index'))
         <a href="{{ route('lowongan.index') }}" class="btn btn-primary btn-sm btn-icon-split float-right">
             <span class="icon text-white-50"><i class="fas fa-arrow-left"></i></span>
             <span class="text">Kembali</span>
         </a>
+        @endif
     </h3>
 
     <div class="row mb-3">
@@ -22,7 +24,7 @@
                     <h6 class="m-0 font-weight-bold text-primary">Tambah Lowongan Kerja</h6>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('lowongan.update', $lowongan->id) }}" method="POST">
+                    <form action="{{ route('lowongan.update', $lowongan->id) }}" method="POST" data-permission-allowed="{{ auth()->user()->canAccessAdminRoute('lowongan.update') ? '1' : '0' }}">
                         @csrf
                         {{ method_field('patch') }}
                         <div class="row g-3">

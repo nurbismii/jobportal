@@ -14,6 +14,15 @@ use RealRashid\SweetAlert\Facades\Alert;
 
 class LamaranController extends Controller
 {
+    public function index(Request $request)
+    {
+        $lowongans = \App\Models\Lowongan::query()
+            ->when($request->filled('search'), fn ($query) => $query->where('nama_lowongan', 'like', '%' . $request->string('search') . '%'))
+            ->orderByDesc('id')->paginate(20, ['id', 'nama_lowongan'])->withQueryString();
+
+        return view('admin.lamaran.lowongan', compact('lowongans'));
+    }
+
     public function updateStatusMassal(Request $request, LamaranStatusService $lamaranStatusService)
     {
         $statusInput = strtolower($request->status_proses);
@@ -119,6 +128,9 @@ class LamaranController extends Controller
 
         $modelClass = $modelMap[$modelKey];
         $record = $modelClass::findOrFail($request->id);
+        if ($modelKey === 'user') {
+            abort_unless($record->role === 'user', 403);
+        }
 
         $record->{$request->field} = $request->value;
         $record->save();

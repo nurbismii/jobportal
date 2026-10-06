@@ -182,18 +182,26 @@
             </div>
             <div class="col-lg-5">
                 <div class="d-flex flex-wrap justify-content-lg-end">
+                    @if(auth()->user()->canAccessAdminRoute('lowongan.create'))
                     <a href="{{ route('lowongan.create') }}" class="btn quick-action btn-sm mr-2 mb-2">
                         <i class="fas fa-plus mr-1"></i> Lowongan
                     </a>
+                    @endif
+                    @if(auth()->user()->canAccessAdminRoute('permintaan-tenaga-kerja.create'))
                     <a href="{{ route('permintaan-tenaga-kerja.create') }}" class="btn quick-action btn-sm mr-2 mb-2">
                         <i class="fas fa-user-plus mr-1"></i> PTK
                     </a>
+                    @endif
+                    @if(auth()->user()->canAccessAdminRoute('lowongan.index'))
                     <a href="{{ route('lowongan.index') }}" class="btn quick-action btn-sm mr-2 mb-2">
                         <i class="fas fa-briefcase mr-1"></i> Kelola Lowongan
                     </a>
+                    @endif
+                    @if(auth()->user()->canAccessAdminRoute('pengguna.index'))
                     <a href="{{ route('pengguna.index') }}" class="btn quick-action btn-sm mb-2">
                         <i class="fas fa-users mr-1"></i> Pelamar
                     </a>
+                    @endif
                 </div>
             </div>
         </div>
@@ -508,9 +516,11 @@
                     @forelse($lowonganButuhPerhatian as $lowongan)
                     <div class="insight-item">
                         <div class="d-flex justify-content-between">
+                            @if(auth()->user()->canAccessAdminRoute('directToLamaran'))
                             <a href="{{ route('directToLamaran', $lowongan->id) }}" class="font-weight-bold text-gray-800">
                                 {{ $lowongan->nama_lowongan }}
                             </a>
+                            @endif
                             <span class="badge badge-{{ $lowongan->lamaran_count == 0 ? 'danger' : 'warning' }}">
                                 {{ $lowongan->lamaran_count }} pelamar
                             </span>
@@ -580,9 +590,11 @@
                     @forelse($recentPtk as $ptk)
                     <div class="insight-item">
                         <div class="d-flex justify-content-between">
+                            @if(auth()->user()->canAccessAdminRoute('permintaan-tenaga-kerja.show'))
                             <a href="{{ route('permintaan-tenaga-kerja.show', $ptk->id) }}" class="font-weight-bold text-gray-800">
                                 {{ $ptk->posisi }}
                             </a>
+                            @endif
                             @php $statusKey = strtolower((string) $ptk->status_ptk); @endphp
                             <span class="badge badge-{{ $ptkBadge[$statusKey] ?? 'light' }}">{{ $ptk->status_ptk ?: '-' }}</span>
                         </div>

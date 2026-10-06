@@ -14,7 +14,7 @@
 @endif
 <div class="card shadow mb-4">
     <div class="card-body">
-        <form method="POST" action="{{ route('email-blast-log.store') }}" id="blast-form" enctype="multipart/form-data">
+        <form method="POST" action="{{ route('email-blast-log.store') }}" id="blast-form" enctype="multipart/form-data" data-permission-allowed="{{ auth()->user()->canAccessAdminRoute('email-blast-log.store') ? '1' : '0' }}">
             @csrf
             <div class="form-group">
                 <label for="recipients">Penerima email</label>
@@ -46,7 +46,9 @@
 <div class="card shadow mb-4">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h2 class="h6 m-0 font-weight-bold text-primary">Riwayat pengiriman HR</h2>
+        @if(auth()->user()->canAccessAdminRoute('email-blast-log.create'))
         <a class="btn btn-sm btn-outline-primary" href="{{ route('email-blast-log.create') }}">Perbarui status</a>
+        @endif
     </div>
     <div class="card-body">
         <p class="small text-muted">Antrean diproses bertahap. Terkirim berarti server email menerima pesan; bukan jaminan pesan masuk inbox. Dilewati berarti akun atau alamat berubah sebelum pengiriman.</p>

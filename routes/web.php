@@ -95,6 +95,9 @@ Auth::routes();
 
 // Admin route
 Route::group(['prefix' => 'admin', 'middleware' => ['redirect.role']], function () {
+    Route::get('/akses', [App\Http\Controllers\Admin\InternalAccountController::class, 'landing'])->name('internal-accounts.landing');
+    Route::resource('/akun-internal', App\Http\Controllers\Admin\InternalAccountController::class)
+        ->only(['index', 'create', 'store', 'edit', 'update'])->names('internal-accounts');
     Route::get('/assessment-links/{assessmentLink}/documents', [App\Http\Controllers\AssessmentDocumentController::class, 'adminIndex'])->name('assessment-documents.admin.index');
     Route::get('/assessment-links/{assessmentLink}/documents/{document}/download', [App\Http\Controllers\AssessmentDocumentController::class, 'adminDownload'])->name('assessment-documents.admin.download');
     Route::delete('/assessment-links/{assessmentLink}/documents/{document}', [App\Http\Controllers\AssessmentDocumentController::class, 'adminDestroy'])->name('assessment-documents.admin.destroy');

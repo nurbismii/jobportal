@@ -88,7 +88,7 @@ class DasborController extends Controller
         ];
 
         return view('admin.dasbor.index', [
-            'count_user' => User::where('status_akun', '1')->where('role', '!=', 'admin')->count(),
+            'count_user' => User::where('status_akun', '1')->where('role', 'user')->count(),
             'count_lowongan_aktif' => Lowongan::whereDate('tanggal_berakhir', '>=', $now->toDateString())->count(),
             'count_lowongan_tidak_aktif' => Lowongan::whereDate('tanggal_berakhir', '<', $now->toDateString())->count(),
             'count_pengumuman' => Pengumuman::count(),

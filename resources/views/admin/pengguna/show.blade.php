@@ -65,9 +65,11 @@
 
                         <div class="col-md-4 text-md-right">
                             @if($hasApprovedTerms)
+                            @if(auth()->user()->canAccessAdminRoute('pengguna.syarat-ketentuan.show'))
                             <a href="{{ route('pengguna.syarat-ketentuan.show', $user->id) }}" target="_blank" class="btn btn-primary">
                                 <i class="fas fa-print"></i> Lihat / Cetak Bukti
                             </a>
+                            @endif
                             @else
                             <button type="button" class="btn btn-secondary" disabled>
                                 <i class="fas fa-file-contract"></i> Belum Ada Bukti
@@ -113,7 +115,9 @@
                 </div>
 
                 <div class="card-footer text-end bg-light">
+                    @if(auth()->user()->canAccessAdminRoute('pengguna.index'))
                     <a href="{{ route('pengguna.index') }}" class="btn btn-secondary">Kembali</a>
+                    @endif
                 </div>
             </div>
         </div>

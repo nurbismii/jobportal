@@ -29,6 +29,7 @@
 
         <div class="d-flex flex-column flex-md-row">
 
+            @if(auth()->user()->canAccessAdminRoute('import.status-lamaran'))
             <a data-toggle="modal" data-target="#import-status"
                 class="btn btn-success btn-sm btn-icon-split mb-2 mb-md-0 mr-md-2">
                 <span class="icon text-white-50">
@@ -36,7 +37,9 @@
                 </span>
                 <span class="text">Import Status</span>
             </a>
+            @endif
 
+            @if(auth()->user()->canAccessAdminRoute('lowongan.create'))
             <a href="{{ route('lowongan.create') }}"
                 class="btn btn-primary btn-sm btn-icon-split">
                 <span class="icon text-white-50">
@@ -44,6 +47,7 @@
                 </span>
                 <span class="text">Lowongan</span>
             </a>
+            @endif
 
         </div>
 
@@ -102,16 +106,22 @@
                                 @endif
                             </div>
                             <div class="mt-auto">
+                                @if(auth()->user()->canAccessAdminRoute('directToLamaran'))
                                 <a href="{{ route('directToLamaran', $data->id) }}" class="btn btn-secondary btn-sm btn-block mb-2">
                                     <i class="fas fa-list mr-1"></i> Pelamar
                                 </a>
+                                @endif
                                 <div class="btn-group btn-group-sm btn-block" role="group">
+                                    @if(auth()->user()->canAccessAdminRoute('lowongan.edit'))
                                     <a href="{{ route('lowongan.edit', $data->id) }}" class="btn btn-success">
                                         <i class="fas fa-pen"></i> Edit
                                     </a>
+                                    @endif
+                                    @if(auth()->user()->canAccessAdminRoute('lowongan.destroy'))
                                     <a href="{{ route('lowongan.destroy', $data->id) }}" class="btn btn-danger" data-confirm-delete="true">
                                         <i class="fas fa-trash"></i> Hapus
                                     </a>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -145,7 +155,7 @@
             </div>
 
             <!-- BODY -->
-            <form action="{{ route('import.status-lamaran') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('import.status-lamaran') }}" method="POST" enctype="multipart/form-data" data-permission-allowed="{{ auth()->user()->canAccessAdminRoute('import.status-lamaran') ? '1' : '0' }}">
                 @csrf
 
                 <div class="modal-body">
