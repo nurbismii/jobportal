@@ -3,12 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Biodata;
+use App\Mail\HrBlastEmail;
 use App\Models\Hris\Departemen;
 use App\Models\Hris\Divisi;
 use App\Models\PermintaanTenagaKerja;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use RealRashid\SweetAlert\Facades\Alert;
 
 class PermintaanTenagaKerjaController extends Controller
@@ -100,7 +101,9 @@ class PermintaanTenagaKerjaController extends Controller
     {
         $permintaanTenagaKerja = PermintaanTenagaKerja::with(['departemen', 'divisi'])->findOrFail($id);
 
-        return view('admin.permintaan-tenaga-kerja.show', compact('permintaanTenagaKerja'));
+        $divisis = Divisi::whereIn('id', array_column($permintaanTenagaKerja->rincian_permintaan, 'divisi'))->get()->keyBy('id');
+
+        return view('admin.permintaan-tenaga-kerja.show', compact('permintaanTenagaKerja', 'divisis'));
     }
 
     private function validatePermintaanTenagaKerja(Request $request): array
@@ -110,42 +113,72 @@ class PermintaanTenagaKerjaController extends Controller
         $departemenTable = $departemen->getConnectionName() . '.' . $departemen->getTable();
         $divisiTable = $divisi->getConnectionName() . '.' . $divisi->getTable();
 
-        return $request->validate([
+        $validated = $request->validate([
             'no_surat_permintaan' => ['required', 'string', 'max:255'],
             'departemen' => ['required', 'integer', Rule::exists($departemenTable, 'id')],
-            'divisi' => [
+            'rincian' => ['required', 'array', 'min:1', 'max:100'],
+            'rincian.*' => ['required', 'array:divisi,posisi,jumlah_ptk,jenis_kelamin,rentang_usia,background_pendidikan,kualifikasi_ptk'],
+            'rincian.*.divisi' => [
                 'nullable',
                 'integer',
                 Rule::exists($divisiTable, 'id')->where(function ($query) use ($request) {
                     return $query->where('departemen_id', $request->departemen);
                 }),
             ],
-            'posisi' => ['required', 'string', 'max:255'],
+            'rincian.*.posisi' => ['required', 'string', 'max:255'],
             'tanggal_pengajuan' => ['required', 'date'],
             'tanggal_terima' => ['required', 'date'],
-            'jumlah_ptk' => ['required', 'integer', 'min:1'],
-            'jenis_kelamin' => ['required', Rule::in(self::JENIS_KELAMIN_OPTIONS)],
-            'rentang_usia' => ['required', 'string', 'max:255'],
-            'background_pendidikan' => ['required', Rule::in(self::PENDIDIKAN_OPTIONS)],
-            'kualifikasi_ptk' => ['required', 'string'],
+            'rincian.*.jumlah_ptk' => ['required', 'integer', 'min:1', 'max:1000000'],
+            'rincian.*.jenis_kelamin' => ['required', Rule::in(self::JENIS_KELAMIN_OPTIONS)],
+            'rincian.*.rentang_usia' => ['required', 'string', 'max:255'],
+            'rincian.*.background_pendidikan' => ['required', Rule::in(self::PENDIDIKAN_OPTIONS)],
+            'rincian.*.kualifikasi_ptk' => ['bail', 'required', 'string', 'max:50000', function ($attribute, $value, $fail) {
+                $text = html_entity_decode(strip_tags(HrBlastEmail::sanitizeMessage($value)), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                if (! preg_match('/[^\s\x{00A0}\x{200B}]/u', $text)) {
+                    $fail('Kualifikasi pada setiap rincian wajib diisi.');
+                }
+            }],
             'status_ptk' => ['nullable', Rule::in(self::STATUS_PTK_OPTIONS)],
         ]);
+
+        $seen = [];
+        foreach ($validated['rincian'] as $index => $row) {
+            $posisi = mb_strtolower(preg_replace('/\s+/u', ' ', trim($row['posisi'])), 'UTF-8');
+            $key = json_encode([isset($row['divisi']) ? (int) $row['divisi'] : null, $posisi]);
+            if (isset($seen[$key])) {
+                throw ValidationException::withMessages([
+                    "rincian.$index.posisi" => 'Posisi yang sama pada divisi yang sama tidak boleh diulang. Pilih posisi yang berbeda.',
+                ]);
+            }
+            $seen[$key] = true;
+        }
+
+        return $validated;
     }
 
     private function buildPayload(array $validated): array
     {
+        $rincian = array_values($validated['rincian']);
+        foreach ($rincian as &$row) {
+            $row['kualifikasi_ptk'] = HrBlastEmail::sanitizeMessage($row['kualifikasi_ptk']);
+        }
+        unset($row);
+        $pertama = $rincian[0];
+
         return [
             'no_surat_ptk' => $validated['no_surat_permintaan'],
             'departemen_id' => $validated['departemen'],
-            'divisi_id' => $validated['divisi'] ?? null,
-            'posisi' => $validated['posisi'],
+            'rincian' => $rincian,
+            'divisi_id' => $pertama['divisi'] ?? null,
+            'posisi' => $pertama['posisi'],
             'tanggal_pengajuan' => $validated['tanggal_pengajuan'],
             'tanggal_terima' => $validated['tanggal_terima'],
-            'jumlah_ptk' => $validated['jumlah_ptk'],
-            'jenis_kelamin' => $validated['jenis_kelamin'],
-            'rentang_usia' => $validated['rentang_usia'],
-            'background_pendidikan' => $validated['background_pendidikan'],
-            'kualifikasi_ptk' => $validated['kualifikasi_ptk'],
+            'jumlah_ptk' => array_sum(array_column($rincian, 'jumlah_ptk')),
+            'jenis_kelamin' => count(array_unique(array_column($rincian, 'jenis_kelamin'))) === 1
+                ? $pertama['jenis_kelamin'] : 'Laki-laki dan Perempuan',
+            'rentang_usia' => $pertama['rentang_usia'],
+            'background_pendidikan' => $pertama['background_pendidikan'],
+            'kualifikasi_ptk' => $pertama['kualifikasi_ptk'],
             'status_ptk' => $validated['status_ptk'] ?? 'Menunggu',
         ];
     }

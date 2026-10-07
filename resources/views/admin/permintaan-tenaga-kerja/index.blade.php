@@ -44,8 +44,8 @@
                                     <td>{{ $index + 1 }}</td>
                                     <td>{{ $permintaan->no_surat_ptk }}</td>
                                     <td>{{ $permintaan->departemen->departemen ?? 'N/A' }}</td>
-                                    <td>{{ $permintaan->divisi->nama_divisi ?? 'N/A' }}</td>
-                                    <td>{{ $permintaan->posisi }}</td>
+                                    <td>{{ count($permintaan->rincian_permintaan) > 1 ? 'Lihat rincian' : ($permintaan->divisi->nama_divisi ?? 'N/A') }}</td>
+                                    <td>{{ $permintaan->ringkasan_posisi }}</td>
                                     <td class="text-center">
                                         @php
                                         $status = strtolower($permintaan->status_ptk);

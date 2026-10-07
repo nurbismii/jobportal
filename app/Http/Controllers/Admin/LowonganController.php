@@ -45,7 +45,7 @@ class LowonganController extends Controller
 
     public function create()
     {
-        $permintaanTenagaKerjas = PermintaanTenagaKerja::where('status_ptk', '!=', 'Selesai')
+        $permintaanTenagaKerjas = PermintaanTenagaKerja::with(['departemen', 'divisi'])->where('status_ptk', '!=', 'Selesai')
             ->orderBy('created_at', 'desc')
             ->get();
 

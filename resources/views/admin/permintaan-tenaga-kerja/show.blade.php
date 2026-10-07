@@ -40,10 +40,23 @@
                 </div>
                 <div id="collapsePosisi" class="collapse show">
                     <div class="card-body">
-                        <p><i class="fa fa-user"></i> <strong>Posisi:</strong> {{ $permintaanTenagaKerja->posisi }}</p>
-                        <p><i class="fa fa-mars"></i> <strong>Jenis Kelamin:</strong> {{ $permintaanTenagaKerja->jenis_kelamin }}</p>
-                        <p><i class="fa fa-hourglass-half"></i> <strong>Rentang Usia:</strong> {{ $permintaanTenagaKerja->rentang_usia }}</p>
-                        <p><i class="fa fa-graduation-cap"></i> <strong>Pendidikan:</strong> {{ $permintaanTenagaKerja->background_pendidikan }}</p>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead><tr><th>Divisi</th><th>Posisi</th><th>Jumlah Permintaan</th><th>Jenis Kelamin</th><th>Usia</th><th>Background Pendidikan</th></tr></thead>
+                                <tbody>
+                                    @foreach ($permintaanTenagaKerja->rincian_permintaan as $rincian)
+                                    <tr>
+                                        <td>{{ optional($divisis->get($rincian['divisi'] ?? null))->nama_divisi ?? '-' }}</td>
+                                        <td>{{ $rincian['posisi'] }}</td>
+                                        <td>{{ $rincian['jumlah_ptk'] }}</td>
+                                        <td>{{ $rincian['jenis_kelamin'] }}</td>
+                                        <td>{{ $rincian['rentang_usia'] }}</td>
+                                        <td>{{ $rincian['background_pendidikan'] }}</td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
                         <p><i class="fa fa-users"></i> <strong>Jumlah PTK:</strong> {{ $permintaanTenagaKerja->jumlah_ptk }}</p>
                         <p><i class="fa fa-user-check"></i> <strong>Jumlah Masuk:</strong> {{ $permintaanTenagaKerja->jumlah_masuk }}</p>
                     </div>
@@ -79,7 +92,7 @@
                 <div id="collapseDept" class="collapse">
                     <div class="card-body">
                         <p><i class="fa fa-industry"></i> <strong>Departemen:</strong> {{ optional($permintaanTenagaKerja->departemen)->departemen }} ({{ optional($permintaanTenagaKerja->departemen)->status_pengeluaran }})</p>
-                        <p><i class="fa fa-sitemap"></i> <strong>Divisi:</strong> {{ $permintaanTenagaKerja->divisi->nama_divisi }}</p>
+                        <p><i class="fa fa-sitemap"></i> <strong>Divisi:</strong> {{ count($permintaanTenagaKerja->rincian_permintaan) > 1 ? 'Lihat rincian posisi' : (optional($permintaanTenagaKerja->divisi)->nama_divisi ?? '-') }}</p>
                         <p><i class="fa fa-user-tie"></i> <strong>Kepala Departemen:</strong> {{ optional($permintaanTenagaKerja->departemen)->kepala_dept }}</p>
                         <p><i class="fa fa-phone"></i> <strong>Telp:</strong> {{ optional($permintaanTenagaKerja->departemen)->no_telp_dept }}</p>
                     </div>
@@ -96,7 +109,12 @@
                 </div>
                 <div id="collapseKualifikasi" class="collapse">
                     <div class="card-body">
-                        {!! $permintaanTenagaKerja->kualifikasi_ptk !!}
+                        @foreach ($permintaanTenagaKerja->rincian_permintaan as $index => $rincian)
+                        <div class="border rounded p-3 mb-3">
+                            <h6 class="font-weight-bold">Rincian {{ $index + 1 }} — {{ $rincian['posisi'] }}</h6>
+                            {!! \App\Mail\HrBlastEmail::sanitizeMessage($rincian['kualifikasi_ptk'] ?? '') !!}
+                        </div>
+                        @endforeach
                     </div>
                 </div>
             </div>

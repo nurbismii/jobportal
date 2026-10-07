@@ -592,7 +592,7 @@
                         <div class="d-flex justify-content-between">
                             @if(auth()->user()->canAccessAdminRoute('permintaan-tenaga-kerja.show'))
                             <a href="{{ route('permintaan-tenaga-kerja.show', $ptk->id) }}" class="font-weight-bold text-gray-800">
-                                {{ $ptk->posisi }}
+                                {{ $ptk->ringkasan_posisi }}
                             </a>
                             @endif
                             @php $statusKey = strtolower((string) $ptk->status_ptk); @endphp
@@ -600,7 +600,9 @@
                         </div>
                         <div class="small text-muted mt-1">
                             {{ optional($ptk->departemen)->departemen ?: 'Tanpa Departemen' }}
-                            @if(optional($ptk->divisi)->nama_divisi)
+                            @if(count($ptk->rincian_permintaan) > 1)
+                                - Lihat rincian PTK
+                            @elseif(optional($ptk->divisi)->nama_divisi)
                                 - {{ $ptk->divisi->nama_divisi }}
                             @endif
                         </div>

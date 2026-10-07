@@ -91,13 +91,13 @@
                                         <option
                                             value="{{ $ptk->id }}"
                                             data-no_surat="{{ $ptk->no_surat_ptk }}"
-                                            data-departemen="{{ $ptk->departemen->departemen }}"
-                                            data-divisi="{{ $ptk->divisi->nama_divisi }}"
-                                            data-posisi="{{ $ptk->posisi }}"
+                                            data-departemen="{{ optional($ptk->departemen)->departemen }}"
+                                            data-divisi="{{ count($ptk->rincian_permintaan) > 1 ? 'Lihat detail PTK' : (optional($ptk->divisi)->nama_divisi ?? '-') }}"
+                                            data-posisi="{{ $ptk->ringkasan_posisi }}"
                                             data-jumlah="{{ $ptk->jumlah_ptk }}"
                                             data-jumlah_masuk="{{ $ptk->jumlah_masuk }}"
                                             data-status="{{ $ptk->status_ptk }}">
-                                            {{ $ptk->no_surat_ptk }} - {{ $ptk->posisi }}
+                                            {{ $ptk->no_surat_ptk }} - {{ $ptk->ringkasan_posisi }}
                                         </option>
                                         @endforeach
                                     </optgroup>

@@ -340,7 +340,7 @@ class DasborController extends Controller
     private function buildPtkFilterOptions(): array
     {
         $ptks = PermintaanTenagaKerja::with(['departemen', 'divisi'])
-            ->select('id', 'departemen_id', 'divisi_id', 'posisi', 'status_ptk')
+            ->select('id', 'departemen_id', 'divisi_id', 'posisi', 'status_ptk', 'rincian')
             ->orderByRaw("FIELD(status_ptk, 'Proses', 'Diterima', 'Menunggu', 'Selesai', 'Ditolak')")
             ->orderByDesc('created_at')
             ->get();
@@ -375,7 +375,7 @@ class DasborController extends Controller
                     'lowongans' => $items->map(function ($i) {
                         return [
                             'id' => $i->id,
-                            'posisi' => $i->posisi,
+                            'posisi' => $i->ringkasan_posisi,
                             'status_ptk' => $i->status_ptk,
                         ];
                     })->values(),

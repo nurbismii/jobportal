@@ -3,6 +3,7 @@
 namespace App\Services\Vhire;
 
 use App\Jobs\SyncOnboardingCandidateToHris;
+use App\Models\Hris\Divisi;
 use App\Models\Lamaran;
 use App\Models\VhireOnboardingCandidate;
 use Carbon\Carbon;
@@ -43,12 +44,8 @@ class OnboardingCandidateSyncService
             'candidate_code' => $candidateCode,
             'no_ktp' => $noKtp,
             'nama' => trim((string) ($user->name ?? $biodata->nama ?? '')),
-            'jabatan' => $this->stringOrNull($ptk->posisi ?? $lowongan->nama_lowongan ?? null),
+            ...$this->workPayloadFromPtk($ptk, $lowongan),
             'tanggal_mulai_kerja' => $tanggalMulaiKerja ? date('Y-m-d', strtotime((string) $tanggalMulaiKerja)) : null,
-            'departemen' => $this->stringOrNull(optional(optional($ptk)->departemen)->departemen),
-            'departemen_id' => $this->integerOrNull(optional($ptk)->departemen_id),
-            'divisi' => $this->stringOrNull(optional(optional($ptk)->divisi)->nama_divisi),
-            'divisi_id' => $this->integerOrNull(optional($ptk)->divisi_id),
             'lokasi' => $this->stringOrNull($user->area_kerja ?? null),
             'recruitment_status' => 'proses_tanda_tangan_kontrak',
             'onboarding_status' => 'draft',
@@ -192,12 +189,24 @@ class OnboardingCandidateSyncService
             return [];
         }
 
+        return $this->workPayloadFromPtk($ptk, $lowongan);
+    }
+
+    private function workPayloadFromPtk($ptk, $lowongan): array
+    {
+        $rincian = $ptk?->rincian_permintaan ?? [];
+        $multi = count($rincian) > 1;
+        // ponytail: exact vacancy-title match; use an explicit detail ID when vacancy titles differ.
+        $matched = $multi ? array_values(array_filter($rincian, fn ($row) => strcasecmp(trim($row['posisi']), trim((string) $lowongan?->nama_lowongan)) === 0)) : $rincian;
+        $row = count($matched) === 1 ? $matched[0] : null;
+        $divisi = $multi ? (($row['divisi'] ?? null) ? Divisi::find($row['divisi']) : null) : $ptk?->divisi;
+
         return [
-            'jabatan' => $this->stringOrNull($ptk->posisi ?? optional($lowongan)->nama_lowongan ?? null),
-            'departemen' => $this->stringOrNull(optional(optional($ptk)->departemen)->departemen),
-            'departemen_id' => $this->integerOrNull(optional($ptk)->departemen_id),
-            'divisi' => $this->stringOrNull(optional(optional($ptk)->divisi)->nama_divisi),
-            'divisi_id' => $this->integerOrNull(optional($ptk)->divisi_id),
+            'jabatan' => $this->stringOrNull($row['posisi'] ?? $lowongan?->nama_lowongan),
+            'departemen' => $this->stringOrNull($ptk?->departemen?->departemen),
+            'departemen_id' => $this->integerOrNull($ptk?->departemen_id),
+            'divisi' => $this->stringOrNull($divisi?->nama_divisi),
+            'divisi_id' => $this->integerOrNull($divisi?->id),
         ];
     }
 
