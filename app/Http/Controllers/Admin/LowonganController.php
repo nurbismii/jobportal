@@ -54,10 +54,11 @@ class LowonganController extends Controller
 
     public function store(Request $request)
     {
+        $this->validateLowongan($request, true);
         Lowongan::create([
             'permintaan_tenaga_kerja_id' => $request->ptk_id,
             'nama_lowongan' => $request->nama_lowongan,
-            'kualifikasi' => $request->kualifikasi,
+            'kualifikasi' => \App\Mail\HrBlastEmail::sanitizeMessage((string) $request->kualifikasi),
             'status_sim_b2' => $request->status_sim_b2,
             'status_sio' => $request->status_sio,
             'tanggal_mulai' => $request->tanggal_mulai,
@@ -77,10 +78,11 @@ class LowonganController extends Controller
 
     public function update(Request $request, $id)
     {
+        $this->validateLowongan($request, false);
         $lowongan = Lowongan::findOrFail($id);
         $lowongan->update([
             'nama_lowongan' => $request->nama_lowongan,
-            'kualifikasi' => $request->kualifikasi,
+            'kualifikasi' => \App\Mail\HrBlastEmail::sanitizeMessage((string) $request->kualifikasi),
             'status_sim_b2' => $request->status_sim_b2,
             'status_sio' => $request->status_sio,
             'tanggal_mulai' => $request->tanggal_mulai,
@@ -89,6 +91,19 @@ class LowonganController extends Controller
 
         Alert::success('Berhasil', 'Lowongan kerja berhasil diperbarui!');
         return redirect()->route('lowongan.index');
+    }
+
+    private function validateLowongan(Request $request, bool $creating): void
+    {
+        $request->validate([
+            'ptk_id' => $creating ? 'required|integer|exists:permintaan_tenaga_kerja,id' : 'nullable',
+            'nama_lowongan' => 'required|string|max:255',
+            'kualifikasi' => 'required|string|max:50000',
+            'status_sim_b2' => 'required|boolean',
+            'status_sio' => 'required|boolean',
+            'tanggal_mulai' => 'required|date',
+            'tanggal_berakhir' => 'required|date|after_or_equal:tanggal_mulai',
+        ]);
     }
 
     public function destroy($id)

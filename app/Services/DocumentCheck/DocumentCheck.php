@@ -75,7 +75,7 @@ class DocumentCheck
         }
 
         // === Bagian Optimasi OCR (pakai cache file) ===
-        $filePath = public_path($biodata->no_ktp . '/dokumen/' . $biodata->ktp);
+        $filePath = candidate_document_path($biodata->no_ktp, $biodata->ktp);
 
         if (!$biodata->ktp || !file_exists($filePath)) {
             Alert::warning('Gagal', 'File KTP tidak ditemukan, silakan upload KTP terlebih dahulu.');

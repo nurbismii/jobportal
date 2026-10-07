@@ -184,9 +184,17 @@ class PendaftaranController extends Controller
             $user = User::where('email_verifikasi_token', $token)->lockForUpdate()->first();
 
             if ($user && ! $user->hasVerifiedEmail()) {
+                $sentAt = $user->verification_email_last_sent_at ?? $user->created_at;
+                if (! $sentAt || ! $sentAt->copy()->addHour()->isFuture() || ! in_array((int) $user->status_akun, [0, 1], true)) {
+                    return null;
+                }
+            }
+
+            if ($user && ! $user->hasVerifiedEmail()) {
                 $user->forceFill([
                     'email_verified_at' => Carbon::now(),
                     'status_akun' => 1,
+                    'email_verifikasi_token' => null,
                 ])->save();
             }
 

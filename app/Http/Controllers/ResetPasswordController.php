@@ -43,6 +43,7 @@ class ResetPasswordController extends Controller
 
         $user = User::where('no_ktp', $validatedData['no_ktp'])
             ->where('email', $validatedData['email'])
+            ->where('role', 'user')
             ->first();
 
         if (!$user) {
@@ -61,13 +62,12 @@ class ResetPasswordController extends Controller
 
         $existingReset = DB::table('password_resets')
             ->where('email', $user->email)
-            ->where('token', $user->email_verifikasi_token)
             ->orderBy('created_at', 'desc')
             ->first();
 
         if ($existingReset) {
             $createdAt = Carbon::parse($existingReset->created_at);
-            if (Carbon::now()->diffInMinutes($createdAt) < self::RECOVERY_EXPIRE_MINUTES) {
+            if ($createdAt->copy()->addMinutes(self::RECOVERY_EXPIRE_MINUTES)->isFuture()) {
                 Alert::warning('Opps!', 'Tautan pemulihan terakhir masih aktif. Silakan cek email lama Anda atau tunggu 1 jam untuk meminta ulang.');
                 return back();
             }
@@ -78,16 +78,14 @@ class ResetPasswordController extends Controller
         DB::table('password_resets')->updateOrInsert(
             ['email' => $user->email],
             [
-                'token' => $token,
+                'token' => hash('sha256', $token),
                 'created_at' => Carbon::now(),
             ]
         );
 
-        $user->update([
-            'email_verifikasi_token' => $token,
-        ]);
-
-        app(FallbackMailService::class)->send($user->email, new EmailRecoverAccount($user));
+        $mailUser = clone $user;
+        $mailUser->email_verifikasi_token = $token;
+        app(FallbackMailService::class)->send($user->email, new EmailRecoverAccount($mailUser));
 
         Alert::success('Berhasil', 'Tautan pemulihan akun telah dikirim ke email lama yang terdaftar.');
         return redirect()->route('login');
@@ -243,6 +241,7 @@ class ResetPasswordController extends Controller
             'email_verified_at' => null,
             'status_akun' => 0,
             'email_verifikasi_token' => $tokenVerifikasiBaru,
+            'remember_token' => null,
         ];
 
         if (User::supportsVerificationResendTracking()) {
@@ -251,11 +250,13 @@ class ResetPasswordController extends Controller
             $payload['verification_resend_count_date'] = $now->toDateString();
         }
 
-        $user->update($payload);
-
-        DB::table('password_resets')
-            ->where('email', $emailLama)
-            ->delete();
+        DB::transaction(function () use ($token, $user, $payload, $emailLama) {
+            $reset = DB::table('password_resets')->where('email', $emailLama)->lockForUpdate()->first();
+            abort_unless($reset && $this->tokenMatches($reset->token, $token)
+                && Carbon::parse($reset->created_at)->addMinutes(self::RECOVERY_EXPIRE_MINUTES)->isFuture(), 422, 'Tautan pemulihan sudah tidak berlaku.');
+            $user->forceFill($payload)->save();
+            DB::table('password_resets')->where('email', $emailLama)->delete();
+        });
 
         app(FallbackMailService::class)->send($validatedData['email'], new EmailVerification($user->fresh()));
 
@@ -271,15 +272,8 @@ class ResetPasswordController extends Controller
 
     private function getValidRecovery($token)
     {
-        $user = User::where('email_verifikasi_token', $token)->first();
-
-        if (!$user) {
-            return null;
-        }
-
         $recovery = DB::table('password_resets')
-            ->where('email', $user->email)
-            ->where('token', $token)
+            ->whereIn('token', [hash('sha256', $token), $token])
             ->first();
 
         if (!$recovery) {
@@ -287,10 +281,11 @@ class ResetPasswordController extends Controller
         }
 
         if (Carbon::parse($recovery->created_at)->addMinutes(self::RECOVERY_EXPIRE_MINUTES)->isPast()) {
-            DB::table('password_resets')
-                ->where('email', $user->email)
-                ->delete();
+            return null;
+        }
 
+        $user = User::where('email', $recovery->email)->first();
+        if (! $user || $user->role !== 'user' || ! $this->hasVerifiedOldEmail($user)) {
             return null;
         }
 
@@ -298,5 +293,11 @@ class ResetPasswordController extends Controller
             'user' => $user,
             'recovery' => $recovery,
         ];
+    }
+
+    private function tokenMatches(string $stored, string $token): bool
+    {
+        // Accept already-issued legacy links until their existing expiry.
+        return hash_equals($stored, hash('sha256', $token)) || hash_equals($stored, $token);
     }
 }

@@ -19,7 +19,7 @@
                     </div>
                     <div class="pb-3 wow fadeInUp" data-wow-delay="0.2s">
                         <h2 class="fw-bold text-primary mb-3">{{ $pengumuman->pengumuman }}</h2>
-                        <p class="mb-4">{!! $pengumuman->keterangan !!}</p>
+                        <p class="mb-4">{!! \App\Mail\HrBlastEmail::sanitizeMessage($pengumuman->keterangan ?? "") !!}</p>
                     </div>
                     <a href="{{ url()->previous() }}" class="btn btn-primary rounded-pill">
                         &larr; Kembali

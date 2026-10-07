@@ -43,12 +43,8 @@
             @php
             $step = calcutaionStep(auth()->user()->biodata ?? null);
 
-            function disableIf($requiredStep, $currentStep) {
-            if (auth()->check() && auth()->user()->isInternalUser()) {
-            return '';
-            }
-            return $currentStep < $requiredStep ? 'disabled opacity-50 pointer-events-none' : '' ;
-                }
+            $disabledLinkClass = $step < 7 && ! auth()->user()->isInternalUser()
+                ? 'disabled opacity-50 pointer-events-none' : '';
                 @endphp
 
                 <div class="collapse navbar-collapse" id="navbarCollapse">
@@ -61,12 +57,12 @@
                     </a>
 
                     <a href="{{ route('lowongan-kerja.index') }}"
-                        class="nav-item nav-link {{ request()->routeIs('lowongan-kerja.*') ? 'active' : '' }} {{ disableIf(7, $step) }}">
+                        class="nav-item nav-link {{ request()->routeIs('lowongan-kerja.*') ? 'active' : '' }} {{ $disabledLinkClass }}">
                         Daftar Lowongan Kerja
                     </a>
 
                     <a href="{{ route('lamaran.index') }}"
-                        class="nav-item nav-link {{ request()->routeIs('lamaran.*') ? 'active' : '' }} {{ disableIf(7, $step) }}">
+                        class="nav-item nav-link {{ request()->routeIs('lamaran.*') ? 'active' : '' }} {{ $disabledLinkClass }}">
                         Riwayat Proses Lamaran
                     </a>
 

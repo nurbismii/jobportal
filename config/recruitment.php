@@ -6,7 +6,7 @@ return [
     ],
 
     'candidate_documents' => [
-        'disk' => 'recruitment_public',
+        'disk' => 'candidate_private',
         'base_path' => '{no_ktp}/dokumen',
         'temporary_url_minutes' => 10,
     ],

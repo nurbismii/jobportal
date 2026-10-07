@@ -36,7 +36,7 @@ class PengumumanController extends Controller
         Pengumuman::create([
             'pengumuman' => $validated['pengumuman'],
             'thumbnail' => $fileName,
-            'keterangan' => $validated['keterangan'],
+            'keterangan' => \App\Mail\HrBlastEmail::sanitizeMessage($validated['keterangan']),
         ]);
 
         Alert::success('Berhasil', 'Pengumuman berhasil dibuat');
@@ -54,7 +54,7 @@ class PengumumanController extends Controller
         $validated = $this->validatePengumuman($request, false);
         $pengumuman = Pengumuman::findOrFail($id);
         $pengumuman->pengumuman = $validated['pengumuman'];
-        $pengumuman->keterangan = $validated['keterangan'];
+        $pengumuman->keterangan = \App\Mail\HrBlastEmail::sanitizeMessage($validated['keterangan']);
 
         if ($request->hasFile('thumbnail')) {
             $this->deleteThumbnail($pengumuman->thumbnail);

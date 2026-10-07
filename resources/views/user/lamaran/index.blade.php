@@ -42,7 +42,7 @@
                         </div>
                         <h3 class="card-title text-dark fw-bold mb-0">{{ $lamaran->lowongan->nama_lowongan }}</h3>
                         <p class="card-text text-muted flex-grow-1" style="max-height: 90px; overflow: hidden;">
-                            {!! $lamaran->lowongan->kualifikasi !!}
+                            {!! \App\Mail\HrBlastEmail::sanitizeMessage($lamaran->lowongan->kualifikasi ?? "") !!}
                         </p>
                         <div class="mb-1">
                             <p class="mb-1 small">

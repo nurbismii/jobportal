@@ -54,8 +54,10 @@ class CandidateDocumentService
 
         abort_if(! $document, 404);
 
-        return $this->disk()->response($document['path'], null, [
+        return $this->disk($document['path'])->response($document['path'], null, [
             'Content-Type' => $document['mime'],
+            'X-Content-Type-Options' => 'nosniff',
+            'Cache-Control' => 'private, no-store',
         ], 'inline');
     }
 
@@ -65,7 +67,7 @@ class CandidateDocumentService
 
         abort_if(! $document, 404);
 
-        return $this->disk()->download($document['path'], $document['download_name'], [
+        return $this->disk($document['path'])->download($document['path'], $document['download_name'], [
             'Content-Type' => $document['mime'],
         ]);
     }
@@ -127,14 +129,19 @@ class CandidateDocumentService
 
         $path = $this->documentPath((string) $biodata->no_ktp, (string) $fileName);
 
-        if (! $this->isSafeRelativePath($path) || ! $this->disk()->exists($path)) {
+        if (! $this->isSafeRelativePath($path) || ! $this->disk($path)->exists($path)) {
+            return null;
+        }
+
+        $mime = $this->mimeType($path);
+        if (! in_array($mime, ['application/pdf', 'image/jpeg', 'image/png'], true)) {
             return null;
         }
 
         return [
             'type' => $type,
             'label' => $label,
-            'mime' => $this->mimeType($path),
+            'mime' => $mime,
             'path' => $path,
             'file_name' => (string) $fileName,
             'download_name' => $this->downloadFileName($biodata, $label, (string) $fileName),
@@ -216,7 +223,7 @@ class CandidateDocumentService
     private function mimeType(string $path): string
     {
         try {
-            return $this->disk()->mimeType($path) ?: 'application/octet-stream';
+            return $this->disk($path)->mimeType($path) ?: 'application/octet-stream';
         } catch (\Throwable $e) {
             return 'application/octet-stream';
         }
@@ -243,8 +250,13 @@ class CandidateDocumentService
         return (int) config('recruitment.candidate_documents.temporary_url_minutes', 10);
     }
 
-    private function disk()
+    private function disk(?string $path = null)
     {
-        return Storage::disk((string) config('recruitment.candidate_documents.disk', 'recruitment_public'));
+        $name = (string) config('recruitment.candidate_documents.disk', 'candidate_private');
+        $disk = Storage::disk($name);
+        if ($name === 'candidate_private' && $path !== null && ! $disk->exists($path)) {
+            return Storage::disk('recruitment_public');
+        }
+        return $disk;
     }
 }

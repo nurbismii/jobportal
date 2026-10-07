@@ -41,12 +41,22 @@ class LowonganController extends Controller
 
     public function store(Request $request)
     {
+        $request->validate(['loker_id' => 'required|integer|exists:lowongan,id']);
+        $biodata = Biodata::where('user_id', auth()->id())->firstOrFail();
+        $lowongan = Lowongan::findOrFail($request->loker_id);
+        abort_unless($lowongan->tanggal_mulai <= now()->toDateString()
+            && $lowongan->tanggal_berakhir >= now()->toDateString(), 422, 'Lowongan belum dibuka atau sudah berakhir.');
         if (auth()->user() && auth()->user()->hasActiveEmploymentStatusLock()) {
             Alert::warning('Peringatan', 'Akun yang tercatat aktif bekerja tidak dapat digunakan untuk memperbarui biodata atau mengirim lamaran baru.');
             return redirect()->route('lowongan-kerja.show', $request->loker_id);
         }
 
-        $lamaran = Lamaran::where('biodata_id', $request->biodata_id)->latest()->first();
+        $lamaran = Lamaran::where('biodata_id', $biodata->id)->latest()->first();
+
+        if (Lamaran::where('biodata_id', $biodata->id)->where('loker_id', $lowongan->id)->exists()) {
+            Alert::warning('Peringatan', 'Kamu telah melamar lowongan ini sebelumnya.');
+            return redirect()->route('lamaran.index');
+        }
 
         if ($lamaran) {
 
@@ -61,7 +71,7 @@ class LowonganController extends Controller
             }
         }
 
-        $documentCheck = new DocumentCheck();
+        $documentCheck = app(DocumentCheck::class);
         $cekBerkas = $documentCheck->checkDocument($request->loker_id);
 
         if ($cekBerkas) {
@@ -71,9 +81,18 @@ class LowonganController extends Controller
         try {
             DB::beginTransaction();
 
+            \App\Models\User::whereKey(auth()->id())->lockForUpdate()->firstOrFail();
+            if (Lamaran::where('biodata_id', $biodata->id)->where(function ($query) use ($lowongan) {
+                $query->where('status_lamaran', 1)->orWhere('loker_id', $lowongan->id);
+            })->exists()) {
+                DB::rollBack();
+                Alert::warning('Peringatan', 'Lamaran sudah dikirim atau masih dalam proses.');
+                return redirect()->route('lamaran.index');
+            }
+
             $lamaran = Lamaran::create([
                 'loker_id' => $request->loker_id,
-                'biodata_id' => $request->biodata_id,
+                'biodata_id' => $biodata->id,
                 'status_lamaran' => '1',
                 'status_proses' => 'Lamaran Dikirim',
             ]);
@@ -91,7 +110,8 @@ class LowonganController extends Controller
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            Alert::error('Gagal', 'Terjadi kesalahan saat mengirim lamaran' . ': ' . $e->getMessage());
+            report($e);
+            Alert::error('Gagal', 'Terjadi kesalahan saat mengirim lamaran. Silakan coba kembali.');
             return redirect()->back();
         }
 

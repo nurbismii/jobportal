@@ -48,7 +48,9 @@ Route::get('/penilaian/{token}/kandidat', [PublicAssessmentLinkController::class
 Route::post('/penilaian/{token}/kandidat/{candidate}/autosave', [PublicAssessmentLinkController::class, 'autosave'])
     ->middleware(['throttle:30,1', EnsurePublicAssessmentAccess::class])->name('assessment-links.public.autosave');
 
-Route::resource('lowongan-kerja', 'App\Http\Controllers\LowonganController');
+Route::resource('lowongan-kerja', 'App\Http\Controllers\LowonganController')->only(['index', 'show']);
+Route::post('lowongan-kerja', [App\Http\Controllers\LowonganController::class, 'store'])
+    ->middleware(['auth', 'verified.email', 'throttle:10,1'])->name('lowongan-kerja.store');
 Route::resource('pengumuman', 'App\Http\Controllers\PengumumanController')->only(['index', 'show']);
 Route::resource('bantuan', 'App\Http\Controllers\BantuanController');
 Route::resource('pendaftaran', 'App\Http\Controllers\PendaftaranController');
@@ -61,7 +63,7 @@ Route::post('verifikasi-email/kirim-ulang', [PendaftaranController::class, 'rese
     ->name('verification.resend.public');
 
 Route::get('lupa-akun', [ResetPasswordController::class, 'index'])->name('lupa-akun.index');
-Route::post('lupa-akun', [ResetPasswordController::class, 'store'])->name('lupa-akun.store');
+Route::post('lupa-akun', [ResetPasswordController::class, 'store'])->middleware('throttle:3,10')->name('lupa-akun.store');
 Route::post('lupa-akun/permintaan', [ResetPasswordController::class, 'submitRecoveryRequest'])
     ->middleware('throttle:3,10')
     ->name('lupa-akun.request');
@@ -69,15 +71,17 @@ Route::get('lupa-akun/token/{token}', [ResetPasswordController::class, 'resetPas
 Route::patch('lupa-akun/{token}', [ResetPasswordController::class, 'update'])->name('lupa-akun.update');
 
 Route::get('reset-password', [ResetPasswordController::class, 'index'])->name('reset-password.index');
-Route::post('reset-password', [ResetPasswordController::class, 'store'])->name('reset-password.store');
+Route::post('reset-password', [ResetPasswordController::class, 'store'])->middleware('throttle:3,10')->name('reset-password.store');
 Route::patch('reset-password/{token}', [ResetPasswordController::class, 'update'])->name('reset-password.update');
 Route::get('reset-password-token/{token}', [ResetPasswordController::class, 'resetPassword']);
 
 // User harus login dan sudah verifikasi email untuk akses biodata dan profil
 Route::middleware(['auth', 'verified.email'])->group(function () {
 
-    Route::resource('lamaran', 'App\Http\Controllers\LamaranController');
-    Route::resource('profil', 'App\Http\Controllers\ProfilController');
+    Route::resource('lamaran', 'App\Http\Controllers\LamaranController')->only(['index', 'show']);
+    Route::resource('profil', 'App\Http\Controllers\ProfilController')->only(['index', 'update']);
+    Route::get('dokumen-pelamar/{noKtp}/{file}', [App\Http\Controllers\CandidateDocumentController::class, 'show'])
+        ->where('noKtp', '[0-9]{16}')->name('candidate-documents.show');
     Route::get('kontrak-pkwt', [PkwtContractController::class, 'index'])->name('kontrak-pkwt.index');
     Route::get('kontrak-pkwt/{contract}', [PkwtContractController::class, 'show'])->name('kontrak-pkwt.show');
     Route::get('kontrak-pkwt/{contract}/download', [PkwtContractController::class, 'download'])->name('kontrak-pkwt.download');
@@ -127,7 +131,6 @@ Route::group(['prefix' => 'admin', 'middleware' => ['redirect.role']], function 
     Route::patch('/assessment-links/{assessmentLink}/expiry', [AssessmentLinkController::class, 'extendExpiry'])->name('assessment-links.expiry');
     
     Route::post('/lamaran/update-status-massal', [LamaranController::class, 'updateStatusMassal'])->name('lamaran.updateStatusMassal');
-    Route::get('/lamaran-data', [LamaranController::class, 'getLamaranData'])->name('lamaran.data');
     Route::post('/auto-update-field', [LamaranController::class, 'autoUpdate'])->name('data.autoUpdate');
     Route::post('/import-status-lamaran', [LamaranController::class, 'importStatusLamaran'])->name('import.status-lamaran');
 

@@ -855,6 +855,14 @@ class AssessmentLinkTest extends TestCase
 
     public function test_lowongan_pendaftar_uses_the_latest_assessment_result_and_filters_by_eligibility()
     {
+        foreach (['master_provinsi', 'master_kabupaten', 'master_kecamatan', 'master_kelurahan'] as $name) {
+            Schema::connection('mysql_hris')->create($name, fn (Blueprint $table) => $table->id());
+        }
+        Schema::connection('mysql_hris')->create('employees', function (Blueprint $table) {
+            foreach (['no_ktp', 'nama_karyawan', 'tgl_resign', 'alasan_resign', 'posisi', 'status_resign', 'area_kerja'] as $column) {
+                $table->string($column)->nullable();
+            }
+        });
         $admin = User::create(['name' => 'HR Lowongan', 'email' => 'lowongan-eligibility@example.test', 'password' => 'secret', 'role' => 'admin', 'status_akun' => 1]);
         DB::table('lowongan')->insert([
             'id' => 1,

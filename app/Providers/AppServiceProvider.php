@@ -62,6 +62,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        \Illuminate\Session\Middleware\AuthenticateSession::redirectUsing(fn () => route('login'));
         Paginator::useBootstrap();
 
         View::composer('partials.admin._sidebar', function ($view) {

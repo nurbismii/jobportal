@@ -5,6 +5,9 @@
 
     RewriteEngine On
 
+    # Legacy identity documents must pass through authenticated application routes.
+    RewriteRule ^[0-9]{16}/dokumen(?:/|$) - [F,L]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]

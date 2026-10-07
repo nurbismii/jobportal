@@ -440,10 +440,11 @@ class BiodataController extends Controller
 
             $fileNames = interventionImg($dokumenFields, $biodata, $request);
 
+            $oldFiles = $fileNames['oldFiles'] ?? [];
             $fileNames = $fileNames['files'];
-            $oldFiles  = $fileNames['oldFiles'] ?? [];
             $pernyataanUpdates = [
                 'status_pernyataan' => $syaratKetentuan->syarat_ketentuan,
+                'sim_b_2' => $fileNames['sim_b_2'] ?? $biodata->sim_b_2,
             ];
 
             if (Schema::hasColumn('biodata', 'syarat_ketentuan_id')) {
@@ -457,7 +458,7 @@ class BiodataController extends Controller
             $biodata->forceFill($pernyataanUpdates)->save();
 
             foreach ($oldFiles as $oldFile) {
-                $path = public_path(auth()->user()->no_ktp . '/dokumen/' . $oldFile);
+                $path = candidate_document_path(auth()->user()->no_ktp, $oldFile);
                 if (is_file($path)) {
                     unlink($path);
                 }
@@ -664,11 +665,7 @@ class BiodataController extends Controller
         $fileName = $biodata->{$field};
 
         if ($fileName) {
-            $filePath = public_path(Auth::user()->no_ktp . '/dokumen/' . $fileName);
-
-            if (File::exists($filePath)) {
-                File::delete($filePath);
-            }
+            $filePath = candidate_document_path(Auth::user()->no_ktp, $fileName);
 
             if ($field === 'ktp') {
                 $biodata->ocr_ktp = null;
@@ -682,6 +679,9 @@ class BiodataController extends Controller
 
             $biodata->{$field} = null;
             $biodata->save();
+            if (File::exists($filePath)) {
+                File::delete($filePath);
+            }
         }
 
         // RESPONSE AJAX
@@ -824,7 +824,7 @@ class BiodataController extends Controller
 
             // hapus file lama
             foreach ($oldFiles as $old) {
-                $path = public_path(auth()->user()->no_ktp . '/dokumen/' . $old);
+                $path = candidate_document_path(auth()->user()->no_ktp, $old);
                 if (is_file($path)) unlink($path);
             }
 
@@ -832,7 +832,7 @@ class BiodataController extends Controller
                 'success' => true,
                 'field'   => $uploadedField,
                 'file'    => $fileName,
-                'path' => auth()->user()->no_ktp . '/dokumen/' . $fileName
+                'path' => candidate_document_url(auth()->user()->no_ktp, $fileName)
             ]);
         } catch (\Illuminate\Validation\ValidationException $ve) {
             Log::info('Upload AJAX Validation Error: ' . json_encode($ve->errors()));

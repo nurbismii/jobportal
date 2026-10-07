@@ -223,7 +223,7 @@ class OrphanBiodataTest extends TestCase
         $this->assertTrue($user->fresh()->hasVerifiedEmail());
         $this->assertSame(1, (int) $user->fresh()->status_akun);
         $user->refresh()->update(['status_akun' => 0]);
-        $this->get('/konfirmasi-email-token/pending-token')->assertRedirect(route('login'));
+        $this->get('/konfirmasi-email-token/pending-token')->assertRedirect(route('verification.notice.public'));
         $this->assertSame(0, (int) $user->fresh()->status_akun);
         $this->get('/konfirmasi-email-token/invalid-token')->assertRedirect(route('verification.notice.public'));
     }

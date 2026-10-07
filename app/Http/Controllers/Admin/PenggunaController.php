@@ -323,7 +323,7 @@ class PenggunaController extends Controller
             ]);
         }
 
-        $directoryMoved = false;
+        $movedDirectories = [];
 
         try {
             DB::beginTransaction();
@@ -376,19 +376,15 @@ class PenggunaController extends Controller
                 'status_hubungan' => $validatedData['status_hubungan'],
             ])->save();
 
-            if ($shouldMoveDirectory && ! File::moveDirectory($oldPath, $newPath)) {
-                throw new \RuntimeException('Gagal memindahkan folder dokumen pengguna.');
+            if ($oldDirectoryKtp) {
+                $movedDirectories = move_candidate_document_directories($oldDirectoryKtp, $newKtp);
             }
-
-            $directoryMoved = $shouldMoveDirectory;
 
             DB::commit();
         } catch (\Throwable $e) {
             DB::rollBack();
 
-            if ($directoryMoved && File::isDirectory($newPath) && ! File::exists($oldPath)) {
-                File::moveDirectory($newPath, $oldPath);
-            }
+            foreach (array_reverse($movedDirectories) as [$old, $new]) File::moveDirectory($new, $old);
 
             report($e);
 

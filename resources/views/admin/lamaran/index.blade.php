@@ -590,18 +590,18 @@
                             <td>{{ $data->biodata->berat_badan  }}</td>
 
                             <td>
-                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->surat_lamaran) }}" target="_blank">
-                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->surat_lamaran) }}
+                                <a href="{{ candidate_document_url($data->biodata->no_ktp, $data->biodata->surat_lamaran) }}" target="_blank">
+                                    {{ candidate_document_url($data->biodata->no_ktp, $data->biodata->surat_lamaran) }}
                                 </a>
                             </td>
                             <td>
-                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->cv) }}" target="_blank">
-                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->cv) }}
+                                <a href="{{ candidate_document_url($data->biodata->no_ktp, $data->biodata->cv) }}" target="_blank">
+                                    {{ candidate_document_url($data->biodata->no_ktp, $data->biodata->cv) }}
                                 </a>
                             </td>
                             <td>
-                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->ktp) }}" target="_blank">
-                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->ktp) }}
+                                <a href="{{ candidate_document_url($data->biodata->no_ktp, $data->biodata->ktp) }}" target="_blank">
+                                    {{ candidate_document_url($data->biodata->no_ktp, $data->biodata->ktp) }}
                                 </a>
                             </td>
                             <td class="{{ auth()->user()->hasModulePermission('lamaran', 'update') ? 'editable' : '' }}"
@@ -612,8 +612,8 @@
                             </td>
                             @if($lowongan->status_sim_b2 == 1)
                             <td>
-                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sim_b_2) }}" target="_blank">
-                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sim_b_2) }}
+                                <a href="{{ candidate_document_url($data->biodata->no_ktp, $data->biodata->sim_b_2) }}" target="_blank">
+                                    {{ candidate_document_url($data->biodata->no_ktp, $data->biodata->sim_b_2) }}
                                 </a>
                             </td>
                             <td class="{{ auth()->user()->hasModulePermission('lamaran', 'update') ? 'editable' : '' }}"
@@ -625,8 +625,8 @@
                             @endif
                             @if($lowongan->status_sio == 1)
                             <td>
-                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sio) }}" target="_blank">
-                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sio) }}
+                                <a href="{{ candidate_document_url($data->biodata->no_ktp, $data->biodata->sio) }}" target="_blank">
+                                    {{ candidate_document_url($data->biodata->no_ktp, $data->biodata->sio) }}
                                 </a>
                             </td>
                             <td class="{{ auth()->user()->hasModulePermission('lamaran', 'update') ? 'editable' : '' }}"
@@ -637,18 +637,18 @@
                             </td>
                             @endif
                             <td>
-                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->kartu_keluarga) }}" target="_blank">
-                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->kartu_keluarga) }}
+                                <a href="{{ candidate_document_url($data->biodata->no_ktp, $data->biodata->kartu_keluarga) }}" target="_blank">
+                                    {{ candidate_document_url($data->biodata->no_ktp, $data->biodata->kartu_keluarga) }}
                                 </a>
                             </td>
                             <td>
-                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->ijazah) }}" target="_blank">
-                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->ijazah) }}
+                                <a href="{{ candidate_document_url($data->biodata->no_ktp, $data->biodata->ijazah) }}" target="_blank">
+                                    {{ candidate_document_url($data->biodata->no_ktp, $data->biodata->ijazah) }}
                                 </a>
                             </td>
                             <td>
-                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->skck) }}" target="_blank">
-                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->skck) }}
+                                <a href="{{ candidate_document_url($data->biodata->no_ktp, $data->biodata->skck) }}" target="_blank">
+                                    {{ candidate_document_url($data->biodata->no_ktp, $data->biodata->skck) }}
                                 </a>
                             </td>
                             <td class="{{ auth()->user()->hasModulePermission('lamaran', 'update') ? 'editable' : '' }}"
@@ -658,28 +658,28 @@
                                 {{ $data->biodata->status_skck }}
                             </td>
                             <td>
-                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->ak1) }}" target="_blank">
-                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->ak1) }}
+                                <a href="{{ candidate_document_url($data->biodata->no_ktp, $data->biodata->ak1) }}" target="_blank">
+                                    {{ candidate_document_url($data->biodata->no_ktp, $data->biodata->ak1) }}
                                 </a>
                             </td>
                             <td>
-                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sertifikat_vaksin) }}" target="_blank">
-                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sertifikat_vaksin) }}
+                                <a href="{{ candidate_document_url($data->biodata->no_ktp, $data->biodata->sertifikat_vaksin) }}" target="_blank">
+                                    {{ candidate_document_url($data->biodata->no_ktp, $data->biodata->sertifikat_vaksin) }}
                                 </a>
                             </td>
                             <td>
-                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->npwp) }}" target="_blank">
-                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->npwp) }}
+                                <a href="{{ candidate_document_url($data->biodata->no_ktp, $data->biodata->npwp) }}" target="_blank">
+                                    {{ candidate_document_url($data->biodata->no_ktp, $data->biodata->npwp) }}
                                 </a>
                             </td>
                             <td>
-                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->pas_foto) }}" target="_blank">
-                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->pas_foto) }}
+                                <a href="{{ candidate_document_url($data->biodata->no_ktp, $data->biodata->pas_foto) }}" target="_blank">
+                                    {{ candidate_document_url($data->biodata->no_ktp, $data->biodata->pas_foto) }}
                                 </a>
                             </td>
                             <td>
-                                <a href="{{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sertifikat_pendukung) }}" target="_blank">
-                                    {{ asset($data->biodata->no_ktp . '/dokumen/' . $data->biodata->sertifikat_pendukung) }}
+                                <a href="{{ candidate_document_url($data->biodata->no_ktp, $data->biodata->sertifikat_pendukung) }}" target="_blank">
+                                    {{ candidate_document_url($data->biodata->no_ktp, $data->biodata->sertifikat_pendukung) }}
                                 </a>
                             </td>
                             <td class="{{ auth()->user()->hasModulePermission('lamaran', 'update') ? 'editable' : '' }}"

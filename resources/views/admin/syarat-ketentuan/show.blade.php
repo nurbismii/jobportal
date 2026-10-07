@@ -333,7 +333,7 @@
 
             <div class="terms-document-frame terms-document-frame--approved">
                 <article class="terms-document terms-document--approved">
-                    {!! $biodata->status_pernyataan !!}
+                    {!! \App\Mail\HrBlastEmail::sanitizeMessage($biodata->status_pernyataan ?? "") !!}
                 </article>
             </div>
 

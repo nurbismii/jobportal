@@ -113,7 +113,7 @@ class PersonalController extends Controller
     {
         if (!$file) return '-';
 
-        $url = asset($bio->no_ktp . '/dokumen/' . $file);
+        $url = candidate_document_url($bio->no_ktp, $file);
 
         $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 
@@ -128,10 +128,10 @@ class PersonalController extends Controller
         return '
         <a href="javascript:void(0)" 
            class="preview-file"
-           data-file="' . $url . '"
-           data-title="' . $file . '">
+           data-file="' . e($url) . '"
+           data-title="' . e($file) . '">
 
-           ' . $icon . ' ' . $file . '
+           ' . $icon . ' ' . e($file) . '
 
         </a>';
     }
@@ -140,32 +140,25 @@ class PersonalController extends Controller
     {
         $bio = Biodata::findOrFail($id);
 
-        $folder = public_path($bio->no_ktp . '/dokumen');
-
-        if (!File::exists($folder)) {
-            abort(404, 'Folder dokumen tidak ditemukan');
-        }
-
         $zipName = 'dokumen_' . $bio->no_ktp . '.zip';
-        $zipPath = storage_path($zipName);
+        $zipPath = storage_path('app/private/' . \Illuminate\Support\Str::uuid() . '.zip');
+        File::ensureDirectoryExists(dirname($zipPath));
 
         $zip = new ZipArchive;
 
         if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
 
-            $files = File::files($folder);
-
-            foreach ($files as $file) {
-
-                $zip->addFile(
-                    $file->getRealPath(),
-                    $file->getFilename()
-                );
+            foreach (['cv', 'pas_foto', 'surat_lamaran', 'ijazah', 'ktp', 'sim_b_2', 'sio', 'skck',
+                'sertifikat_vaksin', 'kartu_keluarga', 'npwp', 'ak1', 'sertifikat_pendukung'] as $field) {
+                if (! $bio->{$field}) continue;
+                $path = candidate_document_path($bio->no_ktp, $bio->{$field});
+                if (is_file($path)) $zip->addFile($path, basename($path));
             }
 
             $zip->close();
         }
 
-        return response()->download($zipPath)->deleteFileAfterSend(true);
+        abort_unless(is_file($zipPath), 500, 'Gagal membuat arsip dokumen.');
+        return response()->download($zipPath, $zipName)->deleteFileAfterSend(true);
     }
 }

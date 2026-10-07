@@ -332,7 +332,7 @@ $activeStep = $completedStep < $maxStep ? $completedStep + 1 : $maxStep;
             <a href="{{ route('lowongan-kerja.show', $lowongan->id) }}" class="d-inline-block h4 mb-0">{{ $lowongan->nama_lowongan }}</a>
             <!-- Isian deskripsi lowongan kerja -->
             <p class="mb-4">
-                {!! substr($lowongan->kualifikasi, 0, 409) !!}
+                {{ \Illuminate\Support\Str::limit(strip_tags($lowongan->kualifikasi ?? ""), 409) }}
             </p>
 
             <p class="fw-bold mb-1">Tanggal aktif</p>
@@ -482,7 +482,7 @@ $activeStep = $completedStep < $maxStep ? $completedStep + 1 : $maxStep;
                                     <div class="small"><span class="fa fa-calendar text-primary me-2"></span>{{ tanggalIndo($pengumuman->created_at) }}</div>
                                 </div>
                                 <a href="{{ route('pengumuman.show', $pengumuman->id) }}" class="h4 d-inline-block mb-3">{{ $pengumuman->pengumuman }}</a>
-                                <p class="mb-3">{!! substr($pengumuman->keterangan, 0, 140) !!}...</p>
+                                <p class="mb-3">{{ \Illuminate\Support\Str::limit(strip_tags($pengumuman->keterangan ?? ""), 140) }}...</p>
                                 <a href="{{ route('pengumuman.show', $pengumuman->id) }}" class="btn p-0 mt-3">Baca Detail <i class="fa fa-arrow-right"></i></a>
                             </div>
                         </div>

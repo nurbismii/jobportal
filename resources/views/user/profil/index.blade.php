@@ -144,6 +144,12 @@
                     </div>
 
                     <div class="row g-3">
+                        <div class="col-12">
+                            <label for="current_password" class="form-label clean-profile-label">Password Saat Ini</label>
+                            <input type="password" id="current_password" name="current_password" autocomplete="current-password" class="form-control clean-profile-control @error('current_password') is-invalid @enderror">
+                            <div class="clean-profile-help">Wajib diisi jika mengganti password.</div>
+                            @error('current_password')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
                         <div class="col-md-6">
                             <label for="password" class="form-label clean-profile-label">
                                 Password Baru <span>(opsional)</span>

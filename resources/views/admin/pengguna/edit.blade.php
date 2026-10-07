@@ -662,7 +662,7 @@
                                     @endif
                                 </div>
                                 <div class="btn-group-custom">
-                                    <a href="{{ asset($pengguna->no_ktp . '/dokumen/' . $biodata->cv) }}" target="_blank" class="btn btn-view">Lihat</a>
+                                    <a href="{{ candidate_document_url($pengguna->no_ktp, $biodata->cv) }}" target="_blank" class="btn btn-view">Lihat</a>
                                 </div>
                             </div>
                         </div>
@@ -678,7 +678,7 @@
                                     @endif
                                 </div>
                                 <div class="btn-group-custom">
-                                    <a href="{{ asset($pengguna->no_ktp . '/dokumen/' . $biodata->pas_foto) }}" target="_blank" class="btn btn-view">Lihat</a>
+                                    <a href="{{ candidate_document_url($pengguna->no_ktp, $biodata->pas_foto) }}" target="_blank" class="btn btn-view">Lihat</a>
                                 </div>
                             </div>
                         </div>
@@ -694,7 +694,7 @@
                                     @endif
                                 </div>
                                 <div class="btn-group-custom">
-                                    <a href="{{ asset($pengguna->no_ktp . '/dokumen/' . $biodata->surat_lamaran) }}" target="_blank" class="btn btn-view">Lihat</a>
+                                    <a href="{{ candidate_document_url($pengguna->no_ktp, $biodata->surat_lamaran) }}" target="_blank" class="btn btn-view">Lihat</a>
                                 </div>
                             </div>
                         </div>
@@ -710,7 +710,7 @@
                                     @endif
                                 </div>
                                 <div class="btn-group-custom">
-                                    <a href="{{ asset($pengguna->no_ktp . '/dokumen/' . $biodata->ijazah) }}" target="_blank" class="btn btn-view">Lihat</a>
+                                    <a href="{{ candidate_document_url($pengguna->no_ktp, $biodata->ijazah) }}" target="_blank" class="btn btn-view">Lihat</a>
                                 </div>
                             </div>
                         </div>
@@ -726,7 +726,7 @@
                                     @endif
                                 </div>
                                 <div class="btn-group-custom">
-                                    <a href="{{ asset($pengguna->no_ktp . '/dokumen/' . $biodata->ktp) }}" target="_blank" class="btn btn-view">Lihat</a>
+                                    <a href="{{ candidate_document_url($pengguna->no_ktp, $biodata->ktp) }}" target="_blank" class="btn btn-view">Lihat</a>
                                 </div>
                             </div>
                         </div>
@@ -742,7 +742,7 @@
                                     @endif
                                 </div>
                                 <div class="btn-group-custom">
-                                    <a href="{{ asset($pengguna->no_ktp . '/dokumen/' . $biodata->sim_b_2) }}" target="_blank" class="btn btn-view">Lihat</a>
+                                    <a href="{{ candidate_document_url($pengguna->no_ktp, $biodata->sim_b_2) }}" target="_blank" class="btn btn-view">Lihat</a>
                                 </div>
                             </div>
                         </div>
@@ -758,7 +758,7 @@
                                     @endif
                                 </div>
                                 <div class="btn-group-custom">
-                                    <a href="{{ asset($pengguna->no_ktp . '/dokumen/' . $biodata->skck) }}" target="_blank" class="btn btn-view">Lihat</a>
+                                    <a href="{{ candidate_document_url($pengguna->no_ktp, $biodata->skck) }}" target="_blank" class="btn btn-view">Lihat</a>
                                 </div>
                             </div>
                         </div>
@@ -774,7 +774,7 @@
                                     @endif
                                 </div>
                                 <div class="btn-group-custom">
-                                    <a href="{{ asset($pengguna->no_ktp . '/dokumen/' . $biodata->sertifikat_vaksin) }}" target="_blank" class="btn btn-view">Lihat</a>
+                                    <a href="{{ candidate_document_url($pengguna->no_ktp, $biodata->sertifikat_vaksin) }}" target="_blank" class="btn btn-view">Lihat</a>
                                 </div>
                             </div>
                         </div>
@@ -790,7 +790,7 @@
                                     @endif
                                 </div>
                                 <div class="btn-group-custom">
-                                    <a href="{{ asset($pengguna->no_ktp . '/dokumen/' . $biodata->kartu_keluarga) }}" target="_blank" class="btn btn-view">Lihat</a>
+                                    <a href="{{ candidate_document_url($pengguna->no_ktp, $biodata->kartu_keluarga) }}" target="_blank" class="btn btn-view">Lihat</a>
                                 </div>
                             </div>
                         </div>
@@ -806,7 +806,7 @@
                                     @endif
                                 </div>
                                 <div class="btn-group-custom">
-                                    <a href="{{ asset($pengguna->no_ktp . '/dokumen/' . $biodata->npwp) }}" target="_blank" class="btn btn-view">Lihat</a>
+                                    <a href="{{ candidate_document_url($pengguna->no_ktp, $biodata->npwp) }}" target="_blank" class="btn btn-view">Lihat</a>
                                 </div>
                             </div>
                         </div>
@@ -822,7 +822,7 @@
                                     @endif
                                 </div>
                                 <div class="btn-group-custom">
-                                    <a href="{{ asset($pengguna->no_ktp . '/dokumen/' . $biodata->ak1) }}" target="_blank" class="btn btn-view">Lihat</a>
+                                    <a href="{{ candidate_document_url($pengguna->no_ktp, $biodata->ak1) }}" target="_blank" class="btn btn-view">Lihat</a>
                                 </div>
                             </div>
                         </div>
@@ -838,7 +838,7 @@
                                     @endif
                                 </div>
                                 <div class="btn-group-custom">
-                                    <a href="{{ asset($pengguna->no_ktp . '/dokumen/' . $biodata->sertifikat_pendukung) }}" target="_blank" class="btn btn-view">Lihat</a>
+                                    <a href="{{ candidate_document_url($pengguna->no_ktp, $biodata->sertifikat_pendukung) }}" target="_blank" class="btn btn-view">Lihat</a>
                                 </div>
                             </div>
                         </div>

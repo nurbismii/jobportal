@@ -64,6 +64,7 @@ class ProfilController extends Controller
 
         $request->merge([
             'no_ktp' => $identityValidator->onlyDigits($request->no_ktp),
+            'email' => $user->email,
         ]);
 
         $request->validate([
@@ -71,6 +72,7 @@ class ProfilController extends Controller
             'no_ktp' => 'required|digits:16|unique:users,no_ktp,' . $user->id,
             'email' => 'required|email|max:255|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:8|confirmed',
+            'current_password' => $request->filled('password') ? 'required|current_password:web' : 'nullable',
         ], [
             'nama.required' => 'Nama lengkap wajib diisi.',
             'nama.string' => 'Nama lengkap harus berupa teks.',
@@ -110,22 +112,20 @@ class ProfilController extends Controller
 
         if ($request->filled('password')) {
             $user->password = bcrypt($request->password);
+            $user->remember_token = null;
         }
 
-        Biodata::where('user_id', $user->id)->update([
-            'no_ktp' => $newKtp,
-        ]);
-
-        if ($oldKtp !== $newKtp) {
-            $oldPath = public_path($oldKtp);
-            $newPath = public_path($newKtp);
-
-            if (File::exists($oldPath)) {
-                File::moveDirectory($oldPath, $newPath);
-            }
+        $moved = [];
+        try {
+            \Illuminate\Support\Facades\DB::transaction(function () use ($user, $oldKtp, $newKtp, &$moved) {
+                $moved = move_candidate_document_directories($oldKtp, $newKtp);
+                Biodata::where('user_id', $user->id)->update(['no_ktp' => $newKtp]);
+                $user->save();
+            });
+        } catch (\Throwable $e) {
+            foreach (array_reverse($moved) as [$old, $new]) File::moveDirectory($new, $old);
+            throw $e;
         }
-
-        $user->save();
 
         if ($oldKtp !== $newKtp) {
             app(EmploymentStatusRefreshService::class)->refreshUser($user->fresh()->load('biodata'));

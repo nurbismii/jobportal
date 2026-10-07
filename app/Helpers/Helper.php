@@ -50,9 +50,51 @@ if (!function_exists('tanggalIndo')) {
     }
 }
 
+function candidate_document_path($noKtp, string $file = '', bool $legacy = true): string
+{
+    abort_unless(preg_match('/^[0-9]{16}$/', (string) $noKtp)
+        && ! preg_match('/[\\\\\/\x00-\x1F]/', $file) && ! str_contains($file, '..'), 422, 'Path dokumen tidak valid.');
+    $relative = $noKtp . '/dokumen' . ($file !== '' ? '/' . $file : '');
+    $path = \Illuminate\Support\Facades\Storage::disk('candidate_private')->path($relative);
+    return $legacy && ! file_exists($path) && file_exists(public_path($relative)) ? public_path($relative) : $path;
+}
+
+function candidate_document_url($noKtp, string $file): string
+{
+    return route('candidate-documents.show', ['noKtp' => $noKtp, 'file' => $file]);
+}
+
+function move_candidate_document_directories(string $oldNik, string $newNik): array
+{
+    if ($oldNik === $newNik) return [];
+    candidate_document_path($oldNik, '', false);
+    candidate_document_path($newNik, '', false);
+    $pairs = [
+        [public_path($oldNik), public_path($newNik)],
+        [dirname(candidate_document_path($oldNik, '', false)), dirname(candidate_document_path($newNik, '', false))],
+    ];
+    foreach ($pairs as [$old, $new]) {
+        if (File::exists($new)) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['no_ktp' => 'Folder dokumen tujuan sudah ada.']);
+        }
+    }
+    $moved = [];
+    try {
+        foreach ($pairs as [$old, $new]) {
+            if (! File::isDirectory($old)) continue;
+            if (! File::moveDirectory($old, $new)) throw new \RuntimeException('Gagal memindahkan folder dokumen.');
+            $moved[] = [$old, $new];
+        }
+    } catch (\Throwable $e) {
+        foreach (array_reverse($moved) as [$old, $new]) File::moveDirectory($new, $old);
+        throw $e;
+    }
+    return $moved;
+}
+
 function interventionImg(array $dokumenFields, $biodata, $request)
 {
-    $basePath = public_path(Auth::user()->no_ktp . '/dokumen');
+    $basePath = candidate_document_path(Auth::user()->no_ktp, '', false);
 
     if (!is_dir($basePath)) {
         mkdir($basePath, 0755, true);
@@ -72,6 +114,8 @@ function interventionImg(array $dokumenFields, $biodata, $request)
 
         $file = $request->file($field);
 
+        $request->validate([$field => 'file|mimes:jpg,jpeg,png,pdf|max:' . ($field === 'sertifikat_pendukung' ? '51200' : '2048')]);
+
         if (!$file->isValid()) {
             continue;
         }
@@ -81,10 +125,9 @@ function interventionImg(array $dokumenFields, $biodata, $request)
             $oldFiles[] = $biodata->{$field};
         }
 
-        $extension = strtolower($file->getClientOriginalExtension());
-
         // nama file unik & aman
-        $fileName = Auth::user()->name . '_' . date('Ymd') . '_' . $field . '.' . $extension;
+        $extension = strtolower($file->extension());
+        $fileName = Str::uuid() . '_' . $field . '.' . $extension;
         $savePath = $basePath . '/' . $fileName;
 
         // ==== IMAGE ====
@@ -173,7 +216,7 @@ if (!function_exists('extractSimB2OnlyOCR')) {
     function extractSimB2OnlyOCR($biodata)
     {
         if ($biodata && $biodata->sim_b_2) {
-            $fullPath = public_path($biodata->no_ktp . '/dokumen/' . $biodata->sim_b_2);
+            $fullPath = candidate_document_path($biodata->no_ktp, $biodata->sim_b_2);
 
             try {
                 $apiKey = config('services.ocr_space.key');
@@ -357,10 +400,9 @@ if (!function_exists('deleteImageBiodata')) {
             return;
         }
 
-        $folderKtp = public_path($biodata->no_ktp);
-
-        if (File::exists($folderKtp) && File::isDirectory($folderKtp)) {
-            File::deleteDirectory($folderKtp);
+        candidate_document_path($biodata->no_ktp);
+        foreach ([public_path($biodata->no_ktp), dirname(candidate_document_path($biodata->no_ktp, '', false))] as $folderKtp) {
+            if (File::isDirectory($folderKtp)) File::deleteDirectory($folderKtp);
         }
     }
 }
@@ -373,7 +415,7 @@ if (!function_exists('dokumenIcon')) {
             return '-';
         }
 
-        $url = asset($ktp . '/dokumen/' . $file);
+        $url = candidate_document_url($ktp, $file);
         $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 
         if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) {
@@ -387,9 +429,9 @@ if (!function_exists('dokumenIcon')) {
         return '
     <a href="javascript:void(0)" 
         class="preview-dokumen"
-        data-file="' . $url . '"
+        data-file="' . e($url) . '"
         data-ext="' . $ext . '">
-        ' . $icon . ' ' . $file . '
+        ' . $icon . ' ' . e($file) . '
     </a>';
     }
 }

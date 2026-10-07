@@ -110,7 +110,7 @@ class VhirePkwtIntegrationTest extends TestCase
 
         $response->assertOk()
             ->assertJsonPath('contract.match_status', 'matched_to_candidate')
-            ->assertJsonPath('contract.matched_biodata_id', (string) $user->biodata->id);
+            ->assertJsonPath('contract.matched_biodata_id', $user->biodata->id);
 
         $this->assertDatabaseHas('vhire_pkwt_contracts', [
             'no_ktp' => '1234567890123456',
@@ -168,7 +168,7 @@ class VhirePkwtIntegrationTest extends TestCase
         $this->assertSame('SMAN 1', $payload['nama_instansi_pendidikan']);
         $this->assertSame('SMA', $payload['pendidikan_terakhir']);
         $this->assertSame('VDNI', $payload['kode_area_kerja']);
-        $this->assertSame('PKWT', $payload['status_karyawan']);
+        $this->assertSame('PKWT 合同工', $payload['status_karyawan']);
 
         Queue::assertPushed(SyncOnboardingCandidateToHris::class);
     }

@@ -1140,7 +1140,7 @@
                                             </div>
                                         </div>
                                         <div class="btn-group-custom">
-                                            <a href="{{ asset(Auth::user()->no_ktp . '/dokumen/' . $filename) }}" target="_blank" class="btn btn-view">Lihat</a>
+                                            <a href="{{ candidate_document_url(Auth::user()->no_ktp, $filename) }}" target="_blank" class="btn btn-view">Lihat</a>
                                             <button type="button"
                                                 class="btn btn-delete btn-confirm-delete"
                                                 data-url="{{ route('biodata.deleteFile', ['field' => $field]) }}"
@@ -1181,7 +1181,7 @@
                             <div id="termsBox" class="terms-document-frame">
                                 @if($syaratKetentuan && filled($syaratKetentuan->syarat_ketentuan))
                                     <article class="terms-document">
-                                        {!! $syaratKetentuan->syarat_ketentuan !!}
+                                        {!! \App\Mail\HrBlastEmail::sanitizeMessage($syaratKetentuan->syarat_ketentuan ?? "") !!}
                                     </article>
                                 @else
                                     <div class="alert alert-warning mb-0">
@@ -1382,7 +1382,7 @@
                 </div>
             </div>
             <div class="btn-group-custom">
-                <a href="/${data.path}" target="_blank" class="btn btn-view">Lihat</a>
+                <a href="${data.path}" target="_blank" class="btn btn-view">Lihat</a>
                 <button type="button"
                     class="btn btn-delete btn-confirm-delete"
                     data-url="{{ url('biodata/delete-file') }}/${field}"

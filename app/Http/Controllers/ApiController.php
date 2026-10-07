@@ -75,7 +75,7 @@ class ApiController extends Controller
         Log::warning('OCR KTP ditolak', $logContext);
 
         if ($clearUploadedKtp && $biodata && $biodata->ktp) {
-            $filePath = public_path($biodata->no_ktp . '/dokumen/' . $biodata->ktp);
+            $filePath = candidate_document_path($biodata->no_ktp, $biodata->ktp);
 
             if (File::exists($filePath)) {
                 File::delete($filePath);

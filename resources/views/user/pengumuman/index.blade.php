@@ -45,7 +45,7 @@
                             <div class="small"><span class="fa fa-calendar text-primary me-2"></span>{{ tanggalIndo($pengumuman->created_at) }}</div>
                         </div>
                         <a href="{{ route('pengumuman.show', $pengumuman->id) }}" class="h4 d-inline-block mb-3">{{ $pengumuman->pengumuman }}</a>
-                        <p class="mb-3">{!! substr($pengumuman->keterangan, 0, 140) !!}...</p>
+                        <p class="mb-3">{{ \Illuminate\Support\Str::limit(strip_tags($pengumuman->keterangan ?? ""), 140) }}...</p>
                         <a href="{{ route('pengumuman.show', $pengumuman->id) }}" class="btn p-0 mt-3">Baca Detail <i class="fa fa-arrow-right"></i></a>
                     </div>
                 </div>

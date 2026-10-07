@@ -25,8 +25,10 @@ class LamaranController extends Controller
 
     public function show($id)
     {
+        $lamaran = Lamaran::with('lowongan', 'biodata')
+            ->whereHas('biodata', fn ($query) => $query->where('user_id', auth()->id()))
+            ->findOrFail($id);
         try {
-            $lamaran = Lamaran::with('lowongan', 'biodata')->where('id', $id)->first();
             $riwayat_proses = RiwayatProsesLamaran::where('lamaran_id', $lamaran->id)->where('status_lolos', null)->orderBy('created_at', 'desc')->get();
             #$riwayat_proses = RiwayatProsesLamaran::where('lamaran_id', $lamaran->id)->orderBy('created_at', 'desc')->get();
 

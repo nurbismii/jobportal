@@ -53,6 +53,7 @@ class LoginController extends Controller
 
     protected function authenticated($request, $user)
     {
+        $request->session()->put('password_hash_web', Auth::guard()->hashPasswordForCookie($user->getAuthPassword()));
         if ((int) $user->status_akun !== 1 || ($user->role === 'user' && ! $user->hasVerifiedEmail())) {
             Auth::logout();
             $request->session()->invalidate();

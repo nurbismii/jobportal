@@ -99,7 +99,7 @@ $hasApprovedTerms = $biodata && filled($biodata->status_pernyataan);
                 <div class="job-detail-card__section mb-3">
                     <span class="job-detail-card__section-label">Kualifikasi dan Persyaratan</span>
                     <div class="job-detail-card__content">
-                        {!! $lowongan->kualifikasi !!}
+                        {!! \App\Mail\HrBlastEmail::sanitizeMessage($lowongan->kualifikasi ?? "") !!}
                     </div>
                 </div>
 
