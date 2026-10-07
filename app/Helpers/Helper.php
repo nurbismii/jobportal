@@ -59,8 +59,11 @@ function candidate_document_path($noKtp, string $file = '', bool $legacy = true)
     return $legacy && ! file_exists($path) && file_exists(public_path($relative)) ? public_path($relative) : $path;
 }
 
-function candidate_document_url($noKtp, string $file): string
+function candidate_document_url($noKtp, ?string $file): string
 {
+    if ($file === null || trim($file) === '') {
+        return '';
+    }
     return route('candidate-documents.show', ['noKtp' => $noKtp, 'file' => $file]);
 }
 

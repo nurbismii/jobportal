@@ -69,6 +69,18 @@ class SecurityRegressionTest extends TestCase
             'password' => Hash::make('secret123'), 'role' => 'user', 'status_akun' => 1, 'email_verified_at' => now()]);
     }
 
+    public function test_document_urls_and_table_cells_handle_missing_files(): void
+    {
+        foreach ([null, '', '   '] as $file) {
+            $this->assertSame('', candidate_document_url('6401010101900001', $file));
+        }
+        $url = candidate_document_url('6401010101900001', 'cv.pdf');
+        $this->assertStringContainsString('/dokumen-pelamar/6401010101900001/cv.pdf', $url);
+        $view = '@if($url = candidate_document_url($nik, $file))<a href="{{ $url }}">Lihat</a>@else—@endif';
+        $this->assertSame('—', \Illuminate\Support\Facades\Blade::render($view, ['nik' => '6401010101900001', 'file' => null]));
+        $this->assertStringContainsString('cv.pdf', \Illuminate\Support\Facades\Blade::render($view, ['nik' => '6401010101900001', 'file' => 'cv.pdf']));
+    }
+
     private function biodata(User $user): Biodata
     {
         return Biodata::create(['user_id' => $user->id, 'no_ktp' => $user->no_ktp]);

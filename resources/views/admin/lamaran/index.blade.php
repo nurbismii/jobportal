@@ -590,19 +590,25 @@
                             <td>{{ $data->biodata->berat_badan  }}</td>
 
                             <td>
-                                <a href="{{ candidate_document_url($data->biodata->no_ktp, $data->biodata->surat_lamaran) }}" target="_blank">
-                                    {{ candidate_document_url($data->biodata->no_ktp, $data->biodata->surat_lamaran) }}
-                                </a>
+                                @if($documentUrl = candidate_document_url($data->biodata->no_ktp, $data->biodata->surat_lamaran))
+                                    <a href="{{ $documentUrl }}" target="_blank" rel="noopener">{{ $documentUrl }}</a>
+                                @else
+                                    —
+                                @endif
                             </td>
                             <td>
-                                <a href="{{ candidate_document_url($data->biodata->no_ktp, $data->biodata->cv) }}" target="_blank">
-                                    {{ candidate_document_url($data->biodata->no_ktp, $data->biodata->cv) }}
-                                </a>
+                                @if($documentUrl = candidate_document_url($data->biodata->no_ktp, $data->biodata->cv))
+                                    <a href="{{ $documentUrl }}" target="_blank" rel="noopener">{{ $documentUrl }}</a>
+                                @else
+                                    —
+                                @endif
                             </td>
                             <td>
-                                <a href="{{ candidate_document_url($data->biodata->no_ktp, $data->biodata->ktp) }}" target="_blank">
-                                    {{ candidate_document_url($data->biodata->no_ktp, $data->biodata->ktp) }}
-                                </a>
+                                @if($documentUrl = candidate_document_url($data->biodata->no_ktp, $data->biodata->ktp))
+                                    <a href="{{ $documentUrl }}" target="_blank" rel="noopener">{{ $documentUrl }}</a>
+                                @else
+                                    —
+                                @endif
                             </td>
                             <td class="{{ auth()->user()->hasModulePermission('lamaran', 'update') ? 'editable' : '' }}"
                                 data-id="{{ $data->biodata_id }}"
@@ -612,9 +618,11 @@
                             </td>
                             @if($lowongan->status_sim_b2 == 1)
                             <td>
-                                <a href="{{ candidate_document_url($data->biodata->no_ktp, $data->biodata->sim_b_2) }}" target="_blank">
-                                    {{ candidate_document_url($data->biodata->no_ktp, $data->biodata->sim_b_2) }}
-                                </a>
+                                @if($documentUrl = candidate_document_url($data->biodata->no_ktp, $data->biodata->sim_b_2))
+                                    <a href="{{ $documentUrl }}" target="_blank" rel="noopener">{{ $documentUrl }}</a>
+                                @else
+                                    —
+                                @endif
                             </td>
                             <td class="{{ auth()->user()->hasModulePermission('lamaran', 'update') ? 'editable' : '' }}"
                                 data-id="{{ $data->biodata_id }}"
@@ -625,9 +633,11 @@
                             @endif
                             @if($lowongan->status_sio == 1)
                             <td>
-                                <a href="{{ candidate_document_url($data->biodata->no_ktp, $data->biodata->sio) }}" target="_blank">
-                                    {{ candidate_document_url($data->biodata->no_ktp, $data->biodata->sio) }}
-                                </a>
+                                @if($documentUrl = candidate_document_url($data->biodata->no_ktp, $data->biodata->sio))
+                                    <a href="{{ $documentUrl }}" target="_blank" rel="noopener">{{ $documentUrl }}</a>
+                                @else
+                                    —
+                                @endif
                             </td>
                             <td class="{{ auth()->user()->hasModulePermission('lamaran', 'update') ? 'editable' : '' }}"
                                 data-id="{{ $data->biodata_id }}"
@@ -637,19 +647,25 @@
                             </td>
                             @endif
                             <td>
-                                <a href="{{ candidate_document_url($data->biodata->no_ktp, $data->biodata->kartu_keluarga) }}" target="_blank">
-                                    {{ candidate_document_url($data->biodata->no_ktp, $data->biodata->kartu_keluarga) }}
-                                </a>
+                                @if($documentUrl = candidate_document_url($data->biodata->no_ktp, $data->biodata->kartu_keluarga))
+                                    <a href="{{ $documentUrl }}" target="_blank" rel="noopener">{{ $documentUrl }}</a>
+                                @else
+                                    —
+                                @endif
                             </td>
                             <td>
-                                <a href="{{ candidate_document_url($data->biodata->no_ktp, $data->biodata->ijazah) }}" target="_blank">
-                                    {{ candidate_document_url($data->biodata->no_ktp, $data->biodata->ijazah) }}
-                                </a>
+                                @if($documentUrl = candidate_document_url($data->biodata->no_ktp, $data->biodata->ijazah))
+                                    <a href="{{ $documentUrl }}" target="_blank" rel="noopener">{{ $documentUrl }}</a>
+                                @else
+                                    —
+                                @endif
                             </td>
                             <td>
-                                <a href="{{ candidate_document_url($data->biodata->no_ktp, $data->biodata->skck) }}" target="_blank">
-                                    {{ candidate_document_url($data->biodata->no_ktp, $data->biodata->skck) }}
-                                </a>
+                                @if($documentUrl = candidate_document_url($data->biodata->no_ktp, $data->biodata->skck))
+                                    <a href="{{ $documentUrl }}" target="_blank" rel="noopener">{{ $documentUrl }}</a>
+                                @else
+                                    —
+                                @endif
                             </td>
                             <td class="{{ auth()->user()->hasModulePermission('lamaran', 'update') ? 'editable' : '' }}"
                                 data-id="{{ $data->biodata_id }}"
@@ -658,29 +674,39 @@
                                 {{ $data->biodata->status_skck }}
                             </td>
                             <td>
-                                <a href="{{ candidate_document_url($data->biodata->no_ktp, $data->biodata->ak1) }}" target="_blank">
-                                    {{ candidate_document_url($data->biodata->no_ktp, $data->biodata->ak1) }}
-                                </a>
+                                @if($documentUrl = candidate_document_url($data->biodata->no_ktp, $data->biodata->ak1))
+                                    <a href="{{ $documentUrl }}" target="_blank" rel="noopener">{{ $documentUrl }}</a>
+                                @else
+                                    —
+                                @endif
                             </td>
                             <td>
-                                <a href="{{ candidate_document_url($data->biodata->no_ktp, $data->biodata->sertifikat_vaksin) }}" target="_blank">
-                                    {{ candidate_document_url($data->biodata->no_ktp, $data->biodata->sertifikat_vaksin) }}
-                                </a>
+                                @if($documentUrl = candidate_document_url($data->biodata->no_ktp, $data->biodata->sertifikat_vaksin))
+                                    <a href="{{ $documentUrl }}" target="_blank" rel="noopener">{{ $documentUrl }}</a>
+                                @else
+                                    —
+                                @endif
                             </td>
                             <td>
-                                <a href="{{ candidate_document_url($data->biodata->no_ktp, $data->biodata->npwp) }}" target="_blank">
-                                    {{ candidate_document_url($data->biodata->no_ktp, $data->biodata->npwp) }}
-                                </a>
+                                @if($documentUrl = candidate_document_url($data->biodata->no_ktp, $data->biodata->npwp))
+                                    <a href="{{ $documentUrl }}" target="_blank" rel="noopener">{{ $documentUrl }}</a>
+                                @else
+                                    —
+                                @endif
                             </td>
                             <td>
-                                <a href="{{ candidate_document_url($data->biodata->no_ktp, $data->biodata->pas_foto) }}" target="_blank">
-                                    {{ candidate_document_url($data->biodata->no_ktp, $data->biodata->pas_foto) }}
-                                </a>
+                                @if($documentUrl = candidate_document_url($data->biodata->no_ktp, $data->biodata->pas_foto))
+                                    <a href="{{ $documentUrl }}" target="_blank" rel="noopener">{{ $documentUrl }}</a>
+                                @else
+                                    —
+                                @endif
                             </td>
                             <td>
-                                <a href="{{ candidate_document_url($data->biodata->no_ktp, $data->biodata->sertifikat_pendukung) }}" target="_blank">
-                                    {{ candidate_document_url($data->biodata->no_ktp, $data->biodata->sertifikat_pendukung) }}
-                                </a>
+                                @if($documentUrl = candidate_document_url($data->biodata->no_ktp, $data->biodata->sertifikat_pendukung))
+                                    <a href="{{ $documentUrl }}" target="_blank" rel="noopener">{{ $documentUrl }}</a>
+                                @else
+                                    —
+                                @endif
                             </td>
                             <td class="{{ auth()->user()->hasModulePermission('lamaran', 'update') ? 'editable' : '' }}"
                                 data-id="{{ $data->biodata_id }}"
