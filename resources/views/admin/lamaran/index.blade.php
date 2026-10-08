@@ -274,7 +274,6 @@
                             <th class="bg-warning">Rentang</th>
                             <th class="bg-warning">Ex Area</th>
                             <th class="bg-warning">Posisi</th>
-                            <th class="bg-warning">Posisi Terakhir HRIS</th>
                             <th class="bg-warning">Alasan</th>
                             <th>Jenis Kelamin</th>
                             <th>Tempat Lahir</th>
@@ -474,7 +473,7 @@
                             @endphp
 
                             @if($showValue)
-                            <td class="bg-warning">{{ $tglResignCarbon->format('Y-m-d') }}</td>
+                            <td class="bg-warning">{{ $tglResignCarbon->format('d-m-Y') }}</td>
                             @else
                             <td>---</td>
                             @endif
@@ -495,12 +494,6 @@
                             <td class="bg-warning">{{ $data->biodata->user->area_kerja }}</td>
                             @else
                             <td>{{ $data->biodata->user->area_kerja ?? '---' }}</td>
-                            @endif
-
-                            @if($data->biodata->user->posisi)
-                            <td class="bg-warning">{{ $data->biodata->user->posisi }}</td>
-                            @else
-                            <td>{{ $data->biodata->user->posisi ?? '---' }}</td>
                             @endif
 
                             <td class="bg-warning">{{ $data->biodata->latest_hris_position ?? '-' }}</td>
