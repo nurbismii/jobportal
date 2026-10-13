@@ -125,6 +125,25 @@ class SecurityRegressionTest extends TestCase
         $this->get(candidate_document_url($bio->no_ktp, 'unlisted.pdf'))->assertNotFound();
     }
 
+    public function test_document_links_require_login_and_allow_authorized_internal_users(): void
+    {
+        $bio = $this->biodata($this->account());
+        $bio->cv = 'cv.pdf';
+        $bio->save();
+        Storage::disk('candidate_private')->put($bio->no_ktp . '/dokumen/cv.pdf', "%PDF-1.4\ncontent");
+        $url = candidate_document_url($bio->no_ktp, $bio->cv);
+
+        $this->get($url)->assertRedirect(route('login'));
+
+        $reviewer = $this->account(2);
+        $reviewer->role = 'manager';
+        $reviewer->setAttribute('module_permissions', ['lamaran' => ['view']]);
+        $this->actingAs($reviewer)->get($url)->assertOk()->assertHeader('Content-Type', 'application/pdf');
+
+        $reviewer->setAttribute('module_permissions', []);
+        $this->actingAs($reviewer)->get($url)->assertForbidden();
+    }
+
     public function test_upload_names_are_unique_and_cleanup_preserves_new_file(): void
     {
         $user = $this->account(); $bio = $this->biodata($user); $this->actingAs($user);

@@ -1248,18 +1248,30 @@ return $order[$item->level_sp] ?? 99;
                             });
                         });
 
-                        const columnsToLink = ['P', 'Q', 'R', 'T', 'V', 'W', 'X', 'Y', 'Z', 'AA', 'AB', 'AC'];
+                        const hyperlinks = [];
+                        const relationships = [];
 
-                        $(columnsToLink).each(function(index, colRef) {
-                            $('c[r^="' + colRef + '"]', sheet).each(function() {
-                                let cell = $(this);
-                                let value = cell.text();
-                                if (value.startsWith('http')) {
-                                    cell.attr('t', 'str');
-                                    cell.empty().append(`<f>HYPERLINK("${value}", "${value}")</f>`);
-                                }
-                            });
+                        $('c', sheet).each(function(index) {
+                            const cell = $(this);
+                            const value = cellValue(cell);
+
+                            if (!/^https?:\/\//i.test(value)) {
+                                return;
+                            }
+
+                            const id = `rId${index + 1}`;
+                            hyperlinks.push(`<hyperlink ref="${cell.attr('r')}" r:id="${id}"/>`);
+                            relationships.push(`<Relationship Id="${id}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="${escapeXml(value)}" TargetMode="External"/>`);
+                            cell.attr('s', '4');
                         });
+
+                        if (hyperlinks.length > 0) {
+                            const links = $.parseXML(`<hyperlinks xmlns="${sheet.documentElement.namespaceURI}" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">${hyperlinks.join('')}</hyperlinks>`);
+                            sheet.documentElement.appendChild(sheet.importNode(links.documentElement, true));
+                            xlsx.xl.worksheets._rels = {
+                                'sheet1.xml.rels': $.parseXML(`<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${relationships.join('')}</Relationships>`)
+                            };
+                        }
                     }
                 }
             ],
