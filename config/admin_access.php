@@ -41,7 +41,7 @@ return [
         'index' => 'view', 'show' => 'view', 'download' => 'view', 'downloadZip' => 'view',
         'lowonganData' => 'view', 'lowonganChart' => 'view', 'getLamaranData' => 'view',
         'directToLamaran' => 'view', 'adminIndex' => 'view', 'adminDownload' => 'view', 'revealPin' => 'view',
-        'create' => 'create', 'store' => 'create',
+        'create' => 'create', 'store' => 'create', 'retry' => 'create',
         'edit' => 'update', 'update' => 'update', 'autoUpdate' => 'update',
         'updateStatusAkun' => 'update', 'updateStatusMassal' => 'update', 'importStatusLamaran' => 'update',
         'refreshDataPelamar' => 'update', 'storeCandidates' => 'update', 'deactivate' => 'update',

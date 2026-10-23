@@ -13,14 +13,51 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Rule;
 
 class EmailBlastController extends Controller
 {
-    public function create()
+    public function create(Request $request)
     {
-        $deliveries = HrEmailDelivery::latest('id')->paginate(25);
+        $data = $request->validate([
+            'status' => ['nullable', 'string', Rule::in(array_keys(HrEmailDelivery::STATUS_LABELS))],
+        ]);
+        $status = $data['status'] ?? null;
+        $deliveries = HrEmailDelivery::when($status, fn ($query) => $query->where('status', $status))
+            ->latest('id')->paginate(25)->withQueryString()->fragment('delivery-history');
 
-        return view('admin.email-blast-log.create', compact('deliveries'));
+        return view('admin.email-blast-log.create', compact('deliveries', 'status'));
+    }
+
+    public function retry(Request $request)
+    {
+        $data = $request->validate([
+            'delivery_ids' => ['required', 'array', 'min:1', 'max:200'],
+            'delivery_ids.*' => ['required', 'integer', 'distinct', 'exists:hr_email_deliveries,id'],
+        ]);
+
+        try {
+            $count = DB::transaction(function () use ($data) {
+                $deliveries = HrEmailDelivery::whereIn('id', $data['delivery_ids'])
+                    ->where('status', 'failed')->orderBy('id')->lockForUpdate()->get();
+
+                foreach ($deliveries as $index => $delivery) {
+                    $delivery->update(['status' => 'retrying', 'sent_at' => null]);
+                    SendHrEmail::dispatch($delivery->id)->onConnection('database')
+                        ->delay(now()->addSeconds($index * 35));
+                }
+
+                return $deliveries->count();
+            });
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            return back()->withErrors(['retry' => 'Gagal memasukkan email ke antrean retry. Silakan coba lagi.']);
+        }
+
+        return back()->with('success', $count
+            ? $count.' email gagal masuk antrean retry. Pesan dan lampiran sebelumnya akan digunakan kembali.'
+            : 'Tidak ada email gagal yang dapat dicoba ulang. Status pengiriman mungkin sudah berubah.');
     }
 
     public function store(Request $request)

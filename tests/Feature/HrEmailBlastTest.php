@@ -29,6 +29,7 @@ class HrEmailBlastTest extends TestCase
             $table->string('email')->unique();
             $table->string('password')->default('test');
             $table->string('role')->default('user');
+            $table->json('module_permissions')->nullable();
             $table->integer('status_akun')->default(1);
             $table->timestamp('email_verified_at')->nullable();
             $table->timestamps();
@@ -168,8 +169,163 @@ class HrEmailBlastTest extends TestCase
             $job->handle($failingMailer);
             $this->fail('Expected SMTP failure');
         } catch (\RuntimeException $exception) {
+            $this->assertSame('processing', $delivery->fresh()->status);
+            $job->failed($exception);
             $this->assertSame('failed', $delivery->fresh()->status);
         }
+    }
+
+    public function test_retry_requeues_only_failed_deliveries_once_and_keeps_message_and_attachments(): void
+    {
+        Queue::fake();
+        $admin = User::create(['email' => 'retry-hr@example.test', 'role' => 'admin', 'status_akun' => 1]);
+        $user = User::create(['email' => 'retry-user@example.test', 'email_verified_at' => now()]);
+        $deliveries = collect(['failed', 'failed', 'sent', 'pending', 'retrying', 'processing', 'skipped'])
+            ->map(fn ($status) => HrEmailDelivery::create([
+                'user_id' => $user->id, 'sent_by' => $admin->id, 'recipient' => $user->email,
+                'subject' => 'Undangan HR', 'message' => '<p>Pesan sebelumnya</p>', 'status' => $status,
+                'sent_at' => $status === 'sent' ? now() : null,
+                'attachments' => [['path' => 'info.pdf', 'name' => 'Info HR.pdf', 'mime' => 'application/pdf', 'size' => 100]],
+            ]));
+        $original = $deliveries[0]->only('recipient', 'subject', 'message', 'attachments', 'sent_by');
+        $url = route('email-blast-log.create', ['status' => 'failed', 'page' => 2]);
+        $this->actingAs($admin)->from($url)->post(route('email-blast-log.retry'), [
+            'delivery_ids' => $deliveries->pluck('id')->all(),
+        ])->assertRedirect($url)->assertSessionHasNoErrors()->assertSessionHas('success');
+
+        $this->assertSame($original, $deliveries[0]->fresh()->only(array_keys($original)));
+        $this->assertSame(['retrying', 'retrying', 'sent', 'pending', 'retrying', 'processing', 'skipped'], HrEmailDelivery::pluck('status')->all());
+        $this->assertSame(7, HrEmailDelivery::count());
+        Queue::assertPushed(SendHrEmail::class, 2);
+        Queue::assertPushed(SendHrEmail::class, fn ($job) => $job->deliveryId === $deliveries[0]->id && $job->connection === 'database');
+        Queue::assertPushed(SendHrEmail::class, fn ($job) => $job->deliveryId === $deliveries[1]->id && $job->delay->greaterThan(now()->addSeconds(30)));
+
+        $this->post(route('email-blast-log.retry'), ['delivery_ids' => $deliveries->pluck('id')->all()])->assertSessionHasNoErrors();
+        Queue::assertPushed(SendHrEmail::class, 2);
+    }
+
+    public function test_retry_requires_email_create_permission_and_valid_delivery_ids(): void
+    {
+        Queue::fake();
+        $user = User::create(['email' => 'retry-access@example.test', 'email_verified_at' => now()]);
+        $delivery = HrEmailDelivery::create(['user_id' => $user->id, 'sent_by' => 1, 'recipient' => $user->email, 'subject' => 'Info', 'message' => 'Pesan', 'status' => 'failed']);
+        $payload = ['delivery_ids' => [$delivery->id]];
+        $url = route('email-blast-log.retry');
+        $this->post($url, $payload)->assertRedirect('/login');
+        $this->actingAs($user->fresh())->post($url, $payload)->assertRedirect('/');
+        $supervisor = User::create(['email' => 'retry-supervisor@example.test', 'role' => 'supervisor', 'status_akun' => 1]);
+        $supervisor->forceFill(['module_permissions' => ['email' => ['view']]])->save();
+        $this->actingAs($supervisor)->post($url, $payload)->assertForbidden();
+        $supervisor->forceFill(['module_permissions' => ['email' => ['view', 'create']]])->save();
+        $this->actingAs($supervisor);
+        foreach ([[], ['delivery_ids' => []], ['delivery_ids' => [$delivery->id, $delivery->id]], ['delivery_ids' => [999]], ['delivery_ids' => ['invalid']]] as $invalid) {
+            $this->post($url, $invalid)->assertSessionHasErrors();
+        }
+        Queue::assertNothingPushed();
+        $this->assertSame('failed', $delivery->fresh()->status);
+        $this->post($url, $payload)->assertSessionHasNoErrors();
+        Queue::assertPushed(SendHrEmail::class, 1);
+    }
+
+    public function test_retry_queue_failure_rolls_back_status_and_does_not_send_email(): void
+    {
+        $admin = User::create(['email' => 'retry-rollback@example.test', 'role' => 'admin', 'status_akun' => 1]);
+        $delivery = HrEmailDelivery::create(['user_id' => 1, 'sent_by' => $admin->id, 'recipient' => 'user@example.test', 'subject' => 'Info', 'message' => 'Pesan', 'status' => 'failed']);
+        $this->mock(FallbackMailService::class)->shouldNotReceive('send');
+        Schema::drop('jobs');
+        $this->actingAs($admin)->post(route('email-blast-log.retry'), ['delivery_ids' => [$delivery->id]])
+            ->assertSessionHasErrors('retry');
+        $this->assertSame('failed', $delivery->fresh()->status);
+    }
+
+    public function test_retry_uses_database_queue_and_worker_claim_prevents_overlapping_sends(): void
+    {
+        $admin = User::create(['email' => 'retry-worker-hr@example.test', 'role' => 'admin', 'status_akun' => 1]);
+        $user = User::create(['email' => 'retry-worker@example.test', 'email_verified_at' => now()]);
+        $delivery = HrEmailDelivery::create(['user_id' => $user->id, 'sent_by' => $admin->id, 'recipient' => $user->email, 'subject' => 'Info', 'message' => '<p>Pesan HR</p>', 'status' => 'failed']);
+        $this->actingAs($admin)->post(route('email-blast-log.retry'), ['delivery_ids' => [$delivery->id]])->assertSessionHasNoErrors();
+        $this->assertSame(1, DB::table('jobs')->count());
+        $this->assertSame('retrying', $delivery->fresh()->status);
+        $job = new SendHrEmail($delivery->id);
+        $mailer = $this->mock(FallbackMailService::class);
+        $mailer->shouldReceive('send')->once()->andReturnUsing(function () use ($job, $mailer, $delivery) {
+            $this->assertSame('processing', $delivery->fresh()->status);
+            $job->handle($mailer);
+        });
+        $job->handle($mailer);
+        $this->assertSame('sent', $delivery->fresh()->status);
+        $job->failed(new \RuntimeException('Late failure callback'));
+        $this->assertSame('sent', $delivery->fresh()->status);
+
+        $user->update(['email_verified_at' => null]);
+        $delivery->refresh()->update(['status' => 'retrying']);
+        $job->handle($mailer);
+        $this->assertSame('skipped', $delivery->fresh()->status);
+        $job->failed(new \RuntimeException('Late failure callback'));
+        $this->assertSame('skipped', $delivery->fresh()->status);
+    }
+
+    public function test_history_filters_every_status_and_preserves_filter_when_paginating(): void
+    {
+        $admin = User::create(['email' => 'filter-hr@example.test', 'role' => 'admin', 'status_akun' => 1]);
+        $this->actingAs($admin);
+        foreach (array_keys(HrEmailDelivery::STATUS_LABELS) as $status) {
+            HrEmailDelivery::create(['user_id' => 1, 'sent_by' => $admin->id, 'recipient' => $status.'@example.test', 'subject' => 'Status '.$status, 'message' => 'Pesan', 'status' => $status]);
+        }
+        foreach (array_keys(HrEmailDelivery::STATUS_LABELS) as $status) {
+            $this->get(route('email-blast-log.create', ['status' => $status]))->assertOk()
+                ->assertViewHas('deliveries', fn ($rows) => $rows->total() === 1 && $rows->first()->status === $status);
+        }
+        foreach (range(1, 25) as $index) {
+            HrEmailDelivery::create(['user_id' => 1, 'sent_by' => $admin->id, 'recipient' => "failed{$index}@example.test", 'subject' => 'Info', 'message' => 'Pesan', 'status' => 'failed']);
+        }
+        $this->get(route('email-blast-log.create', ['status' => 'failed']))->assertOk()
+            ->assertViewHas('deliveries', fn ($rows) => $rows->total() === 26 && count($rows) === 25
+                && str_contains($rows->nextPageUrl(), 'status=failed') && str_contains($rows->nextPageUrl(), '#delivery-history'));
+        $this->get(route('email-blast-log.create'))->assertViewHas('deliveries', fn ($rows) => $rows->total() === 31);
+        $this->getJson(route('email-blast-log.create', ['status' => 'unknown']))->assertUnprocessable();
+        $this->getJson(route('email-blast-log.create', ['status' => ['failed']]))->assertUnprocessable();
+    }
+
+    public function test_database_worker_records_failure_then_sends_a_manual_retry(): void
+    {
+        config(['queue.failed.driver' => null]);
+        $admin = User::create(['email' => 'lifecycle-hr@example.test', 'role' => 'admin', 'status_akun' => 1]);
+        $user = User::create(['email' => 'lifecycle-user@example.test', 'email_verified_at' => now()]);
+        $delivery = HrEmailDelivery::create(['user_id' => $user->id, 'sent_by' => $admin->id, 'recipient' => $user->email, 'subject' => 'Info', 'message' => 'Pesan', 'status' => 'pending']);
+        $attempts = 0;
+        $this->mock(FallbackMailService::class)->shouldReceive('send')->twice()->andReturnUsing(function () use (&$attempts) {
+            if (++$attempts === 1) {
+                throw new \RuntimeException('SMTP unavailable');
+            }
+        });
+        SendHrEmail::dispatch($delivery->id)->onConnection('database');
+        $worker = app('queue.worker');
+        $options = new \Illuminate\Queue\WorkerOptions();
+        $job = app('queue')->connection('database')->pop();
+        try {
+            $worker->process('database', $job, $options);
+            $this->fail('Expected SMTP failure');
+        } catch (\RuntimeException $exception) {
+            $this->assertSame('SMTP unavailable', $exception->getMessage());
+        }
+        $this->assertSame('failed', $delivery->fresh()->status);
+        $this->assertSame(0, DB::table('jobs')->count());
+
+        $this->actingAs($admin)->post(route('email-blast-log.retry'), ['delivery_ids' => [$delivery->id]])->assertSessionHasNoErrors();
+        $worker->process('database', app('queue')->connection('database')->pop(), $options);
+        $this->assertSame('sent', $delivery->fresh()->status);
+        $this->assertNotNull($delivery->fresh()->sent_at);
+        $this->assertSame(0, DB::table('jobs')->count());
+    }
+
+    public function test_blast_template_uses_status_email_brand_colors_and_keeps_safe_editor_content(): void
+    {
+        $html = (new HrBlastEmail('Informasi <HR>', '<p>Halo <strong>kandidat</strong></p><script>alert(1)</script>'))->render();
+        foreach (['#015fc8', '#e6f0ff', '#004085', 'logo-vdni1.png', 'Buka Portal Rekrutmen', route('login'), '<strong>kandidat</strong>', 'Informasi &lt;HR&gt;'] as $expected) {
+            $this->assertStringContainsString($expected, $html);
+        }
+        $this->assertStringNotContainsString('<script>', $html);
     }
 
     public function test_editor_formatting_is_preserved_and_unsafe_html_and_empty_messages_are_rejected(): void

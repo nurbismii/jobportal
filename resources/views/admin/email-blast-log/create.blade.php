@@ -8,7 +8,7 @@
 @endif
 @if($errors->any())
     <div class="alert alert-danger" role="alert">
-        <strong>Pengiriman belum diproses.</strong>
+        <strong>Permintaan belum diproses.</strong>
         <ul class="mb-0">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
     </div>
 @endif
@@ -43,35 +43,95 @@
         </form>
     </div>
 </div>
-<div class="card shadow mb-4">
-    <div class="card-header d-flex justify-content-between align-items-center">
+<div class="card shadow mb-4" id="delivery-history">
+    <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
         <h2 class="h6 m-0 font-weight-bold text-primary">Riwayat pengiriman HR</h2>
         @if(auth()->user()->canAccessAdminRoute('email-blast-log.create'))
-        <a class="btn btn-sm btn-outline-primary" href="{{ route('email-blast-log.create') }}">Perbarui status</a>
+        <a class="btn btn-sm btn-outline-primary" href="{{ request()->fullUrl() }}#delivery-history"><i class="fas fa-sync-alt mr-1" aria-hidden="true"></i> Perbarui status</a>
         @endif
     </div>
     <div class="card-body">
-        <p class="small text-muted">Antrean diproses bertahap. Terkirim berarti server email menerima pesan; bukan jaminan pesan masuk inbox. Dilewati berarti akun atau alamat berubah sebelum pengiriman.</p>
+        <form method="GET" action="{{ route('email-blast-log.create') }}#delivery-history" class="mb-3">
+            <div class="form-row align-items-end">
+                <div class="col-md-4 col-lg-3 form-group mb-md-0">
+                    <label for="email-status">Status email</label>
+                    <select name="status" id="email-status" class="form-control">
+                        <option value="">Semua status</option>
+                        @foreach(\App\Models\HrEmailDelivery::STATUS_LABELS as $value => $label)
+                            <option value="{{ $value }}" @selected($status === $value)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-auto">
+                    <button type="submit" class="btn btn-primary">Terapkan filter</button>
+                    @if($status)
+                        <a href="{{ route('email-blast-log.create') }}#delivery-history" class="btn btn-outline-secondary ml-1">Reset</a>
+                    @endif
+                </div>
+            </div>
+        </form>
+        <p class="small text-muted mb-2">Antrean diproses bertahap. Terkirim berarti server email menerima pesan; bukan jaminan pesan masuk inbox. Dilewati berarti akun atau alamat berubah sebelum pengiriman.</p>
+        <p class="small text-muted">Retry menggunakan pesan dan lampiran sebelumnya. Jika kegagalan terjadi karena timeout, periksa pengiriman terlebih dahulu karena server mungkin sudah menerima email.</p>
+        @php($canRetry = auth()->user()->canAccessAdminRoute('email-blast-log.retry'))
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+            <span class="small text-muted mb-2 mb-sm-0">{{ number_format($deliveries->total(), 0, ',', '.') }} pengiriman{{ $status ? ' · '.\App\Models\HrEmailDelivery::STATUS_LABELS[$status] : '' }}</span>
+            @if($canRetry)
+                <form method="POST" action="{{ route('email-blast-log.retry') }}" id="retry-selected-form" class="retry-form" data-permission-allowed="1">
+                    @csrf
+                    <button type="submit" class="btn btn-sm btn-outline-primary" id="retry-selected-button" disabled>
+                        <i class="fas fa-redo mr-1" aria-hidden="true"></i> Retry terpilih (<span id="retry-selected-count">0</span>)
+                    </button>
+                </form>
+            @endif
+        </div>
         <div class="table-responsive">
-            <table class="table table-hover">
-                <thead><tr><th>Penerima</th><th>Subjek</th><th>Status</th><th>Dibuat</th><th>Terkirim</th></tr></thead>
+            <table class="table table-hover align-middle">
+                <thead><tr>
+                    @if($canRetry)
+                        <th scope="col"><input type="checkbox" id="select-all-failed" aria-label="Pilih semua email gagal di halaman ini" @disabled(! $deliveries->contains('status', 'failed'))></th>
+                    @endif
+                    <th scope="col">Penerima</th><th scope="col">Subjek</th><th scope="col">Status</th><th scope="col">Dibuat</th><th scope="col">Terkirim</th>
+                    @if($canRetry)<th scope="col">Tindakan</th>@endif
+                </tr></thead>
                 <tbody>
                     @forelse($deliveries as $delivery)
                         <tr>
+                            @if($canRetry)
+                                <td>
+                                    @if($delivery->status === 'failed')
+                                        <input type="checkbox" class="retry-checkbox" name="delivery_ids[]" value="{{ $delivery->id }}" form="retry-selected-form" aria-label="Pilih email gagal ke {{ $delivery->recipient }}">
+                                    @endif
+                                </td>
+                            @endif
                             <td>{{ $delivery->recipient }}</td><td>{{ $delivery->subject }}</td>
                             <td>
                                 @switch($delivery->status)
                                     @case('sent') <span class="badge badge-success">Terkirim</span> @break
                                     @case('failed') <span class="badge badge-danger">Gagal</span> @break
                                     @case('skipped') <span class="badge badge-secondary">Dilewati</span> @break
-                                    @default <span class="badge badge-warning">Menunggu</span>
+                                    @case('retrying') <span class="badge badge-info">Menunggu retry</span> @break
+                                    @case('processing') <span class="badge badge-primary">Sedang dikirim</span> @break
+                                    @default <span class="badge badge-warning">Menunggu antrean</span>
                                 @endswitch
                             </td>
                             <td>{{ $delivery->created_at->format('d/m/Y H:i') }}</td>
                             <td>{{ $delivery->sent_at?->format('d/m/Y H:i') ?? '—' }}</td>
+                            @if($canRetry)
+                                <td>
+                                    @if($delivery->status === 'failed')
+                                        <form method="POST" action="{{ route('email-blast-log.retry') }}" class="retry-form" data-permission-allowed="1">
+                                            @csrf
+                                            <input type="hidden" name="delivery_ids[]" value="{{ $delivery->id }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-primary text-nowrap" aria-label="Retry email ke {{ $delivery->recipient }}"><i class="fas fa-redo mr-1" aria-hidden="true"></i> Retry</button>
+                                        </form>
+                                    @else
+                                        <span class="text-muted">—</span>
+                                    @endif
+                                </td>
+                            @endif
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="text-center text-muted">Belum ada pengiriman email HR.</td></tr>
+                        <tr><td colspan="{{ $canRetry ? 7 : 5 }}" class="text-center text-muted py-4">{{ $status ? 'Tidak ada pengiriman dengan status ini.' : 'Belum ada pengiriman email HR.' }}</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -82,6 +142,35 @@
 @push('scripts')
 <script src="{{ versioned_asset('vendor/tinymce/tinymce.min.js') }}"></script>
 <script>
+    const retryCheckboxes = Array.from(document.querySelectorAll('.retry-checkbox'));
+    const selectAllFailed = document.getElementById('select-all-failed');
+    const updateRetrySelection = () => {
+        const count = retryCheckboxes.filter(checkbox => checkbox.checked).length;
+        document.getElementById('retry-selected-count').textContent = count;
+        document.getElementById('retry-selected-button').disabled = count === 0;
+        selectAllFailed.checked = count > 0 && count === retryCheckboxes.length;
+        selectAllFailed.indeterminate = count > 0 && count < retryCheckboxes.length;
+    };
+    if (selectAllFailed) {
+        selectAllFailed.addEventListener('change', () => {
+            retryCheckboxes.forEach(checkbox => { checkbox.checked = selectAllFailed.checked; });
+            updateRetrySelection();
+        });
+        retryCheckboxes.forEach(checkbox => checkbox.addEventListener('change', updateRetrySelection));
+        updateRetrySelection();
+    }
+    document.querySelectorAll('.retry-form').forEach(form => {
+        form.addEventListener('submit', event => {
+            const count = form.id === 'retry-selected-form' ? retryCheckboxes.filter(checkbox => checkbox.checked).length : 1;
+            if (!count || !window.confirm(`Masukkan ${count} email gagal kembali ke antrean?`)) {
+                event.preventDefault();
+                return;
+            }
+            const button = form.querySelector('button[type="submit"]');
+            button.disabled = true;
+            button.textContent = 'Memasukkan ke antrean…';
+        });
+    });
     tinymce.init({
         selector: '#message',
         height: 350,

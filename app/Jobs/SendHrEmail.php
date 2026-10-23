@@ -24,7 +24,12 @@ class SendHrEmail implements ShouldQueue
     public function handle(FallbackMailService $mailer): void
     {
         $delivery = HrEmailDelivery::find($this->deliveryId);
-        if (! $delivery || $delivery->status !== 'pending') {
+        if (! $delivery || ! in_array($delivery->status, ['pending', 'retrying'], true)) {
+            return;
+        }
+        // Claim the delivery before contacting SMTP so overlapping jobs cannot send it twice.
+        if (! HrEmailDelivery::whereKey($delivery->id)->whereIn('status', ['pending', 'retrying'])
+            ->update(['status' => 'processing'])) {
             return;
         }
         $eligible = User::whereKey($delivery->user_id)->where('email', $delivery->recipient)
@@ -33,17 +38,13 @@ class SendHrEmail implements ShouldQueue
             $delivery->update(['status' => 'skipped']);
             return;
         }
-        try {
-            $mailer->send($delivery->recipient, new HrBlastEmail($delivery->subject, $delivery->message, $delivery->attachments ?? []));
-            $delivery->update(['status' => 'sent', 'sent_at' => now()]);
-        } catch (Throwable $exception) {
-            $delivery->update(['status' => 'failed']);
-            throw $exception;
-        }
+        $mailer->send($delivery->recipient, new HrBlastEmail($delivery->subject, $delivery->message, $delivery->attachments ?? []));
+        $delivery->update(['status' => 'sent', 'sent_at' => now()]);
     }
 
     public function failed(?Throwable $exception): void
     {
-        HrEmailDelivery::whereKey($this->deliveryId)->where('status', 'pending')->update(['status' => 'failed']);
+        HrEmailDelivery::whereKey($this->deliveryId)->whereIn('status', ['pending', 'retrying', 'processing'])
+            ->update(['status' => 'failed']);
     }
 }
