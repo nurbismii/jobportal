@@ -169,6 +169,71 @@ class ModulePermissionsTest extends TestCase
         $this->get(route('lowongan.index'))->assertForbidden();
     }
 
+    public function test_hr_and_admin_can_view_all_stages_for_one_application(): void
+    {
+        Schema::create('lowongan', function (Blueprint $table) {
+            $table->id(); $table->string('nama_lowongan');
+        });
+        Schema::create('biodata', function (Blueprint $table) {
+            $table->id(); $table->unsignedBigInteger('user_id'); $table->string('no_ktp');
+        });
+        Schema::create('lamaran', function (Blueprint $table) {
+            $table->id(); $table->unsignedBigInteger('biodata_id')->nullable(); $table->unsignedBigInteger('loker_id')->nullable();
+            $table->integer('status_lamaran'); $table->string('status_proses'); $table->timestamps();
+        });
+        Schema::create('riwayat_proses_lamaran', function (Blueprint $table) {
+            $table->id(); $table->unsignedBigInteger('lamaran_id');
+            foreach (['status_proses', 'status_lolos', 'tanggal_proses', 'jam', 'tempat', 'pesan'] as $column) $table->string($column)->nullable();
+            $table->timestamps();
+        });
+        $candidate = $this->account('user');
+        $candidate->update(['name' => 'Pelamar Uji']);
+        DB::table('lowongan')->insert(['id' => 1, 'nama_lowongan' => 'Operator']);
+        DB::table('biodata')->insert(['id' => 1, 'user_id' => $candidate->id, 'no_ktp' => $candidate->no_ktp]);
+        DB::table('lamaran')->insert([
+            ['id' => 1, 'biodata_id' => 1, 'loker_id' => 1, 'status_lamaran' => 0, 'status_proses' => 'Tidak Lolos Tes Kesehatan'],
+            ['id' => 2, 'biodata_id' => 1, 'loker_id' => 1, 'status_lamaran' => 1, 'status_proses' => 'Awal'],
+        ]);
+        foreach (['Awal' => null, 'Verifikasi Berkas' => 'Lolos', 'Tidak Lolos Tes Kesehatan' => 'Tidak Lolos'] as $status => $hasil) {
+            DB::table('riwayat_proses_lamaran')->insert([
+                'lamaran_id' => 1, 'status_proses' => $status, 'status_lolos' => $hasil,
+                'tanggal_proses' => '2026-10-20', 'jam' => '08:30:00', 'tempat' => 'Kantor HR',
+                'pesan' => '<p>Catatan HR</p><script>unsafeHistory()</script>', 'created_at' => '2026-10-20 08:30:00',
+            ]);
+        }
+        DB::table('riwayat_proses_lamaran')->insert(['lamaran_id' => 2, 'status_proses' => 'Riwayat lamaran lain']);
+
+        foreach ([$this->account('manager', ['lamaran' => ['view']]), $this->account('admin')] as $viewer) {
+            $this->actingAs($viewer)->get(route('lamarans.show', 1))
+                ->assertOk()->assertSee('Tahapan Proses Pelamar')->assertSee('Pelamar Uji')->assertSee($candidate->no_ktp)
+                ->assertSee('Operator')->assertSee('Rekrutmen Selesai')->assertSee('08:30:00')->assertSee('Kantor HR')
+                ->assertSee('<p>Catatan HR</p>', false)->assertDontSee('unsafeHistory()')
+                ->assertSeeInOrder(['Riwayat Tahapan Proses', 'Tidak Lolos Tes Kesehatan', 'Verifikasi Berkas', 'Awal'])
+                ->assertDontSee('Riwayat lamaran lain')
+                ->assertViewHas('lamaran', fn ($lamaran) => $lamaran->riwayatProsesLamaran->pluck('status_lolos')->all() === ['Tidak Lolos', 'Lolos', null]);
+        }
+        $this->get(route('lamarans.show', 999))->assertNotFound();
+        DB::table('riwayat_proses_lamaran')->where('lamaran_id', 1)->delete();
+        DB::table('lamaran')->where('id', 1)->update(['biodata_id' => null, 'loker_id' => null]);
+        $this->get(route('lamarans.show', 1))->assertOk()->assertSee('Belum ada riwayat proses lamaran.');
+
+        $this->actingAs($this->account('supervisor', ['pengguna' => ['view'], 'lamaran' => ['view']]))
+            ->get(route('pengguna.show', $candidate))->assertOk()
+            ->assertSee(route('lamarans.show', 2), false)->assertSee('Lihat Tahapan');
+        $this->actingAs($this->account('supervisor', ['pengguna' => ['view']]))
+            ->get(route('pengguna.show', $candidate))->assertOk()->assertDontSee('Lihat Tahapan');
+    }
+
+    public function test_application_history_requires_an_active_internal_account_with_lamaran_view_permission(): void
+    {
+        $this->get(route('lamarans.show', 1))->assertRedirect(route('login'));
+        $this->actingAs($this->account('user'))->get(route('lamarans.show', 1))->assertRedirect('/');
+        $this->actingAs($this->account('manager', ['pengguna' => ['view']]))->get(route('lamarans.show', 1))->assertForbidden();
+        $disabled = $this->account('manager', ['lamaran' => ['view']]);
+        $disabled->update(['status_akun' => 0]);
+        $this->actingAs($disabled)->get(route('lamarans.show', 1))->assertForbidden();
+    }
+
     public function test_granted_update_permission_opens_the_form_and_saves_changes(): void
     {
         DB::table('pengumuman')->insert(['id' => 1, 'pengumuman' => 'Before', 'keterangan' => 'Before']);

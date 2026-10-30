@@ -23,6 +23,17 @@ class LamaranController extends Controller
         return view('admin.lamaran.lowongan', compact('lowongans'));
     }
 
+    public function show($id)
+    {
+        $lamaran = Lamaran::with([
+            'lowongan',
+            'biodata.user',
+            'riwayatProsesLamaran' => fn ($query) => $query->orderByDesc('created_at')->orderByDesc('id'),
+        ])->findOrFail($id);
+
+        return view('admin.lamaran.show', compact('lamaran'));
+    }
+
     public function updateStatusMassal(Request $request, LamaranStatusService $lamaranStatusService)
     {
         $statusInput = strtolower($request->status_proses);

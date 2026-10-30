@@ -99,7 +99,12 @@
                                 <tr>
                                     <td>{{ $index + 1 }}</td>
                                     <td>{{ $riwayat->lowongan->nama_lowongan }}</td>
-                                    <td class="text-danger fw-bold">{{ $riwayat->status_proses }}</td>
+                                    <td>
+                                        <div class="text-danger fw-bold">{{ $riwayat->status_proses }}</div>
+                                        @if(auth()->user()->canAccessAdminRoute('lamarans.show'))
+                                        <a href="{{ route('lamarans.show', $riwayat->id) }}" class="btn btn-outline-primary btn-sm mt-1">Lihat Tahapan</a>
+                                        @endif
+                                    </td>
                                     <td>{{ $riwayat->created_at }}</td>
                                     <td>{{ $riwayat->updated_at }}</td>
                                 </tr>

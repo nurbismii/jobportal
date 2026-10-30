@@ -425,7 +425,12 @@
                                 @endif
                             </td>
                             <td><input type="checkbox" name="selected_ids[]" value="{{ $data->id }}"></td>
-                            <td>{{ $data->status_proses }}</td>
+                            <td data-export-value="{{ $data->status_proses }}">
+                                <div>{{ $data->status_proses }}</div>
+                                @if(auth()->user()->canAccessAdminRoute('lamarans.show'))
+                                <a href="{{ route('lamarans.show', $data->id) }}" class="btn btn-outline-primary btn-sm mt-1">Lihat Tahapan</a>
+                                @endif
+                            </td>
                             <td>
                                 @if($data->assessment_eligibility_status === 'eligible')
                                 <span class="badge badge-success">Layak lanjut</span>
