@@ -42,6 +42,7 @@ class SecurityRegressionTest extends TestCase
         });
         Schema::create('lowongan', function (Blueprint $t) {
             $t->id(); $t->date('tanggal_mulai'); $t->date('tanggal_berakhir'); $t->timestamps();
+            $t->string('nama_lowongan')->nullable();
         });
         Schema::create('lamaran', function (Blueprint $t) {
             $t->id(); $t->unsignedBigInteger('biodata_id'); $t->unsignedBigInteger('loker_id');
@@ -49,7 +50,7 @@ class SecurityRegressionTest extends TestCase
         });
         Schema::create('riwayat_proses_lamaran', function (Blueprint $t) {
             $t->id(); $t->unsignedBigInteger('user_id'); $t->unsignedBigInteger('lamaran_id');
-            foreach (['tanggal_proses', 'jam', 'status_proses', 'tempat', 'pesan'] as $field) $t->string($field)->nullable();
+            foreach (['tanggal_proses', 'jam', 'status_proses', 'status_lolos', 'tempat', 'pesan'] as $field) $t->string($field)->nullable();
             $t->timestamps();
         });
         Schema::create('password_resets', function (Blueprint $t) {
@@ -91,6 +92,40 @@ class SecurityRegressionTest extends TestCase
         $a = $this->account(); $b = $this->biodata($this->account(2));
         $id = DB::table('lamaran')->insertGetId(['biodata_id' => $b->id, 'loker_id' => 1, 'status_lamaran' => 1, 'status_proses' => 'Awal']);
         $this->actingAs($a)->get('/lamaran/' . $id)->assertNotFound();
+    }
+
+    public function test_applicant_history_includes_rejection_without_other_application_history(): void
+    {
+        $user = $this->account();
+        $own = $this->biodata($user);
+        $other = $this->biodata($this->account(2));
+        $lowonganId = DB::table('lowongan')->insertGetId([
+            'nama_lowongan' => 'Operator', 'tanggal_mulai' => '2026-10-01', 'tanggal_berakhir' => '2026-10-31',
+        ]);
+        $lamaranId = DB::table('lamaran')->insertGetId([
+            'biodata_id' => $own->id, 'loker_id' => $lowonganId,
+            'status_lamaran' => 0, 'status_proses' => 'Tidak Lolos Tes Kesehatan',
+        ]);
+        $otherLamaranId = DB::table('lamaran')->insertGetId([
+            'biodata_id' => $other->id, 'loker_id' => $lowonganId,
+            'status_lamaran' => 0, 'status_proses' => 'Tidak Lolos Tes Lapangan',
+        ]);
+        DB::table('riwayat_proses_lamaran')->insert([
+            ['user_id' => $user->id, 'lamaran_id' => $lamaranId, 'status_proses' => 'Tes Kesehatan',
+                'status_lolos' => null, 'tanggal_proses' => '2026-10-01', 'created_at' => '2026-10-01 08:00:00'],
+            ['user_id' => $user->id, 'lamaran_id' => $lamaranId, 'status_proses' => 'Tidak Lolos Tes Kesehatan',
+                'status_lolos' => 'Tidak Lolos', 'tanggal_proses' => '2026-10-02', 'created_at' => '2026-10-02 08:00:00'],
+            ['user_id' => $other->user_id, 'lamaran_id' => $otherLamaranId, 'status_proses' => 'Tidak Lolos Tes Lapangan',
+                'status_lolos' => 'Tidak Lolos', 'tanggal_proses' => '2026-10-03', 'created_at' => '2026-10-03 08:00:00'],
+        ]);
+
+        $this->actingAs($user)->get('/lamaran/' . $lamaranId)
+            ->assertOk()
+            ->assertViewHas('riwayat_proses', fn ($history) => $history->pluck('status_proses')->all() === [
+                'Tidak Lolos Tes Kesehatan', 'Tes Kesehatan',
+            ])
+            ->assertSeeInOrder(['Tidak Lolos Tes Kesehatan', 'Tes Kesehatan'])
+            ->assertDontSee('Tidak Lolos Tes Lapangan');
     }
 
     public function test_submission_uses_authenticated_biodata_and_rejects_duplicates(): void
