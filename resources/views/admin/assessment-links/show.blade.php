@@ -17,60 +17,71 @@
     @endif
 </div>
 
-<div class="card shadow mb-3"><div class="card-body"><div class="row">
-    <div class="col-md-8 mb-2">
-        <label class="small font-weight-bold">URL publik</label>
-        <div class="input-group"><input id="assessmentPublicUrl" class="form-control" readonly value="{{ route('assessment-links.public.show', $link->public_token) }}"><div class="input-group-append"><button type="button" class="btn btn-outline-primary" data-copy-target="assessmentPublicUrl">Salin</button></div></div>
-        <label for="detailPin" class="small font-weight-bold mt-3">PIN asesmen</label>
-        @if($link->getRawOriginal('pin_encrypted') !== null)
-        <div class="input-group">
-            <input id="detailPin" class="form-control" type="password" readonly placeholder="••••••" autocomplete="off">
-            <div class="input-group-append"><button type="button" class="btn btn-outline-secondary" id="revealPin" aria-controls="detailPin" aria-pressed="false" data-url="{{ route('assessment-links.pin', $link) }}">Tampilkan PIN</button></div>
-        </div>
-        <div id="pinStatus" class="small text-danger mt-1" role="status"></div>
-        @else
-        <div class="small text-muted">PIN link lama tidak dapat ditampilkan karena hanya disimpan sebagai hash. PIN tersebut tetap dapat digunakan untuk verifikasi.</div>
-        @endif
-    </div>
-    <div class="col-md-4 mb-2">
-        <div>Kedaluwarsa: {{ optional($link->expires_at)->format('d-m-Y H:i') ?: '-' }}</div>
-        <div>Status: @if(!$link->is_active) Nonaktif @elseif($expired) Kadaluwarsa @else Aktif @endif</div>
-        @if($link->is_active)
-        <form id="deactivateAssessmentLinkForm" method="POST" action="{{ route('assessment-links.deactivate', $link) }}" class="mt-2" data-permission-allowed="{{ auth()->user()->canAccessAdminRoute('assessment-links.deactivate') ? '1' : '0' }}">@csrf<button type="button" class="btn btn-danger btn-sm" data-deactivate-link>Nonaktifkan link</button></form>
-        @endif
-    </div>
-</div></div></div>
-
-<div class="card shadow mb-3"><div class="card-body">
-    <h3 class="h6">Ubah PIN asesmen</h3>
-    <p class="small text-muted">URL tetap sama. Setelah disimpan, pihak klinik harus memasukkan PIN baru. Status dan masa berlaku link tidak berubah.</p>
-    <form method="POST" action="{{ route('assessment-links.pin.update', $link) }}" id="updatePinForm" data-permission-allowed="{{ auth()->user()->canAccessAdminRoute('assessment-links.pin.update') ? '1' : '0' }}">
-        @csrf @method('PATCH')
+<div class="card shadow mb-3">
+    <div class="card-body">
         <div class="row">
-            @foreach(['pin' => 'PIN baru', 'pin_confirmation' => 'Konfirmasi PIN baru'] as $field => $label)
-            <div class="col-md-6 mb-3"><label for="update-{{ $field }}">{{ $label }}</label>
-                <div class="input-group"><input id="update-{{ $field }}" name="{{ $field }}" type="password" class="form-control" required minlength="6" maxlength="32" autocomplete="new-password" spellcheck="false" autocapitalize="none">
-                <div class="input-group-append"><button type="button" class="btn btn-outline-secondary" data-toggle-pin aria-controls="update-{{ $field }}" aria-pressed="false" aria-label="Tampilkan {{ $label }}">Tampilkan</button></div></div>
+            <div class="col-md-8 mb-2">
+                <label class="small font-weight-bold">URL publik</label>
+                <div class="input-group"><input id="assessmentPublicUrl" class="form-control" readonly value="{{ route('assessment-links.public.show', $link->public_token) }}">
+                    <div class="input-group-append"><button type="button" class="btn btn-outline-primary" data-copy-target="assessmentPublicUrl">Salin</button></div>
+                </div>
+                <label for="detailPin" class="small font-weight-bold mt-3">PIN asesmen</label>
+                @if($link->getRawOriginal('pin_encrypted') !== null)
+                <div class="input-group">
+                    <input id="detailPin" class="form-control" type="password" readonly placeholder="••••••" autocomplete="off">
+                    <div class="input-group-append"><button type="button" class="btn btn-outline-secondary" id="revealPin" aria-controls="detailPin" aria-pressed="false" data-url="{{ route('assessment-links.pin', $link) }}">Tampilkan PIN</button></div>
+                </div>
+                <div id="pinStatus" class="small text-danger mt-1" role="status"></div>
+                @else
+                <div class="small text-muted">PIN link lama tidak dapat ditampilkan karena hanya disimpan sebagai hash. PIN tersebut tetap dapat digunakan untuk verifikasi.</div>
+                @endif
             </div>
-            @endforeach
+            <div class="col-md-4 mb-2">
+                <div>Kedaluwarsa: {{ optional($link->expires_at)->format('d-m-Y H:i') ?: '-' }}</div>
+                <div>Status: @if(!$link->is_active) Nonaktif @elseif($expired) Kadaluwarsa @else Aktif @endif</div>
+                @if($link->is_active)
+                <form id="deactivateAssessmentLinkForm" method="POST" action="{{ route('assessment-links.deactivate', $link) }}" class="mt-2" data-permission-allowed="{{ auth()->user()->canAccessAdminRoute('assessment-links.deactivate') ? '1' : '0' }}">@csrf<button type="button" class="btn btn-danger btn-sm" data-deactivate-link>Nonaktifkan link</button></form>
+                @endif
+            </div>
         </div>
-        @error('pin')<p class="text-danger" role="alert">{{ $message }}</p>@enderror
-        <button type="submit" class="btn btn-primary">Simpan PIN baru</button>
-    </form>
-</div></div>
+    </div>
+</div>
+
+<div class="card shadow mb-3">
+    <div class="card-body">
+        <h3 class="h6">Ubah PIN asesmen</h3>
+        <p class="small text-muted">URL tetap sama. Setelah disimpan, pihak klinik harus memasukkan PIN baru. Status dan masa berlaku link tidak berubah.</p>
+        <form method="POST" action="{{ route('assessment-links.pin.update', $link) }}" id="updatePinForm" data-permission-allowed="{{ auth()->user()->canAccessAdminRoute('assessment-links.pin.update') ? '1' : '0' }}">
+            @csrf @method('PATCH')
+            <div class="row">
+                @foreach(['pin' => 'PIN baru', 'pin_confirmation' => 'Konfirmasi PIN baru'] as $field => $label)
+                <div class="col-md-6 mb-3"><label for="update-{{ $field }}">{{ $label }}</label>
+                    <div class="input-group"><input id="update-{{ $field }}" name="{{ $field }}" type="password" class="form-control" required minlength="6" maxlength="32" autocomplete="new-password" spellcheck="false" autocapitalize="none">
+                        <div class="input-group-append"><button type="button" class="btn btn-outline-secondary" data-toggle-pin aria-controls="update-{{ $field }}" aria-pressed="false" aria-label="Tampilkan {{ $label }}">Tampilkan</button></div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+            @error('pin')<p class="text-danger" role="alert">{{ $message }}</p>@enderror
+            <button type="submit" class="btn btn-primary">Simpan PIN baru</button>
+        </form>
+    </div>
+</div>
 
 @if($link->isDocumentOnly() && $link->is_active)
-<div class="card shadow mb-3"><div class="card-body">
-    <h3 class="h6">Perpanjang masa berlaku link klinik</h3>
-    <p class="small text-muted">URL dan PIN tetap sama. Gunakan folder / batch baru untuk setiap periode pemeriksaan.</p>
-    <form method="POST" action="{{ route('assessment-links.expiry', $link) }}" data-permission-allowed="{{ auth()->user()->canAccessAdminRoute('assessment-links.expiry') ? '1' : '0' }}">
-        @csrf @method('PATCH')
-        <label for="expiresOn">Berlaku sampai</label>
-        <input id="expiresOn" name="expires_on" type="date" class="form-control mb-2" value="{{ old('expires_on') }}" min="{{ now('Asia/Makassar')->toDateString() }}" required>
-        @error('expires_on')<p class="text-danger">{{ $message }}</p>@enderror
-        <button class="btn btn-primary" type="submit">Perpanjang link</button>
-    </form>
-</div></div>
+<div class="card shadow mb-3">
+    <div class="card-body">
+        <h3 class="h6">Perpanjang masa berlaku link klinik</h3>
+        <p class="small text-muted">URL dan PIN tetap sama. Gunakan folder / batch baru untuk setiap periode pemeriksaan.</p>
+        <form method="POST" action="{{ route('assessment-links.expiry', $link) }}" data-permission-allowed="{{ auth()->user()->canAccessAdminRoute('assessment-links.expiry') ? '1' : '0' }}">
+            @csrf @method('PATCH')
+            <label for="expiresOn">Berlaku sampai</label>
+            <input id="expiresOn" name="expires_on" type="date" class="form-control mb-2" value="{{ old('expires_on') }}" min="{{ now('Asia/Makassar')->toDateString() }}" required>
+            @error('expires_on')<p class="text-danger">{{ $message }}</p>@enderror
+            <button class="btn btn-primary" type="submit">Perpanjang link</button>
+        </form>
+    </div>
+</div>
 @endif
 
 @unless($link->isDocumentOnly())
@@ -86,38 +97,94 @@
         @if($errors->has('lamaran_ids'))<div class="alert alert-danger">{{ $errors->first('lamaran_ids') }}</div>@endif
         <form method="POST" action="{{ route('assessment-links.candidates.store', $link) }}" data-permission-allowed="{{ auth()->user()->canAccessAdminRoute('assessment-links.candidates.store') ? '1' : '0' }}">
             @csrf
-            <div class="table-responsive"><table class="table table-sm table-bordered mb-2"><thead><tr><th class="text-center" style="width:45px">Pilih</th><th>Nama</th><th>No. KTP</th><th>Posisi dilamar</th><th>Status proses</th></tr></thead><tbody>
-            @forelse($eligibleLamarans as $lamaran)
-            <tr>
-                <td class="text-center"><input type="checkbox" name="lamaran_ids[]" value="{{ $lamaran->id }}" {{ in_array($lamaran->id, old('lamaran_ids', [])) ? 'checked' : '' }}></td>
-                <td>{{ optional(optional($lamaran->biodata)->user)->name ?: '-' }}</td>
-                <td>{{ optional($lamaran->biodata)->no_ktp ?: '-' }}</td>
-                <td>@if($lamaran->lowongan){{ $lamaran->lowongan->nama_lowongan }} - {{ $lamaran->lowongan->created_at ? tanggalIndo($lamaran->lowongan->created_at->toDateString()) : '-' }}@else-@endif</td>
-                <td>{{ $lamaran->status_proses }}</td>
-            </tr>
-            @empty
-            <tr><td colspan="5" class="text-center text-muted py-3">Tidak ada kandidat yang dapat ditambahkan.</td></tr>
-            @endforelse
-            </tbody></table></div>
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered mb-2">
+                    <thead>
+                        <tr>
+                            <th class="text-center" style="width:45px">Pilih</th>
+                            <th>Nama</th>
+                            <th>No. KTP</th>
+                            <th>Posisi dilamar</th>
+                            <th>Status proses</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($eligibleLamarans as $lamaran)
+                        <tr>
+                            <td class="text-center"><input type="checkbox" name="lamaran_ids[]" value="{{ $lamaran->id }}" {{ in_array($lamaran->id, old('lamaran_ids', [])) ? 'checked' : '' }}></td>
+                            <td>{{ optional(optional($lamaran->biodata)->user)->name ?: '-' }}</td>
+                            <td>{{ optional($lamaran->biodata)->no_ktp ?: '-' }}</td>
+                            <td>@if($lamaran->lowongan){{ $lamaran->lowongan->nama_lowongan }} - {{ $lamaran->lowongan->created_at ? tanggalIndo($lamaran->lowongan->created_at->toDateString()) : '-' }}@else-@endif</td>
+                            <td>{{ $lamaran->status_proses }}</td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-3">Tidak ada kandidat yang dapat ditambahkan.</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
             @if($eligibleLamarans->count())<button class="btn btn-primary btn-sm" type="submit">Tambah kandidat terpilih</button>@endif
         </form>
         <div class="mt-3">{{ $eligibleLamarans->links() }}</div>
     </div>
 </div>
 
-<div class="card shadow"><div class="card-header d-flex flex-wrap justify-content-between align-items-center"><strong>Hasil kandidat</strong><form method="GET" action="{{ route('assessment-links.show', $link) }}" class="form-inline mt-2 mt-md-0"><label class="mr-2" for="eligibilityFilter">Kelayakan</label><select id="eligibilityFilter" name="eligibility" class="form-control form-control-sm" onchange="this.form.submit()"><option value="all" {{ $eligibility === 'all' ? 'selected' : '' }}>Semua</option><option value="eligible" {{ $eligibility === 'eligible' ? 'selected' : '' }}>Layak lanjut</option><option value="ineligible" {{ $eligibility === 'ineligible' ? 'selected' : '' }}>Tidak layak</option><option value="pending" {{ $eligibility === 'pending' ? 'selected' : '' }}>Menunggu hasil</option></select></form></div><div class="card-body"><div class="table-responsive"><table class="table table-sm table-bordered"><thead><tr><th>Kandidat</th><th>No. KTP</th><th>Posisi dilamar</th><th>Kelayakan</th><th>Hasil terbaru</th><th>Catatan</th><th>Terakhir dikirim</th><th>Audit</th></tr></thead><tbody>
-@forelse($link->candidates as $candidate)
-<tr><td>{{ optional(optional(optional($candidate->lamaran)->biodata)->user)->name ?: 'Kandidat #' . $candidate->lamaran_id }}</td><td>{{ optional(optional($candidate->lamaran)->biodata)->no_ktp ?: '-' }}</td><td>@php($lowongan = optional($candidate->lamaran)->lowongan)@if($lowongan){{ $lowongan->nama_lowongan }} - {{ $lowongan->created_at ? tanggalIndo($lowongan->created_at->toDateString()) : '-' }}@else-@endif</td><td>@if($candidate->eligibility_status === 'eligible')<span class="badge badge-success">Layak lanjut</span>@elseif($candidate->eligibility_status === 'ineligible')<span class="badge badge-danger">Tidak layak</span>@else<span class="badge badge-secondary">Menunggu hasil</span>@endif</td><td><pre class="small mb-0">{{ json_encode($candidate->result_values ?: [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre></td><td>{{ $candidate->petugas_note ?: '-' }}</td><td>{{ optional($candidate->last_submitted_at)->format('d-m-Y H:i') ?: '-' }}</td><td>
-@forelse($candidate->audits->sortByDesc('id') as $audit)
-@php($oldAudit = (array) $audit->old_values)
-@php($newAudit = (array) $audit->new_values)
-@php($oldValues = array_key_exists('values', $oldAudit) ? $oldAudit['values'] : collect($oldAudit)->except('petugas_note')->all())
-@php($newValues = array_key_exists('values', $newAudit) ? $newAudit['values'] : collect($newAudit)->except('petugas_note')->all())
-<div class="border-bottom pb-2 mb-2 small"><strong>{{ optional($audit->created_at)->format('d-m-Y H:i') }}</strong><br>Nilai sebelumnya: {{ json_encode($oldValues, JSON_UNESCAPED_UNICODE) }}<br>Catatan sebelumnya: {{ data_get($oldAudit, 'petugas_note') ?: '-' }}<br>Nilai revisi: {{ json_encode($newValues, JSON_UNESCAPED_UNICODE) }}<br>Catatan revisi: {{ data_get($newAudit, 'petugas_note') ?: '-' }}</div>
-@empty<span class="text-muted">Belum ada audit.</span>@endforelse
-</td></tr>
-@empty<tr><td colspan="8" class="text-center text-muted py-4">Belum ada kandidat pada link ini.</td></tr>@endforelse
-</tbody></table></div></div></div>
+<div class="card shadow">
+    <div class="card-header d-flex flex-wrap justify-content-between align-items-center"><strong>Hasil kandidat</strong>
+        <form method="GET" action="{{ route('assessment-links.show', $link) }}" class="form-inline mt-2 mt-md-0"><label class="mr-2" for="eligibilityFilter">Kelayakan</label><select id="eligibilityFilter" name="eligibility" class="form-control form-control-sm" onchange="this.form.submit()">
+                <option value="all" {{ $eligibility === 'all' ? 'selected' : '' }}>Semua</option>
+                <option value="eligible" {{ $eligibility === 'eligible' ? 'selected' : '' }}>Layak lanjut</option>
+                <option value="ineligible" {{ $eligibility === 'ineligible' ? 'selected' : '' }}>Tidak layak</option>
+                <option value="pending" {{ $eligibility === 'pending' ? 'selected' : '' }}>Menunggu hasil</option>
+            </select></form>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered">
+                <thead>
+                    <tr>
+                        <th>Kandidat</th>
+                        <th>No. KTP</th>
+                        <th>Posisi dilamar</th>
+                        <th>Kelayakan</th>
+                        <th>Hasil terbaru</th>
+                        <th>Catatan</th>
+                        <th>Terakhir dikirim</th>
+                        <th>Audit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($link->candidates as $candidate)
+                    <tr>
+                        <td>{{ optional(optional(optional($candidate->lamaran)->biodata)->user)->name ?: 'Kandidat #' . $candidate->lamaran_id }}</td>
+                        <td>{{ optional(optional($candidate->lamaran)->biodata)->no_ktp ?: '-' }}</td>
+                        <td>@php($lowongan = optional($candidate->lamaran)->lowongan)@if($lowongan){{ $lowongan->nama_lowongan }} - {{ $lowongan->created_at ? tanggalIndo($lowongan->created_at->toDateString()) : '-' }}@else-@endif</td>
+                        <td>@if($candidate->eligibility_status === 'eligible')<span class="badge badge-success">Layak lanjut</span>@elseif($candidate->eligibility_status === 'ineligible')<span class="badge badge-danger">Tidak layak</span>@else<span class="badge badge-secondary">Menunggu hasil</span>@endif</td>
+                        <td>@if($link->isFieldTest())@include('field-tests.admin-result')@else
+                            <pre class="small mb-0">{{ json_encode($candidate->result_values ?: [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>@endif
+                        </td>
+                        <td>{{ $candidate->petugas_note ?: '-' }}</td>
+                        <td>{{ optional($candidate->last_submitted_at)->format('d-m-Y H:i') ?: '-' }}</td>
+                        <td>
+                            @forelse($candidate->audits->sortByDesc('id') as $audit)
+                            @php($oldAudit = (array) $audit->old_values)
+                            @php($newAudit = (array) $audit->new_values)
+                            @php($oldValues = array_key_exists('values', $oldAudit) ? $oldAudit['values'] : collect($oldAudit)->except('petugas_note')->all())
+                            @php($newValues = array_key_exists('values', $newAudit) ? $newAudit['values'] : collect($newAudit)->except('petugas_note')->all())
+                            <div class="border-bottom pb-2 mb-2 small"><strong>{{ optional($audit->created_at)->format('d-m-Y H:i') }}</strong>@if(data_get($newAudit, 'event'))<br>{{ ['draft_saved' => 'Draf disimpan', 'signed_assessor_1' => 'Penilai 1 menandatangani', 'signed_assessor_2' => 'Penilai 2 menandatangani', 'signed_division_head' => 'Divisi mengesahkan', 'revision_requested' => 'Dikembalikan untuk perbaikan'][data_get($newAudit, 'event')] ?? 'Perubahan penilaian' }}@if(data_get($newAudit, 'reason'))<br>Alasan: {{ data_get($newAudit, 'reason') }}<br>Oleh: {{ data_get($newAudit, 'requested_by') }}@endif @endif<br>Nilai sebelumnya: {{ json_encode($oldValues, JSON_UNESCAPED_UNICODE) }}<br>Catatan sebelumnya: {{ data_get($oldAudit, 'petugas_note') ?: '-' }}<br>Nilai revisi: {{ json_encode($newValues, JSON_UNESCAPED_UNICODE) }}<br>Catatan revisi: {{ data_get($newAudit, 'petugas_note') ?: '-' }}</div>
+                            @empty<span class="text-muted">Belum ada audit.</span>@endforelse
+                        </td>
+                    </tr>
+                    @empty<tr>
+                        <td colspan="8" class="text-center text-muted py-4">Belum ada kandidat pada link ini.</td>
+                    </tr>@endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 @else
 <div class="alert alert-info">Link Hasil MCU digunakan untuk mengirim daftar hadir, PDF detail MCU, dan Excel rekap. Tidak memerlukan kandidat.</div>
 @endunless
@@ -126,33 +193,66 @@
 @push('scripts')
 @include('partials.assessment-pin-toggle')
 <script>
-document.getElementById('updatePinForm').addEventListener('submit', function () {
-    var button = this.querySelector('button[type=submit]');
-    button.disabled = true; button.textContent = 'Menyimpan…';
-});
-var revealPin = document.getElementById('revealPin');
-if (revealPin) revealPin.addEventListener('click', async function () {
-    var input = document.getElementById('detailPin'), status = document.getElementById('pinStatus');
-    if (input.type === 'text') {
-        input.type = 'password'; input.value = ''; revealPin.textContent = 'Tampilkan PIN'; revealPin.setAttribute('aria-pressed', 'false'); return;
-    }
-    revealPin.disabled = true; status.textContent = 'Memuat PIN…';
-    try {
-        var response = await fetch(revealPin.dataset.url, { headers: { Accept: 'application/json' }, cache: 'no-store' });
-        if (!response.ok) throw new Error('PIN tidak dapat ditampilkan. Periksa akses admin lalu coba kembali.');
-        var data = await response.json();
-        input.value = data.pin; input.type = 'text'; revealPin.textContent = 'Sembunyikan PIN'; revealPin.setAttribute('aria-pressed', 'true'); status.textContent = '';
-    } catch (error) { status.textContent = error.message; }
-    finally { revealPin.disabled = false; }
-});
-document.querySelectorAll('[data-copy-target]').forEach(function (button) { button.addEventListener('click', function () { var input = document.getElementById(button.dataset.copyTarget); if (navigator.clipboard) navigator.clipboard.writeText(input.value); input.select(); button.textContent = 'Tersalin'; }); });
-var deactivateButton = document.querySelector('[data-deactivate-link]');
-if (deactivateButton) {
-    deactivateButton.addEventListener('click', function () {
-        Swal.fire({ title: 'Nonaktifkan link?', text: 'Petugas tidak dapat lagi menggunakan link ini.', icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya, nonaktifkan', cancelButtonText: 'Batal' }).then(function (result) {
-            if (result.isConfirmed) document.getElementById('deactivateAssessmentLinkForm').submit();
+    document.getElementById('updatePinForm').addEventListener('submit', function() {
+        var button = this.querySelector('button[type=submit]');
+        button.disabled = true;
+        button.textContent = 'Menyimpan…';
+    });
+    var revealPin = document.getElementById('revealPin');
+    if (revealPin) revealPin.addEventListener('click', async function() {
+        var input = document.getElementById('detailPin'),
+            status = document.getElementById('pinStatus');
+        if (input.type === 'text') {
+            input.type = 'password';
+            input.value = '';
+            revealPin.textContent = 'Tampilkan PIN';
+            revealPin.setAttribute('aria-pressed', 'false');
+            return;
+        }
+        revealPin.disabled = true;
+        status.textContent = 'Memuat PIN…';
+        try {
+            var response = await fetch(revealPin.dataset.url, {
+                headers: {
+                    Accept: 'application/json'
+                },
+                cache: 'no-store'
+            });
+            if (!response.ok) throw new Error('PIN tidak dapat ditampilkan. Periksa akses admin lalu coba kembali.');
+            var data = await response.json();
+            input.value = data.pin;
+            input.type = 'text';
+            revealPin.textContent = 'Sembunyikan PIN';
+            revealPin.setAttribute('aria-pressed', 'true');
+            status.textContent = '';
+        } catch (error) {
+            status.textContent = error.message;
+        } finally {
+            revealPin.disabled = false;
+        }
+    });
+    document.querySelectorAll('[data-copy-target]').forEach(function(button) {
+        button.addEventListener('click', function() {
+            var input = document.getElementById(button.dataset.copyTarget);
+            if (navigator.clipboard) navigator.clipboard.writeText(input.value);
+            input.select();
+            button.textContent = 'Tersalin';
         });
     });
-}
+    var deactivateButton = document.querySelector('[data-deactivate-link]');
+    if (deactivateButton) {
+        deactivateButton.addEventListener('click', function() {
+            Swal.fire({
+                title: 'Nonaktifkan link?',
+                text: 'Petugas tidak dapat lagi menggunakan link ini.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, nonaktifkan',
+                cancelButtonText: 'Batal'
+            }).then(function(result) {
+                if (result.isConfirmed) document.getElementById('deactivateAssessmentLinkForm').submit();
+            });
+        });
+    }
 </script>
 @endpush

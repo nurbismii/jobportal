@@ -2,150 +2,327 @@
 
 @section('content-admin')
 <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
-    <div><h2 class="m-0 font-weight-bold text-primary">Buat Link Asesmen</h2><div class="small text-muted">Pilih tipe asesmen. Hasil MCU digunakan untuk pengiriman dokumen tanpa kandidat. PIN dipakai untuk verifikasi dan dapat ditampilkan kembali oleh admin pada detail link.</div></div>
+    <div>
+        <h2 class="m-0 font-weight-bold text-primary">Buat Link Asesmen</h2>
+        <div class="small text-muted">Pilih tipe asesmen. Hasil MCU digunakan untuk pengiriman dokumen tanpa kandidat. PIN dipakai untuk verifikasi dan dapat ditampilkan kembali oleh admin pada detail link.</div>
+    </div>
     @if(auth()->user()->canAccessAdminRoute('assessment-links.index'))
     <a href="{{ route('assessment-links.index') }}" class="btn btn-secondary btn-sm mt-2 mt-md-0">Kembali</a>
     @endif
 </div>
 
 @if($errors->any())
-<div class="alert alert-danger"><strong>Periksa kembali isian:</strong><ul class="mb-0">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
+<div class="alert alert-danger"><strong>Periksa kembali isian:</strong>
+    <ul class="mb-0">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+</div>
 @endif
 
 <form method="POST" action="{{ route('assessment-links.store') }}" id="assessmentLinkForm" data-permission-allowed="{{ auth()->user()->canAccessAdminRoute('assessment-links.store') ? '1' : '0' }}">
-@csrf
-<div class="card shadow mb-3"><div class="card-body">
-    <div class="row">
-        <div class="col-md-6 mb-3"><label for="assessmentType">Tipe asesmen</label><select name="assessment_type" id="assessmentType" class="form-control" required><option value="lapangan" {{ old('assessment_type', 'lapangan') === 'lapangan' ? 'selected' : '' }}>Lapangan</option><option value="kesehatan" {{ old('assessment_type') === 'kesehatan' ? 'selected' : '' }}>Kesehatan</option><option value="mcu" {{ old('assessment_type') === 'mcu' ? 'selected' : '' }}>Hasil MCU</option></select></div>
-        <div class="col-md-6 mb-3">
-            <label for="assessmentPin">PIN (6–32 karakter)</label>
-            <div class="input-group">
-                <input id="assessmentPin" name="pin" type="password" class="form-control" minlength="6" maxlength="32" required autocomplete="new-password" spellcheck="false" autocapitalize="none">
-                <div class="input-group-append"><button type="button" class="btn btn-outline-secondary" data-toggle-pin aria-controls="assessmentPin" aria-pressed="false" aria-label="Tampilkan PIN">Tampilkan</button></div>
+    @csrf
+    <div class="card shadow mb-3">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 mb-3"><label for="assessmentType">Tipe asesmen</label><select name="assessment_type" id="assessmentType" class="form-control" required>
+                        <option value="lapangan" {{ old('assessment_type', 'lapangan') === 'lapangan' ? 'selected' : '' }}>Lapangan</option>
+                        <option value="kesehatan" {{ old('assessment_type') === 'kesehatan' ? 'selected' : '' }}>Kesehatan</option>
+                        <option value="mcu" {{ old('assessment_type') === 'mcu' ? 'selected' : '' }}>Hasil MCU</option>
+                    </select></div>
+                <div class="col-md-6 mb-3">
+                    <label for="assessmentPin">PIN pembuka link (6–32 karakter)</label>
+                    <div class="input-group">
+                        <input id="assessmentPin" name="pin" type="password" class="form-control" minlength="6" maxlength="32" required autocomplete="new-password" spellcheck="false" autocapitalize="none">
+                        <div class="input-group-append"><button type="button" class="btn btn-outline-secondary" data-toggle-pin aria-controls="assessmentPin" aria-pressed="false" aria-label="Tampilkan PIN">Tampilkan</button></div>
+                    </div>
+                </div>
+            </div>
+            <div id="mcuNotice" class="alert alert-info mb-0 d-none">Pengiriman daftar hadir dan hasil MCU oleh pihak ketiga tanpa memilih kandidat. Setelah memasukkan PIN, penerima langsung membuka halaman unggah dokumen.</div>
+            <div id="mcuExpiryGroup" class="form-group mt-3" hidden>
+                <label for="mcuExpiry">Masa berlaku link Hasil MCU sampai</label>
+                <input id="mcuExpiry" name="expires_on" type="date" class="form-control" min="{{ now('Asia/Makassar')->toDateString() }}" value="{{ old('expires_on', now('Asia/Makassar')->toDateString()) }}" disabled>
+                <small class="form-text text-muted">Pilih masa berlaku sesuai kerja sama klinik. URL yang sama dapat dipakai untuk beberapa batch dan diperpanjang melalui detail link.</small>
+            </div>
+            <div id="healthNotice" class="alert alert-info mb-0 d-none">Hasil tes kesehatan standar (<strong>Sehat/Tidak Sehat</strong>) ditambahkan otomatis dan terkunci. Field tambahan di bawah bersifat pelengkap.</div>
+            <div id="eligibilityFieldGroup" class="form-group mt-3 mb-0"><label for="eligibilityField">Field penentu kelulusan</label><select name="eligibility_field_id" id="eligibilityField" class="form-control">
+                    <option value="">Pilih field Lulus/Tidak Lulus</option>
+                </select><small class="form-text text-muted">Kandidat dengan nilai <strong>Lulus</strong> pada field ini ditandai layak lanjut.</small>@error('eligibility_field_id')<div class="text-danger small">{{ $message }}</div>@enderror</div>
+        </div>
+    </div>
+
+    <div id="fieldTestSetup" class="card shadow mb-3" hidden>
+        <div class="card-body">
+            <h3 class="h5 font-weight-bold text-primary">Form tes lapangan alat berat</h3>
+            <p class="text-muted">Petugas cukup memilih Ya/Tidak pada setiap komponen. Nilai otomatis = jumlah Ya ÷ jumlah komponen × poin aspek. Dua penilai dan penanggung jawab divisi menandatangani formulir yang sama, termasuk dari HP yang sama.</p>
+            <label for="fieldTemplate">Jenis formulir</label>
+            <select id="fieldTemplate" name="field_test[template]" class="form-control mb-3">
+                <option value="">Form umum (format lama)</option>
+                @foreach($fieldTemplates as $key => $template)<option value="{{ $key }}" @selected(old('field_test.template', 'excavator_loader' )===$key)>{{ $template['name'] }}</option>@endforeach
+            </select>
+            <div id="fieldTestDetails">
+                <div class="row">
+                    <div class="form-group col-md-6"><label for="testLocation">Lokasi tes</label><input id="testLocation" class="form-control" name="field_test[location]" value="{{ old('field_test.location') }}" maxlength="200" placeholder="Contoh: Area praktik divisi transportasi" required></div>
+                    <div class="form-group col-md-6"><label for="testDate">Tanggal pelaksanaan</label><input id="testDate" type="date" class="form-control" name="field_test[test_date]" value="{{ old('field_test.test_date', now('Asia/Makassar')->toDateString()) }}" required></div>
+                </div>
+                <div class="alert alert-light border">Total bobot standar Excavator/Loader, Mobile Crane, dan Trailer masing-masing <strong>100 poin</strong>. Bobot Dump Truck wajib ditentukan. Hasil Lulus / Tidak Lulus diputuskan penilai, tanpa ambang otomatis.</div>
+                @foreach($fieldTemplates as $key => $template)
+                <div data-template-maxima="{{ $key }}" hidden>
+                    <div class="row">
+                        @foreach($template['sections'] as $sectionId => $section)
+                        <div class="form-group col-md-6"><label for="max-{{ $key }}-{{ $sectionId }}">Maksimum {{ $section['label'] }}</label><input type="number" class="form-control" id="max-{{ $key }}-{{ $sectionId }}" name="field_test[maxima][{{ $sectionId }}]" value="{{ old('field_test.template', 'excavator_loader') === $key ? old('field_test.maxima.'.$sectionId, $section['max']) : $section['max'] }}" min="1" max="1000" step="1" required disabled></div>
+                        @endforeach
+                    </div>
+                </div>
+                @endforeach
+                <p class="small text-muted">Isi nama ketiga petugas yang berbeda. Setelah membuka link tes, masing-masing cukup memeriksa nama dan menandatangani di layar, tanpa akun login atau PIN penandatangan.</p>
+                <div class="row">
+                    @foreach(\App\Services\FieldTestService::ROLES as $role => $label)
+                    <div class="col-lg-4 mb-3">
+                        <div class="border rounded p-3 h-100">
+                            <h4 class="h6 font-weight-bold">{{ $label }}</h4>
+                            <div class="form-group mb-0"><label for="signer-{{ $role }}-name">Nama lengkap</label><input class="form-control" id="signer-{{ $role }}-name" name="field_test[signers][{{ $role }}][name]" value="{{ old('field_test.signers.'.$role.'.name') }}" maxlength="120" autocomplete="off" placeholder="Nama {{ strtolower($label) }}" aria-label="Nama lengkap {{ strtolower($label) }}" required></div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+                <p class="small text-muted">Untuk Trailer, pastikan divisi menyetujui indikator pengangkatan objek yang tercantum di formulir sumber.</p>
             </div>
         </div>
     </div>
-    <div id="mcuNotice" class="alert alert-info mb-0 d-none">Pengiriman daftar hadir dan hasil MCU oleh pihak ketiga tanpa memilih kandidat. Setelah memasukkan PIN, penerima langsung membuka halaman unggah dokumen.</div>
-    <div id="mcuExpiryGroup" class="form-group mt-3" hidden>
-        <label for="mcuExpiry">Masa berlaku link Hasil MCU sampai</label>
-        <input id="mcuExpiry" name="expires_on" type="date" class="form-control" min="{{ now('Asia/Makassar')->toDateString() }}" value="{{ old('expires_on', now('Asia/Makassar')->toDateString()) }}" disabled>
-        <small class="form-text text-muted">Pilih masa berlaku sesuai kerja sama klinik. URL yang sama dapat dipakai untuk beberapa batch dan diperpanjang melalui detail link.</small>
-    </div>
-    <div id="healthNotice" class="alert alert-info mb-0 d-none">Hasil tes kesehatan standar (<strong>Sehat/Tidak Sehat</strong>) ditambahkan otomatis dan terkunci. Field tambahan di bawah bersifat pelengkap.</div>
-    <div id="eligibilityFieldGroup" class="form-group mt-3 mb-0"><label for="eligibilityField">Field penentu kelulusan</label><select name="eligibility_field_id" id="eligibilityField" class="form-control"><option value="">Pilih field Lulus/Tidak Lulus</option></select><small class="form-text text-muted">Kandidat dengan nilai <strong>Lulus</strong> pada field ini ditandai layak lanjut.</small>@error('eligibility_field_id')<div class="text-danger small">{{ $message }}</div>@enderror</div>
-</div></div>
 
-<div id="candidateSection" class="card shadow mb-3"><div class="card-header d-flex flex-wrap align-items-center justify-content-between"><strong>Kandidat</strong><span id="selectedCount" class="badge badge-primary">0 dipilih</span></div><div class="card-body">
-    <div class="row">
-        <div class="col-md-4 form-group"><label for="candidateSearch">Cari kandidat</label><input id="candidateSearch" type="search" class="form-control" placeholder="Ketik nama atau nomor KTP"></div>
-        <div class="col-md-4 form-group"><label for="lowonganFilter">Filter lowongan</label><select id="lowonganFilter" class="form-control"><option value="">Semua lowongan</option>@foreach($lowonganOptions as $lowongan)<option value="{{ $lowongan->id }}">{{ $lowongan->nama_lowongan }} - {{ $lowongan->created_at ? tanggalIndo($lowongan->created_at->toDateString()) : '-' }}</option>@endforeach</select></div>
-        <div class="col-md-4 form-group"><label for="candidatePerPage">Tampilkan</label><select id="candidatePerPage" class="form-control"><option value="25" selected>25 kandidat</option><option value="50">50 kandidat</option><option value="100">100 kandidat</option><option value="all">Semua kandidat</option></select></div>
+    <div id="candidateSection" class="card shadow mb-3">
+        <div class="card-header d-flex flex-wrap align-items-center justify-content-between"><strong>Kandidat</strong><span id="selectedCount" class="badge badge-primary">0 dipilih</span></div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 form-group"><label for="candidateSearch">Cari kandidat</label><input id="candidateSearch" type="search" class="form-control" placeholder="Ketik nama atau nomor KTP"></div>
+                <div class="col-md-4 form-group"><label for="lowonganFilter">Filter lowongan</label><select id="lowonganFilter" class="form-control">
+                        <option value="">Semua lowongan</option>@foreach($lowonganOptions as $lowongan)<option value="{{ $lowongan->id }}">{{ $lowongan->nama_lowongan }} - {{ $lowongan->created_at ? tanggalIndo($lowongan->created_at->toDateString()) : '-' }}</option>@endforeach
+                    </select></div>
+                <div class="col-md-4 form-group"><label for="candidatePerPage">Tampilkan</label><select id="candidatePerPage" class="form-control">
+                        <option value="25" selected>25 kandidat</option>
+                        <option value="50">50 kandidat</option>
+                        <option value="100">100 kandidat</option>
+                        <option value="all">Semua kandidat</option>
+                    </select></div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered table-sm mb-0">
+                    <thead>
+                        <tr>
+                            <th>
+                                <div class="custom-control custom-checkbox"><input id="selectVisibleCandidates" type="checkbox" class="custom-control-input" aria-label="Pilih semua pada halaman ini"><label class="custom-control-label" for="selectVisibleCandidates"><span class="sr-only">Pilih semua pada halaman ini</span></label></div>
+                            </th>
+                            <th>Nama</th>
+                            <th>No. KTP</th>
+                            <th>Posisi dilamar</th>
+                            <th>Status proses</th>
+                        </tr>
+                    </thead>
+                    <tbody id="candidateRows">
+                        @forelse($eligibleLamarans as $lamaran)
+                        @php $selected = in_array($lamaran->id, $selectedIds, true); @endphp
+                        <tr data-candidate-row data-assessment-type="{{ $lamaran->status_proses === 'Tes Kesehatan' ? 'kesehatan' : 'lapangan' }}" data-lowongan-id="{{ $lamaran->loker_id ?: '' }}" data-search="{{ optional(optional($lamaran->biodata)->user)->name }} {{ optional($lamaran->biodata)->no_ktp }}">
+                            <td><input type="checkbox" name="selected_ids[]" value="{{ $lamaran->id }}" {{ $selected ? 'checked' : '' }} aria-label="Pilih kandidat"></td>
+                            <td>{{ optional(optional($lamaran->biodata)->user)->name ?: 'Kandidat #'.$lamaran->id }}</td>
+                            <td>{{ optional($lamaran->biodata)->no_ktp ?: '-' }}</td>
+                            <td>@php($lowongan = $lamaran->lowongan)@if($lowongan){{ $lowongan->nama_lowongan }} - {{ $lowongan->created_at ? tanggalIndo($lowongan->created_at->toDateString()) : '-' }}@else-@endif</td>
+                            <td>{{ $lamaran->status_proses }}</td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="5" class="text-muted text-center">Tidak ada kandidat pada tahapan tes.</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            <div id="candidateEmpty" class="text-muted text-center py-3 d-none">Tidak ada kandidat yang sesuai pencarian atau tipe asesmen.</div>
+            <nav id="candidatePagination" class="mt-3 d-none" aria-label="Navigasi kandidat"></nav>
+        </div>
     </div>
-    <div class="table-responsive"><table class="table table-bordered table-sm mb-0"><thead><tr><th><div class="custom-control custom-checkbox"><input id="selectVisibleCandidates" type="checkbox" class="custom-control-input" aria-label="Pilih semua pada halaman ini"><label class="custom-control-label" for="selectVisibleCandidates"><span class="sr-only">Pilih semua pada halaman ini</span></label></div></th><th>Nama</th><th>No. KTP</th><th>Posisi dilamar</th><th>Status proses</th></tr></thead><tbody id="candidateRows">
-        @forelse($eligibleLamarans as $lamaran)
-            @php $selected = in_array($lamaran->id, $selectedIds, true); @endphp
-            <tr data-candidate-row data-assessment-type="{{ $lamaran->status_proses === 'Tes Kesehatan' ? 'kesehatan' : 'lapangan' }}" data-lowongan-id="{{ $lamaran->loker_id ?: '' }}" data-search="{{ optional(optional($lamaran->biodata)->user)->name }} {{ optional($lamaran->biodata)->no_ktp }}">
-                <td><input type="checkbox" name="selected_ids[]" value="{{ $lamaran->id }}" {{ $selected ? 'checked' : '' }} aria-label="Pilih kandidat"></td>
-                <td>{{ optional(optional($lamaran->biodata)->user)->name ?: 'Kandidat #'.$lamaran->id }}</td>
-                <td>{{ optional($lamaran->biodata)->no_ktp ?: '-' }}</td>
-                <td>@php($lowongan = $lamaran->lowongan)@if($lowongan){{ $lowongan->nama_lowongan }} - {{ $lowongan->created_at ? tanggalIndo($lowongan->created_at->toDateString()) : '-' }}@else-@endif</td>
-                <td>{{ $lamaran->status_proses }}</td>
-            </tr>
-        @empty
-            <tr><td colspan="5" class="text-muted text-center">Tidak ada kandidat pada tahapan tes.</td></tr>
-        @endforelse
-    </tbody></table></div>
-    <div id="candidateEmpty" class="text-muted text-center py-3 d-none">Tidak ada kandidat yang sesuai pencarian atau tipe asesmen.</div>
-    <nav id="candidatePagination" class="mt-3 d-none" aria-label="Navigasi kandidat"></nav>
-</div></div>
 
-<div id="additionalFieldsSection" class="card shadow"><div class="card-header d-flex justify-content-between align-items-center"><strong>Field tambahan</strong><button class="btn btn-outline-primary btn-sm" type="button" id="addField">Tambah field</button></div><div class="card-body"><div id="fields"></div></div></div>
-<button class="btn btn-primary mt-3" type="submit" id="submitLink">Buat Link</button>
+    <div id="additionalFieldsSection" class="card shadow">
+        <div class="card-header d-flex justify-content-between align-items-center"><strong>Field tambahan</strong><button class="btn btn-outline-primary btn-sm" type="button" id="addField">Tambah field</button></div>
+        <div class="card-body">
+            <div id="fields"></div>
+        </div>
+    </div>
+    <button class="btn btn-primary mt-3" type="submit" id="submitLink">Buat Link</button>
 </form>
 @endsection
 
 @push('scripts')
 @include('partials.assessment-pin-toggle')
 <script>
-(function () {
-    var fields = document.getElementById('fields'), index = 0, assessmentType = document.getElementById('assessmentType'), healthNotice = document.getElementById('healthNotice'), eligibilityGroup = document.getElementById('eligibilityFieldGroup'), eligibilityField = document.getElementById('eligibilityField');
-    var rows = Array.prototype.slice.call(document.querySelectorAll('[data-candidate-row]'));
-    var search = document.getElementById('candidateSearch'), lowonganFilter = document.getElementById('lowonganFilter'), perPage = document.getElementById('candidatePerPage'), selectedCount = document.getElementById('selectedCount'), candidateEmpty = document.getElementById('candidateEmpty'), submitLink = document.getElementById('submitLink'), selectVisible = document.getElementById('selectVisibleCandidates'), pagination = document.getElementById('candidatePagination');
-    var currentPage = 1;
-    function matchingRows() {
-        var query = search.value.toLowerCase().trim(), lowonganId = lowonganFilter.value;
-        return rows.filter(function (row) {
-            return row.dataset.assessmentType === assessmentType.value
-                && (query === '' || row.dataset.search.toLowerCase().indexOf(query) !== -1)
-                && (lowonganId === '' || row.dataset.lowonganId === lowonganId);
+    (function() {
+        var fields = document.getElementById('fields'),
+            index = 0,
+            assessmentType = document.getElementById('assessmentType'),
+            healthNotice = document.getElementById('healthNotice'),
+            eligibilityGroup = document.getElementById('eligibilityFieldGroup'),
+            eligibilityField = document.getElementById('eligibilityField');
+        var rows = Array.prototype.slice.call(document.querySelectorAll('[data-candidate-row]'));
+        var search = document.getElementById('candidateSearch'),
+            lowonganFilter = document.getElementById('lowonganFilter'),
+            perPage = document.getElementById('candidatePerPage'),
+            selectedCount = document.getElementById('selectedCount'),
+            candidateEmpty = document.getElementById('candidateEmpty'),
+            submitLink = document.getElementById('submitLink'),
+            selectVisible = document.getElementById('selectVisibleCandidates'),
+            pagination = document.getElementById('candidatePagination');
+        var currentPage = 1;
+
+        function matchingRows() {
+            var query = search.value.toLowerCase().trim(),
+                lowonganId = lowonganFilter.value;
+            return rows.filter(function(row) {
+                return row.dataset.assessmentType === assessmentType.value &&
+                    (query === '' || row.dataset.search.toLowerCase().indexOf(query) !== -1) &&
+                    (lowonganId === '' || row.dataset.lowonganId === lowonganId);
+            });
+        }
+
+        function refreshCandidates(resetPage) {
+            if (resetPage) currentPage = 1;
+            var matches = matchingRows(),
+                pageSize = perPage.value === 'all' ? matches.length || 1 : Number(perPage.value);
+            var pageCount = Math.max(1, Math.ceil(matches.length / pageSize));
+            if (currentPage > pageCount) currentPage = pageCount;
+            var start = (currentPage - 1) * pageSize,
+                visibleRows = matches.slice(start, start + pageSize),
+                selected = 0;
+            rows.forEach(function(row) {
+                var checkbox = row.querySelector('input[type="checkbox"]');
+                var isEligibleType = row.dataset.assessmentType === assessmentType.value;
+                row.classList.toggle('d-none', visibleRows.indexOf(row) === -1);
+                checkbox.disabled = !isEligibleType;
+                if (!isEligibleType) checkbox.checked = false;
+                if (checkbox.checked) selected++;
+            });
+            selectedCount.textContent = selected + ' dipilih';
+            candidateEmpty.classList.toggle('d-none', matches.length > 0);
+            submitLink.disabled = assessmentType.value !== 'mcu' && selected === 0;
+            selectVisible.checked = visibleRows.length > 0 && visibleRows.every(function(row) {
+                return row.querySelector('input[type="checkbox"]').checked;
+            });
+            selectVisible.indeterminate = visibleRows.some(function(row) {
+                return row.querySelector('input[type="checkbox"]').checked;
+            }) && !selectVisible.checked;
+            pagination.classList.toggle('d-none', pageCount <= 1);
+            pagination.innerHTML = pageCount <= 1 ? '' : '<ul class="pagination pagination-sm mb-0"><li class="page-item ' + (currentPage === 1 ? 'disabled' : '') + '"><button type="button" class="page-link" data-page="' + (currentPage - 1) + '">Sebelumnya</button></li><li class="page-item disabled"><span class="page-link">Halaman ' + currentPage + ' dari ' + pageCount + '</span></li><li class="page-item ' + (currentPage === pageCount ? 'disabled' : '') + '"><button type="button" class="page-link" data-page="' + (currentPage + 1) + '">Berikutnya</button></li></ul>';
+        }
+
+        function refreshEligibilityFields() {
+            var selected = eligibilityField.value;
+            eligibilityField.innerHTML = '<option value="">Pilih field Lulus/Tidak Lulus</option>';
+            fields.querySelectorAll('.field-row').forEach(function(row) {
+                var type = row.querySelector('.field-type').value,
+                    id = row.querySelector('[name$="[id]"]').value.trim(),
+                    label = row.querySelector('[name$="[label]"]').value.trim();
+                var options = Array.prototype.slice.call(row.querySelectorAll('.option-input')).map(function(input) {
+                    return input.value;
+                });
+                if (type === 'select' && id && options.length === 2 && options[0] === 'Lulus' && options[1] === 'Tidak Lulus') {
+                    var option = document.createElement('option');
+                    option.value = id;
+                    option.textContent = label || id;
+                    option.selected = id === selected || (!selected && @json(old('eligibility_field_id')) === id);
+                    eligibilityField.appendChild(option);
+                }
+            });
+        }
+
+        function refreshHealthNotice() {
+            var isHealth = assessmentType.value === 'kesehatan',
+                isMcu = assessmentType.value === 'mcu';
+            var isField = assessmentType.value === 'lapangan' && document.getElementById('fieldTemplate').value !== '';
+            document.getElementById('fieldTestSetup').hidden = assessmentType.value !== 'lapangan';
+            document.getElementById('fieldTemplate').disabled = assessmentType.value !== 'lapangan';
+            document.getElementById('fieldTestDetails').hidden = !isField;
+            document.querySelectorAll('#fieldTestDetails input, #fieldTestDetails select').forEach(function(input) {
+                input.disabled = !isField;
+            });
+            document.querySelectorAll('[data-template-maxima]').forEach(function(group) {
+                var active = isField && group.dataset.templateMaxima === document.getElementById('fieldTemplate').value;
+                group.hidden = !active;
+                group.querySelectorAll('input').forEach(function(input) {
+                    input.disabled = !active;
+                });
+            });
+            healthNotice.classList.toggle('d-none', !isHealth);
+            document.getElementById('mcuNotice').classList.toggle('d-none', !isMcu);
+            document.getElementById('mcuExpiryGroup').hidden = !(isMcu || isField);
+            document.getElementById('mcuExpiry').disabled = !(isMcu || isField);
+            document.querySelector('label[for="mcuExpiry"]').textContent = isField ? 'Link tes lapangan berlaku sampai' : 'Masa berlaku link Hasil MCU sampai';
+            document.getElementById('candidateSection').hidden = isMcu;
+            document.getElementById('additionalFieldsSection').hidden = isMcu || isField;
+            fields.querySelectorAll('input, select, textarea, button').forEach(function(input) {
+                input.disabled = isMcu || isField;
+            });
+            eligibilityGroup.classList.toggle('d-none', isHealth || isMcu || isField);
+            eligibilityField.disabled = isHealth || isMcu || isField;
+            refreshEligibilityFields();
+            refreshCandidates(true);
+        }
+
+        function addField() {
+            var i = index++;
+            var row = document.createElement('div');
+            row.className = 'border rounded p-3 mb-3 field-row';
+            row.innerHTML = '<div class="row"><div class="col-md-3 mb-2"><label>Label</label><input class="form-control form-control-sm" name="fields[' + i + '][label]" required></div><div class="col-md-3 mb-2"><label>ID field</label><input class="form-control form-control-sm" name="fields[' + i + '][id]" required></div><div class="col-md-2 mb-2"><label>Tipe</label><select class="form-control form-control-sm field-type" name="fields[' + i + '][type]"><option value="text">Teks</option><option value="number">Angka</option><option value="select">Pilihan</option></select></div><div class="col-md-2 mb-2 pt-md-4"><div class="form-check"><input type="hidden" name="fields[' + i + '][required]" value="0"><input class="form-check-input" type="checkbox" name="fields[' + i + '][required]" value="1" id="required' + i + '"><label class="form-check-label" for="required' + i + '">Wajib diisi</label></div></div><div class="col-md-2 mb-2 pt-md-4"><button class="btn btn-outline-danger btn-sm remove-field" type="button">Hapus</button></div></div><div class="field-options d-none"><label>Pilihan (satu per baris)</label><textarea class="form-control form-control-sm" rows="3" placeholder="Contoh pilihan 1&#10;Contoh pilihan 2"></textarea></div>';
+            row.querySelector('.remove-field').addEventListener('click', function() {
+                row.remove();
+                refreshEligibilityFields();
+            });
+            row.querySelector('.field-type').addEventListener('change', function(event) {
+                row.querySelector('.field-options').classList.toggle('d-none', event.target.value !== 'select');
+                refreshEligibilityFields();
+            });
+            row.querySelector('.field-options textarea').addEventListener('input', function(event) {
+                var existing = row.querySelectorAll('.option-input');
+                existing.forEach(function(input) {
+                    input.remove();
+                });
+                event.target.value.split(/\r?\n/).filter(Boolean).forEach(function(option, optionIndex) {
+                    var input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.className = 'option-input';
+                    input.name = 'fields[' + i + '][options][' + optionIndex + ']';
+                    input.value = option.trim();
+                    row.appendChild(input);
+                });
+                refreshEligibilityFields();
+            });
+            row.querySelector('[name$="[id]"]').addEventListener('input', refreshEligibilityFields);
+            row.querySelector('[name$="[label]"]').addEventListener('input', refreshEligibilityFields);
+            fields.appendChild(row);
+        }
+        document.getElementById('addField').addEventListener('click', addField);
+        assessmentType.addEventListener('change', refreshHealthNotice);
+        document.getElementById('fieldTemplate').addEventListener('change', refreshHealthNotice);
+        search.addEventListener('input', function() {
+            refreshCandidates(true);
         });
-    }
-    function refreshCandidates(resetPage) {
-        if (resetPage) currentPage = 1;
-        var matches = matchingRows(), pageSize = perPage.value === 'all' ? matches.length || 1 : Number(perPage.value);
-        var pageCount = Math.max(1, Math.ceil(matches.length / pageSize));
-        if (currentPage > pageCount) currentPage = pageCount;
-        var start = (currentPage - 1) * pageSize, visibleRows = matches.slice(start, start + pageSize), selected = 0;
-        rows.forEach(function (row) {
-            var checkbox = row.querySelector('input[type="checkbox"]');
-            var isEligibleType = row.dataset.assessmentType === assessmentType.value;
-            row.classList.toggle('d-none', visibleRows.indexOf(row) === -1);
-            checkbox.disabled = !isEligibleType;
-            if (!isEligibleType) checkbox.checked = false;
-            if (checkbox.checked) selected++;
+        lowonganFilter.addEventListener('change', function() {
+            refreshCandidates(true);
         });
-        selectedCount.textContent = selected + ' dipilih';
-        candidateEmpty.classList.toggle('d-none', matches.length > 0);
-        submitLink.disabled = assessmentType.value !== 'mcu' && selected === 0;
-        selectVisible.checked = visibleRows.length > 0 && visibleRows.every(function (row) { return row.querySelector('input[type="checkbox"]').checked; });
-        selectVisible.indeterminate = visibleRows.some(function (row) { return row.querySelector('input[type="checkbox"]').checked; }) && !selectVisible.checked;
-        pagination.classList.toggle('d-none', pageCount <= 1);
-        pagination.innerHTML = pageCount <= 1 ? '' : '<ul class="pagination pagination-sm mb-0"><li class="page-item ' + (currentPage === 1 ? 'disabled' : '') + '"><button type="button" class="page-link" data-page="' + (currentPage - 1) + '">Sebelumnya</button></li><li class="page-item disabled"><span class="page-link">Halaman ' + currentPage + ' dari ' + pageCount + '</span></li><li class="page-item ' + (currentPage === pageCount ? 'disabled' : '') + '"><button type="button" class="page-link" data-page="' + (currentPage + 1) + '">Berikutnya</button></li></ul>';
-    }
-    function refreshEligibilityFields() {
-        var selected = eligibilityField.value;
-        eligibilityField.innerHTML = '<option value="">Pilih field Lulus/Tidak Lulus</option>';
-        fields.querySelectorAll('.field-row').forEach(function (row) {
-            var type = row.querySelector('.field-type').value, id = row.querySelector('[name$="[id]"]').value.trim(), label = row.querySelector('[name$="[label]"]').value.trim();
-            var options = Array.prototype.slice.call(row.querySelectorAll('.option-input')).map(function (input) { return input.value; });
-            if (type === 'select' && id && options.length === 2 && options[0] === 'Lulus' && options[1] === 'Tidak Lulus') {
-                var option = document.createElement('option'); option.value = id; option.textContent = label || id; option.selected = id === selected || (!selected && @json(old('eligibility_field_id')) === id); eligibilityField.appendChild(option);
-            }
+        perPage.addEventListener('change', function() {
+            refreshCandidates(true);
         });
-    }
-    function refreshHealthNotice() {
-        var isHealth = assessmentType.value === 'kesehatan', isMcu = assessmentType.value === 'mcu';
-        healthNotice.classList.toggle('d-none', !isHealth);
-        document.getElementById('mcuNotice').classList.toggle('d-none', !isMcu);
-        document.getElementById('mcuExpiryGroup').hidden = !isMcu;
-        document.getElementById('mcuExpiry').disabled = !isMcu;
-        document.getElementById('candidateSection').hidden = isMcu;
-        document.getElementById('additionalFieldsSection').hidden = isMcu;
-        fields.querySelectorAll('input, select, textarea, button').forEach(function (input) { input.disabled = isMcu; });
-        eligibilityGroup.classList.toggle('d-none', isHealth || isMcu);
-        eligibilityField.disabled = isHealth || isMcu;
-        refreshEligibilityFields();
-        refreshCandidates(true);
-    }
-    function addField() {
-        var i = index++;
-        var row = document.createElement('div'); row.className = 'border rounded p-3 mb-3 field-row';
-        row.innerHTML = '<div class="row"><div class="col-md-3 mb-2"><label>Label</label><input class="form-control form-control-sm" name="fields[' + i + '][label]" required></div><div class="col-md-3 mb-2"><label>ID field</label><input class="form-control form-control-sm" name="fields[' + i + '][id]" required></div><div class="col-md-2 mb-2"><label>Tipe</label><select class="form-control form-control-sm field-type" name="fields[' + i + '][type]"><option value="text">Teks</option><option value="number">Angka</option><option value="select">Pilihan</option></select></div><div class="col-md-2 mb-2 pt-md-4"><div class="form-check"><input type="hidden" name="fields[' + i + '][required]" value="0"><input class="form-check-input" type="checkbox" name="fields[' + i + '][required]" value="1" id="required' + i + '"><label class="form-check-label" for="required' + i + '">Wajib diisi</label></div></div><div class="col-md-2 mb-2 pt-md-4"><button class="btn btn-outline-danger btn-sm remove-field" type="button">Hapus</button></div></div><div class="field-options d-none"><label>Pilihan (satu per baris)</label><textarea class="form-control form-control-sm" rows="3" placeholder="Contoh pilihan 1&#10;Contoh pilihan 2"></textarea></div>';
-        row.querySelector('.remove-field').addEventListener('click', function () { row.remove(); refreshEligibilityFields(); });
-        row.querySelector('.field-type').addEventListener('change', function (event) { row.querySelector('.field-options').classList.toggle('d-none', event.target.value !== 'select'); refreshEligibilityFields(); });
-        row.querySelector('.field-options textarea').addEventListener('input', function (event) { var existing = row.querySelectorAll('.option-input'); existing.forEach(function (input) { input.remove(); }); event.target.value.split(/\r?\n/).filter(Boolean).forEach(function (option, optionIndex) { var input = document.createElement('input'); input.type = 'hidden'; input.className = 'option-input'; input.name = 'fields[' + i + '][options][' + optionIndex + ']'; input.value = option.trim(); row.appendChild(input); }); refreshEligibilityFields(); });
-        row.querySelector('[name$="[id]"]').addEventListener('input', refreshEligibilityFields); row.querySelector('[name$="[label]"]').addEventListener('input', refreshEligibilityFields);
-        fields.appendChild(row);
-    }
-    document.getElementById('addField').addEventListener('click', addField);
-    assessmentType.addEventListener('change', refreshHealthNotice);
-    search.addEventListener('input', function () { refreshCandidates(true); });
-    lowonganFilter.addEventListener('change', function () { refreshCandidates(true); });
-    perPage.addEventListener('change', function () { refreshCandidates(true); });
-    rows.forEach(function (row) { row.querySelector('input[type="checkbox"]').addEventListener('change', refreshCandidates); });
-    selectVisible.addEventListener('change', function () { matchingRows().slice((currentPage - 1) * (perPage.value === 'all' ? matchingRows().length || 1 : Number(perPage.value)), currentPage * (perPage.value === 'all' ? matchingRows().length || 1 : Number(perPage.value))).forEach(function (row) { row.querySelector('input[type="checkbox"]').checked = selectVisible.checked; }); refreshCandidates(false); });
-    pagination.addEventListener('click', function (event) { var button = event.target.closest('[data-page]'); if (!button || button.closest('.disabled')) return; currentPage = Number(button.dataset.page); refreshCandidates(false); });
-    refreshHealthNotice();
-})();
+        rows.forEach(function(row) {
+            row.querySelector('input[type="checkbox"]').addEventListener('change', refreshCandidates);
+        });
+        selectVisible.addEventListener('change', function() {
+            matchingRows().slice((currentPage - 1) * (perPage.value === 'all' ? matchingRows().length || 1 : Number(perPage.value)), currentPage * (perPage.value === 'all' ? matchingRows().length || 1 : Number(perPage.value))).forEach(function(row) {
+                row.querySelector('input[type="checkbox"]').checked = selectVisible.checked;
+            });
+            refreshCandidates(false);
+        });
+        pagination.addEventListener('click', function(event) {
+            var button = event.target.closest('[data-page]');
+            if (!button || button.closest('.disabled')) return;
+            currentPage = Number(button.dataset.page);
+            refreshCandidates(false);
+        });
+        refreshHealthNotice();
+    })();
 </script>
 @endpush

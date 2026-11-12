@@ -23,6 +23,11 @@ class Handler extends ExceptionHandler
      * @var array<int, string>
      */
     protected $dontFlash = [
+        'field_test_pin',
+        'field_test_pin_confirmation',
+        'signer_pin',
+        'field_test.signers',
+        'signature_data',
         'current_password',
         'password',
         'password_confirmation',

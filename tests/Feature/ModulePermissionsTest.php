@@ -31,6 +31,9 @@ class ModulePermissionsTest extends TestCase
             $table->timestamps();
         });
         (require database_path('migrations/2026_10_06_000000_add_module_permissions_to_users.php'))->up();
+        require_once database_path('migrations/2026_07_13_000000_create_assessment_link_tables.php');
+        (new \CreateAssessmentLinkTables)->up();
+        (require database_path('migrations/2026_11_11_000000_add_field_test_workflow.php'))->up();
         Schema::create('pengumuman', function (Blueprint $table) {
             $table->id();
             $table->string('pengumuman');

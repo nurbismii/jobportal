@@ -13,6 +13,9 @@ class AssessmentLinkCandidate extends Model
     protected $casts = [
         'result_values' => 'array',
         'last_submitted_at' => 'datetime',
+        'field_test_signatures' => 'array',
+        'field_test_version' => 'integer',
+        'field_test_revision' => 'integer',
     ];
 
     public function assessmentLink(): BelongsTo

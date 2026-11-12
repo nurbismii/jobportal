@@ -49,6 +49,13 @@ Route::post('/penilaian/{token}/kandidat/{candidate}/autosave', [PublicAssessmen
     ->middleware(['throttle:30,1', EnsurePublicAssessmentAccess::class])->name('assessment-links.public.autosave');
 
 Route::resource('lowongan-kerja', 'App\Http\Controllers\LowonganController')->only(['index', 'show']);
+Route::prefix('/penilaian/{token}/tes-lapangan/{candidate}')->middleware(EnsurePublicAssessmentAccess::class)->name('field-tests.')->group(function () {
+    Route::get('/', [App\Http\Controllers\FieldTestController::class, 'show'])->name('show');
+    Route::post('/draf', [App\Http\Controllers\FieldTestController::class, 'save'])->middleware('throttle:60,1')->name('save');
+    Route::post('/tanda-tangan', [App\Http\Controllers\FieldTestController::class, 'sign'])->middleware('throttle:30,1,field-test-sign')->name('sign');
+    Route::post('/revisi', [App\Http\Controllers\FieldTestController::class, 'revise'])->middleware('throttle:10,1,field-test-revise')->name('revise');
+    Route::get('/laporan', [App\Http\Controllers\FieldTestController::class, 'report'])->name('report');
+});
 Route::post('lowongan-kerja', [App\Http\Controllers\LowonganController::class, 'store'])
     ->middleware(['auth', 'verified.email', 'throttle:10,1'])->name('lowongan-kerja.store');
 Route::resource('pengumuman', 'App\Http\Controllers\PengumumanController')->only(['index', 'show']);
@@ -121,6 +128,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['redirect.role']], function 
 
     Route::resource('/lamarans', 'App\Http\Controllers\Admin\LamaranController');
     Route::get('/assessment-links', [AssessmentLinkController::class, 'index'])->name('assessment-links.index');
+    Route::get('/assessment-links/{assessmentLink}/tes-lapangan/{candidate}/laporan', [AssessmentLinkController::class, 'fieldTestReport'])->name('assessment-links.field-test-report');
     Route::get('/assessment-links/create', [AssessmentLinkController::class, 'create'])->name('assessment-links.create');
     Route::post('/assessment-links', [AssessmentLinkController::class, 'store'])->name('assessment-links.store');
     Route::get('/assessment-links/{assessmentLink}', [AssessmentLinkController::class, 'show'])->name('assessment-links.show');

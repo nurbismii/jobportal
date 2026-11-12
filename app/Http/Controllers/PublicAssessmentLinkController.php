@@ -22,6 +22,13 @@ class PublicAssessmentLinkController extends Controller
             return redirect()->route('assessment-documents.index', $link->public_token);
         }
 
+        if ($link->isFieldTest()) {
+            $candidates = $link->candidates()->with('lamaran.biodata.user')
+                ->when(request('q'), fn ($query) => $query->whereHas('lamaran.biodata.user', fn ($user) => $user->where('name', 'like', '%'.request('q').'%')))
+                ->orderBy('id')->paginate(20)->withQueryString();
+            return response()->view('field-tests.index', compact('link', 'candidates'))->header('Cache-Control', 'private, no-store');
+        }
+
         return view('public-assessment-links.form', compact('link'));
     }
 

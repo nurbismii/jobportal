@@ -42,25 +42,26 @@ class AssessmentLinkController extends Controller
             ->sortBy('nama_lowongan')
             ->values();
 
-        return view('admin.assessment-links.create', compact('eligibleLamarans', 'selectedIds', 'lowonganOptions'));
+        $fieldTemplates = app(\App\Services\FieldTestService::class)->templates();
+        return view('admin.assessment-links.create', compact('eligibleLamarans', 'selectedIds', 'lowonganOptions', 'fieldTemplates'));
     }
 
     public function store(StoreAssessmentLinkRequest $request, AssessmentLinkService $assessmentLinkService)
     {
         try {
             $link = $assessmentLinkService->create(
-                $request->safe()->only(['assessment_type', 'pin', 'fields', 'eligibility_field_id', 'expires_on']),
+                $request->safe()->only(['assessment_type', 'pin', 'fields', 'eligibility_field_id', 'expires_on', 'field_test']),
                 $request->validated('selected_ids', []),
                 $request->user()->id
             );
         } catch (ValidationException $exception) {
             Alert::error('Gagal', 'Data link asesmen tidak valid. Silakan periksa kembali isian Anda.');
 
-            return back()->withErrors($exception->errors())->withInput($request->except('pin'));
+            return back()->withErrors($exception->errors())->withInput($request->inputForRedisplay());
         } catch (InvalidArgumentException $exception) {
             Alert::error('Gagal', 'Link asesmen tidak dapat dibuat. Silakan periksa kembali isian Anda.');
 
-            return back()->withInput($request->except('pin'));
+            return back()->withInput($request->inputForRedisplay());
         }
 
         $publicUrl = route('assessment-links.public.show', $link->public_token);
@@ -127,6 +128,14 @@ class AssessmentLinkController extends Controller
         Alert::success('Berhasil', 'Kandidat berhasil ditambahkan ke link asesmen.');
 
         return redirect()->route('assessment-links.show', $assessmentLink);
+    }
+
+    public function fieldTestReport(AssessmentLink $assessmentLink, int $candidate)
+    {
+        abort_unless($assessmentLink->isFieldTest(), 404);
+        $candidate = $assessmentLink->candidates()->with('lamaran.biodata.user')->findOrFail($candidate);
+        return response()->view('field-tests.report', ['link' => $assessmentLink, 'candidate' => $candidate])
+            ->header('Cache-Control', 'private, no-store');
     }
 
     public function deactivate(AssessmentLink $assessmentLink)

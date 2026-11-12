@@ -31,6 +31,10 @@ class LamaranController extends Controller
             'riwayatProsesLamaran' => fn ($query) => $query->orderByDesc('created_at')->orderByDesc('id'),
         ])->findOrFail($id);
 
+        if (auth()->user()?->canAccessAdminRoute('assessment-links.field-test-report')) {
+            $lamaran->load('assessmentLinkCandidates.assessmentLink');
+        }
+
         return view('admin.lamaran.show', compact('lamaran'));
     }
 

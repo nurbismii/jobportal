@@ -26,6 +26,23 @@
     </div>
 </div>
 
+@if(auth()->user()->canAccessAdminRoute('assessment-links.field-test-report') && $lamaran->relationLoaded('assessmentLinkCandidates'))
+@php($fieldTests = $lamaran->assessmentLinkCandidates->filter(fn ($result) => $result->assessmentLink?->isFieldTest()))
+@if($fieldTests->isNotEmpty())
+<div class="card shadow mb-4">
+    <div class="card-header">
+        <h2 class="h6 m-0 font-weight-bold text-primary">Hasil tes lapangan</h2>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            @foreach($fieldTests as $candidate)
+            <div class="col-lg-6 mb-3">@include('field-tests.admin-result', ['link' => $candidate->assessmentLink, 'candidate' => $candidate])</div>
+            @endforeach
+        </div>
+    </div>
+</div>
+@endif
+@endif
 <div class="card shadow mb-4">
     <div class="card-header py-3">
         <h2 class="h6 m-0 font-weight-bold text-primary">Riwayat Tahapan Proses</h2>

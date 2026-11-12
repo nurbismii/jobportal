@@ -38,6 +38,7 @@ return [
     ],
     // Explicit mapping: a new controller action has no access until reviewed here.
     'methods' => [
+        'fieldTestReport' => 'view',
         'index' => 'view', 'show' => 'view', 'download' => 'view', 'downloadZip' => 'view',
         'lowonganData' => 'view', 'lowonganChart' => 'view', 'getLamaranData' => 'view',
         'directToLamaran' => 'view', 'adminIndex' => 'view', 'adminDownload' => 'view', 'revealPin' => 'view',

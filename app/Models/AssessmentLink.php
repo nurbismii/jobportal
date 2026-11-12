@@ -11,6 +11,11 @@ class AssessmentLink extends Model
 {
     public const TYPE_MCU = 'mcu';
 
+    public function isFieldTest(): bool
+    {
+        return $this->assessment_type === 'lapangan' && !empty($this->field_test_config);
+    }
+
     public function hasPublicSessionAccess(): bool
     {
         return session()->has('assessment_link_access.'.$this->id)
@@ -33,11 +38,12 @@ class AssessmentLink extends Model
     }
     protected $guarded = [];
 
-    protected $hidden = ['pin_hash', 'pin_encrypted'];
+    protected $hidden = ['pin_hash', 'pin_encrypted', 'field_test_config'];
 
     protected $casts = [
         'pin_encrypted' => 'encrypted',
         'form_schema' => 'array',
+        'field_test_config' => 'array',
         'expires_at' => 'datetime',
         'is_active' => 'boolean',
         'deactivated_at' => 'datetime',

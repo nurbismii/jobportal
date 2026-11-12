@@ -32,6 +32,12 @@ class AssessmentLinkService
     public function create(array $attributes, array $lamaranIds, int $creatorId): AssessmentLink
     {
         $type = $attributes['assessment_type'] ?? null;
+        $fieldConfig = null;
+        if ($type === 'lapangan' && !empty($attributes['field_test']['template'])) {
+            $fieldConfig = app(FieldTestService::class)->configuration($attributes['field_test']);
+            $attributes['fields'] = app(FieldTestService::class)->schema($fieldConfig);
+            $attributes['eligibility_field_id'] = 'decision';
+        }
         if ($type === AssessmentLink::TYPE_MCU) {
             $lamaranIds = [];
             $attributes['fields'] = [];
@@ -48,14 +54,14 @@ class AssessmentLinkService
         }
 
         $expiresAt = now('Asia/Makassar')->endOfDay();
-        if ($type === AssessmentLink::TYPE_MCU && !empty($attributes['expires_on'])) {
+        if (($type === AssessmentLink::TYPE_MCU || $fieldConfig) && !empty($attributes['expires_on'])) {
             $validated = validator(['expires_on' => $attributes['expires_on']], [
                 'expires_on' => ['required', 'date_format:Y-m-d', 'after_or_equal:today'],
             ])->validate();
             $expiresAt = Carbon::createFromFormat('!Y-m-d', $validated['expires_on'], 'Asia/Makassar')->endOfDay();
         }
 
-        return DB::transaction(function () use ($type, $fields, $eligibilityFieldId, $pin, $creatorId, $lamaranIds, $expiresAt) {
+        return DB::transaction(function () use ($type, $fields, $eligibilityFieldId, $pin, $creatorId, $lamaranIds, $expiresAt, $fieldConfig) {
             $ids = collect($lamaranIds)->map(fn ($id) => (int) $id)->values();
             if ($ids->count() !== $ids->unique()->count()) {
                 throw ValidationException::withMessages(['selected_ids' => ['Kandidat tidak boleh dipilih lebih dari satu kali.']]);
@@ -90,6 +96,10 @@ class AssessmentLinkService
                 'expires_at' => $expiresAt,
                 'is_active' => true,
             ]);
+
+            if ($fieldConfig) {
+                $link->update(['field_test_config' => $fieldConfig]);
+            }
 
             foreach ($ids as $lamaranId) {
                 AssessmentLinkCandidate::create([
@@ -194,6 +204,9 @@ class AssessmentLinkService
         if ($link === null) {
             return 'pending';
         }
+        if ($link->isFieldTest() && count($candidate->field_test_signatures ?? []) !== 3) {
+            return 'pending';
+        }
         if ($link->assessment_type === 'kesehatan') {
             return $this->statusFromDecision($values['health_status'] ?? null, 'Sehat', 'Tidak Sehat');
         }
@@ -261,6 +274,7 @@ class AssessmentLinkService
      */
     public function saveResult(AssessmentLinkCandidate $candidate, array $values, ?string $note, Request $request): AssessmentLinkCandidate
     {
+        abort_if($candidate->assessmentLink?->isFieldTest(), 422, 'Gunakan formulir tes lapangan untuk menyimpan nilai dan tanda tangan.');
         return DB::transaction(function () use ($candidate, $values, $note, $request) {
             $lockedCandidate = AssessmentLinkCandidate::query()
                 ->lockForUpdate()

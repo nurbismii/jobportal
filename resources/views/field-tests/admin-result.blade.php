@@ -1,0 +1,6 @@
+@php($signed = count($candidate->field_test_signatures ?? []))
+<strong>{{ $link->field_test_config['name'] }}</strong><br>
+<span class="badge {{ $signed === 3 ? 'badge-success' : 'badge-warning' }}">{{ $signed === 3 ? 'Disahkan' : ($signed ? $signed.'/3 tanda tangan' : 'Draf') }}</span>
+<ul class="small pl-3 mb-2 mt-2">@foreach($link->field_test_config['sections'] as $id => $section)<li>{{ $section['label'] }}: {{ isset($candidate->result_values[$id]) ? number_format((float) $candidate->result_values[$id], 2, ',', '.') : '—' }} / {{ $section['max'] }}@if(isset($candidate->result_values['components'][$id]))<span class="text-muted"> ({{ count(array_filter($candidate->result_values['components'][$id], fn ($answer) => $answer === 'Ya')) }}/{{ count($candidate->result_values['component_sections'][$id]['indicators']) }} Ya)</span>@endif</li>@endforeach</ul>
+<div class="small">Hasil {{ $signed === 3 ? 'final' : 'sementara' }}: <strong>{{ $candidate->result_values['decision'] ?? 'Belum dipilih' }}</strong></div>
+@if(auth()->user()->canAccessAdminRoute('assessment-links.field-test-report'))<a class="btn btn-outline-primary btn-sm mt-2" href="{{ route('assessment-links.field-test-report', [$link, $candidate->id]) }}">Laporan & tanda tangan</a>@endif

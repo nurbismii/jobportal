@@ -7,6 +7,10 @@
 !/public/admin/js/
 /public/admin/js/*
 !/public/admin/js/assessment-document-upload.js
+!/public/admin/js/field-test.js
+!/public/admin/css/
+/public/admin/css/*
+!/public/admin/css/field-test.css
 !/public/pdf/
 /public/pdf/*
 !/public/pdf/manual-book-v-hire-user.pdf
@@ -32,3 +36,6 @@ yarn-error.log
 .worktrees/
 firebase.json
 /docs
+!/docs/
+/docs/*
+!/docs/tes-lapangan.md
