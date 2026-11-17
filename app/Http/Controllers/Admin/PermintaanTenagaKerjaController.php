@@ -31,7 +31,8 @@ class PermintaanTenagaKerjaController extends Controller
         confirmDelete($title, $text);
 
         $permintaanTenagaKerjas = PermintaanTenagaKerja::with(['departemen', 'divisi'])
-            ->orderBy('created_at', 'desc')
+            ->orderByRaw('CASE WHEN status_ptk = ? THEN 0 ELSE 1 END', ['Proses'])
+            ->orderByDesc('no_surat_ptk')
             ->get();
 
         return view('admin.permintaan-tenaga-kerja.index', compact('permintaanTenagaKerjas'));

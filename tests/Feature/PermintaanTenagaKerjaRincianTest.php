@@ -54,6 +54,37 @@ class PermintaanTenagaKerjaRincianTest extends TestCase
         $this->migration()->up();
     }
 
+    public function test_index_prioritizes_processing_ptk_then_orders_by_ptk_number_descending(): void
+    {
+        $data = $this->build($this->validate($this->payload()));
+        foreach ([
+            ['PTK/2026/002', 'Proses', '2026-10-06'],
+            ['PTK/2026/010', 'Selesai', '2026-10-05'],
+            ['PTK/2026/009', 'Proses', '2026-10-04'],
+            ['PTK/2026/008', 'Menunggu', '2026-10-03'],
+            ['PTK/2026/005', 'Diterima', '2026-10-02'],
+            ['PTK/2026/003', 'Ditolak', '2026-10-01'],
+        ] as [$number, $status, $createdAt]) {
+            PermintaanTenagaKerja::create(array_replace($data, [
+                'no_surat_ptk' => $number,
+                'status_ptk' => $status,
+                'created_at' => $createdAt,
+            ]));
+        }
+
+        $controller = new PermintaanTenagaKerjaController();
+        $this->assertSame([
+            'PTK/2026/009', 'PTK/2026/002', 'PTK/2026/010',
+            'PTK/2026/008', 'PTK/2026/005', 'PTK/2026/003',
+        ], $controller->index()->getData()['permintaanTenagaKerjas']->pluck('no_surat_ptk')->all());
+
+        PermintaanTenagaKerja::where('status_ptk', 'Proses')->update(['status_ptk' => 'Selesai']);
+        $this->assertSame([
+            'PTK/2026/010', 'PTK/2026/009', 'PTK/2026/008',
+            'PTK/2026/005', 'PTK/2026/003', 'PTK/2026/002',
+        ], $controller->index()->getData()['permintaanTenagaKerjas']->pluck('no_surat_ptk')->all());
+    }
+
     public function test_multiple_rows_are_validated_saved_and_updated_with_correct_totals(): void
     {
         $payload = $this->payload();

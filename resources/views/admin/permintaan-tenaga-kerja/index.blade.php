@@ -95,6 +95,7 @@
     $(document).ready(function() {
         // Inisialisasi DataTable
         const table = $('#dataTable').DataTable({
+            order: [],
             scrollX: true,
             responsive: false,
             autoWidth: false,
