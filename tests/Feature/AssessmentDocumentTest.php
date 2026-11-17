@@ -54,6 +54,31 @@ class AssessmentDocumentTest extends TestCase
         return UploadedFile::fake()->createWithContent('rekap.xlsx', ob_get_clean());
     }
 
+    public function test_folders_are_ordered_by_newest_creation_date_for_clinic_and_admin(): void
+    {
+        $link = $this->link();
+        $link->update(['assessment_type' => AssessmentLink::TYPE_MCU]);
+        $folders = [];
+        foreach (['Batch Z terbaru' => '2026-11-17 09:00:00', 'Batch A lama' => '2026-11-16 09:00:00', 'Batch B terbaru' => '2026-11-17 09:00:00'] as $name => $createdAt) {
+            $folders[] = \App\Models\AssessmentDocumentFolder::create([
+                'assessment_link_id' => $link->id, 'name' => $name, 'created_at' => $createdAt,
+            ]);
+        }
+        \App\Models\AssessmentDocumentFolder::create(['assessment_link_id' => $this->link()->id, 'name' => 'Folder link lain']);
+        $expected = [$folders[2]->id, $folders[0]->id, $folders[1]->id];
+        $this->withSession(['assessment_link_access.'.$link->id => true]);
+        $response = $this->get(route('assessment-documents.index', $link->public_token));
+        $response->assertOk()->assertDontSee('Folder link lain')->assertSee('Terbaru ke terlama')->assertSee('17 Nov 2026, 09:00');
+        $this->assertSame($expected, $response->viewData('folders')->modelKeys());
+
+        $admin = new \App\Models\User();
+        $admin->forceFill(['id' => 1, 'role' => 'admin', 'status_akun' => 1]);
+        $response = $this->actingAs($admin)->get(route('assessment-documents.admin.index', ['assessmentLink' => $link, 'folder_id' => $folders[0]->id]));
+        $response->assertOk()->assertDontSee('Folder link lain');
+        $this->assertSame($expected, $response->viewData('folders')->modelKeys());
+        $this->assertSame($folders[0]->id, $response->viewData('selectedFolder')->id);
+    }
+
     public function test_private_folder_multiple_pdf_upload_and_scoped_download(): void
     {
         $link = $this->link();

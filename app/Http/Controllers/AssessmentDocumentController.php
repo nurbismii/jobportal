@@ -33,7 +33,7 @@ class AssessmentDocumentController extends Controller
             'mcu_detail_search' => ['nullable', 'string', 'max:150'],
             'mcu_recap_search' => ['nullable', 'string', 'max:150'],
         ]);
-        $folders = AssessmentDocumentFolder::where('assessment_link_id', $link->id)->orderBy('name')->get();
+        $folders = AssessmentDocumentFolder::where('assessment_link_id', $link->id)->latest('created_at')->latest('id')->get();
         $selectedFolder = null;
         if (($admin || $link->isDocumentOnly()) && request()->filled('folder_id')) {
             $selectedFolder = $folders->firstWhere('id', request('folder_id'));
