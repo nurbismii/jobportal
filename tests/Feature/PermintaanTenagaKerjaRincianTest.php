@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Http\Controllers\Admin\PermintaanTenagaKerjaController;
 use App\Models\PermintaanTenagaKerja;
 use App\Models\Lowongan;
+use App\Models\User;
 use App\Services\Vhire\OnboardingCandidateSyncService;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
@@ -83,6 +84,97 @@ class PermintaanTenagaKerjaRincianTest extends TestCase
             'PTK/2026/010', 'PTK/2026/009', 'PTK/2026/008',
             'PTK/2026/005', 'PTK/2026/003', 'PTK/2026/002',
         ], $controller->index()->getData()['permintaanTenagaKerjas']->pluck('no_surat_ptk')->all());
+    }
+
+    public function test_detail_shows_historical_hires_for_the_requested_ptk_to_lamaran_viewers(): void
+    {
+        Schema::create('lowongan', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('permintaan_tenaga_kerja_id');
+            $table->string('nama_lowongan');
+        });
+        Schema::create('lamaran', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('loker_id');
+            $table->unsignedBigInteger('biodata_id')->nullable();
+            $table->string('status_proses');
+        });
+        Schema::create('riwayat_proses_lamaran', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('lamaran_id');
+            $table->string('status_proses');
+            $table->date('tanggal_proses')->nullable();
+            $table->timestamps();
+        });
+        Schema::create('biodata', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('user_id');
+        });
+        Schema::create('users', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+        });
+
+        $data = $this->build($this->validate($this->payload()));
+        $ptk = PermintaanTenagaKerja::create(array_replace($data, ['status_ptk' => 'Selesai', 'jumlah_masuk' => 0]));
+        $otherPtk = PermintaanTenagaKerja::create(array_replace($data, ['no_surat_ptk' => 'PTK/2026/002']));
+        $emptyPtk = PermintaanTenagaKerja::create(array_replace($data, ['no_surat_ptk' => 'PTK/2026/003']));
+        DB::table('lowongan')->insert([
+            ['id' => 1, 'permintaan_tenaga_kerja_id' => $ptk->id, 'nama_lowongan' => 'Lowongan Operator'],
+            ['id' => 2, 'permintaan_tenaga_kerja_id' => $ptk->id, 'nama_lowongan' => 'Lowongan Mekanik'],
+            ['id' => 3, 'permintaan_tenaga_kerja_id' => $otherPtk->id, 'nama_lowongan' => 'Lowongan PTK Lain'],
+        ]);
+        foreach (['Kandidat Operator', 'Kandidat Mekanik', 'Kandidat Belum Masuk', 'Kandidat PTK Lain'] as $index => $nama) {
+            DB::table('users')->insert(['id' => $index + 1, 'name' => $nama]);
+            DB::table('biodata')->insert(['id' => $index + 1, 'user_id' => $index + 1]);
+        }
+        DB::table('lamaran')->insert([
+            ['id' => 1, 'biodata_id' => 1, 'loker_id' => 1, 'status_proses' => 'Aktif Bekerja'],
+            ['id' => 2, 'biodata_id' => 2, 'loker_id' => 2, 'status_proses' => 'Status Diperbarui'],
+            ['id' => 3, 'biodata_id' => 3, 'loker_id' => 1, 'status_proses' => 'Wawancara'],
+            ['id' => 4, 'biodata_id' => 4, 'loker_id' => 3, 'status_proses' => 'Aktif Bekerja'],
+            ['id' => 5, 'biodata_id' => null, 'loker_id' => 1, 'status_proses' => 'Aktif Bekerja'],
+        ]);
+        foreach ([
+            [1, 'Aktif Bekerja', '2026-11-08'],
+            [2, 'AKTIF BEKERJA', '2026-11-01'],
+            [2, 'Aktif Bekerja', '2026-11-12'],
+            [2, 'Status Diperbarui', '2026-11-17'],
+            [3, 'Wawancara', '2026-11-17'],
+            [4, 'Aktif Bekerja', '2026-11-13'],
+            [5, 'Aktif Bekerja', '0000-00-00'],
+        ] as [$lamaranId, $status, $tanggal]) {
+            DB::table('riwayat_proses_lamaran')->insert(['lamaran_id' => $lamaranId, 'status_proses' => $status, 'tanggal_proses' => $tanggal]);
+        }
+
+        $viewer = (new User(['name' => 'Peninjau Uji', 'role' => 'manager', 'status_akun' => 1]))->forceFill([
+            'id' => 99, 'module_permissions' => ['ptk' => ['view'], 'lamaran' => ['view']],
+        ]);
+        $url = route('permintaan-tenaga-kerja.show', $ptk->id);
+        $lamaranUrl = route('lamarans.show', 2);
+        $this->actingAs($viewer)->get($url)->assertOk()
+            ->assertSeeInOrder(['Riwayat Kandidat Masuk', 'Kandidat Mekanik', 'Lowongan Mekanik', '12 November 2026', 'Kandidat Operator', '08 November 2026', 'Lamaran #5'])
+            ->assertSee($lamaranUrl, false)
+            ->assertSee('Tanggal aktif —')
+            ->assertDontSee('17 November 2026')
+            ->assertDontSee('Kandidat Belum Masuk')
+            ->assertDontSee('Kandidat PTK Lain')
+            ->assertViewHas('jumlahMasuk', 3)
+            ->assertViewHas('riwayatKandidat', fn ($rows) => $rows->pluck('id')->all() === [2, 1, 5]);
+        $this->get($lamaranUrl)->assertOk()->assertSee('Kandidat Mekanik')->assertSee('Riwayat Tahapan Proses');
+        $this->get(route('permintaan-tenaga-kerja.show', $emptyPtk->id))->assertOk()
+            ->assertSee('Belum ada kandidat yang tercatat aktif bekerja pada PTK ini.');
+
+        $viewer->module_permissions = ['ptk' => ['view']];
+        $this->actingAs($viewer)->get($url)->assertOk()->assertViewHas('jumlahMasuk', 3)
+            ->assertViewHas('riwayatKandidat', fn ($rows) => $rows === null)
+            ->assertDontSee('Kandidat Mekanik')->assertDontSee($lamaranUrl, false);
+        $this->get($lamaranUrl)->assertForbidden();
+        $viewer->module_permissions = ['lamaran' => ['view']];
+        $this->actingAs($viewer)->get($url)->assertForbidden();
+
+        $this->assertSame(3, PermintaanTenagaKerja::syncJumlahMasukById($ptk->id));
+        $this->assertSame(3, $ptk->fresh()->jumlah_masuk);
     }
 
     public function test_multiple_rows_are_validated_saved_and_updated_with_correct_totals(): void

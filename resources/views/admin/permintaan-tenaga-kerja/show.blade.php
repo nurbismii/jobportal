@@ -1,7 +1,7 @@
 @extends('layouts.app-pic')
 
 @section('content-admin')
-<div class="container-fluid">
+<div class="container-fluid px-0 px-md-3">
 
     <div class="card shadow-sm rounded">
         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
@@ -11,6 +11,7 @@
             </span>
         </div>
         <div class="card-body">
+            <p class="mb-3"><strong>No. Surat PTK</strong> {{ $permintaanTenagaKerja->no_surat_ptk }}</p>
 
             {{-- Progress Bar --}}
             <div class="mb-4">
@@ -18,8 +19,7 @@
                 <div class="progress" style="height: 20px;">
                     @php
                     $total = $permintaanTenagaKerja->jumlah_ptk;
-                    $masuk = $permintaanTenagaKerja->jumlah_masuk;
-                    $persen = $total > 0 ? round(($masuk / $total) * 100) : 0;
+                    $persen = $total > 0 ? min(100, round(($jumlahMasuk / $total) * 100)) : 0;
                     $warna = $persen < 50 ? 'bg-warning' : 'bg-success' ;
                         @endphp
                         <div class="progress-bar {{ $warna }}" role="progressbar" style="width: {{ $persen }}%;" aria-valuenow="{{ $persen }}" aria-valuemin="0" aria-valuemax="100">
@@ -58,7 +58,12 @@
                             </table>
                         </div>
                         <p><i class="fa fa-users"></i> <strong>Jumlah PTK:</strong> {{ $permintaanTenagaKerja->jumlah_ptk }}</p>
-                        <p><i class="fa fa-user-check"></i> <strong>Jumlah Masuk:</strong> {{ $permintaanTenagaKerja->jumlah_masuk }}</p>
+                        <p>
+                            <i class="fa fa-user-check"></i> <strong>Jumlah Masuk:</strong> {{ $jumlahMasuk }}
+                            @if ($riwayatKandidat?->total())
+                            <a href="#riwayat-kandidat" class="ml-2">Lihat kandidat</a>
+                            @endif
+                        </p>
                     </div>
                 </div>
             </div>
@@ -119,6 +124,53 @@
                 </div>
             </div>
         </div>
+
+        @if ($riwayatKandidat !== null)
+        <section class="card mt-3" id="riwayat-kandidat">
+            <div class="card-header py-2">
+                <h2 class="h6 mb-0 font-weight-bold text-primary" id="judul-riwayat-kandidat">Riwayat Kandidat Masuk</h2>
+            </div>
+            <div class="card-body p-2 p-md-3">
+                @if ($riwayatKandidat->isNotEmpty())
+                <div class="table-responsive" tabindex="0" role="region" aria-labelledby="judul-riwayat-kandidat">
+                    <table class="table table-bordered table-sm text-gray-800 mb-0">
+                        <thead>
+                            <tr>
+                                <th scope="col">Nama Kandidat</th>
+                                <th scope="col" class="d-none d-md-table-cell">Lowongan</th>
+                                <th scope="col" class="d-none d-md-table-cell">Tanggal Aktif Bekerja</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($riwayatKandidat as $lamaran)
+                            @php
+                            $namaKandidat = $lamaran->biodata?->user?->name ?: 'Lamaran #' . $lamaran->id;
+                            $namaLowongan = $lamaran->lowongan?->nama_lowongan ?: '—';
+                            $tanggalAktif = substr((string) $lamaran->tanggal_aktif_bekerja, 0, 10);
+                            $tanggal = date_create_from_format('!Y-m-d', $tanggalAktif);
+                            $tanggalTampil = $tanggal && $tanggal->format('Y-m-d') === $tanggalAktif ? tanggalIndo($tanggalAktif) : '—';
+                            @endphp
+                            <tr>
+                                <td class="text-break">
+                                    <a class="font-weight-bold" href="{{ route('lamarans.show', $lamaran->id) }}"><span class="sr-only">Lihat tahapan </span>{{ $namaKandidat }}</a>
+                                    <div class="d-md-none small">{{ $namaLowongan }}<br>Tanggal aktif {{ $tanggalTampil }}</div>
+                                </td>
+                                <td class="d-none d-md-table-cell">{{ $namaLowongan }}</td>
+                                <td class="d-none d-md-table-cell text-nowrap">{{ $tanggalTampil }}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                @else
+                <p class="text-muted mb-0">{{ $riwayatKandidat->total() ? 'Tidak ada kandidat di halaman ini.' : 'Belum ada kandidat yang tercatat aktif bekerja pada PTK ini.' }}</p>
+                @endif
+                @if ($riwayatKandidat->hasPages())
+                <div class="mt-3">{{ $riwayatKandidat->links() }}</div>
+                @endif
+            </div>
+        </section>
+        @endif
 
         <div class="mt-3">
             @if(auth()->user()->canAccessAdminRoute('permintaan-tenaga-kerja.index'))

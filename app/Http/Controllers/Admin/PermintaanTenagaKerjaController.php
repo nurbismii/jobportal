@@ -104,7 +104,22 @@ class PermintaanTenagaKerjaController extends Controller
 
         $divisis = Divisi::whereIn('id', array_column($permintaanTenagaKerja->rincian_permintaan, 'divisi'))->get()->keyBy('id');
 
-        return view('admin.permintaan-tenaga-kerja.show', compact('permintaanTenagaKerja', 'divisis'));
+        $lamaranMasuk = PermintaanTenagaKerja::lamaranMasukById($permintaanTenagaKerja->id);
+        $riwayatKandidat = null;
+        if (auth()->user()?->canAccessAdminRoute('lamarans.show')) {
+            $riwayatKandidat = $lamaranMasuk
+                ->select('id', 'loker_id', 'biodata_id')
+                ->with(['lowongan:id,nama_lowongan', 'biodata:id,user_id', 'biodata.user:id,name'])
+                ->withMax(['riwayatProsesLamaran as tanggal_aktif_bekerja' => fn ($query) => $query->aktifBekerja()], 'tanggal_proses')
+                ->orderByDesc('tanggal_aktif_bekerja')
+                ->orderByDesc('id')
+                ->paginate(25)
+                ->fragment('riwayat-kandidat');
+        }
+
+        $jumlahMasuk = $riwayatKandidat?->total() ?? $lamaranMasuk->count();
+
+        return view('admin.permintaan-tenaga-kerja.show', compact('permintaanTenagaKerja', 'divisis', 'riwayatKandidat', 'jumlahMasuk'));
     }
 
     private function validatePermintaanTenagaKerja(Request $request): array
