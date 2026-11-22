@@ -8,13 +8,14 @@ use App\Models\Lamaran;
 use App\Models\Lowongan;
 use App\Models\Pengumuman;
 use App\Models\User;
+use App\Services\PasFotoApdService;
 use App\Services\Vhire\PkwtContractService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Schema;
 
 class BerandaController extends Controller
 {
-    public function index()
+    public function index(PasFotoApdService $photos)
     {
         $VDNI = 1;
         $VDNIP = 2;
@@ -38,6 +39,7 @@ class BerandaController extends Controller
         $count_departemen = Departemen::whereIn('perusahaan_id', [$VDNI, $VDNIP])->count();
         $showPkwtContractFeature = $this->userHasPkwtSigningProcess();
         $visiblePkwtContractsCount = 0;
+        $apdBiodata = auth()->check() ? $photos->eligibleBiodata(auth()->user()) : null;
 
         if ($showPkwtContractFeature && Schema::hasTable('vhire_pkwt_contracts')) {
             $visiblePkwtContractsCount = app(PkwtContractService::class)
@@ -53,7 +55,8 @@ class BerandaController extends Controller
             'count_departemen',
             'step',
             'showPkwtContractFeature',
-            'visiblePkwtContractsCount'
+            'visiblePkwtContractsCount',
+            'apdBiodata'
         ));
     }
 

@@ -32,6 +32,8 @@
                 </div>
             </div>
 
+            @includeWhen(isset($apdBiodata), 'user.pas-foto-apd.link')
+
             <h4 class="fw-bold py-3">📝 Status Lamaran</h4>
 
             @forelse($riwayat_proses as $index => $proses)

@@ -272,7 +272,7 @@ class PkwtContractService
                     }
                 })
                 ->update([
-                    'onboarding_status' => 'activated_as_employee',
+                    'onboarding_status' => VhireOnboardingCandidate::STATUS_ACTIVATED,
                     'sync_status' => 'activated_as_employee',
                 ]);
 

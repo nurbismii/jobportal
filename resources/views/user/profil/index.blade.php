@@ -36,6 +36,8 @@
             </span>
         </div>
 
+        @includeWhen(isset($apdBiodata), 'user.pas-foto-apd.link')
+
         <div class="clean-profile-card">
             <div class="clean-profile-user">
                 <div class="clean-profile-avatar">

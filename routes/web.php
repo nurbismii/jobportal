@@ -87,6 +87,9 @@ Route::middleware(['auth', 'verified.email'])->group(function () {
 
     Route::resource('lamaran', 'App\Http\Controllers\LamaranController')->only(['index', 'show']);
     Route::resource('profil', 'App\Http\Controllers\ProfilController')->only(['index', 'update']);
+    Route::get('pas-foto-apd', [App\Http\Controllers\PasFotoApdController::class, 'index'])->name('pas-foto-apd.index');
+    Route::post('pas-foto-apd', [App\Http\Controllers\PasFotoApdController::class, 'store'])
+        ->middleware('throttle:10,1')->name('pas-foto-apd.store');
     Route::get('dokumen-pelamar/{noKtp}/{file}', [App\Http\Controllers\CandidateDocumentController::class, 'show'])
         ->where('noKtp', '[0-9]{16}')->name('candidate-documents.show');
     Route::get('kontrak-pkwt', [PkwtContractController::class, 'index'])->name('kontrak-pkwt.index');

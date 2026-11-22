@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Biodata;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
@@ -12,6 +13,7 @@ class CandidateDocumentService
     private const DOCUMENT_TYPES = [
         'cv' => 'CV',
         'pas_foto' => 'Pas Foto',
+        'pas_foto_apd' => 'Pas Foto APD',
         'surat_lamaran' => 'Surat Lamaran',
         'ijazah' => 'Ijazah',
         'ktp' => 'KTP',
@@ -54,7 +56,7 @@ class CandidateDocumentService
 
         abort_if(! $document, 404);
 
-        return $this->disk($document['path'])->response($document['path'], null, [
+        return $document['disk']->response($document['path'], null, [
             'Content-Type' => $document['mime'],
             'X-Content-Type-Options' => 'nosniff',
             'Cache-Control' => 'private, no-store',
@@ -67,8 +69,9 @@ class CandidateDocumentService
 
         abort_if(! $document, 404);
 
-        return $this->disk($document['path'])->download($document['path'], $document['download_name'], [
+        return $document['disk']->download($document['path'], $document['download_name'], [
             'Content-Type' => $document['mime'],
+            'Cache-Control' => 'private, no-store',
         ]);
     }
 
@@ -127,14 +130,22 @@ class CandidateDocumentService
             return null;
         }
 
-        $path = $this->documentPath((string) $biodata->no_ktp, (string) $fileName);
+        $isApdPhoto = $type === 'pas_foto_apd';
+        $path = $isApdPhoto
+            ? $biodata->no_ktp . '/dokumen/' . $fileName
+            : $this->documentPath((string) $biodata->no_ktp, (string) $fileName);
 
-        if (! $this->isSafeRelativePath($path) || ! $this->disk($path)->exists($path)) {
+        if (! $this->isSafeRelativePath($path)) {
             return null;
         }
 
-        $mime = $this->mimeType($path);
-        if (! in_array($mime, ['application/pdf', 'image/jpeg', 'image/png'], true)) {
+        $disk = $isApdPhoto ? Storage::disk('candidate_private') : $this->disk($path);
+        if (! $disk->exists($path)) {
+            return null;
+        }
+
+        $mime = $this->mimeType($disk, $path);
+        if (! in_array($mime, $isApdPhoto ? ['image/jpeg', 'image/png'] : ['application/pdf', 'image/jpeg', 'image/png'], true)) {
             return null;
         }
 
@@ -142,6 +153,7 @@ class CandidateDocumentService
             'type' => $type,
             'label' => $label,
             'mime' => $mime,
+            'disk' => $disk,
             'path' => $path,
             'file_name' => (string) $fileName,
             'download_name' => $this->downloadFileName($biodata, $label, (string) $fileName),
@@ -220,10 +232,10 @@ class CandidateDocumentService
         return strpos($path, "\0") === false;
     }
 
-    private function mimeType(string $path): string
+    private function mimeType(FilesystemAdapter $disk, string $path): string
     {
         try {
-            return $this->disk($path)->mimeType($path) ?: 'application/octet-stream';
+            return $disk->mimeType($path) ?: 'application/octet-stream';
         } catch (\Throwable $e) {
             return 'application/octet-stream';
         }

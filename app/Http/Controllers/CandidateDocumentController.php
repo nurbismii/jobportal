@@ -17,6 +17,7 @@ class CandidateDocumentController extends Controller
         $fields = [
             'cv',
             'pas_foto',
+            'pas_foto_apd',
             'surat_lamaran',
             'ijazah',
             'ktp',
@@ -30,10 +31,11 @@ class CandidateDocumentController extends Controller
             'sertifikat_pendukung'
         ];
         abort_unless(collect($fields)->contains(fn($field) => $biodata->{$field} === $file), 404);
-        $path = candidate_document_path($noKtp, $file);
+        $isApdPhoto = $biodata->pas_foto_apd === $file;
+        $path = candidate_document_path($noKtp, $file, ! $isApdPhoto);
         abort_unless(is_file($path), 404);
         $mime = (new \finfo(FILEINFO_MIME_TYPE))->file($path);
-        abort_unless(in_array($mime, ['application/pdf', 'image/jpeg', 'image/png'], true), 415);
+        abort_unless(in_array($mime, $isApdPhoto ? ['image/jpeg', 'image/png'] : ['application/pdf', 'image/jpeg', 'image/png'], true), 415);
         return response()->file($path, [
             'Content-Type' => $mime,
             'X-Content-Type-Options' => 'nosniff',

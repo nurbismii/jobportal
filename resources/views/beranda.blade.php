@@ -104,6 +104,7 @@ $activeStep = $completedStep < $maxStep ? $completedStep + 1 : $maxStep;
 
     <div class="home-clean-page">
         <div class="container py-4">
+            @includeWhen(isset($apdBiodata), 'user.pas-foto-apd.link')
 
             {{-- Hero --}}
             <div class="home-clean-hero">

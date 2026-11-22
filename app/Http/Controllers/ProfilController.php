@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Services\EmploymentStatusRefreshService;
 use App\Services\Ocr\KtpIdentityValidator;
+use App\Services\PasFotoApdService;
 use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\File;
 use Illuminate\Validation\ValidationException;
@@ -39,9 +40,9 @@ class ProfilController extends Controller
         }
     }
 
-    public function index()
+    public function index(Request $request, PasFotoApdService $photos)
     {
-        return view('user.profil.index');
+        return view('user.profil.index', ['apdBiodata' => $photos->eligibleBiodata($request->user())]);
     }
 
     public function update(Request $request, $id)

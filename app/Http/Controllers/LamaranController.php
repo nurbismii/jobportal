@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Biodata;
 use App\Models\Lamaran;
 use App\Models\RiwayatProsesLamaran;
+use App\Services\PasFotoApdService;
 use Exception;
-use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
 
 class LamaranController extends Controller
@@ -23,7 +23,7 @@ class LamaranController extends Controller
         return redirect()->route('biodata.index');
     }
 
-    public function show($id)
+    public function show($id, PasFotoApdService $photos)
     {
         $lamaran = Lamaran::with('lowongan', 'biodata')
             ->whereHas('biodata', fn ($query) => $query->where('user_id', auth()->id()))
@@ -34,7 +34,9 @@ class LamaranController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get();
 
-            return view('user.lamaran.show', compact('lamaran', 'riwayat_proses'));
+            $apdBiodata = $photos->eligibleBiodata(auth()->user(), $lamaran);
+
+            return view('user.lamaran.show', compact('lamaran', 'riwayat_proses', 'apdBiodata'));
         } catch (Exception $e) {
             Alert::error('Opps!', 'Terjadi kesalahan saat mengambil data lamaran.');
             return redirect()->route('lamaran.index');

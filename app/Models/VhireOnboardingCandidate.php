@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class VhireOnboardingCandidate extends Model
 {
+    public const STATUS_ACTIVATED = 'activated_as_employee';
+
     protected $table = 'vhire_onboarding_candidates';
 
     protected $guarded = [];

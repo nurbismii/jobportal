@@ -8,12 +8,14 @@ use App\Http\Middleware\PreventRequestForgery;
 use App\Models\Biodata;
 use App\Models\Lamaran;
 use App\Models\User;
+use App\Models\VhireOnboardingCandidate;
 use App\Models\VhirePkwtContract;
 use App\Services\Vhire\OnboardingCandidateSyncService;
 use App\Services\Vhire\PkwtContractService;
 use Carbon\Carbon;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Schema;
@@ -59,6 +61,99 @@ class VhirePkwtIntegrationTest extends TestCase
         Carbon::setTestNow();
 
         parent::tearDown();
+    }
+
+    public function test_vhire_manages_the_apd_photo_and_exposes_it_through_the_private_documents_api(): void
+    {
+        (require database_path('migrations/2026_11_22_000001_add_pas_foto_apd_to_biodata.php'))->up();
+        Storage::fake('candidate_private');
+        $user = $this->createCandidateUser();
+        Schema::create('riwayat_proses_lamaran', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('lamaran_id');
+            $table->string('status_proses');
+            $table->string('status_lolos')->nullable();
+            $table->timestamps();
+        });
+        Schema::connection('mysql_hris')->create('employees', function (Blueprint $table) {
+            $table->string('no_ktp');
+            $table->string('status_resign');
+            $table->date('entry_date')->nullable();
+            $table->softDeletes();
+        });
+        $employees = DB::connection('mysql_hris')->table('employees');
+        $employees->insert([
+            'no_ktp' => $user->no_ktp,
+            'status_resign' => 'AKTIF',
+            'entry_date' => today()->addDay()->toDateString(),
+        ]);
+        DB::table('lowongan')->insert(['id' => 1, 'nama_lowongan' => 'Operator Sintetis']);
+        Lamaran::whereKey(1)->update(['loker_id' => 1]);
+        VhireOnboardingCandidate::create([
+            'lamaran_id' => 1,
+            'user_id' => $user->id,
+            'vhire_candidate_id' => 'LAMARAN-1',
+            'candidate_code' => 'CANDIDATE-1',
+            'no_ktp' => $user->no_ktp,
+            'nama' => $user->name,
+            'contract_duration_value' => 3,
+        ]);
+
+        $application = route('lamaran.show', 1);
+        $form = route('pas-foto-apd.index');
+        $upload = route('pas-foto-apd.store');
+        $this->actingAs($user)->get($application)->assertOk()->assertDontSee('Perbarui Pas Foto APD');
+        $this->postJson($upload)->assertForbidden();
+
+        $this->withToken('test-token')->postJson(route('vhire.candidates.activated', 'LAMARAN-1'), [
+            'employee_nik' => 'EMP-SYNTHETIC',
+        ])->assertOk();
+
+        $this->get($form)->assertForbidden();
+        $employees->where('no_ktp', $user->no_ktp)->update(['entry_date' => today()->toDateString()]);
+        $this->get($application)->assertOk()->assertSee('Perbarui Pas Foto APD')->assertSee($form);
+        $this->get($form)->assertOk()->assertSee('name="pas_foto_apd"', false);
+        $this->postJson($upload, [
+            'pas_foto_apd' => UploadedFile::fake()->image('apd.jpg', 400, 600)->size(2049),
+        ])->assertUnprocessable()->assertJsonValidationErrors(['pas_foto_apd', 'konfirmasi_apd']);
+
+        $this->post($upload, [
+            'pas_foto_apd' => UploadedFile::fake()->image('apd.jpg', 400, 600),
+            'konfirmasi_apd' => '1',
+            'no_ktp' => '0000000000000001',
+        ])->assertRedirect($form)->assertSessionHas('apd_photo_success');
+        $photo = $user->biodata()->firstOrFail()->pas_foto_apd;
+        $disk = Storage::disk('candidate_private');
+        $oldPath = $user->no_ktp . '/dokumen/' . $photo;
+        $disk->assertExists($oldPath);
+        $this->get($form)->assertOk()->assertSee('Pas foto APD berhasil disimpan di V-Hire.');
+        $this->get($application)->assertOk()->assertDontSee('Perbarui Pas Foto APD')->assertSee('Kelola Pas Foto');
+        $this->get(candidate_document_url($user->no_ktp, $photo))->assertOk()->assertHeader('Content-Type', 'image/jpeg');
+
+        $documents = $this->postJson(route('internal.candidate-documents.index'), ['no_ktp' => $user->no_ktp])
+            ->assertOk()->json('documents');
+        $apdDocument = collect($documents)->firstWhere('type', 'pas_foto_apd');
+        $this->assertNotNull($apdDocument);
+        $this->get($apdDocument['preview_url'])->assertOk()->assertHeader('Content-Type', 'image/jpeg');
+
+        $this->post($upload, [
+            'pas_foto_apd' => UploadedFile::fake()->image('apd-baru.png', 400, 600),
+            'konfirmasi_apd' => '1',
+        ])->assertRedirect($form)->assertSessionHas('apd_photo_success');
+        $disk->assertMissing($oldPath);
+        $this->get($apdDocument['preview_url'])->assertOk()->assertHeader('Content-Type', 'image/png');
+
+        $currentPhoto = $user->biodata()->firstOrFail()->pas_foto_apd;
+        Biodata::saving(fn () => false);
+        $this->post($upload, [
+            'pas_foto_apd' => UploadedFile::fake()->image('apd.jpg', 400, 600),
+            'konfirmasi_apd' => '1',
+        ])->assertRedirect($form)->assertSessionHasErrors('pas_foto_apd');
+        $this->assertSame([$user->no_ktp . '/dokumen/' . $currentPhoto], $disk->allFiles($user->no_ktp));
+        $this->get($apdDocument['preview_url'])->assertOk()->assertHeader('Content-Type', 'image/png');
+
+        $employees->where('no_ktp', $user->no_ktp)->update(['status_resign' => 'RESIGN']);
+        $this->postJson($upload)->assertForbidden();
     }
 
     public function test_hris_contract_import_is_idempotent_and_masks_no_ktp_in_response()
