@@ -34,6 +34,8 @@
 @include('partials.lowongan.styles')
 @endpush
 
+@includeUnless(session()->has('alert.config'), 'partials.recruitment-notice')
+
 @if(Auth::guest())
 <!-- Carousel Start -->
 <div class="header-carousel owl-carousel">
