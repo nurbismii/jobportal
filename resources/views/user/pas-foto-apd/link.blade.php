@@ -5,7 +5,7 @@
                 {{ $apdBiodata->pas_foto_apd ? 'Pas Foto APD' : 'Perbarui Pas Foto APD' }}
             </h2>
             @unless($apdBiodata->pas_foto_apd)
-                <p class="mb-0 mt-2">Unggah foto setengah badan dengan APD dan helm untuk ditampilkan di V-People.</p>
+                <p class="mb-0 mt-2">Unggah foto setengah badan dengan APD dan helm.</p>
             @endunless
         </div>
         <a href="{{ route('pas-foto-apd.index') }}" class="btn btn-primary flex-shrink-0">
