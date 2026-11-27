@@ -34,7 +34,7 @@ class LamaranController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get();
 
-            $apdBiodata = $photos->eligibleBiodata(auth()->user(), $lamaran);
+            $apdBiodata = $photos->eligibleBiodata(auth()->user());
 
             return view('user.lamaran.show', compact('lamaran', 'riwayat_proses', 'apdBiodata'));
         } catch (Exception $e) {

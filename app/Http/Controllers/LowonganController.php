@@ -28,9 +28,7 @@ class LowonganController extends Controller
 
     public function show($id)
     {
-        $today = Carbon::now()->toDateTimeString();
-
-        $lowongan = Lowongan::selectRaw("*, IF(tanggal_berakhir < '$today', 'Kadaluwarsa', 'Aktif') as status_lowongan")->findOrFail($id);
+        $lowongan = $this->findWithApplicationStatus($id);
         $biodata = Biodata::where('user_id', auth()->id())->first();
 
         $documentCheck = new DocumentCheck();
@@ -43,9 +41,15 @@ class LowonganController extends Controller
     {
         $request->validate(['loker_id' => 'required|integer|exists:lowongan,id']);
         $biodata = Biodata::where('user_id', auth()->id())->firstOrFail();
-        $lowongan = Lowongan::findOrFail($request->loker_id);
-        abort_unless($lowongan->tanggal_mulai <= now()->toDateString()
-            && $lowongan->tanggal_berakhir >= now()->toDateString(), 422, 'Lowongan belum dibuka atau sudah berakhir.');
+        $lowongan = $this->findWithApplicationStatus($request->loker_id);
+        if ($lowongan->status_lowongan !== 'Aktif') {
+            $message = 'Lowongan belum dibuka atau sudah berakhir.';
+            abort_if($request->expectsJson(), 422, $message);
+
+            Alert::warning('Peringatan', $message);
+            return redirect()->route('lowongan-kerja.show', $lowongan->id);
+        }
+
         if (auth()->user() && auth()->user()->hasActiveEmploymentStatusLock()) {
             Alert::warning('Peringatan', 'Akun yang tercatat aktif bekerja tidak dapat digunakan untuk memperbarui biodata atau mengirim lamaran baru.');
             return redirect()->route('lowongan-kerja.show', $request->loker_id);
@@ -117,5 +121,19 @@ class LowonganController extends Controller
 
         Alert::success('Lamaran Anda Sudah Kami Terima', 'Terima kasih telah melamar pekerjaan di perusahaan kami. Kami akan segera memproses lamaran Anda.');
         return redirect()->back();
+    }
+
+    private function findWithApplicationStatus($id): Lowongan
+    {
+        $now = now()->toDateTimeString();
+
+        return Lowongan::selectRaw(
+            "*, CASE
+                WHEN tanggal_mulai <= ? AND tanggal_berakhir >= ? THEN 'Aktif'
+                WHEN tanggal_mulai > ? THEN 'Belum Dibuka'
+                ELSE 'Kadaluwarsa'
+            END as status_lowongan",
+            [$now, $now, $now]
+        )->findOrFail($id);
     }
 }

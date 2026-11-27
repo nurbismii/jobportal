@@ -90,7 +90,11 @@ $hasApprovedTerms = $biodata && filled($biodata->status_pernyataan);
                         <div>
                             <span class="job-detail-card__meta-label">Status Pendaftaran</span>
                             <span class="job-detail-card__meta-value">
-                                {{ $isActive ? 'Pendaftaran sedang dibuka untuk posisi ini.' : 'Pendaftaran untuk posisi ini sudah ditutup.' }}
+                                {{ match ($lowongan->status_lowongan) {
+                                    'Aktif' => 'Pendaftaran sedang dibuka untuk posisi ini.',
+                                    'Belum Dibuka' => 'Pendaftaran untuk posisi ini belum dibuka.',
+                                    default => 'Pendaftaran untuk posisi ini sudah ditutup.',
+                                } }}
                             </span>
                         </div>
                     </div>

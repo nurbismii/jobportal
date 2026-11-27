@@ -39,9 +39,10 @@ class SecurityRegressionTest extends TestCase
         });
         Schema::create('biodata', function (Blueprint $t) {
             $t->id(); $t->unsignedBigInteger('user_id'); $t->string('no_ktp'); $t->string('cv')->nullable(); $t->timestamps();
+            $t->string('status_pernyataan')->nullable();
         });
         Schema::create('lowongan', function (Blueprint $t) {
-            $t->id(); $t->date('tanggal_mulai'); $t->date('tanggal_berakhir'); $t->timestamps();
+            $t->id(); $t->dateTime('tanggal_mulai'); $t->dateTime('tanggal_berakhir'); $t->timestamps();
             $t->string('nama_lowongan')->nullable();
         });
         Schema::create('lamaran', function (Blueprint $t) {
@@ -130,14 +131,44 @@ class SecurityRegressionTest extends TestCase
 
     public function test_submission_uses_authenticated_biodata_and_rejects_duplicates(): void
     {
+        $this->travelTo(now()->setTime(10, 0));
         $a = $this->account(); $own = $this->biodata($a); $other = $this->biodata($this->account(2));
-        $id = DB::table('lowongan')->insertGetId(['tanggal_mulai' => now()->subDay()->toDateString(), 'tanggal_berakhir' => now()->addDay()->toDateString()]);
+        $id = DB::table('lowongan')->insertGetId(['tanggal_mulai' => now(), 'tanggal_berakhir' => now()->addHours(2)]);
         $this->mock(DocumentCheck::class, fn ($mock) => $mock->shouldReceive('checkDocument')->andReturnNull());
         $this->actingAs($a)->post('/lowongan-kerja', ['loker_id' => $id, 'biodata_id' => $other->id])->assertRedirect();
         $this->assertDatabaseHas('lamaran', ['biodata_id' => $own->id, 'loker_id' => $id]);
         $this->post('/lowongan-kerja', ['loker_id' => $id, 'biodata_id' => $other->id])->assertRedirect();
         $this->assertSame(1, DB::table('lamaran')->count());
         $this->assertDatabaseMissing('lamaran', ['biodata_id' => $other->id]);
+    }
+
+    public function test_detail_and_submission_respect_the_opening_and_closing_times(): void
+    {
+        $user = $this->account();
+        $this->biodata($user)->update(['status_pernyataan' => '1']);
+        $id = DB::table('lowongan')->insertGetId([
+            'nama_lowongan' => 'Operator Sintetis',
+            'tanggal_mulai' => today()->setTime(10, 0),
+            'tanggal_berakhir' => today()->setTime(12, 0),
+        ]);
+        $detail = route('lowongan-kerja.show', $id);
+        $form = route('lowongan-kerja.store');
+        $this->actingAs($user);
+
+        $this->travelTo(today()->setTime(9, 59, 59));
+        $this->get($detail)->assertOk()->assertSee('Pendaftaran untuk posisi ini belum dibuka.')
+            ->assertDontSee('Lamar Posisi Ini');
+        $this->post($form, ['loker_id' => $id])->assertRedirect($detail)->assertSessionHas('alert.config');
+
+        $this->travelTo(today()->setTime(12, 0));
+        $this->get($detail)->assertOk()->assertSee('Lamar Posisi Ini');
+
+        $this->travelTo(today()->setTime(12, 0, 1));
+        $this->get($detail)->assertOk()->assertSee('Pendaftaran untuk posisi ini sudah ditutup.')
+            ->assertDontSee('Lamar Posisi Ini');
+        $this->post($form, ['loker_id' => $id])->assertRedirect($detail)->assertSessionHas('alert.config');
+        $this->postJson($form, ['loker_id' => $id])->assertUnprocessable();
+        $this->assertDatabaseCount('lamaran', 0);
     }
 
     public function test_guest_and_unverified_accounts_cannot_submit(): void

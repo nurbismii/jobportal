@@ -9,10 +9,12 @@ use Throwable;
 
 class PasFotoApdController extends Controller
 {
+    private const ACCESS_DENIED_MESSAGE = 'Akses unggah pas foto APD belum tersedia untuk akun ini. Jika Anda sudah aktif bekerja, hubungi HR untuk memeriksa biodata dan status kerja Anda di V-Hire.';
+
     public function index(Request $request, PasFotoApdService $photos)
     {
         $biodata = $photos->eligibleBiodata($request->user());
-        abort_unless($biodata, 403, 'Pas foto APD dapat diperbarui setelah Anda tercatat aktif bekerja.');
+        abort_unless($biodata, 403, self::ACCESS_DENIED_MESSAGE);
 
         return view('user.pas-foto-apd.index', compact('biodata'));
     }
@@ -20,7 +22,7 @@ class PasFotoApdController extends Controller
     public function store(Request $request, PasFotoApdService $photos)
     {
         $biodata = $photos->eligibleBiodata($request->user());
-        abort_unless($biodata, 403, 'Pas foto APD dapat diperbarui setelah Anda tercatat aktif bekerja.');
+        abort_unless($biodata, 403, self::ACCESS_DENIED_MESSAGE);
 
         $request->validate([
             'pas_foto_apd' => [
@@ -53,6 +55,6 @@ class PasFotoApdController extends Controller
         }
 
         return redirect()->route('pas-foto-apd.index')
-            ->with('apd_photo_success', 'Pas foto APD berhasil disimpan di V-Hire.');
+            ->with('apd_photo_success', 'Pas foto APD berhasil disimpan.');
     }
 }
