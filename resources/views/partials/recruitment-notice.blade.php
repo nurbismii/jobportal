@@ -12,15 +12,18 @@
                 <div class="alert-danger text-dark rounded-3 p-3 p-sm-4">
                     <p>
                         PT Virtue Dragon Nickel Industry (PT VDNI) <strong>tidak pernah memungut biaya apa pun</strong>
-                        dalam proses rekrutmen. Waspadai permintaan pembayaran atau pemesanan melalui agen perjalanan
-                        yang mengatasnamakan PT VDNI.
+                        dan tidak bekerja sama dengan pihak-pihak di luar perusahaan dalam proses rekrutmen.
+                        Waspadai permintaan pembayaran dan pemesanan melalui agen perjalanan atau pihak lain yang
+                        mengatasnamakan PT VDNI, serta waspadai hal-hal lainnya yang dianggap mencurigakan dan di luar
+                        kapasitas PT VDNI.
                     </p>
                     <p>
-                        Pelamar diharapkan siap mengikuti seluruh tahapan seleksi PT VDNI.
+                        Pelamar diharapkan mengerti, menyetujui, dan siap mengikuti seluruh tahapan proses seleksi PT VDNI.
                     </p>
                     <p>
-                        Portal resmi rekrutmen PT VDNI adalah <strong class="text-break">recruitment.vdnisite.com</strong>.
-                        Cek hasil seleksi melalui menu <strong>Riwayat Proses Lamaran</strong> setelah masuk.
+                        Portal resmi rekrutmen PT VDNI adalah
+                        <a class="fw-bold text-decoration-underline text-break" href="https://recruitment.vdnisite.com/">recruitment.vdnisite.com</a>.
+                        Cek hasil seleksi pelamar melalui menu <strong>Riwayat Proses Lamaran</strong> setelah masuk.
                     </p>
                     <p>
                         Hubungi Tim Rekrutmen PT VDNI di
